@@ -1,0 +1,231 @@
+<stix:STIX_Package 
+	xmlns:cyboxCommon="http://cybox.mitre.org/common-2"
+	xmlns:cybox="http://cybox.mitre.org/cybox-2"
+	xmlns:cyboxVocabs="http://cybox.mitre.org/default_vocabularies-2"
+	xmlns:FileObj="http://cybox.mitre.org/objects#FileObject-2"
+	xmlns:WinDriverObj="http://cybox.mitre.org/objects#WinDriverObject-3"
+	xmlns:WinExecutableFileObj="http://cybox.mitre.org/objects#WinExecutableFileObject-2"
+	xmlns:WinFileObj="http://cybox.mitre.org/objects#WinFileObject-2"
+	xmlns:WinRegistryKeyObj="http://cybox.mitre.org/objects#WinRegistryKeyObject-2"
+	xmlns:example="http://example.com"
+	xmlns:openioc="http://openioc.org/"
+	xmlns:incident="http://stix.mitre.org/Incident-1"
+	xmlns:indicator="http://stix.mitre.org/Indicator-2"
+	xmlns:stixCommon="http://stix.mitre.org/common-1"
+	xmlns:stixVocabs="http://stix.mitre.org/default_vocabularies-1"
+	xmlns:stix="http://stix.mitre.org/stix-1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+	http://cybox.mitre.org/common-2 http://cybox.mitre.org/XMLSchema/common/2.1/cybox_common.xsd
+	http://cybox.mitre.org/cybox-2 http://cybox.mitre.org/XMLSchema/core/2.1/cybox_core.xsd
+	http://cybox.mitre.org/default_vocabularies-2 http://cybox.mitre.org/XMLSchema/default_vocabularies/2.1/cybox_default_vocabularies.xsd
+	http://cybox.mitre.org/objects#FileObject-2 http://cybox.mitre.org/XMLSchema/objects/File/2.1/File_Object.xsd
+	http://cybox.mitre.org/objects#WinDriverObject-3 http://cybox.mitre.org/XMLSchema/objects/Win_Driver/3.0/Win_Driver_Object.xsd
+	http://cybox.mitre.org/objects#WinExecutableFileObject-2 http://cybox.mitre.org/XMLSchema/objects/Win_Executable_File/2.1/Win_Executable_File_Object.xsd
+	http://cybox.mitre.org/objects#WinFileObject-2 http://cybox.mitre.org/XMLSchema/objects/Win_File/2.1/Win_File_Object.xsd
+	http://cybox.mitre.org/objects#WinRegistryKeyObject-2 http://cybox.mitre.org/XMLSchema/objects/Win_Registry_Key/2.1/Win_Registry_Key_Object.xsd
+	http://stix.mitre.org/Incident-1 http://stix.mitre.org/XMLSchema/incident/1.1.1/incident.xsd
+	http://stix.mitre.org/Indicator-2 http://stix.mitre.org/XMLSchema/indicator/2.1.1/indicator.xsd
+	http://stix.mitre.org/common-1 http://stix.mitre.org/XMLSchema/common/1.1.1/stix_common.xsd
+	http://stix.mitre.org/default_vocabularies-1 http://stix.mitre.org/XMLSchema/default_vocabularies/1.1.1/stix_default_vocabularies.xsd
+	http://stix.mitre.org/stix-1 http://stix.mitre.org/XMLSchema/core/1.1.1/stix_core.xsd" id="example:Package-27941d5c-0457-4a62-91c9-4e1a79c694fd" version="1.1.1" timestamp="2014-07-11T11:38:43.630550+00:00">
+    <stix:STIX_Header>
+        <stix:Description>CybOX-represented Indicators Translated from OpenIOC File</stix:Description>
+    </stix:STIX_Header>
+    <stix:Indicators>
+        <stix:Indicator xsi:type='indicator:IndicatorType' negate="false" version="2.1.1">
+            <indicator:Title>CybOX-represented Indicator Created from OpenIOC File</indicator:Title>
+            <indicator:Observable id="openioc:indicator-73bc8d65-826b-48d2-b4a8-48918e29e323">
+                <cybox:Title>Generic indicator for the stuxnet virus.  When loaded, stuxnet spawns lsass.exe in a suspended state. The malware then maps in its own executable section and fixes up the CONTEXT to point to the newly mapped in section. This is a common task performed by malware and allows the malware to execute under the pretense of a known and trusted process.</cybox:Title>
+                <cybox:Observable_Source>
+                    <cyboxCommon:Description>OpenIOC File: stuxnet.ioc.xml</cyboxCommon:Description>
+                </cybox:Observable_Source>
+                <cybox:Observable_Composition operator="OR">
+                    <cybox:Observable id="openioc:indicator-item-b9ef2559-cc59-4463-81d9-52800545e16e">
+                        <cybox:Object>
+                            <cybox:Properties xsi:type="WinExecutableFileObj:WindowsExecutableFileObjectType">
+                                <WinExecutableFileObj:Sections>
+                                    <WinExecutableFileObj:Section>
+                                        <WinExecutableFileObj:Section_Header>
+                                            <WinExecutableFileObj:Name condition="Contains">.stub</WinExecutableFileObj:Name>
+                                        </WinExecutableFileObj:Section_Header>
+                                    </WinExecutableFileObj:Section>
+                                </WinExecutableFileObj:Sections>
+                            </cybox:Properties>
+                        </cybox:Object>
+                    </cybox:Observable>
+                    <cybox:Observable id="openioc:indicator-item-156bc4b6-a2a1-4735-bfe8-6c8d1f7eae38">
+                        <cybox:Object>
+                            <cybox:Properties xsi:type="FileObj:FileObjectType">
+                                <FileObj:File_Name condition="Contains">mdmcpq3.PNF</FileObj:File_Name>
+                            </cybox:Properties>
+                        </cybox:Object>
+                    </cybox:Observable>
+                    <cybox:Observable id="openioc:indicator-item-e57d9a5b-5e6a-41ec-87c8-ee67f3ed2e20">
+                        <cybox:Object>
+                            <cybox:Properties xsi:type="FileObj:FileObjectType">
+                                <FileObj:File_Name condition="Contains">mdmeric3.PNF</FileObj:File_Name>
+                            </cybox:Properties>
+                        </cybox:Object>
+                    </cybox:Observable>
+                    <cybox:Observable id="openioc:indicator-item-63d7bee6-b575-4d56-8d43-1c5eac57658f">
+                        <cybox:Object>
+                            <cybox:Properties xsi:type="FileObj:FileObjectType">
+                                <FileObj:File_Name condition="Contains">oem6C.PNF</FileObj:File_Name>
+                            </cybox:Properties>
+                        </cybox:Object>
+                    </cybox:Observable>
+                    <cybox:Observable id="openioc:indicator-item-e6bff12a-e23d-45ea-94bd-8289f806bea7">
+                        <cybox:Object>
+                            <cybox:Properties xsi:type="FileObj:FileObjectType">
+                                <FileObj:File_Name condition="Contains">oem7A.PNF</FileObj:File_Name>
+                            </cybox:Properties>
+                        </cybox:Object>
+                    </cybox:Observable>
+                    <cybox:Observable id="openioc:indicator-422ae9bf-a1ae-41f2-8e54-5b4c6f3e1598">
+                        <cybox:Observable_Composition operator="AND">
+                            <cybox:Observable id="openioc:indicator-item-e93f1610-daaf-4311-bcf3-3aecef8271c0">
+                                <cybox:Object>
+                                    <cybox:Properties xsi:type="WinDriverObj:WindowsDriverObjectType">
+                                        <WinDriverObj:Device_Object_List>
+                                            <WinDriverObj:Device_Object_Struct>
+                                                <WinDriverObj:Attached_To_Driver_Name condition="Contains">fs_rec.sys</WinDriverObj:Attached_To_Driver_Name>
+                                            </WinDriverObj:Device_Object_Struct>
+                                        </WinDriverObj:Device_Object_List>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                            <cybox:Observable id="openioc:indicator-item-72476f35-8dea-4bae-8239-7c22d05d664f">
+                                <cybox:Object>
+                                    <cybox:Properties xsi:type="WinDriverObj:WindowsDriverObjectType">
+                                        <WinDriverObj:Device_Object_List>
+                                            <WinDriverObj:Device_Object_Struct>
+                                                <WinDriverObj:Attached_To_Driver_Name condition="Contains">mrxsmb.sys</WinDriverObj:Attached_To_Driver_Name>
+                                            </WinDriverObj:Device_Object_Struct>
+                                        </WinDriverObj:Device_Object_List>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                            <cybox:Observable id="openioc:indicator-item-f98ea5aa-9e23-4f18-b871-b3cf5ba153fe">
+                                <cybox:Object>
+                                    <cybox:Properties xsi:type="WinDriverObj:WindowsDriverObjectType">
+                                        <WinDriverObj:Device_Object_List>
+                                            <WinDriverObj:Device_Object_Struct>
+                                                <WinDriverObj:Attached_To_Driver_Name condition="Contains">sr.sys</WinDriverObj:Attached_To_Driver_Name>
+                                            </WinDriverObj:Device_Object_Struct>
+                                        </WinDriverObj:Device_Object_List>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                            <cybox:Observable id="openioc:indicator-item-32f61140-0f58-43bc-8cdd-a25db75ca6c4">
+                                <cybox:Object>
+                                    <cybox:Properties xsi:type="WinDriverObj:WindowsDriverObjectType">
+                                        <WinDriverObj:Device_Object_List>
+                                            <WinDriverObj:Device_Object_Struct>
+                                                <WinDriverObj:Attached_To_Driver_Name condition="Contains">fastfat.sys</WinDriverObj:Attached_To_Driver_Name>
+                                            </WinDriverObj:Device_Object_Struct>
+                                        </WinDriverObj:Device_Object_List>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                        </cybox:Observable_Composition>
+                    </cybox:Observable>
+                    <cybox:Observable id="openioc:indicator-eb585bf5-18d8-4837-baf0-80ac74104ca3">
+                        <cybox:Observable_Composition operator="AND">
+                            <cybox:Observable id="openioc:indicator-item-8d85b559-4d18-4e15-b0c9-da5a9b32f53c">
+                                <cybox:Object>
+                                    <cybox:Properties xsi:type="FileObj:FileObjectType">
+                                        <FileObj:File_Name condition="Contains">mrxcls.sys</FileObj:File_Name>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                            <cybox:Observable id="openioc:indicator-item-8a3e425d-fa87-4a31-b20d-8f8630d77933">
+                                <cybox:Object>
+                                    <cybox:Properties xsi:type="WinExecutableFileObj:WindowsExecutableFileObjectType">
+                                        <WinExecutableFileObj:Digital_Signature>
+                                            <cyboxCommon:Certificate_Subject condition="Contains">Realtek Semiconductor Corp</cyboxCommon:Certificate_Subject>
+                                        </WinExecutableFileObj:Digital_Signature>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                        </cybox:Observable_Composition>
+                    </cybox:Observable>
+                    <cybox:Observable id="openioc:indicator-bc8d06dd-f879-4609-bb1c-eccded0222ce">
+                        <cybox:Observable_Composition operator="AND">
+                            <cybox:Observable id="openioc:indicator-item-89f194d3-3ee6-4218-93f8-055ea92a9f00">
+                                <cybox:Object>
+                                    <cybox:Properties xsi:type="FileObj:FileObjectType">
+                                        <FileObj:File_Name condition="Contains">mrxnet.sys</FileObj:File_Name>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                            <cybox:Observable id="openioc:indicator-item-c2dae8bf-81b1-49fb-8654-396830d75ade">
+                                <cybox:Object>
+                                    <cybox:Properties xsi:type="WinExecutableFileObj:WindowsExecutableFileObjectType">
+                                        <WinExecutableFileObj:Digital_Signature>
+                                            <cyboxCommon:Certificate_Subject condition="Contains">Realtek Semiconductor Corp</cyboxCommon:Certificate_Subject>
+                                        </WinExecutableFileObj:Digital_Signature>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                        </cybox:Observable_Composition>
+                    </cybox:Observable>
+                    <cybox:Observable id="openioc:indicator-00538c36-88fe-42ea-a70f-136a2fb53834">
+                        <cybox:Observable_Composition operator="AND">
+                            <cybox:Observable id="openioc:indicator-item-a779b811-345f-4164-897e-0752837d0c1e">
+                                <cybox:Object>
+                                    <cybox:Properties xsi:type="WinRegistryKeyObj:WindowsRegistryKeyObjectType">
+                                        <WinRegistryKeyObj:Key condition="Contains">SYSTEM\ControlSet001\Services\MRxCls\ImagePath</WinRegistryKeyObj:Key>
+                                        <WinRegistryKeyObj:Hive condition="Equals">HKEY_LOCAL_MACHINE</WinRegistryKeyObj:Hive>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                            <cybox:Observable id="openioc:indicator-item-ee981f06-b713-40aa-ac98-c6f4fd82b78d">
+                                <cybox:Object>
+                                    <cybox:Properties xsi:type="WinRegistryKeyObj:WindowsRegistryKeyObjectType">
+                                        <WinRegistryKeyObj:Values>
+                                            <WinRegistryKeyObj:Value>
+                                                <WinRegistryKeyObj:Data condition="Contains">mrxcls.sys</WinRegistryKeyObj:Data>
+                                            </WinRegistryKeyObj:Value>
+                                        </WinRegistryKeyObj:Values>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                        </cybox:Observable_Composition>
+                    </cybox:Observable>
+                    <cybox:Observable id="openioc:indicator-d8d9b32c-f648-4552-9805-93c05ed48219">
+                        <cybox:Observable_Composition operator="AND">
+                            <cybox:Observable id="openioc:indicator-item-c08044e7-e88c-433c-b463-763bdddeff82">
+                                <cybox:Object>
+                                    <cybox:Properties xsi:type="WinRegistryKeyObj:WindowsRegistryKeyObjectType">
+                                        <WinRegistryKeyObj:Key condition="Contains">SYSTEM\ControlSet001\Services\MRxNet\ImagePath</WinRegistryKeyObj:Key>
+                                        <WinRegistryKeyObj:Hive condition="Equals">HKEY_LOCAL_MACHINE</WinRegistryKeyObj:Hive>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                            <cybox:Observable id="openioc:indicator-item-38dfb382-ebbe-4685-bbb7-60675b91bd15">
+                                <cybox:Object>
+                                    <cybox:Properties xsi:type="WinRegistryKeyObj:WindowsRegistryKeyObjectType">
+                                        <WinRegistryKeyObj:Values>
+                                            <WinRegistryKeyObj:Value>
+                                                <WinRegistryKeyObj:Data condition="Contains">mrxnet.sys</WinRegistryKeyObj:Data>
+                                            </WinRegistryKeyObj:Value>
+                                        </WinRegistryKeyObj:Values>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                        </cybox:Observable_Composition>
+                    </cybox:Observable>
+                </cybox:Observable_Composition>
+            </indicator:Observable>
+            <indicator:Producer>
+                <stixCommon:Tools>
+                    <cyboxCommon:Tool>
+                        <cyboxCommon:Name>OpenIOC to STIX Utility</cyboxCommon:Name>
+                        <cyboxCommon:Version>0.12</cyboxCommon:Version>
+                    </cyboxCommon:Tool>
+                </stixCommon:Tools>
+            </indicator:Producer>
+        </stix:Indicator>
+    </stix:Indicators>
+</stix:STIX_Package>
