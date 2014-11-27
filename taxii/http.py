@@ -87,7 +87,7 @@ def verify_headers_post_parse(headers, in_response_to=None):
     # Validate the X-TAXII-Protocol header
     # TODO: Look into the service properties instead of assuming both are supported
     # ?
-    if taxii_protocol and taxii_protocol not in PROTOCOL_BINDINGS:
+    if taxii_protocol and taxii_protocol not in ALL_PROTOCOL_BINDINGS:
         raise_failure("The specified value of X-TAXII-Protocol is not supported", in_response_to=in_response_to)
 
     # Validate the X-TAXII-Accept header
@@ -105,24 +105,19 @@ def verify_headers_and_parse(headers, body):
 
 def get_headers(taxii_message, is_secure):
 
-    if taxii_message.__module__ == 'libtaxii.messages_11':
-        services_version = VID_TAXII_SERVICES_11
-    elif taxii_message.__module__ == 'libtaxii.messages_10':
-        services_version = VID_TAXII_SERVICES_10
-    else:
-        raise ValueError("Unknown response message module")
-
+    version = VID_TAXII_SERVICES_11 #FIXME: waiting for merge https://github.com/TAXIIProject/libtaxii/issues/149
+    #taxii_message.version
 
     if is_secure:
-        if services_version == VID_TAXII_SERVICES_11:
+        if version == VID_TAXII_SERVICES_11:
             return deepcopy(TAXII_11_HTTPS_Headers)
-        elif services_version == VID_TAXII_SERVICES_10:
+        elif version == VID_TAXII_SERVICES_10:
             return deepcopy(TAXII_10_HTTPS_Headers)
 
     else:
-        if services_version == VID_TAXII_SERVICES_11:
+        if version == VID_TAXII_SERVICES_11:
             return deepcopy(TAXII_11_HTTP_Headers)
-        elif services_version == VID_TAXII_SERVICES_10:
+        elif version == VID_TAXII_SERVICES_10:
             return deepcopy(TAXII_10_HTTP_Headers)
 
     raise ValueError("Unknown combination for services_version and is_secure")

@@ -1,6 +1,4 @@
 import sys
-import traceback
-import collections
 
 from flask import Flask, request, jsonify, make_response
 
@@ -8,7 +6,8 @@ from taxii.exceptions import StatusMessageException, raise_failure
 
 from taxii.status import process_status_exception
 from taxii.services import InboxService, DiscoveryService
-from taxii.http import REQUIRED_RESPONSE_HEADERS
+from taxii.http import REQUIRED_RESPONSE_HEADERS, get_headers
+
 
 from functools import wraps
 
@@ -18,11 +17,11 @@ PV_ERR = "There was an error parsing and validating the request message."
 app = Flask(__name__)
 
 
-
-inbox_service = InboxService('/services/inbox')
-discovery_service = DiscoveryService('/services/', services=[inbox_service])
+inbox_service = InboxService('example.com/services/inbox/')
+discovery_service = DiscoveryService('example.com/services/discovery/', services=[inbox_service])
 
 services = [inbox_service, discovery_service]
+
 
 
 def view_wrapper(service):
@@ -33,8 +32,10 @@ def view_wrapper(service):
         if 'application/xml' not in request.accept_mimetypes:
             raise_failure("The specified value of Accept is not supported")
 
-        response, headers = service.view(request.headers, request.data, is_secure=request.is_secure)
-        return make_taxii_response(response, headers)
+        response_message = service.view(request.headers, request.data)
+        response_headers = get_headers(response_message, request.is_secure)
+
+        return make_taxii_response(response_message.to_xml(pretty_print=True), response_headers)
 
     return wrapper
 

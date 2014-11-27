@@ -2,13 +2,14 @@
 # For license information, see the LICENSE.txt file
 
 from .base_handlers import BaseMessageHandler
-from ..exceptions import StatusMessageException
+from ..exceptions import StatusMessageException, raise_failure
 
 import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10
 from libtaxii.constants import *
 from libtaxii.common import generate_message_id
 
+from persistence import *
 
 class InboxMessage11Handler(BaseMessageHandler):
     """
@@ -16,29 +17,18 @@ class InboxMessage11Handler(BaseMessageHandler):
     """
 
     supported_request_messages = [tm11.InboxMessage]
-    version = "1"
 
     @classmethod
     def save_content_block(cls, content_block, supporting_collections):
-        """
-        Saves the content_block in the database and
-        associates it with all DataCollections in supporting_collections.
-
-        This can be overriden to save the content block in a custom way.
-
-        Arguments:
-            content_block (tm11.ContentBlock) - The content block to save
-            supporting_collections (list of models.DataCollection) - The Data Collections to add this content_block to
-        """
         # TODO: Could/should this take an InboxService model object?
-        cb = models.ContentBlock.from_content_block_11(content_block)
-        cb.save()
+
+        content_block_entity = ContentBlockEntity.from_content_block(content_block, version=11)
 
         for collection in supporting_collections:
-            collection.content_blocks.add(cb)
+            collection.add_content_block(content_block_entity)
 
     @classmethod
-    def handle_message(cls, inbox_service, inbox_message, django_request):
+    def handle_message(cls, inbox_service, inbox_message):
         """
         Attempts to save all Content Blocks in the Inbox Message into the
         database.
@@ -57,27 +47,32 @@ class InboxMessage11Handler(BaseMessageHandler):
             A StatusMessageException for errors
         """
 
-        collections = inbox_service.validate_destination_collection_names(inbox_message.destination_collection_names,
-                                                                          inbox_message.message_id)
+        collections = inbox_service.validate_destination_collection_names(
+                inbox_message.destination_collection_names, inbox_message.message_id)
 
-        # Store certain information about this Inbox Message in the database for bookkeeping
-        inbox_message_db = models.InboxMessage.from_inbox_message_11(inbox_message,
-                                                                     django_request,
-                                                                     received_via=inbox_service)
-        inbox_message_db.save()
 
-        # Iterate over the ContentBlocks in the InboxMessage and try to add
-        # them to the database
+        if not collections:
+            # FIXME: what are we doing here?
+            return
+
+        # Iterate over the ContentBlocks in the InboxMessage and try to add them to the database
+        blocks = []
+
         saved_blocks = 0
+
         for content_block in inbox_message.content_blocks:
             # 3a. Identify whether the InboxService supports the Content Block's Content Binding
-            # TODO: Is this useful?
-            inbox_support_info = inbox_service.is_content_supported(content_block.content_binding)
+            print content_block
+            is_supported = inbox_service.is_content_supported(content_block.content_binding)
+
+            # FIXME: is it a right thing to do?
+            if not is_supported:
+                continue
 
             supporting_collections = []
             for collection in collections:
-                collection_support_info = collection.is_content_supported(content_block.content_binding)
-                if collection_support_info.is_supported:
+                supported_by_collection = collection.is_content_supported(content_block.content_binding)
+                if supported_by_collection:
                     supporting_collections.append(collection)
 
             if len(supporting_collections) == 0 and not inbox_support_info.is_supported:
@@ -88,14 +83,17 @@ class InboxMessage11Handler(BaseMessageHandler):
 
             saved_blocks += 1
 
-        # Update the Inbox Message model with the number of ContentBlocks that were saved
-        inbox_message_db.content_blocks_saved = saved_blocks
-        inbox_message_db.save()
+        inbox_message_entity = InboxMessageEntity.from_inbox_message(inbox_message, received_via='HEHE', version=11)
+        inbox_message_entity.content_blocks_saved = saved_blocks
+        inbox_message_entity.save()
 
         # Create and return a Status Message indicating success
-        status_message = tm11.StatusMessage(message_id=generate_message_id(),
-                                            in_response_to=inbox_message.message_id,
-                                            status_type=ST_SUCCESS)
+        status_message = tm11.StatusMessage(
+            message_id = generate_message_id(),
+            in_response_to = inbox_message.message_id,
+            status_type = ST_SUCCESS
+        )
+
         return status_message
 
 
@@ -104,7 +102,6 @@ class InboxMessage10Handler(BaseMessageHandler):
     Built in TAXII 1.0 Message Handler
     """
     supported_request_messages = [tm10.InboxMessage]
-    version = "1"
 
     @classmethod
     def save_content_block(cls, content_block):
@@ -152,18 +149,12 @@ class InboxMessageHandler(BaseMessageHandler):
     Built-in TAXII 1.1 and 1.0 Message Handler
     """
     supported_request_messages = [tm10.InboxMessage, tm11.InboxMessage]
-    version = "1"
 
     @staticmethod
-    def handle_message(inbox_service, inbox_message, django_request):
-        """
-        Passes the request to either InboxMessage10Handler or InboxMessage11Handler
-        """
+    def handle_message(inbox_service, inbox_message):
         if isinstance(inbox_message, tm10.InboxMessage):
-            return InboxMessage10Handler.handle_message(inbox_service, inbox_message, django_request)
+            return InboxMessage10Handler.handle_message(inbox_service, inbox_message)
         elif isinstance(inbox_message, tm11.InboxMessage):
-            return InboxMessage11Handler.handle_message(inbox_service, inbox_message, django_request)
+            return InboxMessage11Handler.handle_message(inbox_service, inbox_message)
         else:
-            raise StatusMessageException(inbox_message.message_id,
-                                         ST_FAILURE,
-                                         "TAXII Message not supported by Message Handler.")
+            raise_failure("TAXII Message not supported by Message Handler", inbox_message.message_id)

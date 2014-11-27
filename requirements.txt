@@ -2,4 +2,4 @@ python-stix
 python-cybox
 libtaxii
 Flask
-
+sqlalchemy

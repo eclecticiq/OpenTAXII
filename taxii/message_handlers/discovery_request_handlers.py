@@ -19,7 +19,7 @@ class DiscoveryRequest11Handler(BaseMessageHandler):
 
         response = discovery_service.get_advertised_services()
 
-        return convert_discovery_response(response, discovery_request.message_id, v=11)
+        return convert_discovery_response(response, discovery_request.message_id, version=11)
 
 
 class DiscoveryRequest10Handler(BaseMessageHandler):
@@ -31,7 +31,7 @@ class DiscoveryRequest10Handler(BaseMessageHandler):
 
         response = discovery_service.get_advertised_services()
 
-        return convert_discovery_response(response, discovery_request.message_id, v=10)
+        return convert_discovery_response(response, discovery_request.message_id, version=10)
 
 
 class DiscoveryRequestHandler(BaseMessageHandler):
@@ -46,6 +46,6 @@ class DiscoveryRequestHandler(BaseMessageHandler):
         elif isinstance(discovery_request, tm11.DiscoveryRequest):
             return DiscoveryRequest11Handler.handle_message(discovery_service, discovery_request)
         else:
-            raise raise_failure("TAXII Message not supported by Message Handler", discovery_request.message_id)
+            raise_failure("TAXII Message not supported by Message Handler", discovery_request.message_id)
 
 

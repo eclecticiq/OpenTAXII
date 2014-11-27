@@ -37,12 +37,7 @@ def parse_message(content_type, body, do_validate=True):
     return taxii_message
 
 
-def to_service_instances(service, v=10):
-    """
-    Returns:
-        A list of 1 or 2 (depending on the supported protocol bindings)
-        tm10.ServiceInstance (or tm11.ServiceInstance) objects.
-    """
+def to_service_instances(service, version=10):
     service_instances = []
 
     if not service.supported_protocol_bindings:
@@ -50,7 +45,7 @@ def to_service_instances(service, v=10):
 
     for binding in service.supported_protocol_bindings:
 
-        if v == 10:
+        if version == 10:
 
             stype = service.service_type
             if stype == SVC_COLLECTION_MANAGEMENT:
@@ -61,27 +56,26 @@ def to_service_instances(service, v=10):
                 services_version = VID_TAXII_SERVICES_10,
                 available = service.enabled,
                 protocol_binding = binding,
-                service_address = service.path,  # TODO: Get the server's real path and prepend it here
+                service_address = service.full_path,  # TODO: Get the server's real path and prepend it here
                 message_bindings = service.supported_message_bindings,
                 message = service.description
             )
-        elif v == 11:
+        elif version == 11:
             instance = tm11.ServiceInstance(
                 service_type = service.service_type,
                 services_version = VID_TAXII_SERVICES_11,
                 available = service.enabled,
                 protocol_binding = binding,
-                service_address = service.path,  # TODO: Get the server's real path and prepend it here
+                service_address = service.full_path,  # TODO: Get the server's real path and prepend it here
                 message_bindings = service.supported_message_bindings,
                 message = service.description
             )
         service_instances.append(instance)
 
-    if v == 11 and hasattr(service, 'supportd_queries'):
-        for si in service_instances:
-            for sq in service.supported_queries:
-                si.supported_query.append(sq.to_query_info_11())
-    return service_instances
+#    if v == 11 and hasattr(service, 'supportd_queries'): for si in service_instances:
+#            for sq in service.supported_queries:
+#                si.supported_query.append(sq.to_query_info_11())
+#    return service_instances
 
     return service_instances
 
@@ -98,11 +92,11 @@ def to_content_block(content_block, v=10):
         A tm10.ContentBlock object
     """
 
-    if v == 10:
+    if version == 10:
         content_binding = content_block.content_binding_and_subtype.content_binding.binding_id
         cb = tm10.ContentBlock(content_binding=content_binding, content=content_block.content, padding=content_block.padding)
 
-    elif v == 11:
+    elif version == 11:
         content_binding = tm11.ContentBinding(content_block.content_binding_and_subtype.content_binding.binding_id)
         if content_block.content_binding_and_subtype.subtype:
             content_binding.subtype_ids.append(content_block.content_binding_and_subtype.subtype.subtype_id)
@@ -114,61 +108,6 @@ def to_content_block(content_block, v=10):
     return cb
 
 
-def from_content_block(content_block, inbox_message=None, v=10):
-    """
-    Returns a ContentBlock model object
-    based on a tm10.ContentBlock object
-    (based on a tm11.ContentBlock object)
-
-    NOTE THAT THIS FUNCTION DOES NOT CALL save() on the
-    returned model.
-
-    :param content_block: A tm10.ContentBlock
-    :param inbox_message: A tm10.InboxMessage
-    :return: An **unsaved** models.ContentBlock instance
-    """
-
-    cb = ContentBlock()
-    
-    if v == 10:
-        binding_id = content_block.content_binding
-        try:
-            cbas = ContentBindingAndSubtype.objects.get(content_binding__binding_id=binding_id, subtype__subtype_id=None)
-            cb.content_binding_and_subtype = cbas
-        except ContentBindingAndSubtype.DoesNotExist as dne:
-            raise StatusMessageException()
-
-        cb.content = content_block.content
-        if content_block.padding:
-            cb.padding = content_block.padding
-        if inbox_message:
-            cb.inbox_message = inbox_message
-        # TODO: What about signatures?
-    elif v == 11:
-
-        binding_id = content_block.content_binding.binding_id
-        subtype_id = None
-        if len(content_block.content_binding.subtype_ids) > 0:
-            subtype_id = content_block.content_binding.subtype_ids[0]
-
-        try:
-            cbas = ContentBindingAndSubtype.objects.get(content_binding__binding_id=binding_id,
-                                                        subtype__subtype_id=subtype_id)
-            cb.content_binding_and_subtype = cbas
-        except ContentBindingAndSubtype.DoesNotExist as dne:
-            raise StatusMessageException()
-
-        cb.content = content_block.content
-        if content_block.padding:
-            cb.padding = content_block.padding
-        if content_block.message:
-            cb.message = content_block.message
-        if inbox_message:
-            cb.inbox_message = inbox_message
-        #  TODO: What about signatures?
-
-
-    return cb
 
 
 
@@ -204,7 +143,7 @@ def get_binding_intersection_10(data_collection, binding_list, in_response_to):
         supported_content = [b.binding_id for b in bindings]
         raise StatusMessageException(in_response_to, ST_UNSUPPORTED_CONTENT_BINDING, status_detail={SD_SUPPORTED_CONTENT: supported_content})
 
-        return matching_cbas
+    return matching_cbas
 
 def get_binding_intersection_11(data_collection, binding_list, in_response_to):
     """
@@ -506,20 +445,22 @@ def validate_collection_name(collection_management_service, collection_name, in_
     return data_collection
 
 
-def convert_discovery_response(response, in_response_to, v=10):
+def convert_discovery_response(response, in_response_to, version):
 
-    if v == 10:
+    if version == 10:
         discovery_response = tm10.DiscoveryResponse(generate_message_id(), in_response_to)
     else:
         discovery_response = tm11.DiscoveryResponse(generate_message_id(), in_response_to)
 
     for service in response:
-        service_instances = to_service_instances(service, v=v)
+        service_instances = service.to_service_instances(version=version)
         discovery_response.service_instances.extend(service_instances)
 
     return discovery_response
 
 
+
+#######################################################################################################################################
 
 
 
