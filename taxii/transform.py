@@ -5,10 +5,12 @@ import libtaxii.messages_10 as tm10
 from libtaxii.common import generate_message_id
 from libtaxii.constants import *
 
-from .exceptions import StatusMessageException
-from .bindings import MESSAGE_VALIDATOR_PARSER
+from lxml.etree import XMLSyntaxError
 
-from collections import namedtuple
+from .exceptions import StatusMessageException, StatusBadMessage
+from .bindings import *
+
+from taxii.entities import *
 
 
 def parse_message(content_type, body, do_validate=True):
@@ -20,7 +22,7 @@ def parse_message(content_type, body, do_validate=True):
         try:
             result = validator_parser.validator.validate_string(body)
             if not result.valid:
-                raise StatusBadMessage('Request was not schema valid: %s' % '; '.join([err for err in result.error_log]))
+                raise StatusBadMessage('Request was not schema valid: %s' % '; '.join([str(err) for err in result.error_log]))
         except XMLSyntaxError as e:
             log.error("Not well-formed XML:\n%s" % body, exc_info=True)
             raise StatusBadMessage('Request was not well-formed XML: %s' % str(e))
@@ -35,6 +37,8 @@ def parse_message(content_type, body, do_validate=True):
         raise StatusUnsupportedQuery()
 
     return taxii_message
+
+
 
 
 def to_service_instances(service, version=10):
@@ -78,36 +82,6 @@ def to_service_instances(service, version=10):
 #    return service_instances
 
     return service_instances
-
-
-
-
-
-def to_content_block(content_block, v=10):
-    """
-    Returns a tm10.ContentBlock
-    based on this model
-
-    Returns:
-        A tm10.ContentBlock object
-    """
-
-    if version == 10:
-        content_binding = content_block.content_binding_and_subtype.content_binding.binding_id
-        cb = tm10.ContentBlock(content_binding=content_binding, content=content_block.content, padding=content_block.padding)
-
-    elif version == 11:
-        content_binding = tm11.ContentBinding(content_block.content_binding_and_subtype.content_binding.binding_id)
-        if content_block.content_binding_and_subtype.subtype:
-            content_binding.subtype_ids.append(content_block.content_binding_and_subtype.subtype.subtype_id)
-        cb = tm11.ContentBlock(content_binding=content_binding, content=content_block.content, padding=content_block.padding)
-
-    if content_block.timestamp_label:
-        cb.timestamp_label = content_block.timestamp_label
-
-    return cb
-
-
 
 
 

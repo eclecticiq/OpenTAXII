@@ -2,7 +2,7 @@ import sys
 
 from flask import Flask, request, jsonify, make_response
 
-from taxii.exceptions import StatusMessageException, raise_failure
+from taxii.exceptions import StatusMessageException, raise_failure, StatusFailureMessage
 
 from taxii.status import process_status_exception
 from taxii.services import InboxService, DiscoveryService
@@ -21,7 +21,6 @@ inbox_service = InboxService('example.com/services/inbox/')
 discovery_service = DiscoveryService('example.com/services/discovery/', services=[inbox_service])
 
 services = [inbox_service, discovery_service]
-
 
 
 def view_wrapper(service):
@@ -63,6 +62,18 @@ def handle_status_exception(error):
     xml, headers = process_status_exception(error, request.headers, request.is_secure)
     return make_taxii_response(xml, headers)
 
+
+@app.errorhandler(500)
+def internal_error(error):
+    app.logger.error(error.message, exc_info=True)
+
+    if 'application/xml' not in request.accept_mimetypes:
+        return 'Unacceptable', 406
+
+    new_error = StatusFailureMessage("Error occured", in_response_to=in_response_to, e=error)
+
+    xml, headers = process_status_exception(new_error, request.headers, request.is_secure)
+    return make_taxii_response(xml, headers)
 
 
 if __name__ == "__main__":

@@ -6,15 +6,15 @@ from libtaxii.constants import *
 
 from collections import namedtuple
 
-ContentBinding = namedtuple("ContentBinding", "main subtype")
+ContentBinding = namedtuple("ContentBinding", "binding subtypes")
 ValidatorAndParser = namedtuple('ValidatorAndParser', ['validator', 'parser'])
 
 
 CONTENT_BINDINGS = [
-    ContentBinding(main=CB_STIX_XML_10, subtype=None),
-    ContentBinding(main=CB_STIX_XML_101, subtype=None),
-    ContentBinding(main=CB_STIX_XML_11, subtype=None),
-    ContentBinding(main=CB_STIX_XML_111, subtype=None),
+    ContentBinding(binding=CB_STIX_XML_10, subtypes=None),
+    ContentBinding(binding=CB_STIX_XML_101, subtypes=None),
+    ContentBinding(binding=CB_STIX_XML_11, subtypes=None),
+    ContentBinding(binding=CB_STIX_XML_111, subtypes=None),
     #ContentBinding(main=CB_CAP_11, subtype=None),
 ]
 

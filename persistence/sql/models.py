@@ -47,7 +47,6 @@ class InboxMessage(Timestamped):
 
     original_message = Column(Text, nullable=False)
     content_block_count = Column(Integer)
-    content_blocks_saved = Column(Integer)
 
 
     def __str__(self):
@@ -64,14 +63,25 @@ class ContentBlock(Timestamped):
 
     timestamp_label = Column(DateTime, default=datetime.now)
 
-    inbox_message_id = Column(Integer, ForeignKey('inbox_messages.id', onupdate="CASCADE", ondelete="CASCADE"))
+    inbox_message_id = Column(Integer, ForeignKey('inbox_messages.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=True)
     inbox_message = relationship('InboxMessage', backref='content_blocks')
 
     content = Column(Text)
     padding = Column(Text, nullable=True)
 
+    _content_binding = Column(Text, nullable=True)
+
+    @property
+    def content_binding(self):
+        return json.loads(self._content_binding) if self._content_binding else []
+
+    @content_binding.setter
+    def content_binding(self, binding):
+        self._content_binding = jsonify(self.content_binding) if self.content_binding else None
+
     def __str__(self):
         return 'ContentBlock(%s, %s, %s)' % (self.id, self.inbox_message_id)
+
 
 
 collection_to_content_block = Table('collection_to_content_block', Base.metadata,
@@ -92,8 +102,6 @@ class DataCollection(Timestamped):
     enabled = Column(Boolean, default=True)
     accept_all_content = Column(Boolean, default=False)
 
-    supported_content = []
-    
     _supported_content = Column(Text, nullable=True)
 
     content_blocks = relationship('ContentBlock', secondary=collection_to_content_block)
@@ -115,20 +123,16 @@ class DataCollection(Timestamped):
                 len(self.supported_content.filter(content_binding=cbas.content_binding, subtype=None)) > 0 or \
                 len(self.supported_content.filter(content_binding=cbas.content_binding, subtype=cbas.subtype)) > 0
 
-
-    def get_supported_content(self):
+    @property
+    def supported_content(self):
         return json.loads(self._supported_content) if self._supported_content else []
+
+    @supported_content.setter
+    def supported_content(self, binding):
+        self._supported_content = jsonify(self.supported_content) if self.supported_content else None
 
     def __str__(self):
         return u'%s(%s, %s)' % (self.__class__.__name__, self.name, self.type)
-
-
-def jsonify(obj):
-    return json.dumps(obj, separators=(',', ':'))
-
-@event.listens_for(DataCollection, 'before_insert', propagate=True)
-def serialize_before_insert(mapper, connection, target):
-    target._supported_content = jsonify(target.supported_content) if target.supported_content else None
 
 
 #class QueryScope(Timestamped):

@@ -6,6 +6,25 @@ import dateutil
 from dateutil.tz import tzutc
 
 
+
+def is_content_supported(supported_bindings, content_binding, version=None):
+
+    if not hasattr(content_binding, 'binding_id') or version == 10:
+        binding_id = content_binding
+        subtype = None
+    else:
+        binding_id = content_binding.binding_id
+        subtype = content_binding.subtype_ids[0] if content_binding.subtype_ids else None #FIXME: may be not the best option
+
+    matches = [
+        ((supported.binding == binding_id) and (not supported.subtypes or subtype in supported.subtypes)) \
+        for supported in supported_bindings
+    ]
+
+    return any(matches)
+
+
+
 class PollRequestProperties(object):
     """
     Holds a bunch of different items

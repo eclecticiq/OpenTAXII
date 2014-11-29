@@ -59,7 +59,7 @@ def exception_to_status_format(exception, format):
         raise ValueError("Unknown value for format: %s" % format)
 
 
-def exception_to_status(exception, v):
+def exception_to_status(exception, version):
 
     data = dict(
         message_id = generate_message_id(),
@@ -70,9 +70,9 @@ def exception_to_status(exception, v):
         message = exception.message
     )
 
-    if v == 11:
+    if version == 11:
         sm = tm11.StatusMessage(**data)
-    elif v == 10:
+    elif version == 10:
         sm = tm10.StatusMessage(**data)
 
     return sm

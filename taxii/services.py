@@ -3,16 +3,17 @@ import libtaxii
 from libtaxii.constants import *
 import libtaxii.messages_11 as tm11
 
-from .handlers import *
-from .transform import to_service_instances
+from .transform import *
 from .bindings import CONTENT_BINDINGS, HTTP_PROTOCOL_BINDINGS
 
 from .exceptions import StatusMessageException, raise_failure
 from .http import verify_headers_and_parse
+from .handlers import *
+from .utils import is_content_supported
 
-from persistence import *
+from persistence.managers import DataCollectionManager
 
-class _TaxiiService(object):
+class TaxiiService(object):
 
     supported_message_bindings = []
     supported_protocol_bindings = []
@@ -61,7 +62,7 @@ class _TaxiiService(object):
         return to_service_instances(self, version)
 
 
-class CollectionManagementService(_TaxiiService):
+class CollectionManagementService(TaxiiService):
 
     requests = [libtaxii.messages_10.FeedInformationRequest, libtaxii.messages_11.CollectionInformationRequest]
 
@@ -83,7 +84,7 @@ class CollectionManagementService(_TaxiiService):
         return []
 
 
-class DiscoveryService(_TaxiiService):
+class DiscoveryService(TaxiiService):
 
     service_type = SVC_DISCOVERY
 
@@ -103,7 +104,9 @@ class DiscoveryService(_TaxiiService):
 
 
 
-class InboxService(_TaxiiService):
+class InboxService(TaxiiService):
+
+    id = 'inbox-service-1'
 
     service_type = SVC_INBOX
 
@@ -113,29 +116,23 @@ class InboxService(_TaxiiService):
 
     destination_collection_specification = 'REQUIRED' # PROHIBITED
 
-    accept_all_content = False
+    accept_all_content = True
 
     supported_content = CONTENT_BINDINGS
 
     description = 'InboxService description'
 
 
-    def is_content_supported(self, content_binding):
+    def is_content_supported(self, content_binding, version=None):
 
         if self.accept_all_content:
             return True
 
-        matches = [
-            ((supported.main == content_binding.binding_id) and (not supported.subtype or supported.subtype == content_binding.subtype)) \
-            for supported in self.supported_content
-        ]
-
-        return any(matches)
+        return is_content_supported(self.supported_content, content_binding, version=version)
 
 
     def get_destination_collections(self):
-        return DataCollectionEntity.get_all()
-
+        return DataCollectionManager.get_all_collections()
 
 
     def validate_destination_collection_names(self, name_list, in_response_to):
@@ -152,7 +149,6 @@ class InboxService(_TaxiiService):
 
             exc = StatusMessageException(ST_DESTINATION_COLLECTION_ERROR, message=message, in_response_to=in_response_to,
                     extended_headers = {SD_ACCEPTABLE_DESTINATION: [c.name for c in self.get_destination_collections() if c.enabled]})
-
 
             raise exc
 
@@ -192,17 +188,14 @@ class InboxService(_TaxiiService):
 
         if version == 10:
             for content in self.supported_content:
-                return_list.append(content.main)
+                return_list.append(content.binding)
 
         elif version == 11:
             supported_content = {}
 
             for content in self.supported_content:
-                if content.main not in supported_content:
-                    supported_content[content.main] = tm11.ContentBinding(binding_id=content.main)
-
-                if content.subtype and content.subtype not in supported_content[content_main].subtype_ids:
-                    supported_content[content.main].subtype_ids.append(content.subtype)
+                if content.binding not in supported_content:
+                    supported_content[content.binding] = tm11.ContentBinding(binding_id=content.binding, subtype_ids=content.subtypes)
 
             return_list = supported_content.values()
 
