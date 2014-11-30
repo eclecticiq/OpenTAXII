@@ -1,5 +1,5 @@
 import sys
-
+from functools import wraps
 from flask import Flask, request, jsonify, make_response
 
 from taxii.exceptions import StatusMessageException, raise_failure, StatusFailureMessage
@@ -8,17 +8,13 @@ from taxii.status import process_status_exception
 from taxii.services import InboxService, DiscoveryService
 from taxii.http import REQUIRED_RESPONSE_HEADERS, get_headers
 
+from settings import *
 
-from functools import wraps
-
-
-PV_ERR = "There was an error parsing and validating the request message."
 
 app = Flask(__name__)
 
-
-inbox_service = InboxService('example.com/services/inbox/')
-discovery_service = DiscoveryService('example.com/services/discovery/', services=[inbox_service])
+inbox_service = InboxService(DOMAIN_NAME + '/services/inbox/')
+discovery_service = DiscoveryService(DOMAIN_NAME + 'example.com/services/discovery/', services=[inbox_service])
 
 services = [inbox_service, discovery_service]
 
@@ -53,7 +49,6 @@ def make_taxii_response(taxii_xml, taxii_headers):
 
 @app.errorhandler(StatusMessageException)
 def handle_status_exception(error):
-
     app.logger.error(error.message, exc_info=True)
 
     if 'application/xml' not in request.accept_mimetypes:
@@ -77,7 +72,6 @@ def internal_error(error):
 
 
 if __name__ == "__main__":
-    app.debug = True
 
     for service in services:
         app.add_url_rule(
@@ -87,7 +81,11 @@ if __name__ == "__main__":
             methods = ['POST']
         )
 
-    import flask.ext.color
-    flask.ext.color.init_app(app)
+
+    if DEBUG:
+        app.debug = True
 
     app.run(port=9000)
+
+
+

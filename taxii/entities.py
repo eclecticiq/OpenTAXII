@@ -19,13 +19,6 @@ class ContentBlockEntity(namedtuple('ContentBlockEntityFields',
     ["id", "message", "inbox_message_id", "content", "padding", "timestamp_label", "content_binding"])):
 
 
-    def is_content_supported(self, content_binding):
-        if self.accept_all_content:
-            return True
-
-        return is_content_supported(self.supported_content, content_bindings)
-
-
     @staticmethod
     def to_entity(content_block, inbox_message_entity=None, version=10):
 

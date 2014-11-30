@@ -8,6 +8,5 @@ from message_handlers.poll_request_handlers import PollRequestHandler
 from message_handlers.subscription_request_handlers import SubscriptionRequestHandler
 
 
-# WTF?!
 import query_handlers.stix_xml_111_handler as sx111h
 StixXml111QueryHandler = sx111h.StixXml111QueryHandler

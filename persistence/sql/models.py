@@ -5,10 +5,13 @@ from sqlalchemy.types import Integer, String, Date, DateTime, Boolean, Text, Enu
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import event
 
+from taxii.bindings import ContentBinding
+
 Base = declarative_base()
 
 from datetime import datetime
 import json
+from persistence.utils import jsonify
 
 
 MAX_NAME_LENGTH = 256
@@ -71,16 +74,20 @@ class ContentBlock(Timestamped):
 
     _content_binding = Column(Text, nullable=True)
 
+    def __init__(self, content_binding=None, **kwargs):
+        super(ContentBlock, self).__init__(**kwargs)
+        self.content_binding = content_binding
+
     @property
     def content_binding(self):
-        return json.loads(self._content_binding) if self._content_binding else []
+        return ContentBinding(*json.loads(self._content_binding)) if self._content_binding else None
 
     @content_binding.setter
     def content_binding(self, binding):
-        self._content_binding = jsonify(self.content_binding) if self.content_binding else None
+        self._content_binding = jsonify(list(binding)) if binding else None
 
     def __str__(self):
-        return 'ContentBlock(%s, %s, %s)' % (self.id, self.inbox_message_id)
+        return 'ContentBlock(%s, %s, %s)' % (self.id, self.inbox_message_id, self._content_binding)
 
 
 
@@ -106,33 +113,20 @@ class DataCollection(Timestamped):
 
     content_blocks = relationship('ContentBlock', secondary=collection_to_content_block)
 
-    def is_content_supported(self, cbas):
-        raise Exception("HEY")
-        """
-        Takes an ContentBindingAndSubtype object and determines if
-        this data collection supports it.
-
-        Decision process is:
-        1. If this accepts any content, return True
-        2. If this supports binding ID > (All), return True
-        3. If this supports binding ID and subtype ID, return True
-        4. Otherwise, return False,
-        """
-
-        return self.accept_all_content or \
-                len(self.supported_content.filter(content_binding=cbas.content_binding, subtype=None)) > 0 or \
-                len(self.supported_content.filter(content_binding=cbas.content_binding, subtype=cbas.subtype)) > 0
+    def __init__(self, supported_content=None, **kwargs):
+        super(DataCollection, self).__init__(**kwargs)
+        self.supported_content = supported_content
 
     @property
     def supported_content(self):
-        return json.loads(self._supported_content) if self._supported_content else []
+        return map(lambda x: ContentBinding(*x), json.loads(self._supported_content)) if self._supported_content else None
 
     @supported_content.setter
     def supported_content(self, binding):
-        self._supported_content = jsonify(self.supported_content) if self.supported_content else None
+        self._supported_content = jsonify(binding) if binding else None
 
     def __str__(self):
-        return u'%s(%s, %s)' % (self.__class__.__name__, self.name, self.type)
+        return u'DataCollection(%s, %s)' % (self.name, self.type)
 
 
 #class QueryScope(Timestamped):

@@ -6,8 +6,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from taxii.bindings import *
 from taxii.entities import *
 
-DB_CONNECTION_STRING = "sqlite:////Users/traut/Work/taxii-server/taxii-server.db"
-#DB_CONNECTION_STRING = "sqlite:///tmp/some.db"
+from settings import DB_CONNECTION_STRING
 
 engine = create_engine(DB_CONNECTION_STRING, convert_unicode=True)
 Session = scoped_session(sessionmaker(autocommit=False, autoflush=True, bind=engine))
@@ -16,9 +15,6 @@ from .models import *
 
 Base.query = Session.query_property()
 Base.metadata.create_all(bind=engine)
-
-Converter = namedtuple('Converter', 'to_model to_entity')
-
 
 
 def __data_collection_to_model(entity):
@@ -36,11 +32,13 @@ def __content_block_to_entity(model):
         params[k] = getattr(model, k, None)
     return ContentBlockEntity(**params)
 
+
 def __inbox_message_to_entity(model):
     params = dict()
     for k in InboxMessageEntity._fields:
         params[k] = getattr(model, k, None)
     return InboxMessageEntity(**params)
+
 
 def __data_collection_to_entity(model):
     params = dict()
@@ -51,6 +49,8 @@ def __data_collection_to_entity(model):
 
 def __inbox_message_to_model(entity):
     return InboxMessage(**entity._asdict())
+
+Converter = namedtuple('Converter', 'to_model to_entity')
 
 
 _converters = {

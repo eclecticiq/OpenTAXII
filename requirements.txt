@@ -1,5 +1,5 @@
-python-stix
-python-cybox
+https://github.com/STIXProject/python-stix/archive/v1.1.1.2.tar.gz
+https://github.com/CybOXProject/python-cybox/archive/v2.1.0.8.tar.gz
 libtaxii
 Flask
 sqlalchemy
