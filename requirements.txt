@@ -3,3 +3,4 @@ python-cybox
 libtaxii
 Flask
 sqlalchemy
+redis
