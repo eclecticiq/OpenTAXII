@@ -105,8 +105,7 @@ def verify_headers_and_parse(headers, body):
 
 def get_headers(taxii_message, is_secure):
 
-    version = VID_TAXII_SERVICES_11 #FIXME: waiting for merge https://github.com/TAXIIProject/libtaxii/issues/149
-    #taxii_message.version
+    version = taxii_message.version
 
     if is_secure:
         if version == VID_TAXII_SERVICES_11:
@@ -121,3 +120,6 @@ def get_headers(taxii_message, is_secure):
             return deepcopy(TAXII_10_HTTP_Headers)
 
     raise ValueError("Unknown combination for services_version and is_secure")
+
+
+
