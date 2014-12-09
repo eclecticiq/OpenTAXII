@@ -8,20 +8,7 @@ from libtaxii.common import generate_message_id
 
 
 class StatusMessageException(Exception):
-    """
-    StatusMessageException is an exception that can be raised and can be caught by
-    TaxiiStatusMessageMiddleware. This class holds all the information necessary to
-    create either a TAXII 1.1 or TAXII 1.0 Status Message.
-    """
     def __init__(self, status_type, in_response_to=None, message=None, status_detail=None, extended_headers=None, e=None, **kwargs):
-        """
-        Arguments:
-            in_response_to (string) - The message_id of the request
-            status_type (string) - The Status Type for the Status Message
-            message (string) - A string message for the Status Message
-            status_details (dict) - A dictionary containing the status details for the Status Message
-            extended_headers (dict) - The extended headers for the Status Message
-        """
         super(StatusMessageException, self).__init__(e or message, **kwargs)
 
         self.in_response_to = in_response_to
@@ -36,6 +23,7 @@ class StatusBadMessage(StatusMessageException):
 
     def __init__(self, message, status_detail=None, extended_headers=None, e=None, **kwargs):
         super(StatusBadMessage, self).__init__(ST_BAD_MESSAGE, message=message, status_detail=status_detail, extended_headers=extended_headers, e=e, **kwargs)
+
 
 class StatusFailureMessage(StatusMessageException):
 
