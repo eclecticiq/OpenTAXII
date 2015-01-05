@@ -71,16 +71,17 @@ def internal_error(error):
     return make_taxii_response(xml, headers)
 
 
+
+for service in services:
+    app.add_url_rule(
+        service.get_path(),
+        service.__class__.__name__ + "_view",
+        view_func = view_wrapper(service),
+        methods = ['POST']
+    )
+
+
 if __name__ == "__main__":
-
-    for service in services:
-        app.add_url_rule(
-            service.get_path(),
-            service.__class__.__name__ + "_view",
-            view_func = view_wrapper(service),
-            methods = ['POST']
-        )
-
 
     if DEBUG:
         app.debug = True
