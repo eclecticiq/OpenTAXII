@@ -6,4 +6,3 @@ sqlalchemy
 redis
 gunicorn
 taxii-client
-redis
