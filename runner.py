@@ -14,7 +14,7 @@ from settings import *
 app = Flask(__name__)
 
 inbox_service = InboxService(DOMAIN_NAME + '/services/inbox/')
-discovery_service = DiscoveryService(DOMAIN_NAME + 'example.com/services/discovery/', services=[inbox_service])
+discovery_service = DiscoveryService(DOMAIN_NAME + '/services/discovery/', services=[inbox_service])
 
 services = [inbox_service, discovery_service]
 
