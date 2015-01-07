@@ -8,7 +8,7 @@ from libtaxii.common import generate_message_id
 
 
 class StatusMessageException(Exception):
-    def __init__(self, status_type, in_response_to=None, message=None, status_detail=None, extended_headers=None, e=None, **kwargs):
+    def __init__(self, status_type, in_response_to='0', message=None, status_detail=None, extended_headers=None, e=None, **kwargs):
         super(StatusMessageException, self).__init__(e or message, **kwargs)
 
         self.in_response_to = in_response_to
@@ -22,13 +22,15 @@ class StatusMessageException(Exception):
 class StatusBadMessage(StatusMessageException):
 
     def __init__(self, message, status_detail=None, extended_headers=None, e=None, **kwargs):
-        super(StatusBadMessage, self).__init__(ST_BAD_MESSAGE, message=message, status_detail=status_detail, extended_headers=extended_headers, e=e, **kwargs)
+        super(StatusBadMessage, self).__init__(ST_BAD_MESSAGE, message=message, status_detail=status_detail,
+                extended_headers=extended_headers, e=e, **kwargs)
 
 
 class StatusFailureMessage(StatusMessageException):
 
     def __init__(self, message, status_detail=None, extended_headers=None, e=None, **kwargs):
-        super(StatusFailureMessage, self).__init__(ST_FAILURE, message=message, status_detail=status_detail, extended_headers=extended_headers, e=e, **kwargs)
+        super(StatusFailureMessage, self).__init__(ST_FAILURE, message=message, status_detail=status_detail,
+                in_response_to=in_response_to, extended_headers=extended_headers, e=e, **kwargs)
 
 
 class StatusUnsupportedQuery(StatusMessageException):
