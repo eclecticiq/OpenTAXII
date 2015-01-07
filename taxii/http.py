@@ -108,15 +108,15 @@ def get_headers(taxii_message, is_secure):
     version = taxii_message.version
 
     if is_secure:
-        if version == VID_TAXII_SERVICES_11:
+        if version == VID_TAXII_XML_11:
             return deepcopy(TAXII_11_HTTPS_Headers)
-        elif version == VID_TAXII_SERVICES_10:
+        elif version == VID_TAXII_XML_10:
             return deepcopy(TAXII_10_HTTPS_Headers)
 
     else:
-        if version == VID_TAXII_SERVICES_11:
+        if version == VID_TAXII_XML_11:
             return deepcopy(TAXII_11_HTTP_Headers)
-        elif version == VID_TAXII_SERVICES_10:
+        elif version == VID_TAXII_XML_10:
             return deepcopy(TAXII_10_HTTP_Headers)
 
     raise ValueError("Unknown combination for services_version and is_secure")
