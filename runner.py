@@ -81,6 +81,10 @@ for service in services:
     )
 
 
+@app.route('/')
+def index():
+    return "Hey, I'm a TAXII server!"
+
 if __name__ == "__main__":
 
     if DEBUG:
