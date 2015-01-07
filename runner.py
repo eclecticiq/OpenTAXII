@@ -10,6 +10,8 @@ from taxii.http import REQUIRED_RESPONSE_HEADERS, get_headers
 
 from settings import *
 
+import logging
+logging.basicConfig()
 
 app = Flask(__name__)
 
