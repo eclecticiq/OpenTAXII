@@ -30,7 +30,7 @@ class StatusFailureMessage(StatusMessageException):
 
     def __init__(self, message, status_detail=None, extended_headers=None, e=None, **kwargs):
         super(StatusFailureMessage, self).__init__(ST_FAILURE, message=message, status_detail=status_detail,
-                in_response_to=in_response_to, extended_headers=extended_headers, e=e, **kwargs)
+                extended_headers=extended_headers, e=e, **kwargs)
 
 
 class StatusUnsupportedQuery(StatusMessageException):
@@ -40,7 +40,7 @@ class StatusUnsupportedQuery(StatusMessageException):
                 extended_headers=extended_headers, e=e, **kwargs)
 
 
-def raise_failure(message, in_response_to=None):
+def raise_failure(message, in_response_to='0'):
     et, ei, tb = sys.exc_info()
     raise StatusFailureMessage(message, in_response_to=in_response_to, e=ei), None, tb
 
