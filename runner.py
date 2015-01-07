@@ -65,7 +65,7 @@ def internal_error(error):
     if 'application/xml' not in request.accept_mimetypes:
         return 'Unacceptable', 406
 
-    new_error = StatusFailureMessage("Error occured", in_response_to=0, e=error)
+    new_error = StatusFailureMessage("Error occured", e=error)
 
     xml, headers = process_status_exception(new_error, request.headers, request.is_secure)
     return make_taxii_response(xml, headers)
