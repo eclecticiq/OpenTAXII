@@ -1,5 +1,6 @@
 
 from .queue import push
+from .utils import date_to_ts
 
 from settings import INBOX_QUEUE
 
@@ -16,7 +17,7 @@ def post_content_block_save(content_block_entity, inbox_message_entity, collecti
         content = content_block_entity.content,
         binding = content_block_entity.content_binding,
 
-        timestamp = content_block_entity.timestamp_label,
+        timestamp = date_to_ts(content_block_entity.timestamp_label),
     )
     push(INBOX_QUEUE, blob)
 
