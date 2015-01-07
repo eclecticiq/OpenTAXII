@@ -16,7 +16,7 @@ def post_content_block_save(content_block_entity, inbox_message_entity, collecti
         content = content_block_entity.content,
         binding = content_block_entity.content_binding,
 
-        timestamp = content_block.timestamp_label,
+        timestamp = content_block_entity.timestamp_label,
     )
     push(INBOX_QUEUE, blob)
 
