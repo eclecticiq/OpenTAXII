@@ -51,7 +51,6 @@ class ContentBlockEntity(namedtuple('ContentBlockEntityFields',
 
     @staticmethod
     def from_entity(content_block, version=10):
-        #FIXME: broken
         if version == 10:
             content_binding = content_block.content_binding_and_subtype.content_binding.binding_id
             cb = tm10.ContentBlock(content_binding=content_binding, content=content_block.content, padding=content_block.padding)

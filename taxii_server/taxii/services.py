@@ -1,41 +1,40 @@
 import libtaxii
+import hashlib
 
 from libtaxii.constants import *
 import libtaxii.messages_11 as tm11
 
-from .transform import *
+from .transform import service_to_instances
 from .bindings import CONTENT_BINDINGS, HTTP_PROTOCOL_BINDINGS
 
 from .exceptions import StatusMessageException, raise_failure
-from .http import verify_headers_and_parse
 from .handlers import *
 from .utils import is_content_supported
 
-from persistence.managers import DataCollectionManager
-
 class TaxiiService(object):
+
+    id = None
+    description = None
+    enabled = True
+
+    server = None
 
     supported_message_bindings = []
     supported_protocol_bindings = []
-    enabled = True
 
     supported_protocol_bindings = HTTP_PROTOCOL_BINDINGS
 
-    def __init__(self, full_path):
-        self.full_path = full_path
-
-    def get_path(self):
-        return "/" + self.full_path.split('/', 1)[1]   # nasty, but we don't have schema here, so urlparse is useless
+    def __init__(self, id, address):
+        self.id = id
+        self.address = address
 
 
-    def view(self, headers, body):
-
-        taxii_message = verify_headers_and_parse(headers, body)
+    def view(self, headers, taxii_message):
 
         handler = self.get_message_handler(taxii_message)
 
         handler.validate_headers(headers, in_response_to=taxii_message.message_id)
-        handler.validate_message_is_supported(taxii_message)
+        handler.verify_message_is_supported(taxii_message)
 
         try:
             response_message = handler.handle_message(self, taxii_message)
@@ -50,7 +49,6 @@ class TaxiiService(object):
         return response_message
 
 
-
     def get_message_handler(self, taxii_message):
         try:
             return self.handlers[taxii_message.message_type]
@@ -59,7 +57,11 @@ class TaxiiService(object):
 
 
     def to_service_instances(self, version):
-        return to_service_instances(self, version)
+        return service_to_instances(self, version)
+
+    @property
+    def uid(self):
+        return hashlib.md5(self.id + self.address).hexdigest() 
 
 
 class CollectionManagementService(TaxiiService):
@@ -78,8 +80,6 @@ class CollectionManagementService(TaxiiService):
 
     supported_queries = []
 
-    description = 'CollectionManagementService description'
-
     def get_advertised_collections(self):
         return []
 
@@ -92,21 +92,16 @@ class DiscoveryService(TaxiiService):
         MSG_DISCOVERY_REQUEST : DiscoveryRequestHandler
     }
 
-    description = 'DiscoveryService description'
+    advertised_services = []
 
-    def __init__(self, full_path, services=[]):
-        super(DiscoveryService, self).__init__(full_path)
-        self.services = services
-
-    def get_advertised_services(self):
-        return self.services + [self]
-
+    def __init__(self, id, address, description, advertised_services=[]):
+        super(DiscoveryService, self).__init__(id, address)
+        self.description = description
+        self.advertised_services = advertised_services
 
 
 
 class InboxService(TaxiiService):
-
-    id = 'inbox-service-1'
 
     service_type = SVC_INBOX
 
@@ -114,13 +109,19 @@ class InboxService(TaxiiService):
         MSG_INBOX_MESSAGE : InboxMessageHandler
     }
 
-    destination_collection_specification = 'REQUIRED' # PROHIBITED
+    destination_collection_required = False
+    accept_all_content = False
+    supported_content = []
 
-    accept_all_content = True
+    def __init__(self, id, address, description, accept_all_content=False, destination_collection_required=False,
+            supported_content=CONTENT_BINDINGS):
 
-    supported_content = CONTENT_BINDINGS
+        super(InboxService, self).__init__(id, address)
 
-    description = 'InboxService description'
+        self.description = description
+        self.accept_all_content = accept_all_content
+        self.supported_content = supported_content
+        self.destination_collection_required = destination_collection_required
 
 
     def is_content_supported(self, content_binding, version=None):
@@ -132,25 +133,23 @@ class InboxService(TaxiiService):
 
 
     def get_destination_collections(self):
-        return DataCollectionManager.get_all_collections()
+        return self.server.storage.get_all_collections()
 
 
     def validate_destination_collection_names(self, name_list, in_response_to):
 
         name_list = name_list or []
 
-        if (self.destination_collection_specification == 'REQUIRED' and not name_list) or \
-                (self.destination_collection_specification == 'PROHIBITED' and name_list):
+        if (self.destination_collection_required and not name_list) or \
+                (not self.destination_collection_required and name_list):
 
             if not name_list:
                 message = 'A Destination_Collection_Name is required and none were specified'
             else:
                 message = 'Destination_Collection_Names are prohibited for this Inbox Service'
 
-            exc = StatusMessageException(ST_DESTINATION_COLLECTION_ERROR, message=message, in_response_to=in_response_to,
+            raise StatusMessageException(ST_DESTINATION_COLLECTION_ERROR, message=message, in_response_to=in_response_to,
                     extended_headers = {SD_ACCEPTABLE_DESTINATION: [c.name for c in self.get_destination_collections() if c.enabled]})
-
-            raise exc
 
         collections = []
 
@@ -168,7 +167,7 @@ class InboxService(TaxiiService):
 
     def to_service_instances(self, version):
 
-        service_instances = to_service_instances(self, version)
+        service_instances = service_to_instances(self, version)
 
         if self.accept_all_content:
             return service_instances

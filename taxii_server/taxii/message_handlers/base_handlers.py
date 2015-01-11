@@ -24,11 +24,10 @@ class BaseMessageHandler(object):
         supports_taxii_11 = False
         supports_taxii_10 = False
 
-        #FIXME: https://github.com/TAXIIProject/libtaxii/issues/149
         for message in cls.supported_request_messages:
-            if message.__module__ == 'libtaxii.messages_11':
+            if message.version == VID_TAXII_XML_11:
                 supports_taxii_11 = True
-            elif message.__module__ == 'libtaxii.messages_10':
+            elif message.version == VID_TAXII_XML_10:
                 supports_taxii_10 = True
             else:
                 raise ValueError('The variable "supported_request_messages" contained a non-libtaxii message module: %s' % message.__module__)
@@ -51,7 +50,7 @@ class BaseMessageHandler(object):
 
 
     @classmethod
-    def validate_message_is_supported(cls, taxii_message):
+    def verify_message_is_supported(cls, taxii_message):
         if taxii_message.__class__ not in cls.supported_request_messages:
             raise raise_failure("TAXII Message not supported by Message Handler.", taxii_message.message_id)
 

@@ -5,16 +5,18 @@ from sqlalchemy.types import Integer, String, Date, DateTime, Boolean, Text, Enu
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import event
 
-from taxii.bindings import ContentBinding
+from taxii_server.taxii.bindings import ContentBinding
 
 Base = declarative_base()
 
 from datetime import datetime
 import json
-from persistence.utils import jsonify
+
+__all__ = ['Base', 'InboxMessage', 'ContentBlock', 'DataCollection']
 
 
 MAX_NAME_LENGTH = 256
+
 
 
 class Timestamped(Base):
@@ -84,7 +86,7 @@ class ContentBlock(Timestamped):
 
     @content_binding.setter
     def content_binding(self, binding):
-        self._content_binding = jsonify(list(binding)) if binding else None
+        self._content_binding = json.dumps(list(binding)) if binding else None
 
     def __str__(self):
         return 'ContentBlock(%s, %s, %s)' % (self.id, self.inbox_message_id, self._content_binding)
@@ -123,7 +125,7 @@ class DataCollection(Timestamped):
 
     @supported_content.setter
     def supported_content(self, binding):
-        self._supported_content = jsonify(binding) if binding else None
+        self._supported_content = json.dumps(binding) if binding else None
 
     def __str__(self):
         return u'DataCollection(%s, %s)' % (self.name, self.type)

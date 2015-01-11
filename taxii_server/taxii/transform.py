@@ -9,8 +9,7 @@ from lxml.etree import XMLSyntaxError
 
 from .exceptions import StatusMessageException, StatusBadMessage
 from .bindings import *
-
-from taxii.entities import *
+from .entities import *
 
 
 def parse_message(content_type, body, do_validate=True):
@@ -41,7 +40,7 @@ def parse_message(content_type, body, do_validate=True):
 
 
 
-def to_service_instances(service, version=10):
+def service_to_instances(service, version=10):
     service_instances = []
 
     if not service.supported_protocol_bindings:
@@ -60,7 +59,7 @@ def to_service_instances(service, version=10):
                 services_version = VID_TAXII_SERVICES_10,
                 available = service.enabled,
                 protocol_binding = binding,
-                service_address = service.full_path,  # TODO: Get the server's real path and prepend it here
+                service_address = service.address,
                 message_bindings = service.supported_message_bindings,
                 message = service.description
             )
@@ -70,7 +69,7 @@ def to_service_instances(service, version=10):
                 services_version = VID_TAXII_SERVICES_11,
                 available = service.enabled,
                 protocol_binding = binding,
-                service_address = service.full_path,  # TODO: Get the server's real path and prepend it here
+                service_address = service.address,
                 message_bindings = service.supported_message_bindings,
                 message = service.description
             )
@@ -418,19 +417,6 @@ def validate_collection_name(collection_management_service, collection_name, in_
 
     return data_collection
 
-
-def convert_discovery_response(response, in_response_to, version):
-
-    if version == 10:
-        discovery_response = tm10.DiscoveryResponse(generate_message_id(), in_response_to)
-    else:
-        discovery_response = tm11.DiscoveryResponse(generate_message_id(), in_response_to)
-
-    for service in response:
-        service_instances = service.to_service_instances(version=version)
-        discovery_response.service_instances.extend(service_instances)
-
-    return discovery_response
 
 
 

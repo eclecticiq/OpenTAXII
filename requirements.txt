@@ -7,3 +7,4 @@ sqlalchemy
 redis
 gunicorn
 taxii-client
+colorlog

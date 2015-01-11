@@ -67,7 +67,7 @@ def exception_to_status(exception, version):
         extended_headers = exception.extended_headers,
         status_type = exception.status_type,
         status_detail = exception.status_detail,
-        message = exception.message
+        #message = exception.message
     )
 
     if version == 11:

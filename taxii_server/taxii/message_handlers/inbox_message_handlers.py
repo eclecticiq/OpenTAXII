@@ -1,15 +1,13 @@
 # Copyright (c) 2014, The MITRE Corporation. All rights reserved.
 # For license information, see the LICENSE.txt file
 
-from .base_handlers import BaseMessageHandler
-from ..exceptions import StatusMessageException, raise_failure
-
 import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10
 from libtaxii.constants import *
 from libtaxii.common import generate_message_id
 
-from persistence.managers import *
+from .base_handlers import BaseMessageHandler
+from ..exceptions import StatusMessageException, raise_failure
 
 class InboxMessage11Handler(BaseMessageHandler):
     """
@@ -27,7 +25,7 @@ class InboxMessage11Handler(BaseMessageHandler):
         blocks = []
         saved_blocks = 0
 
-        inbox_message_entity = InboxMessageManager.save_inbox_message(inbox_message, received_via=inbox_service.id, version=11)
+        inbox_message_entity = inbox_service.server.storage.save_inbox_message(inbox_message, received_via=inbox_service.id, version=11)
 
         for content_block in inbox_message.content_blocks:
 
@@ -47,7 +45,7 @@ class InboxMessage11Handler(BaseMessageHandler):
                 # There's nothing to add this content block to
                 continue
 
-            ContentBlockManager.save_content_block(content_block, inbox_message_entity=inbox_message_entity,
+            inbox_service.server.storage.save_content_block(content_block, inbox_message_entity=inbox_message_entity,
                     collections=supporting_collections, version=11)
 
             saved_blocks += 1
@@ -72,7 +70,7 @@ class InboxMessage10Handler(BaseMessageHandler):
     @classmethod
     def handle_message(cls, inbox_service, inbox_message):
 
-        inbox_message_entity = InboxMessageManager.save_inbox_message(inbox_message, received_via=inbox_service.id, version=10)
+        inbox_message_entity = inbox_service.server.storage.save_inbox_message(inbox_message, received_via=inbox_service.id, version=10)
 
         for content_block in inbox_message.content_blocks:
             is_supported = inbox_service.is_content_supported(content_block.content_binding, version=10)
@@ -81,7 +79,7 @@ class InboxMessage10Handler(BaseMessageHandler):
             if not is_supported:
                 continue
 
-            ContentBlockManager.save_content_block(content_block, inbox_message_entity=inbox_message_entity, version=10)
+            inbox_service.server.storage.save_content_block(content_block, inbox_message_entity=inbox_message_entity, version=10)
 
 
         status_message = tm10.StatusMessage(
