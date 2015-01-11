@@ -25,6 +25,10 @@ class IniConfig(ConfigParser.RawConfigParser):
         return self.safe_get('server', 'db_connection')
 
     @property
+    def logging_level(self):
+        return self.get('server', 'logging_level')
+
+    @property
     def storage_hooks(self):
         return self.get_list('server', 'storage_hooks')
 

@@ -1,7 +1,8 @@
-import sys
 import os
-from flask import Flask, request, jsonify
+import sys
+import logging
 import importlib
+from flask import Flask, request, jsonify
 
 from .options import load_config
 from .server import TAXIIServer
@@ -9,10 +10,13 @@ from .middleware import TAXIIMiddleware, service_wrapper, attach_error_handlers
 from .persistence.sql import SQLDB
 from .persistence import DataStorage
 
+config = load_config('default_config.ini', 'TAXII_SERVER_CONFIG')
+
+logging.basicConfig(level=logging.getLevelName(config.logging_level))
+
 app = Flask(__name__)
 app.wsgi_app = TAXIIMiddleware(app.wsgi_app)
 
-config = load_config('default_config.ini', 'TAXII_SERVER_CONFIG')
 
 db = SQLDB(config.db_connection)
 db.create_all_tables()
