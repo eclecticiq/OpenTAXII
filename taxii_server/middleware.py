@@ -140,7 +140,6 @@ def handle_internal_error(error):
 def attach_error_handlers(app):
 
     app.errorhandler(StatusMessageException)(handle_status_exception)
-    app.errorhandler(StatusFailureException)(handle_status_exception)
     app.errorhandler(500)(handle_internal_error)
 
 
