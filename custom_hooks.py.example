@@ -1,0 +1,58 @@
+
+import json
+import calendar
+from redis import Redis
+from datetime import datetime
+
+from blinker import signal
+
+from taxii_server.signals import POST_SAVE_CONTENT_BLOCK
+
+INBOX_QUEUE = 'queue:inbox'
+REDIS_HOST = 'localhost'
+REDIS_PORT = 6379
+REDIS_DB = 1
+
+redis = Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
+post_save_content_block = signal(POST_SAVE_CONTENT_BLOCK)
+
+@post_save_content_block.connect
+def push_content_into_the_queue(sender, content_block, inbox_message, collections):
+
+    blob = dict(
+        content_id = content_block.id,
+
+        source = None,
+        source_collection = None,
+
+        sink_collections = [c.name for c in collections],
+
+        content = content_block.content,
+        binding = content_block.content_binding,
+
+        timestamp = date_to_ts(content_block.timestamp_label) if content_block.timestamp_label else None,
+    )
+    push(INBOX_QUEUE, blob)
+
+
+def push(queue_name, *objects):
+    if not objects:
+        return
+    redis.rpush(queue_name, *map(jsonify, objects))
+
+def jsonify(obj):
+    return json.dumps(obj, separators=(',', ':'))
+
+
+def date_to_ts(obj):
+    if not isinstance(obj, datetime):
+        raise ValueError('Datetime object expected: %s' % obj)
+
+    if obj.utcoffset() is not None:
+        obj = obj - obj.utcoffset()
+
+    millis = int(
+        calendar.timegm(obj.timetuple()) * 1000 +
+        obj.microsecond / 1000
+    )
+    return millis
