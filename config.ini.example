@@ -1,0 +1,24 @@
+[server]
+domain = dev.intelworks.com
+storage_hooks = custom_hooks
+
+[service:inbox:inbox]
+description = Inbox service description
+address = /services/inbox
+destination_collection_required = yes
+
+[service:inbox:inbox2]
+description = Inbox2 service description
+address = /services/inbox2
+supported_content = urn:stix.mitre.org:xml:1.1, urn:stix.mitre.org:xml:1.1.1
+destination_collection_required = no
+
+[service:discovery:discovery]
+description = Discovery service description
+address = /services/discovery
+advertised_services = inbox, discovery, inbox2, hailataxii-discovery
+
+[service:discovery:hailataxii-discovery]
+description = http://hailataxii.com discovery service
+address = hailataxii.com/taxii-discovery-service
+
