@@ -16,15 +16,14 @@ logging_level = logging.getLevelName(config.logging_level)
 app = Flask(__name__)
 app.wsgi_app = TAXIIMiddleware(app.wsgi_app)
 
-app.debug = (logging_level == logging.DEBUG)
+#app.debug = (logging_level == logging.DEBUG)
+#if not app.debug:
+stream_handler = logging.StreamHandler(sys.stdout)
+stream_handler.setLevel(logging_level)
+app.logger.addHandler(stream_handler)
 
-if not app.debug:
-    stream_handler = logging.StreamHandler(sys.stdout)
-    stream_handler.setLevel(logging_level)
-    app.logger.addHandler(stream_handler)
-
-    root_logger = logging.getLogger('taxii_server')
-    root_logger.addHandler(logging.StreamHandler(sys.stdout))
+root_logger = logging.getLogger('taxii_server')
+root_logger.addHandler(logging.StreamHandler(sys.stdout))
 
 
 db = SQLDB(config.db_connection)
