@@ -8,7 +8,7 @@ setup(
     include_package_data = True,
 
     package_data = {
-        'taxii_server' : ['*.ini']
+        'taxii_server' : ['*.ini', '*.yml']
     },
 
     install_requires = [
