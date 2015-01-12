@@ -17,6 +17,8 @@ setup(
         'sqlalchemy',
         'blinker',
         'pyyaml',
+        'gunicorn',
+        'redis'
     ],
 
     dependency_links = [
