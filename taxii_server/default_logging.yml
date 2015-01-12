@@ -22,15 +22,17 @@ handlers:
 #    encoding: utf8
 
 loggers:
+  flask:
+    level: INFO
+    handlers: ['console']
+    propagate: no
   taxii_server:
     level: DEBUG
-    handlers: 
-      - console
+    handlers: ['console']
     propagate: no
   libtaxii:
     level: DEBUG
-    handlers: 
-      - console
+    handlers: ['console']
     propagate: no
 
 root:

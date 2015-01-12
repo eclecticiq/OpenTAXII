@@ -6,9 +6,10 @@ from flask import Flask, request, jsonify
 
 from .options import load_config
 from .server import TAXIIServer
-from .middleware import service_wrapper, attach_error_handlers
 from .persistence.sql import SQLDB
 from .persistence import DataStorage
+from .taxii.exceptions import StatusMessageException
+from . import middleware
 
 config = load_config('default_config.ini', 'TAXII_SERVER_CONFIG')
 
@@ -28,11 +29,20 @@ for path, service in server.path_to_service.items():
     app.add_url_rule(
         path,
         service.uid + "_view",
-        view_func = service_wrapper(service),
+        view_func = middleware.service_wrapper(service),
         methods = ['POST']
     )
 
-attach_error_handlers(app)
+
+@app.errorhandler(500)
+def handle_error(error):
+    return middleware.handle_internal_error(error)
+
+
+@app.errorhandler(StatusMessageException)
+def handle_exc(error):
+    return middleware.handle_status_exception(error)
+
 
 for hooks_module in config.storage_hooks:
     importlib.import_module(hooks_module)

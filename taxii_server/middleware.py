@@ -11,41 +11,33 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def before_request():
-    if 'application/xml' not in request.accept_mimetypes:
-        raise_failure("The specified values of Accept is not supported: %s" % request.accept_mimetypes)
-    validate_request_headers(request.headers)
-
-
-def after_request(response_message):
-
-    response_headers = get_http_headers(response_message, request.is_secure)
-    validate_response_headers(response_headers)
-
-    #FIXME: pretty-printing should be configurable
-    taxii_xml = response_message.to_xml(pretty_print=True)
-
-    return make_taxii_response(taxii_xml, response_headers)
-
-
 def service_wrapper(service):
 
     @wraps(service.view)
     def wrapper(*args, **kwargs):
 
+        if 'application/xml' not in request.accept_mimetypes:
+            raise_failure("The specified values of Accept is not supported: %s" % request.accept_mimetypes)
+        validate_request_headers(request.headers)
 
         body = request.data
 
-        taxii_message = parse_message(get_content_type(request_headers), body)
+        taxii_message = parse_message(get_content_type(request.headers), body)
         try:
-            validate_request_headers_post_parse(request_headers)
+            validate_request_headers_post_parse(request.headers)
         except StatusMessageException, e:
             e.in_response_to = taxii_message.message_id
             raise e
 
-        response_message = service.view(request_headers, taxii_message)
+        response_message = service.view(request.headers, taxii_message)
 
-        return response_message
+        response_headers = get_http_headers(response_message, request.is_secure)
+        validate_response_headers(response_headers)
+
+        #FIXME: pretty-printing should be configurable
+        taxii_xml = response_message.to_xml(pretty_print=True)
+
+        return make_taxii_response(taxii_xml, response_headers)
 
     return wrapper
 
