@@ -1,9 +1,10 @@
 import os
+import yaml
 import ConfigParser
+import logging
 
 from .taxii.bindings import ContentBinding
 
-import logging
 log = logging.getLogger(__name__)
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -24,9 +25,24 @@ class IniConfig(ConfigParser.RawConfigParser):
     def db_connection(self):
         return self.safe_get('server', 'db_connection')
 
+
     @property
-    def logging_level(self):
-        return self.get('server', 'logging_level')
+    def logging_config(self):
+        path = self.get('server', 'logging_config')
+
+        if not path:
+            return None
+
+        if os.path.exists(path):
+            full_path = path
+        else:
+            full_path = os.path.join(current_dir, path)
+
+        if not os.path.exists(full_path):
+            raise ValueError('Can not read logging configuration file at %s' % full_path)
+
+        with open(full_path, 'r') as f:
+            return yaml.load(f)
 
     @property
     def storage_hooks(self):
@@ -75,7 +91,7 @@ def load_config(base_config, optional_env_var):
     config = IniConfig()
     config.readfp(open(os.path.join(current_dir, base_config)))
 
-    log.debug('Loaded basic config from %s' % base_config)
+    log.info('Loaded basic config from %s' % base_config)
 
     env_var_conf = os.environ.get(optional_env_var)
 
@@ -84,7 +100,7 @@ def load_config(base_config, optional_env_var):
             raise RuntimeError('Can not load configuration from the path configured in the '
                     'environment variable: %s = %s' % (optional_env_var, env_var_conf))
         else:
-            log.debug('Loaded a config from %s' % env_var_conf)
+            log.info('Loaded a config from %s' % env_var_conf)
 
     return config
 

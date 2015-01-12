@@ -1,6 +1,6 @@
 import os
 import sys
-import logging
+import logging.config
 import importlib
 from flask import Flask, request, jsonify
 
@@ -11,22 +11,11 @@ from .persistence.sql import SQLDB
 from .persistence import DataStorage
 
 config = load_config('default_config.ini', 'TAXII_SERVER_CONFIG')
-logging_level = logging.getLevelName(config.logging_level)
+
+logging.config.dictConfig(config.logging_config)
 
 app = Flask(__name__)
 app.wsgi_app = TAXIIMiddleware(app.wsgi_app)
-
-formatter = logging.Formatter('%(asctime)s %(levelname)-5.5s [%(name)s] %(message)s')
-
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-app.logger.addHandler(stream_handler)
-app.logger.setLevel(logging_level)
-
-root_logger = logging.getLogger('taxii_server')
-root_logger.setFormatter(formatter)
-root_logger.addHandler(logging.StreamHandler())
-root_logger.setLevel(logging_level)
 
 
 db = SQLDB(config.db_connection)

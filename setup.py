@@ -15,8 +15,8 @@ setup(
         'libtaxii',
         'Flask',
         'sqlalchemy',
-        'blinker'
-        #'taxii-client'
+        'blinker',
+        'pyyaml',
     ],
 
     dependency_links = [
