@@ -4,28 +4,11 @@ from flask import Request, request, make_response
 from .taxii.exceptions import raise_failure
 from .taxii.http import *
 from .taxii.transform import parse_message
-from .taxii.exceptions import StatusMessageException
+from .taxii.exceptions import StatusMessageException, StatusFailureMessage
 from .taxii.status import process_status_exception
 
 import logging
 log = logging.getLogger(__name__)
-
-class TAXIIMiddleware(object):
-
-    def __init__(self, app):
-        self.app = app
-
-
-    def __call__(self, environ, start_response):
-
-        _request = Request(environ)
-
-        if 'application/xml' not in _request.accept_mimetypes:
-            raise_failure("The specified values of Accept is not supported: %s" % _request.accept_mimetypes)
-
-        validate_request_headers(_request.headers)
-
-        return self.app(environ, start_response)
 
 
 def service_wrapper(service):
@@ -33,7 +16,11 @@ def service_wrapper(service):
     @wraps(service.view)
     def wrapper(*args, **kwargs):
 
-        request_headers = request.headers
+        if 'application/xml' not in request.accept_mimetypes:
+            raise_failure("The specified values of Accept is not supported: %s" % _request.accept_mimetypes)
+
+        validate_request_headers(request.headers)
+
         body = request.data
 
         taxii_message = parse_message(get_content_type(request_headers), body)
@@ -142,8 +129,7 @@ def attach_error_handlers(app):
     app.error_handler_spec[None][500] = handle_internal_error
     app.error_handler_spec[None][StatusMessageException] = handle_status_exception
 
-    print "1"
-    log.info("Error handlers attached")
+    log.debug("Error handlers attached")
 
 
 
