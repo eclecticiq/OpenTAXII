@@ -142,7 +142,8 @@ def attach_error_handlers(app):
     app.error_handler_spec[None][500] = handle_internal_error
     app.error_handler_spec[None][StatusMessageException] = handle_status_exception
 
-    log.debug("Error handlers attached")
+    print "1"
+    log.info("Error handlers attached")
 
 
 
