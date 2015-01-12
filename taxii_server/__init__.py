@@ -11,11 +11,20 @@ from .persistence.sql import SQLDB
 from .persistence import DataStorage
 
 config = load_config('default_config.ini', 'TAXII_SERVER_CONFIG')
-
-logging.basicConfig(level=logging.getLevelName(config.logging_level))
+logging_level = logging.getLevelName(config.logging_level)
 
 app = Flask(__name__)
 app.wsgi_app = TAXIIMiddleware(app.wsgi_app)
+
+app.debug = (logging_level == logging.DEBUG)
+
+if not app.debug:
+    stream_handler = logging.StreamHandler(sys.stdout)
+    stream_handler.setLevel(logging_level)
+    app.logger.addHandler(stream_handler)
+
+    root_logger = logging.getLogger('taxii_server')
+    root_logger.addHandler(logging.StreamHandler(sys.stdout))
 
 
 db = SQLDB(config.db_connection)
