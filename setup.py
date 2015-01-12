@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name = "taxii_server",
+    name = "taxii-server",
     version = "0.0.1",
 
     packages = find_packages(),
