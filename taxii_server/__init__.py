@@ -11,11 +11,11 @@ from .persistence import DataStorage
 from .taxii.exceptions import StatusMessageException
 from . import middleware
 
+logging.basicConfig(level=logging.INFO)
+
 config = load_config('default_config.ini', 'TAXII_SERVER_CONFIG')
 
-logging.config.dictConfig(config.logging_config)
-
-app = Flask(__name__)
+app = Flask(__name__ + '.app')
 
 db = SQLDB(config.db_connection)
 db.create_all_tables()
@@ -32,7 +32,6 @@ for path, service in server.path_to_service.items():
         view_func = middleware.service_wrapper(service),
         methods = ['POST']
     )
-
 
 @app.errorhandler(500)
 def handle_error(error):

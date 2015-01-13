@@ -91,6 +91,8 @@ def load_config(base_config, optional_env_var):
     config = IniConfig()
     config.readfp(open(os.path.join(current_dir, base_config)))
 
+    logging.config.dictConfig(config.logging_config)
+
     log.info('Loaded basic config from %s' % base_config)
 
     env_var_conf = os.environ.get(optional_env_var)
@@ -101,6 +103,7 @@ def load_config(base_config, optional_env_var):
                     'environment variable: %s = %s' % (optional_env_var, env_var_conf))
         else:
             log.info('Loaded a config from %s' % env_var_conf)
+
 
     return config
 

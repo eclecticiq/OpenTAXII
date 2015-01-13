@@ -12,7 +12,6 @@ setup(
     },
 
     install_requires = [
-        'libtaxii',
         'Flask',
         'sqlalchemy',
         'blinker',

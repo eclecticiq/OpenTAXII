@@ -10,7 +10,7 @@ handlers:
     class: logging.StreamHandler
     level: DEBUG
     formatter: simple
-    stream: ext://sys.stdout
+    stream: "ext://sys.stdout"
 
 #  info_file_handler:
 #    class: logging.handlers.RotatingFileHandler
@@ -23,7 +23,7 @@ handlers:
 
 loggers:
   flask:
-    level: INFO
+    level: DEBUG
     handlers: ['console']
     propagate: no
   taxii_server:
