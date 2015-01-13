@@ -5,15 +5,14 @@ import importlib
 from flask import Flask, request, jsonify
 
 from .options import load_config
+config = load_config('default_config.ini', 'TAXII_SERVER_CONFIG')
+
 from .server import TAXIIServer
 from .persistence.sql import SQLDB
 from .persistence import DataStorage
 from .taxii.exceptions import StatusMessageException
 from . import middleware
 
-logging.basicConfig(level=logging.INFO)
-
-config = load_config('default_config.ini', 'TAXII_SERVER_CONFIG')
 
 app = Flask(__name__ + '.app')
 

@@ -12,6 +12,7 @@ setup(
     },
 
     install_requires = [
+        'libtaxii==1.1.105-SNAPSHOT',
         'Flask',
         'sqlalchemy',
         'blinker',
@@ -22,7 +23,5 @@ setup(
 
     dependency_links = [
         'git+https://github.com/TAXIIProject/libtaxii.git#egg=libtaxii',
-        'https://github.com/STIXProject/python-stix/archive/v1.1.1.3.tar.gz',
-        'https://github.com/CybOXProject/python-cybox/archive/v2.1.0.9.tar.gz',
     ]
 )
