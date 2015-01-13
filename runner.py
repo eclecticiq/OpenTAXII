@@ -1,4 +1,4 @@
-from taxii_server import app
+from taxii_server.http import app
 
 def run_server():
     app.debug = True
