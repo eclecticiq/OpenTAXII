@@ -20,8 +20,4 @@ setup(
         'gunicorn',
         'redis'
     ],
-
-    dependency_links = [
-        'git+https://github.com/TAXIIProject/libtaxii.git#egg=libtaxii',
-    ]
 )
