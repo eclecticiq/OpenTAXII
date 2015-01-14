@@ -1,3 +1,6 @@
+import logging
+logging.getLogger().setLevel(logging.DEBUG)
+
 from taxii_server.http import app
 
 def run_server():
