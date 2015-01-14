@@ -9,6 +9,10 @@ log = logging.getLogger(__name__)
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
+CONFIG_ENV_VAR = 'TAXII_SERVER_CONFIG'
+DEFAULT_CONFIG = os.path.join(current_dir, 'default_config.ini')
+
+
 class IniConfig(ConfigParser.RawConfigParser):
 
     @property
@@ -86,10 +90,10 @@ class IniConfig(ConfigParser.RawConfigParser):
         return boolean(self.safe_get(section, option, defaults=defaults, default_value=default_value))
 
 
-def load_config(base_config, optional_env_var):
+def load_config(base_config=DEFAULT_CONFIG, optional_env_var=CONFIG_ENV_VAR):
 
     config = IniConfig()
-    config.readfp(open(os.path.join(current_dir, base_config)))
+    config.readfp(open(base_config, 'r'))
 
     logging.config.dictConfig(config.logging_config)
 

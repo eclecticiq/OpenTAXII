@@ -5,7 +5,7 @@ import importlib
 from flask import Flask, request, jsonify
 
 from .options import load_config
-config = load_config('default_config.ini', 'TAXII_SERVER_CONFIG')
+config = load_config()
 
 from .server import TAXIIServer
 from .persistence.sql import SQLDB
