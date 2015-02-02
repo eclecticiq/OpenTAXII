@@ -1,17 +1,17 @@
-# Copyright (c) 2014, The MITRE Corporation. All rights reserved.
-# For license information, see the LICENSE.txt file
-
-from ..exceptions import StatusMessageException, raise_failure
-from ..http import HTTP_X_TAXII_CONTENT_TYPE, HTTP_X_TAXII_SERVICES, HTTP_X_TAXII_ACCEPT
-
 from libtaxii.constants import *
+from libtaxii.common import generate_message_id
+
+from ...exceptions import StatusMessageException, raise_failure
+from ...http import HTTP_X_TAXII_CONTENT_TYPE, HTTP_X_TAXII_SERVICES, HTTP_X_TAXII_ACCEPT
+
 
 class BaseMessageHandler(object):
 
-    #: Identify the list of supported request messages
-    #: This MUST be a list (well, iterable) defined by the extending class
-    #: e.g., [tm11.InboxMessage]
     supported_request_messages = []
+
+    @staticmethod
+    def generate_id():
+        return generate_message_id()
 
     @classmethod
     def validate_headers(cls, headers, in_response_to=None):
@@ -30,22 +30,28 @@ class BaseMessageHandler(object):
             elif message.version == VID_TAXII_XML_10:
                 supports_taxii_10 = True
             else:
-                raise ValueError('The variable "supported_request_messages" contained a non-libtaxii message module: %s' % message.__module__)
+                raise ValueError('The variable "supported_request_messages" '
+                        'contained a non-libtaxii message module: %s' % message.__module__)
 
         if (taxii_services == VID_TAXII_SERVICES_11 and not supports_taxii_11) or \
                 (taxii_services == VID_TAXII_SERVICES_10 and not supports_taxii_10):
-            raise_failure('The specified value of %s "%s" is not supported by this TAXII Service' % (HTTP_X_TAXII_SERVICES, taxii_services), in_response_to)
+
+            raise_failure('The specified value of %s "%s" is not supported by this TAXII Service' % (
+                HTTP_X_TAXII_SERVICES, taxii_services), in_response_to)
+
 
         if (taxii_content_type == VID_TAXII_XML_11 and not supports_taxii_11) or \
                 (taxii_content_type == VID_TAXII_XML_10 and not supports_taxii_10):
+
             raise_failure("The specified value of X-TAXII-Content-Type is not supported", in_response_to)
+
 
         if taxii_accept and \
                 ((taxii_accept == VID_TAXII_XML_11 and not supports_taxii_11) or 
                 (taxii_accept == VID_TAXII_XML_10 and not supports_taxii_10)):
+
             raise_failure("The specified value of X-TAXII-Accept is not supported", in_response_to)
 
-        # Headers are valid
         return True
 
 
