@@ -1,10 +1,10 @@
-
-from .exceptions import StatusMessageException
-from libtaxii.constants import *
 import datetime
 import dateutil
 from dateutil.tz import tzutc
 
+from libtaxii.constants import *
+
+from .exceptions import StatusMessageException
 
 
 def is_content_supported(supported_bindings, content_binding, version=None):
