@@ -27,7 +27,6 @@ class Timestamped(Base):
 
 
 class InboxMessage(Timestamped):
-    # TODO: What should I index on?
 
     __tablename__ = 'inbox_messages'
 
@@ -104,8 +103,10 @@ class DataCollection(Timestamped):
     __tablename__ = 'data_collections'
 
     id = Column(Integer, primary_key=True)
+    name = Column(String(MAX_NAME_LENGTH))
 
-    name = Column(String(MAX_NAME_LENGTH), unique=True)
+    inbox_id = Column(Text, nullable=True)
+
     description = Column(Text, nullable=True)
     type = Column(String(MAX_NAME_LENGTH))
     enabled = Column(Boolean, default=True)

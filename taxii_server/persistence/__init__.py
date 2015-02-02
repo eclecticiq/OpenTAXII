@@ -1,4 +1,4 @@
-from ..taxii.entities import *
+
 from ..signals import POST_SAVE_CONTENT_BLOCK
 
 from blinker import signal
@@ -6,30 +6,31 @@ from blinker import signal
 
 class DataStorage(object):
 
-    def __init__(self, db):
-        self.db = db
+    def __init__(self, api):
+        self.api = api
 
-    def get_all_collections(self):
-        return self.db.get_all_collections()
-
-    def save_data_collection(self, collection_entity):
-        return self.db.save_entity(collection_entity)
-
-    def save_content_block(self, content_block, inbox_message_entity=None, collections=[], version=10):
-
-        content_block_entity = ContentBlockEntity.to_entity(content_block, inbox_message_entity=inbox_message_entity, version=version)
-        content_block_entity = self.db.save_entity(content_block_entity)
-
-        if version == 11:
-            for collection in collections:
-                self.db.add_content_block(content_block_entity.id, [collection_entity.id])
-
-        post_save = signal(POST_SAVE_CONTENT_BLOCK)
-
-        post_save.send(self, content_block=content_block_entity, inbox_message=inbox_message_entity,
-                collections=collections)
+    def get_collections(self, inbox_id=None):
+        return self.api.get_collections(inbox_id=inbox_id)
 
 
+    def save_collection(self, collection_entity):
+        return self.api.save_entity(collection_entity)
 
-    def save_inbox_message(self, inbox_message, received_via=None, version=10):
-        return self.db.save_entity(InboxMessageEntity.to_entity(inbox_message, received_via=received_via, version=version))
+
+    def save_content_block(self, content_block_entity, inbox_message_entity, collections=[]):
+
+        content_block_entity = self.api.save_entity(content_block_entity)
+
+        self.api.add_content_block(content_block_entity, collections)
+
+        signal(POST_SAVE_CONTENT_BLOCK).send(self, content_block=content_block_entity,
+                inbox_message=inbox_message_entity, collections=collections)
+
+
+    def get_content_blocks(self, collection=None):
+        cid = collection.id if collection else None
+        return self.api.get_content_blocks(collection_id=cid)
+
+
+    def save_inbox_message(self, inbox_message):
+        return self.api.save_entity(inbox_message)
