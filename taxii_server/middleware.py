@@ -1,5 +1,6 @@
+import importlib
 from functools import wraps
-from flask import Request, request, make_response
+from flask import Flask, request, jsonify, make_response
 
 from .taxii.exceptions import raise_failure
 from .taxii.http import *
@@ -7,17 +8,76 @@ from .taxii.transform import parse_message
 from .taxii.exceptions import StatusMessageException, StatusFailureMessage
 from .taxii.status import process_status_exception
 
-import logging
-log = logging.getLogger(__name__)
+from .options import ServerConfig
+from .server import TAXIIServer
+from .persistence.sql import SQLDB
+from .persistence import DataStorage
+from .utils import configure_logging
+
+import structlog
+log = structlog.get_logger(__name__)
+
+
+def create_app(server_properties=None, services_properties=None):
+
+    config = ServerConfig.load(server_properties=server_properties,
+            services_properties=services_properties)
+
+    app = Flask(__name__)
+    app = attach_taxii_server(app, create_server(config))
+
+    app.taxii_config = config
+
+
+    #FIXME: can't assign these error handlers without using a decorator
+    @app.errorhandler(500)
+    def handle_error(error):
+        return handle_internal_error(error)
+
+
+    @app.errorhandler(StatusMessageException)
+    def handle_exc(error):
+        return handle_status_exception(error)
+
+
+    return app
+
+
+def create_server(config):
+
+    storage = DataStorage(api=SQLDB(config.server.db_connection,
+        create_tables=config.server.create_tables))
+
+    server = TAXIIServer(domain=config.server.domain, services_properties=config.unpacked_services,
+            storage=storage)
+
+    if config.server.storage_hooks:
+        importlib.import_module(config.server.storage_hooks)
+
+    return server
+
+
+def attach_taxii_server(app, server):
+
+    for path, service in server.path_to_service.items():
+        app.add_url_rule(
+            path,
+            service.uid + "_view",
+            view_func = service_wrapper(service),
+            methods = ['POST']
+        )
+
+    return app
 
 
 def service_wrapper(service):
 
-    @wraps(service.view)
+    @wraps(service.process)
     def wrapper(*args, **kwargs):
 
         if 'application/xml' not in request.accept_mimetypes:
-            raise_failure("The specified values of Accept is not supported: %s" % request.accept_mimetypes)
+            raise_failure("The specified values of Accept is not supported: %s" % (request.accept_mimetypes or []))
+
         validate_request_headers(request.headers)
 
         body = request.data
@@ -29,9 +89,9 @@ def service_wrapper(service):
             e.in_response_to = taxii_message.message_id
             raise e
 
-        response_message = service.view(request.headers, taxii_message)
+        response_message = service.process(request.headers, taxii_message)
 
-        response_headers = get_http_headers(response_message, request.is_secure)
+        response_headers = get_http_headers(response_message.version, request.is_secure)
         validate_response_headers(response_headers)
 
         #FIXME: pretty-printing should be configurable
@@ -122,16 +182,6 @@ def handle_internal_error(error):
     xml, headers = process_status_exception(new_error, request.headers, request.is_secure)
     return make_taxii_response(xml, headers)
 
-
-def attach_handlers(app):
-
-    app.before_request(before_request)
-    app.after_request(after_request)
-
-    app.error_handler_spec[None][500] = handle_internal_error
-    app.error_handler_spec[None][StatusMessageException] = handle_status_exception
-
-    log.debug("Error handlers attached")
 
 
 

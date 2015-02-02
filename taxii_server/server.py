@@ -1,65 +1,53 @@
 from collections import namedtuple
 
 from .taxii.services import DiscoveryService, InboxService
+from .utils import get_path_and_address
 
-import logging
-log = logging.getLogger(__name__)
+import structlog
+log = structlog.get_logger(__name__)
 
 class TAXIIServer(object):
 
-    services = []
 
-    path_to_service = dict()
-
-    def __init__(self, config, storage):
+    def __init__(self, domain, services_properties, storage):
 
         self.storage = storage 
+        self.domain = domain
 
-        self.config = config
-        self.domain = self.config.domain
-        self.__create_services()
+        self.services = []
+        self.path_to_service = dict()
+
+        self.__create_services(services_properties)
 
         log.info('%d services configured' % len(self.services))
 
 
-    def __create_services(self):
+    def __create_services(self, services):
 
-        ads = []
+        discovery_services = []
 
-        for type, id, section in self.config.services:
+        for type, id, options in services:
 
-            address = self.config.get(section, 'address')
-
-            if not address:
-                raise RuntimeException('Service address is not specified for service %s' % section)
-
-            if address.startswith('/'):
-                path = address
-                service_address = self.domain + path
-            else:
-                path = None
-                service_address = address
+            options['server'] = self
+            path, options['address'] = get_path_and_address(self.domain, options['address'])
 
             if type == 'inbox':
-                options = self.config.inbox_options(section)
-                options['address'] = service_address
                 service = InboxService(id=id, **options)
             elif type == 'discovery':
-                options = self.config.discovery_options(section)
-                options['address'] = service_address
-                advertised = options.pop('advertised_services', [])
+                advertised = options.pop('advertised_services')
                 service = DiscoveryService(id=id, **options)
-                ads.append((service, advertised))
-            else:
-                raise RuntimeException('Unknown service type "%s"' % service_type)
 
-            service.server = self
+                if advertised:
+                    discovery_services.append((service, advertised))
+            else:
+                raise RuntimeError('Unknown service type "%s"' % type)
+
+            self.services.append(service)
 
             if path:
                 self.path_to_service[path] = service
 
-            self.services.append(service)
+        for service, advertised in discovery_services:
+            service.set_advertised_services([s for s in self.services if s.id in advertised])
 
-        for service, advertised in ads:
-            service.advertised_services = [s for s in self.services if s.id in advertised]
 

@@ -1,130 +1,165 @@
 import os
-import yaml
+import sys
 import ConfigParser
-import logging
+
+from functools import partial
 
 from .taxii.bindings import ContentBinding
+from .utils import SimpleRenderer
 
-log = logging.getLogger(__name__)
+import structlog
+log = structlog.get_logger(__name__)
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
-
 CONFIG_ENV_VAR = 'TAXII_SERVER_CONFIG'
 DEFAULT_CONFIG = os.path.join(current_dir, 'default_config.ini')
 
 
-class IniConfig(ConfigParser.RawConfigParser):
+SECTION_OPTIONS = dict(
+    server = dict(
+        defaults = 'server',
+        booleans = ['create_tables'],
+        lists = []
+    ),
+    inbox = dict(
+        defaults = 'defaults:inbox',
+        booleans = ['accept_all_content', 'destination_collection_required'],
+        lists = ['supported_content', 'protocol_bindings']
+    ),
+    discovery = dict(
+        defaults = 'defaults:discovery',
+        booleans = [],
+        lists = ['advertised_services', 'protocol_bindings']
+    )
+)
+
+
+
+class ServerConfig(ConfigParser.RawConfigParser, object):
+
+    def __init__(self, *args, **kwargs):
+        super(ServerConfig, self).__init__(*args, **kwargs)
+
+        server_options_getter = partial(getter, self, 'server', **SECTION_OPTIONS['server'])
+        self.server = SectionProxy(server_options_getter)
+
 
     @property
-    def services(self):
+    def unpacked_services(self):
         services = []
         for section in self.sections():
-            if section.startswith('service:'):
-                type, id = section.replace('service:', '').split(':')
-                services.append((type, id, section))
-                
+
+            if not section.startswith('service:'):
+                continue
+
+            type, id = section.replace('service:', '').split(':')
+            options = self.get_options(type, section)
+            
+            services.append((type, id, options))
+
         return services
 
-    @property
-    def db_connection(self):
-        return self.safe_get('server', 'db_connection')
 
+    def get_options(self, type, section):
 
-    @property
-    def logging_config(self):
-        path = self.get('server', 'logging_config')
+        if type not in SECTION_OPTIONS:
+            raise RuntimeError('Unknown service type "%s"' % type)
 
-        if not path:
-            return None
+        section_options = SECTION_OPTIONS[type]
 
-        if os.path.exists(path):
-            full_path = path
-        else:
-            full_path = os.path.join(current_dir, path)
+        defaults_section = section_options['defaults']
+        booleans = section_options['booleans']
+        lists = section_options['lists']
 
-        if not os.path.exists(full_path):
-            raise ValueError('Can not read logging configuration file at %s' % full_path)
-
-        with open(full_path, 'r') as f:
-            return yaml.load(f)
-
-    @property
-    def storage_hooks(self):
-        return self.get_list('server', 'storage_hooks')
-
-    @property
-    def domain(self):
-        return self.safe_get('server', 'domain')
-
-    def inbox_options(self, section):
-        defaults = 'defaults:inbox'
-        options = dict(self.items(defaults))
-        options.update(dict(self.items(section)))
-
-        options['accept_all_content'] = boolean(options['accept_all_content'])
-        options['supported_content'] = [ContentBinding(binding=b, subtypes=None) for b in string_list(options['supported_content'])]
-        options['destination_collection_required'] = boolean(options['destination_collection_required'])
-
-        return options
-
-    def discovery_options(self, section):
-        defaults = 'defaults:discovery'
-        options = dict(self.items(defaults))
-        options.update(dict(self.items(section)))
-        options['advertised_services'] = string_list(options['advertised_services'])
+        options = dict()
+        options = self.__populate_with_options(options, defaults_section, booleans=booleans, lists=lists)
+        options = self.__populate_with_options(options, section, booleans=booleans, lists=lists)
 
         return options
 
 
-    def safe_get(self, section, option, defaults=None, default_value=None):
-        try:
-            return self.get(section, option)
-        except ConfigParser.NoOptionError:
-            return self.get(defaults, option) if defaults else default_value
+    def __populate_with_options(self, dest, section, booleans=[], lists=[]):
+
+        for option in self.options(section):
+            if option in booleans:
+                dest[option] = self.getboolean(section, option)
+            elif option in lists:
+                dest[option] = _string_list(self.get(section, option))
+            else:
+                dest[option] = self.get(section, option)
+
+        return dest
+
+    @staticmethod
+    def load(server_properties=None, services_properties=[], base_config=DEFAULT_CONFIG, optional_env_var=CONFIG_ENV_VAR):
+
+        config = ServerConfig()
+
+        with open(base_config, 'r') as f:
+            config.readfp(f)
+
+        log.info('Loaded basic config from %s' % base_config)
+
+        env_var_conf = os.environ.get(optional_env_var)
+
+        if env_var_conf:
+            if not config.read(env_var_conf):
+                raise RuntimeError('Can not load configuration from the path configured in the '
+                        'environment variable: %s = %s' % (optional_env_var, env_var_conf))
+            else:
+                log.info('Loaded a config from %s' % env_var_conf)
+
+        if server_properties:
+            config.server_config_from_obj(server_properties)
+
+        if services_properties:
+            config.services_config_from_obj(services_properties)
+
+        return config
 
 
-    def get_list(self, section, option, defaults=None, default_value=''):
-        return string_list(self.safe_get(section, option, defaults=defaults, default_value=default_value))
-                
-    def get_boolean(self, section, option, defaults=None, default_value=None):
-        return boolean(self.safe_get(section, option, defaults=defaults, default_value=default_value))
+    def server_config_from_obj(self, config):
+        for option, value in config.items():
+            self.set('server', option, value)
 
 
-def load_config(base_config=DEFAULT_CONFIG, optional_env_var=CONFIG_ENV_VAR):
+    def services_config_from_obj(self, services):
+        for service in services:
 
-    config = IniConfig()
-    config.readfp(open(base_config, 'r'))
+            options = dict((key, value) for key, value in service.items() if key not in ['type', 'id'])
 
-    logging.config.dictConfig(config.logging_config)
-
-    log.info('Loaded basic config from %s' % base_config)
-
-    env_var_conf = os.environ.get(optional_env_var)
-
-    if env_var_conf:
-        if not config.read(env_var_conf):
-            raise RuntimeError('Can not load configuration from the path configured in the '
-                    'environment variable: %s = %s' % (optional_env_var, env_var_conf))
-        else:
-            log.info('Loaded a config from %s' % env_var_conf)
+            section = 'service:%s:%s' % (service['type'], service['id'])
+            self.add_section(section)
+            for option, value in options.items():
+                self.set(section, option, value)
 
 
-    return config
 
-
-TRUTHY_STRINGS = ('yes', 'true', 'on', '1')
-FALSY_STRINGS  = ('no', 'false', 'off', '0')
-
-def boolean(s):
-    ss = str(s).lower()
-    if ss in TRUTHY_STRINGS:
-        return True
-    elif ss in FALSY_STRINGS:
-        return False
+def getter(config, section, key, booleans=[], lists=[], defaults=None):
+    if key in booleans:
+        return config.getboolean(section, key)
+    elif key in lists:
+        return _string_list(config.get(section, key))
     else:
-        raise ValueError("not a valid boolean value: " + repr(s))
+        return config.get(section, key)
 
-def string_list(s):
+
+
+class SectionProxy(object):
+
+    def __init__(self, getter):
+        self.get = getter
+
+    def __getattr__(self, key):
+        return self.get(key)
+        
+
+def _string_list(s):
     if not s:
         return []
+    elif isinstance(s, list):
+        return s
+
     return map(lambda x: x.strip(), s.split(','))
+
+
