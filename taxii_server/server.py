@@ -19,7 +19,7 @@ class TAXIIServer(object):
 
         self.__create_services(services_properties)
 
-        log.info('%d services configured' % len(self.services))
+        log.info('%d services configured', len(self.services))
 
 
     def __create_services(self, services):
