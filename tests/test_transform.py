@@ -19,6 +19,6 @@ def test_parse_message(content_type):
 
     parsed = transform.parse_message(content_type, tm.DiscoveryRequest(MESSAGE_ID).to_xml(), do_validate=True)
 
-    assert type(parsed) == tm.DiscoveryRequest
+    assert isinstance(parsed, tm.DiscoveryRequest)
     assert parsed.message_id == MESSAGE_ID
 
