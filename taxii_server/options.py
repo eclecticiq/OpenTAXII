@@ -52,7 +52,7 @@ class ServerConfig(ConfigParser.RawConfigParser, object):
             if not section.startswith('service:'):
                 continue
 
-            type, id = section.replace('service:', '').split(':')
+            type, id = section.replace('service:', '').split(':', 1)
             options = self.get_options(type, section)
             
             services.append((type, id, options))
