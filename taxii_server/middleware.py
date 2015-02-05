@@ -28,17 +28,8 @@ def create_app(server_properties=None, services_properties=None):
 
     app.taxii_config = config
 
-
-    #FIXME: can't assign these error handlers without using a decorator
-    @app.errorhandler(500)
-    def handle_error(error):
-        return handle_internal_error(error)
-
-
-    @app.errorhandler(StatusMessageException)
-    def handle_exc(error):
-        return handle_status_exception(error)
-
+    app.register_error_handler(500, handle_internal_error)
+    app.register_error_handler(StatusMessageException, handle_status_exception)
 
     return app
 
