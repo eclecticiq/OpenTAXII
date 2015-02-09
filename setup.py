@@ -13,10 +13,11 @@ setup(
 
     install_requires = [
         'libtaxii==1.1.105-SNAPSHOT',
+        'intelworks-common',
+        'structlog',
         'Flask',
         'sqlalchemy',
         'blinker',
-        'pyyaml',
         'gunicorn',
         'redis'
     ],

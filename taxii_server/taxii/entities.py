@@ -5,14 +5,24 @@ from .utils import is_content_supported
 
     
 class DataCollectionEntity(namedtuple('DataCollectionEntity',
-    ["id", "name", "description", "type", "enabled", "accept_all_content", "supported_content", "content_blocks"])):
+    ["id", "name", "description", "type", "enabled", "accept_all_content", "supported_content", "content_blocks", "inbox_id"])):
 
 
     def is_content_supported(self, content_binding):
         if self.accept_all_content:
             return True
 
-        return is_content_supported(self.supported_content, content_bindings)
+        return is_content_supported(self.supported_content, content_binding)
+
+
+    #FIXME: type is none because it is not used anythere yet
+    @staticmethod
+    def create(name, type=None, id=None, enabled=True, description=None, accept_all_content=True,
+            supported_content=[], content_blocks=[], inbox_id=None):
+
+        return DataCollectionEntity(id=id, name=name, description=description, type=type, enabled=enabled,
+                accept_all_content=accept_all_content, inbox_id=inbox_id, supported_content=supported_content,
+                content_blocks=content_blocks)
 
 
 class ContentBlockEntity(namedtuple('ContentBlockEntityFields',
@@ -71,7 +81,6 @@ class InboxMessageEntity(namedtuple('InboxMessageEntityFields',
 
     @staticmethod
     def to_entity(inbox_message, received_via=None, version=10):
-
 
         params = dict((f, None) for f in InboxMessageEntity._fields)
 

@@ -7,24 +7,25 @@ from libtaxii.constants import *
 
 from lxml.etree import XMLSyntaxError
 
-from .exceptions import StatusMessageException, StatusBadMessage
-from .bindings import *
-from .entities import *
+from .exceptions import StatusMessageException, StatusBadMessage, StatusUnsupportedQuery
+from .bindings import MESSAGE_VALIDATOR_PARSER, PROTOCOL_TO_SCHEME
 
+import structlog
+log = structlog.get_logger(__name__)
 
 def parse_message(content_type, body, do_validate=True):
 
     validator_parser = MESSAGE_VALIDATOR_PARSER[content_type]
 
     if do_validate:
-
         try:
             result = validator_parser.validator.validate_string(body)
             if not result.valid:
-                raise StatusBadMessage('Request was not schema valid: %s' % '; '.join([str(err) for err in result.error_log]))
+                errors = '; '.join([str(err) for err in result.error_log])
+                raise StatusBadMessage('Request was not schema valid: %s' % errors)
         except XMLSyntaxError as e:
-            log.error("Not well-formed XML:\n%s" % body, exc_info=True)
-            raise StatusBadMessage('Request was not well-formed XML: %s' % str(e))
+            log.error("Not well-formed XML. Body: '%s'" % body, exc_info=True)
+            raise StatusBadMessage('Request was not well-formed XML', e=e)
 
     try:
         taxii_message = validator_parser.parser(body)
@@ -47,6 +48,14 @@ def service_to_instances(service, version=10):
         raise Exception("No supported protocol bindings configured")
 
     for binding in service.supported_protocol_bindings:
+        
+        address = service.address
+
+        #FIXME: there should be a better place to put this
+        if binding in PROTOCOL_TO_SCHEME:
+            scheme = PROTOCOL_TO_SCHEME[binding]
+            if scheme and not address.startswith(scheme):
+                address = scheme + address
 
         if version == 10:
 
@@ -59,7 +68,7 @@ def service_to_instances(service, version=10):
                 services_version = VID_TAXII_SERVICES_10,
                 available = service.enabled,
                 protocol_binding = binding,
-                service_address = service.address,
+                service_address = address,
                 message_bindings = service.supported_message_bindings,
                 message = service.description
             )
@@ -69,7 +78,7 @@ def service_to_instances(service, version=10):
                 services_version = VID_TAXII_SERVICES_11,
                 available = service.enabled,
                 protocol_binding = binding,
-                service_address = service.address,
+                service_address = address,
                 message_bindings = service.supported_message_bindings,
                 message = service.description
             )
@@ -240,21 +249,6 @@ def get_supported_content_11(data_collection):
 
     return return_list
 
-def get_push_methods_10(data_collection):
-    """
-    TODO: Implement this
-    This depends on the ability of taxii_services to push content
-    and includes client capabilities
-    """
-    return None
-
-def get_push_methods_11(data_collection):
-    """
-    TODO: Implement this.
-    This depends on the ability of taxii_services to push content
-    and includes client capabilities
-    """
-    return None
 
 def get_polling_service_instances_10(data_collection):
     """

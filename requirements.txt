@@ -1,10 +1,10 @@
-https://github.com/STIXProject/python-stix/archive/v1.1.1.3.tar.gz
-https://github.com/CybOXProject/python-cybox/archive/v2.1.0.9.tar.gz
 #libtaxii
-git+https://github.com/TAXIIProject/libtaxii.git#egg=libtaxii
+#git+https://github.com/TAXIIProject/libtaxii.git#egg=libtaxii
+libtaxii==1.1.105-SNAPSHOT
 flask
 sqlalchemy
 redis
 gunicorn
-taxii-client
-colorlog
+structlog
+blinker
+intelworks-common

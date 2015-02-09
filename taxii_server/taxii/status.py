@@ -7,23 +7,6 @@ from copy import deepcopy
 
 from .http import *
 
-def get_headers(taxii_services_version, is_secure):
-    """
-    Convenience method for selecting headers
-    """
-    if taxii_services_version == VID_TAXII_SERVICES_11:
-        if is_secure:
-            return deepcopy(TAXII_11_HTTPS_Headers)
-        else:
-            return deepcopy(TAXII_11_HTTP_Headers)
-    elif taxii_services_version == VID_TAXII_SERVICES_10:
-        if is_secure:
-            return deepcopy(TAXII_10_HTTPS_Headers)
-        else:
-            return deepcopy(TAXII_10_HTTP_Headers)
-    else:
-        raise ValueError("Unknown combination for taxii_services_version and is_secure!")
-
 
 def process_status_exception(exception, headers, is_secure):
 
@@ -39,13 +22,11 @@ def process_status_exception(exception, headers, is_secure):
         sm = exception_to_status(exception, 11)
         version = VID_TAXII_SERVICES_11
     else:
-        #FIXME: For now, just pretend X-TAXII-Accept was TAXII 1.1
-        # Not 100% sure what the right response is... HTTP Unacceptable?
-        # Squash the exception argument and create a new one for unknown HTTP Accept?
+        #FIXME: Unknown accepted content. Pretending X-TAXII-Accept was TAXII 1.1
         sm = exception_to_status(exception, 11)
         version = VID_TAXII_SERVICES_11
 
-    response_headers = get_headers(version, is_secure)
+    response_headers = get_http_headers(version, is_secure)
 
     return (sm.to_xml(pretty_print=True), response_headers)
 

@@ -1,18 +1,14 @@
-# Copyright (c) 2014, The MITRE Corporation. All rights reserved.
-# For license information, see the LICENSE.txt file
 
 import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10
 from libtaxii.constants import *
-from libtaxii.common import generate_message_id
 
+from ...exceptions import StatusMessageException, raise_failure
+from ...entities import InboxMessageEntity, ContentBlockEntity
 from .base_handlers import BaseMessageHandler
-from ..exceptions import StatusMessageException, raise_failure
+
 
 class InboxMessage11Handler(BaseMessageHandler):
-    """
-    Built-in TAXII 1.1 Inbox Message Handler.
-    """
 
     supported_request_messages = [tm11.InboxMessage]
 
@@ -22,16 +18,17 @@ class InboxMessage11Handler(BaseMessageHandler):
         collections = inbox_service.validate_destination_collection_names(
                 inbox_message.destination_collection_names, inbox_message.message_id)
 
-        blocks = []
-        saved_blocks = 0
+        message = InboxMessageEntity.to_entity(inbox_message,
+                received_via=inbox_service.id, version=11)
 
-        inbox_message_entity = inbox_service.server.storage.save_inbox_message(inbox_message, received_via=inbox_service.id, version=11)
+        message = inbox_service.server.storage.save_inbox_message(message)
 
         for content_block in inbox_message.content_blocks:
 
             is_supported = inbox_service.is_content_supported(content_block.content_binding, version=11)
 
-            # FIXME: is it a right thing to do?
+            # FIXME: is it correct to skip unsupported content blocks?
+            # 3.2 Inbox Exchange, http://taxii.mitre.org/specifications/version1.1/TAXII_Services_Specification.pdf
             if not is_supported:
                 continue
 
@@ -45,15 +42,15 @@ class InboxMessage11Handler(BaseMessageHandler):
                 # There's nothing to add this content block to
                 continue
 
-            inbox_service.server.storage.save_content_block(content_block, inbox_message_entity=inbox_message_entity,
-                    collections=supporting_collections, version=11)
+            block = ContentBlockEntity.to_entity(content_block, inbox_message_entity=message, version=11)
 
-            saved_blocks += 1
-        
+            inbox_service.server.storage.save_content_block(block, inbox_message_entity=message,
+                    collections=supporting_collections)
+
 
         # Create and return a Status Message indicating success
         status_message = tm11.StatusMessage(
-            message_id = generate_message_id(),
+            message_id = cls.generate_id(),
             in_response_to = inbox_message.message_id,
             status_type = ST_SUCCESS
         )
@@ -70,25 +67,32 @@ class InboxMessage10Handler(BaseMessageHandler):
     @classmethod
     def handle_message(cls, inbox_service, inbox_message):
 
-        inbox_message_entity = inbox_service.server.storage.save_inbox_message(inbox_message, received_via=inbox_service.id, version=10)
+        collections = inbox_service.get_destination_collections()
+
+        message = InboxMessageEntity.to_entity(inbox_message,
+                received_via=inbox_service.id, version=10)
+        message = inbox_service.server.storage.save_inbox_message(message)
 
         for content_block in inbox_message.content_blocks:
             is_supported = inbox_service.is_content_supported(content_block.content_binding, version=10)
 
-            # FIXME: is it a right thing to do?
             if not is_supported:
                 continue
 
-            inbox_service.server.storage.save_content_block(content_block, inbox_message_entity=inbox_message_entity, version=10)
+            block = ContentBlockEntity.to_entity(content_block, inbox_message_entity=message, version=10)
+
+            inbox_service.server.storage.save_content_block(block, inbox_message_entity=message,
+                    collections=collections)
 
 
         status_message = tm10.StatusMessage(
-            message_id = generate_message_id(),
+            message_id = cls.generate_id(),
             in_response_to = inbox_message.message_id,
             status_type = ST_SUCCESS
         )
 
         return status_message
+
 
 class InboxMessageHandler(BaseMessageHandler):
     """
