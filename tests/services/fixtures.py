@@ -8,17 +8,15 @@ CUSTOM_CONTENT_BINDING = 'custom:content:binding'
 INVALID_CONTENT_BINDING = 'invalid:content:binding'
 
 INBOX_A = dict(
-    id = 'inbox-A',
     type = 'inbox',
     description = 'inbox-A description',
-    destination_collection_required = 'no',
+    destination_collection_required = False,
     address = '/relative/path/inbox-a',
-    accept_all_content = 'yes',
+    accept_all_content = True,
     protocol_bindings = PROTOCOL_BINDINGS
 )
 
 INBOX_B = dict(
-    id = 'inbox-B',
     type = 'inbox',
     description = 'inbox-B description',
     destination_collection_required = 'yes',
@@ -28,7 +26,6 @@ INBOX_B = dict(
 )
 
 DISCOVERY_A = dict(
-    id = 'discovery-A',
     type = 'discovery',
     description = 'discovery-A description',
     address = '/relative/path/discovery-a',
@@ -37,7 +34,6 @@ DISCOVERY_A = dict(
 )
 
 DISCOVERY_B = dict(
-    id = 'discovery-B',
     type = 'discovery',
     description = 'External discovery-B service',
     address = 'http://something.com/absolute/path/discovery-b',
@@ -47,9 +43,14 @@ DISCOVERY_B = dict(
 DOMAIN = 'www.some-example.com'
 
 INTERNAL_SERVICES = [INBOX_A, INBOX_B, DISCOVERY_A]
-SERVICES = INTERNAL_SERVICES + [DISCOVERY_B]
+SERVICES = {
+    'inbox-A' : INBOX_A,
+    'inbox-B' : INBOX_B,
+    'discovery-A' : DISCOVERY_A,
+    'discovery-B' : DISCOVERY_B
+}
 
-INSTANCES_CONFIGURED = sum(len(s['protocol_bindings']) for s in SERVICES)
+INSTANCES_CONFIGURED = sum(len(s['protocol_bindings']) for s in SERVICES.values())
 
 MESSAGE_ID = '123'
 CONTENT = 'some-content'

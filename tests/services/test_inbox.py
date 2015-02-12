@@ -54,8 +54,9 @@ def storage():
 @pytest.fixture
 def server(storage):
     
-    config = ServerConfig.load(services_properties=SERVICES)
-    server = TAXIIServer(DOMAIN, config.unpacked_services, storage=storage)
+    config = ServerConfig(services_properties=SERVICES)
+
+    server = TAXIIServer(DOMAIN, config.services, storage=storage)
 
     collections = map(storage.save_collection, COLLECTIONS)
 

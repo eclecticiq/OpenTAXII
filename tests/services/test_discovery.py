@@ -18,8 +18,9 @@ def server():
     db_connection = 'sqlite:///%s/server.db' % tempdir
     storage = DataStorage(api=SQLDB(db_connection, create_tables=True))
     
-    config = ServerConfig.load(services_properties=SERVICES)
-    server = TAXIIServer(DOMAIN, config.unpacked_services, storage=storage)
+    config = ServerConfig(services_properties=SERVICES)
+
+    server = TAXIIServer(DOMAIN, config.services, storage=storage)
 
     return server
 

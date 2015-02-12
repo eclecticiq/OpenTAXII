@@ -12,17 +12,15 @@ from taxii_server.utils import configure_logging
 from taxii_server.taxii.http import *
 
 INBOX = dict(
-    id = 'inboxA',
     type = 'inbox',
     description = 'inboxA description',
-    destination_collection_required = 'yes',
+    destination_collection_required = True,
     address = '/relative/path',
-    accept_all_content = 'yes',
+    accept_all_content = True,
     protocol_bindings = ['urn:taxii.mitre.org:protocol:http:1.0', 'urn:taxii.mitre.org:protocol:https:1.0']
 )
 
 DISCOVERY = dict(
-    id = 'discoveryA',
     type = 'discovery',
     description = 'discoveryA description',
     address = '/relative/discovery',
@@ -31,8 +29,11 @@ DISCOVERY = dict(
 )
 
 
-SERVICES = [INBOX, DISCOVERY]
-INSTANCES_CONFIGURED = sum(len(s['protocol_bindings']) for s in SERVICES)
+SERVICES = {
+    'inboxA' : INBOX,
+    'discoveryA' : DISCOVERY
+}
+INSTANCES_CONFIGURED = sum(len(s['protocol_bindings']) for s in SERVICES.values())
 MESSAGE_ID = '123'
 
 configure_logging('debug')
@@ -43,12 +44,11 @@ def client():
 
     server_config = dict(
         db_connection = 'sqlite:///%s/server.db' % tempdir,
-        create_tables = 'yes'
+        create_tables = True
     )
 
     app = create_app(server_properties=server_config, services_properties=SERVICES)
     app.config['TESTING'] = True
-
 
     return app.test_client()
 

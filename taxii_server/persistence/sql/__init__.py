@@ -8,9 +8,9 @@ from . import models
 
 class SQLDB(object):
 
-    def __init__(self, db_connection_string, create_tables=False):
+    def __init__(self, db_connection, create_tables=False):
 
-        self.engine = engine.create_engine(db_connection_string, convert_unicode=True)
+        self.engine = engine.create_engine(db_connection, convert_unicode=True)
 
         self.Session = orm.scoped_session(orm.sessionmaker(autocommit=False,
             autoflush=True, bind=self.engine))

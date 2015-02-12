@@ -10,6 +10,7 @@ import intelworks.logging
 
 def get_path_and_address(domain, address):
     parsed = urlparse.urlparse(address)
+
     if parsed.scheme:
         return None, address
     else:
@@ -27,6 +28,8 @@ class SimpleRenderer(object):
         return '%(timestamp)s [%(logger)s] %(level)s: %(message)s' % dict(message=message, **event_dict)
 
 
+def configure_logging(config):
+    import logging
+    logging.basicConfig(level=logging.DEBUG)
 
-def configure_logging(level):
-    intelworks.logging.configure(level)
+    #intelworks.logging.configure_loggers(config)

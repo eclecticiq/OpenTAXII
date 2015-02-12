@@ -20,7 +20,7 @@ log = structlog.get_logger(__name__)
 
 def create_app(server_properties=None, services_properties=None):
 
-    config = ServerConfig.load(server_properties=server_properties,
+    config = ServerConfig(server_properties=server_properties,
             services_properties=services_properties)
 
     app = Flask(__name__)
@@ -36,14 +36,16 @@ def create_app(server_properties=None, services_properties=None):
 
 def create_server(config):
 
-    storage = DataStorage(api=SQLDB(config.server.db_connection,
-        create_tables=config.server.create_tables))
+    storage = DataStorage(api=SQLDB(**config['server']['api']))
 
-    server = TAXIIServer(domain=config.server.domain, services_properties=config.unpacked_services,
-            storage=storage)
+    server = TAXIIServer(
+        domain = config['server']['domain'],
+        services_properties = config.services,
+        storage = storage
+    )
 
-    if config.server.storage_hooks:
-        importlib.import_module(config.server.storage_hooks)
+    if config['server']['hooks']:
+        importlib.import_module(config['server']['hooks'])
 
     return server
 

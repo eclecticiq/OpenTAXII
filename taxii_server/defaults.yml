@@ -1,0 +1,31 @@
+---
+server:
+  domain: example.com
+  api:
+    db_connection: sqlite:////tmp/server.db
+    create_tables: yes
+  logging:
+    taxii_server: info
+    libtaxii: info
+  hooks: 
+
+services_defaults:
+  inbox:
+    address: /services/inbox
+    description: Default Inbox Service description
+
+    destination_collection_required: no
+    accept_all_content: no
+    supported_content: []
+    protocol_bindings:
+      - urn:taxii.mitre.org:protocol:http:1.0
+      - urn:taxii.mitre.org:protocol:https:1.0
+
+  discovery:
+    address: /services/discovery
+    description: Default Discovery Service description
+
+    advertised_services: []
+    protocol_bindings: urn:taxii.mitre.org:protocol:http:1.0,urn:taxii.mitre.org:protocol:https:1.0
+
+services: {}

@@ -17,18 +17,19 @@ class TAXIIServer(object):
         self.services = []
         self.path_to_service = dict()
 
-        self.__create_services(services_properties)
+        self._create_services(services_properties)
 
-        log.info('%d services configured', len(self.services))
+        log.info('%d services configured' % len(self.services))
 
 
-    def __create_services(self, services):
+    def _create_services(self, services):
 
         discovery_services = []
 
         for type, id, options in services:
 
             options['server'] = self
+
             path, options['address'] = get_path_and_address(self.domain, options['address'])
 
             if type == 'inbox':
