@@ -10,7 +10,6 @@ log = structlog.get_logger(__name__)
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
-
 CONFIG_ENV_VAR = 'TAXII_SERVER_CONFIG'
 DEFAULT_CONFIG = os.path.join(current_dir, 'defaults.yml')
 

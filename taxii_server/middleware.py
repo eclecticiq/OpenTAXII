@@ -10,8 +10,8 @@ from .taxii.status import process_status_exception
 
 from .options import ServerConfig
 from .server import TAXIIServer
-from .persistence.sql import SQLDB
-from .persistence import DataStorage
+from .data.sql import SQLDB
+from .data import DataManager
 from .utils import configure_logging
 
 import structlog
@@ -36,12 +36,14 @@ def create_app(server_properties=None, services_properties=None):
 
 def create_server(config):
 
-    storage = DataStorage(api=SQLDB(**config['server']['api']))
+    manager = DataManager(
+        config = config,
+        api = SQLDB(**config['server']['api'])
+    )
 
     server = TAXIIServer(
         domain = config['server']['domain'],
-        services_properties = config.services,
-        storage = storage
+        data_manager = manager
     )
 
     if config['server']['hooks']:
