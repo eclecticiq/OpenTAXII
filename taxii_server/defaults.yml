@@ -9,6 +9,8 @@ server:
     libtaxii: info
   hooks: 
 
+services: {}
+
 services_defaults:
   inbox:
     address: /services/inbox
@@ -26,6 +28,15 @@ services_defaults:
     description: Default Discovery Service description
 
     advertised_services: []
-    protocol_bindings: urn:taxii.mitre.org:protocol:http:1.0,urn:taxii.mitre.org:protocol:https:1.0
+    protocol_bindings:
+      - urn:taxii.mitre.org:protocol:http:1.0
+      - urn:taxii.mitre.org:protocol:https:1.0
 
-services: {}
+  collection_management:
+    address: /services/collection-management
+    description: Default Collection Management Service description
+    protocol_bindings:
+      - urn:taxii.mitre.org:protocol:http:1.0
+      - urn:taxii.mitre.org:protocol:https:1.0
+
+
