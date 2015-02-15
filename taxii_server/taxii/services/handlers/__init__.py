@@ -1,7 +1,7 @@
 
 from .discovery_request_handlers import DiscoveryRequestHandler
 from .inbox_message_handlers import InboxMessageHandler
-#from .collection_information_request_handlers import CollectionInformationRequestHandler
+from .collection_information_request_handlers import CollectionInformationRequestHandler
 
 #from .poll_fulfilment_request_handlers import PollFulfilmentRequestHandler
 #from .poll_request_handlers import PollRequestHandler

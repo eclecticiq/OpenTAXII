@@ -8,7 +8,7 @@ from libtaxii.constants import *
 from lxml.etree import XMLSyntaxError
 
 from .exceptions import StatusMessageException, StatusBadMessage, StatusUnsupportedQuery
-from .bindings import MESSAGE_VALIDATOR_PARSER, PROTOCOL_TO_SCHEME
+from .bindings import MESSAGE_VALIDATOR_PARSER
 
 import structlog
 log = structlog.get_logger(__name__)
@@ -41,21 +41,12 @@ def parse_message(content_type, body, do_validate=True):
 
 
 
-def service_to_instances(service, version=10):
+def service_to_instances(service, version):
     service_instances = []
-
-    if not service.supported_protocol_bindings:
-        raise Exception("No supported protocol bindings configured")
 
     for binding in service.supported_protocol_bindings:
         
-        address = service.address
-
-        #FIXME: there should be a better place to put this
-        if binding in PROTOCOL_TO_SCHEME:
-            scheme = PROTOCOL_TO_SCHEME[binding]
-            if scheme and not address.startswith(scheme):
-                address = scheme + address
+        address = service.absolute_address(binding)
 
         if version == 10:
 

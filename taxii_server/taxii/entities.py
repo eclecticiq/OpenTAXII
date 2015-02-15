@@ -1,11 +1,29 @@
 from collections import namedtuple
 
 from .bindings import *
-from .utils import is_content_supported
+from .utils import is_content_supported, prepare_supported_content
 
     
-class DataCollectionEntity(namedtuple('DataCollectionEntity',
-    ["id", "name", "description", "type", "enabled", "accept_all_content", "supported_content", "content_blocks", "inbox_id"])):
+class CollectionEntity(object):
+
+    TYPE_FEED = CT_DATA_FEED
+    TYPE_SET = CT_DATA_SET
+
+    def __init__(self, name, id=None, description=None, type=TYPE_FEED,
+            accept_all_content=False, supported_content=[], available=True):
+
+        self.id = id
+        self.name = name
+        self.available = available
+
+        if type not in [self.TYPE_FEED, self.TYPE_SET]:
+            raise ValueError('Unknown collection type "%s"' % type)
+
+        self.type = type
+
+        self.description = description
+        self.accept_all_content = accept_all_content
+        self.supported_content = supported_content
 
 
     def is_content_supported(self, content_binding):
@@ -15,14 +33,20 @@ class DataCollectionEntity(namedtuple('DataCollectionEntity',
         return is_content_supported(self.supported_content, content_binding)
 
 
-    #FIXME: type is none because it is not used anythere yet
-    @staticmethod
-    def create(name, type=None, id=None, enabled=True, description=None, accept_all_content=True,
-            supported_content=[], content_blocks=[], inbox_id=None):
+    def as_dict(self):
+        return self.__dict__
 
-        return DataCollectionEntity(id=id, name=name, description=description, type=type, enabled=enabled,
-                accept_all_content=accept_all_content, inbox_id=inbox_id, supported_content=supported_content,
-                content_blocks=content_blocks)
+    def get_supported_content(self, version):
+
+        if self.accept_all_content:
+            return []
+
+        return prepare_supported_content(self.supported_content, version)
+
+
+    def __repr__(self):
+        return "CollectionEntity(name=%s, type=%s, supported_content=%s)" % (self.name, self.type, self.supported_content)
+
 
 
 class ContentBlockEntity(namedtuple('ContentBlockEntityFields',

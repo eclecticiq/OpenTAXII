@@ -43,7 +43,7 @@ class DiscoveryRequestHandler(BaseMessageHandler):
         elif isinstance(discovery_request, tm11.DiscoveryRequest):
             return DiscoveryRequest11Handler.handle_message(discovery_service, discovery_request)
         else:
-            raise_failure("TAXII Message not supported by Message Handler", discovery_request.message_id)
+            raise_failure("TAXII Message not supported by message handler", discovery_request.message_id)
 
 
 def convert_discovery_response(response, in_response_to, version):

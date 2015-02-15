@@ -1,23 +1,29 @@
 from collections import namedtuple
 
-from .taxii.services import DiscoveryService, InboxService
+from .taxii.services import DiscoveryService, InboxService, CollectionManagementService
 from .utils import get_path_and_address
 
 import structlog
 log = structlog.get_logger(__name__)
 
+TYPE_TO_SERVICE = dict(
+    inbox = InboxService,
+    discovery = DiscoveryService,
+    collection_management = CollectionManagementService
+)
+
 class TAXIIServer(object):
 
 
-    def __init__(self, domain, services_properties, storage):
+    def __init__(self, domain, data_manager):
 
-        self.storage = storage 
+        self.data_manager = data_manager
         self.domain = domain
 
         self.services = []
         self.path_to_service = dict()
 
-        self._create_services(services_properties)
+        self._create_services(data_manager.get_services())
 
         log.info('%d services configured' % len(self.services))
 
@@ -26,24 +32,25 @@ class TAXIIServer(object):
 
         discovery_services = []
 
-        for type, id, options in services:
+        for _type, id, props in services:
 
-            options['server'] = self
+            _props = dict(props)
+            _props['server'] = self
 
-            path, options['address'] = get_path_and_address(self.domain, options['address'])
+            raw_address = _props['address']
+            advertised = _props.pop('advertised_services', None)
 
-            if type == 'inbox':
-                service = InboxService(id=id, **options)
-            elif type == 'discovery':
-                advertised = options.pop('advertised_services')
-                service = DiscoveryService(id=id, **options)
+            path, _props['address'] = get_path_and_address(self.domain, raw_address)
 
-                if advertised:
-                    discovery_services.append((service, advertised))
-            else:
-                raise RuntimeError('Unknown service type "%s"' % type)
+            if _type not in TYPE_TO_SERVICE:
+                raise RuntimeError('Unknown service type "%s"' % _type)
+
+            service = TYPE_TO_SERVICE[_type](id=id, **_props)
 
             self.services.append(service)
+
+            if advertised:
+                discovery_services.append((service, advertised))
 
             if path:
                 self.path_to_service[path] = service
@@ -51,4 +58,6 @@ class TAXIIServer(object):
         for service, advertised in discovery_services:
             service.set_advertised_services([s for s in self.services if s.id in advertised])
 
+    def get_services(self, ids):
+        return filter(lambda s: s.id in ids, self.services)
 
