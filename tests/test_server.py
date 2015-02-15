@@ -4,8 +4,8 @@ import tempfile
 from taxii_server.server import TAXIIServer
 from taxii_server.options import ServerConfig
 
-from taxii_server.persistence.sql import SQLDB
-from taxii_server.persistence import DataStorage
+from taxii_server.data.sql import SQLDB
+from taxii_server.data import DataManager
 
 INBOX = dict(
     type = 'inbox',
@@ -46,11 +46,10 @@ def server():
 
     tempdir = tempfile.mkdtemp()
     db_connection = 'sqlite:///%s/server.db' % tempdir
-    storage = DataStorage(api=SQLDB(db_connection, create_tables=True))
 
     config = ServerConfig(services_properties=SERVICES)
-    
-    server = TAXIIServer(DOMAIN, services_properties=config.services, storage=storage)
+    manager = DataManager(config=config, api=SQLDB(db_connection, create_tables=True))
+    server = TAXIIServer(DOMAIN, data_manager=manager)
 
     return server
 
