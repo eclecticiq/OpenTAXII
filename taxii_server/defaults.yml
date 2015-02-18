@@ -5,8 +5,9 @@ server:
     db_connection: sqlite:////tmp/server.db
     create_tables: yes
   logging:
-    taxii_server: info
+    taxii_server: debug
     libtaxii: info
+    "": info
   hooks: 
 
 services: {}
