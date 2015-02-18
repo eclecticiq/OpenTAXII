@@ -8,12 +8,13 @@ setup(
     include_package_data = True,
 
     package_data = {
-        'taxii_server' : ['*.ini', '*.yml']
+        'taxii_server' : ['*.yml']
     },
 
     install_requires = [
         'libtaxii==1.1.105-SNAPSHOT',
         'intelworks-common',
+        'anyconfig',
         'structlog',
         'Flask',
         'sqlalchemy',

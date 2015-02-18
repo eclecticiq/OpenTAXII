@@ -8,3 +8,4 @@ gunicorn
 structlog
 blinker
 intelworks-common
+anyconfig
