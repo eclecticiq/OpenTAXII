@@ -1,6 +1,9 @@
 from collections import namedtuple
 
-from .taxii.services import DiscoveryService, InboxService, CollectionManagementService
+from .taxii.services import (
+        DiscoveryService, InboxService, CollectionManagementService,
+        PollService
+)
 from .utils import get_path_and_address
 
 import structlog
@@ -9,7 +12,8 @@ log = structlog.get_logger(__name__)
 TYPE_TO_SERVICE = dict(
     inbox = InboxService,
     discovery = DiscoveryService,
-    collection_management = CollectionManagementService
+    collection_management = CollectionManagementService,
+    poll = PollService
 )
 
 class TAXIIServer(object):

@@ -15,46 +15,41 @@ def process_status_exception(exception, headers, is_secure):
     if not accepted_content:  # Can respond with whatever we want. try to use the X-TAXII-Content-Type header to pick
         accepted_content = headers.get(HTTP_X_TAXII_CONTENT_TYPE)
 
+    try:
+        status = exception_to_status(exception, accepted_content)
+    except ValueError:
+        status = exception_to_status(exception, VID_TAXII_XML_11)
+
     if accepted_content == VID_TAXII_XML_10:
-        sm = exception_to_status(exception, 10)
         version = VID_TAXII_SERVICES_10
     elif accepted_content == VID_TAXII_XML_11:
-        sm = exception_to_status(exception, 11)
         version = VID_TAXII_SERVICES_11
     else:
         #FIXME: Unknown accepted content. Pretending X-TAXII-Accept was TAXII 1.1
-        sm = exception_to_status(exception, 11)
         version = VID_TAXII_SERVICES_11
 
     response_headers = get_http_headers(version, is_secure)
 
-    return (sm.to_xml(pretty_print=True), response_headers)
+    return status.to_xml(pretty_print=True), response_headers
 
 
-def exception_to_status_format(exception, format):
-    if format == VID_TAXII_XML_11:
-        return exception_to_status(exception, 11)
-    elif format == VID_TAXII_XML_10:
-        return exception_to_status(exception, 10)
-    else:
-        raise ValueError("Unknown value for format: %s" % format)
-
-
-def exception_to_status(exception, version):
+def exception_to_status(exception, format_version):
 
     data = dict(
         message_id = generate_message_id(),
         in_response_to = exception.in_response_to,
         extended_headers = exception.extended_headers,
         status_type = exception.status_type,
-        status_detail = exception.status_detail,
+        status_detail = exception.status_details,
         message = exception.message
     )
 
-    if version == 11:
+    if format_version == VID_TAXII_XML_11:
         sm = tm11.StatusMessage(**data)
-    elif version == 10:
+    elif format_version == VID_TAXII_XML_10:
         sm = tm10.StatusMessage(**data)
+    else:
+        raise ValueError("Unknown version: %s" % format_version)
 
     return sm
 

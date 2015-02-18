@@ -15,7 +15,6 @@ services_defaults:
   inbox:
     address: /services/inbox
     description: Default Inbox Service description
-
     destination_collection_required: no
     accept_all_content: no
     supported_content: []
@@ -26,7 +25,6 @@ services_defaults:
   discovery:
     address: /services/discovery
     description: Default Discovery Service description
-
     advertised_services: []
     protocol_bindings:
       - urn:taxii.mitre.org:protocol:http:1.0
@@ -38,5 +36,16 @@ services_defaults:
     protocol_bindings:
       - urn:taxii.mitre.org:protocol:http:1.0
       - urn:taxii.mitre.org:protocol:https:1.0
+
+  poll:
+    address: /services/poll
+    description: Default Poll Service description
+    subscription_required: no
+    max_result_count: -1
+    max_result_size: -1
+    protocol_bindings:
+      - urn:taxii.mitre.org:protocol:http:1.0
+      - urn:taxii.mitre.org:protocol:https:1.0
+
 
 
