@@ -32,10 +32,7 @@ class SimpleRenderer(object):
 
 
 def configure_logging(config):
-    import logging
-    logging.basicConfig(level=logging.DEBUG)
-
-    #intelworks.logging.configure_loggers(config)
+    intelworks.logging.configure(config)
 
 
 
