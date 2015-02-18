@@ -15,6 +15,7 @@ setup(
         'libtaxii==1.1.105-SNAPSHOT',
         'pytz==2014.10',
         'intelworks-common',
+        'pyyaml',
         'anyconfig',
         'structlog',
         'Flask',
