@@ -38,7 +38,6 @@ class InboxService(TaxiiService):
         self.destination_collection_required = destination_collection_required
 
 
-
     def is_content_supported(self, content_binding, version=None):
 
         if self.accept_all_content:

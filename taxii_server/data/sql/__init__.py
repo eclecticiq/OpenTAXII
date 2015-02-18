@@ -239,6 +239,8 @@ class SQLDB(object):
         updated = s.merge(content)
         s.commit()
 
+        print updated
+
         return to_block_entity(updated)
 
 

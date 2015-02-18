@@ -43,7 +43,8 @@ class ContentBlock(Timestamped):
     binding_subtype = Column(String(MAX_NAME_LENGTH))
 
     def __str__(self):
-        return 'ContentBlock(%s, %s, %s)' % (self.id, self.inbox_message_id, self.binding)
+        return 'ContentBlock(id=%s, inbox_message=%s, binding=[%s, %s])' % (
+                self.id, self.inbox_message_id, self.binding_id, self.binding_subtype)
 
 
 

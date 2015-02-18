@@ -7,6 +7,8 @@ from ...exceptions import StatusMessageException, raise_failure
 from ...entities import InboxMessageEntity, ContentBlockEntity, ContentBindingEntity
 from .base_handlers import BaseMessageHandler
 
+import structlog
+log = structlog.getLogger(__name__)
 
 class InboxMessage11Handler(BaseMessageHandler):
 
@@ -30,6 +32,7 @@ class InboxMessage11Handler(BaseMessageHandler):
             # FIXME: is it correct to skip unsupported content blocks?
             # 3.2 Inbox Exchange, http://taxii.mitre.org/specifications/version1.1/TAXII_Services_Specification.pdf
             if not is_supported:
+                log.warning("Content block binding is not supported: %s", content_block.content_binding)
                 continue
 
             supporting_collections = []
@@ -40,6 +43,7 @@ class InboxMessage11Handler(BaseMessageHandler):
 
             if len(supporting_collections) == 0 and not is_supported:
                 # There's nothing to add this content block to
+                log.warning("No collection that support binding %s were found", content_block.content_binding)
                 continue
 
             block = to_content_block_entity(content_block, inbox_message_entity=message, version=11)
@@ -78,6 +82,7 @@ class InboxMessage10Handler(BaseMessageHandler):
             is_supported = inbox_service.is_content_supported(content_block.content_binding, version=10)
 
             if not is_supported:
+                log.warning("Content block binding is not supported: %s", content_block.content_binding)
                 continue
 
             block = to_content_block_entity(content_block, inbox_message_entity=message, version=10)
