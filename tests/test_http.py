@@ -70,8 +70,6 @@ def prepare_headers(version, https=False):
 
     headers[HTTP_ACCEPT] = HTTP_CONTENT_XML
 
-    print headers
-
     return headers
 
 

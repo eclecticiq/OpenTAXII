@@ -1,9 +1,20 @@
 from collections import namedtuple
 
 from .bindings import *
-from .utils import is_content_supported, prepare_supported_content
+from .utils import is_content_supported, prepare_supported_content, content_bindings_intersection
+from .transform import to_content_binding, to_content_bindings
 
+
+class ContentBindingEntity(object):
+
+    def __init__(self, binding, subtypes=[]):
+        self.binding = binding
+        self.subtypes = subtypes
+
+    def __repr__(self):
+        return "ContentBindingEntity(%s, %s)" % (self.binding, self.subtypes)
     
+
 class CollectionEntity(object):
 
     TYPE_FEED = CT_DATA_FEED
@@ -23,7 +34,20 @@ class CollectionEntity(object):
 
         self.description = description
         self.accept_all_content = accept_all_content
-        self.supported_content = supported_content
+
+        self.supported_content = []
+        for content in supported_content:
+            if isinstance(content, basestring):
+                binding = ContentBindingEntity(content)
+            elif isinstance(content, tuple):
+                bid, subtypes = content
+                binding = ContentBindingEntity(bid, subtypes=subtypes)
+            elif isinstance(content, ContentBindingEntity):
+                binding = content
+            else:
+                raise ValueError('Unknown content binding "%s"' % content)
+
+            self.supported_content.append(binding)
 
 
     def is_content_supported(self, content_binding):
@@ -36,6 +60,7 @@ class CollectionEntity(object):
     def as_dict(self):
         return self.__dict__
 
+
     def get_supported_content(self, version):
 
         if self.accept_all_content:
@@ -44,111 +69,70 @@ class CollectionEntity(object):
         return prepare_supported_content(self.supported_content, version)
 
 
+
+    def get_matching_bindings(self, requested_bindings):
+
+        if self.accept_all_content:
+            return requested_bindings
+
+        return content_bindings_intersection(self.supported_content, requested_bindings)
+
+
     def __repr__(self):
         return "CollectionEntity(name=%s, type=%s, supported_content=%s)" % (self.name, self.type, self.supported_content)
 
 
 
-class ContentBlockEntity(namedtuple('ContentBlockEntityFields',
-    ["id", "message", "inbox_message_id", "content", "padding", "timestamp_label", "content_binding"])):
+class ContentBlockEntity(object):
+
+    def __init__(self, content, timestamp_label, content_binding=None, id=None,
+            message=None, inbox_message_id=None):
+
+        self.content = content
+
+        self.id = id
+        self.timestamp_label = timestamp_label
+        self.content_binding = content_binding
+        self.message = message
+        self.inbox_message_id = inbox_message_id
 
 
-    @staticmethod
-    def to_entity(content_block, inbox_message_entity=None, version=10):
+    def as_dict(self):
+        return self.__dict__
 
-        if version == 10:
-            content_binding = ContentBinding(binding=content_block.content_binding, subtypes=None)
-            message = None
-
-        elif version == 11:
-
-            content_binding = ContentBinding(
-                binding = content_block.content_binding.binding_id,
-                subtypes = content_block.content_binding.subtype_ids or None
-            )
-
-            message = content_block.message
-
-        # TODO: What about signatures?
-
-        return ContentBlockEntity(
-            id = None,
-            message = message,
-            inbox_message_id = inbox_message_entity.id,
-            content = content_block.content,
-            padding = content_block.padding,
-            timestamp_label = content_block.timestamp_label,
-            content_binding = content_binding
-        )
+    def __repr__(self):
+        return "ContentBlockEntity(%s)" % ", ".join(("%s=%s" % (k, v)) for k, v in sorted(self.as_dict().items()))
 
 
 
-    @staticmethod
-    def from_entity(content_block, version=10):
-        if version == 10:
-            content_binding = content_block.content_binding_and_subtype.content_binding.binding_id
-            cb = tm10.ContentBlock(content_binding=content_binding, content=content_block.content, padding=content_block.padding)
+class InboxMessageEntity(object):
 
-        elif version == 11:
-            content_binding = tm11.ContentBinding(content_block.content_binding_and_subtype.content_binding.binding_id)
-            if content_block.content_binding_and_subtype.subtype:
-                content_binding.subtype_ids.append(content_block.content_binding_and_subtype.subtype.subtype_id)
-            cb = tm11.ContentBlock(content_binding=content_binding, content=content_block.content, padding=content_block.padding)
+    def __init__(self, message_id, original_message, content_block_count, id=None,
+            result_id=None, destination_collections=[], record_count=None,
+            partial_count=False, subscription_collection_name=None, subscription_id=None,
+            exclusive_begin_timestamp_label=None, inclusive_end_timestamp_label=None):
 
-        return cb
+        self.id = id
 
+        self.message_id = message_id
+        self.original_message = original_message
+        self.content_block_count = content_block_count
 
-class InboxMessageEntity(namedtuple('InboxMessageEntityFields',
-    ["id", "message_id", "sending_ip", "result_id", "record_count", "partial_count",
-        "collection_name", "subscription_id", "exclusive_begin_timestamp_label", "inclusive_end_timestamp_label",
-        "original_message", "content_block_count"])):
+        self.destination_collections = destination_collections
 
-    @staticmethod
-    def to_entity(inbox_message, received_via=None, version=10):
+        self.result_id = result_id
+        self.record_count = record_count
+        self.partial_count = partial_count
 
-        params = dict((f, None) for f in InboxMessageEntity._fields)
+        self.subscription_collection_name = subscription_collection_name
+        self.subscription_id = subscription_id
 
-        params.update(dict(
-            message_id = inbox_message.message_id,
-            original_message = inbox_message.to_xml(), #FIXME: raw?
-            content_block_count = len(inbox_message.content_blocks),
-            result_id = getattr(inbox_message, "result_id", None),
-        ))
+        self.exclusive_begin_timestamp_label = exclusive_begin_timestamp_label
+        self.inclusive_end_timestamp_label = inclusive_end_timestamp_label
 
-        #params['received_via'] = received_via  # This is an inbox service
-        #inbox_message_db.sending_ip = django_request.META.get('REMOTE_ADDR', None)
+    def as_dict(self):
+        return self.__dict__
 
-        if version == 10:
-
-            if inbox_message.subscription_information:
-                si = inbox_message.subscription_information
-                params.update(dict(
-                    collection_name = si.feed_name,
-                    subscription_id = si.subscription_id,
-
-                # TODO: Match up exclusive vs inclusive
-                    exclusive_begin_timestamp_label = si.inclusive_begin_timestamp_label, #FIXME: ??
-                    inclusive_end_timestamp_label = si.inclusive_end_timestamp_label,
-                ))
-
-        elif version == 11:
-
-            if inbox_message.record_count:
-                params['record_count'] = inbox_message.record_count.record_count
-                params['partial_count'] = inbox_message.record_count.partial_count
-
-            if inbox_message.subscription_information:
-                si = inbox_message.subscription_information
-                params.update(dict(
-                    collection_name = si.collection_name,
-                    subscription_id = si.subscription_id,
-
-                    exclusive_begin_timestamp_label = si.exclusive_begin_timestamp_label,
-                    inclusive_end_timestamp_label = si.inclusive_end_timestamp_label
-                ))
-
-
-        return InboxMessageEntity(**params)
-
-
-
+    def __repr__(self):
+        return "InboxMessageEntity(%s)" % ", ".join(("%s=%s" % (k, v)) \
+                for k, v in sorted(self.as_dict().items()) if k != 'original_message')

@@ -1,102 +1,29 @@
 
-from .base_handlers import BaseMessageHandler
-from ..exceptions import StatusMessageException
-from ..utils import PollRequestProperties
-
 import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10
 from libtaxii.constants import *
 from libtaxii.common import generate_message_id
 
-from datetime import timedelta
+from .base_handlers import BaseMessageHandler
+from ...exceptions import StatusMessageException, raise_failure
+from ....data.exceptions import ResultsNotReady
+
+from ...entities import CollectionEntity
+from ...transform import to_content_bindings
+from ...utils import get_utc_now
+
+
+
+import structlog
+log = structlog.getLogger(__name__)
 
 
 class PollRequest11Handler(BaseMessageHandler):
-    """
-    Built-in TAXII 1.1 Poll Request Handler.
-
-    This handler has multiple extension points for developers
-    who want to extend and/or customize this class.
-    """
 
     supported_request_messages = [tm11.PollRequest]
-    version = "1"
 
     @classmethod
-    def get_content(cls, prp, query_kwargs):
-        """
-        Given a poll_params_dict get content from the database.
-
-        Arguments:
-            prp (util.PollRequestProperties) - Not used in this function, \
-                    but can be used by implementers extending this function.
-            query_kwargs (dict) - The parameters of the search for content
-
-        Returns:
-            An list of models.ContentBlock objects. Classes that override \
-            this method only need to return an iterable where each class has \
-            a 'to_content_block_11()' function.
-        """
-        content = prp.collection.content_blocks.filter(**query_kwargs).order_by('timestamp_label')
-
-        return content
-
-    @classmethod
-    def create_poll_response(cls, poll_service, prp, content):
-        """
-        Creates a poll response.
-
-        1. If the request's response type is "Count Only",
-        a single poll response w/ more=False used.
-        2. If the content size is less than the poll_service's
-        max_result_size, a poll response w/ more=False is used.
-        3. If the poll_service's max_result_size is blank,
-        a poll response w/ more=False used.
-        4. If the response type is "Full" and the total
-        number of contents are greater than the
-        poll_service's max_result_size, a ResultSet
-        is created, and a PollResponse w/more=True is used.
-        """
-
-        content_count = len(content)
-
-        # RT_COUNT_ONLY - Always use a single result
-        # RT_FULL - Use a single response if
-        #           poll_service.max_result_size is None or
-        #           len(content) <= poll_service.max_result_size
-        #           Use a Multi-Part response otherwise
-
-        if (prp.response_type == RT_COUNT_ONLY or
-            poll_service.max_result_size is None or
-            content_count <= poll_service.max_result_size):
-
-            poll_response = tm11.PollResponse(message_id=generate_message_id(),
-                                              in_response_to=prp.message_id,
-                                              collection_name=prp.collection.name,
-                                              result_part_number=1,
-                                              more=False,
-                                              exclusive_begin_timestamp_label=prp.exclusive_begin_timestamp_label,
-                                              inclusive_end_timestamp_label=prp.inclusive_end_timestamp_label,
-                                              record_count=tm11.RecordCount(content_count, False))
-            if prp.subscription:
-                    poll_response.subscription_id = prp.subscription.subscription_id
-
-            if prp.response_type == RT_FULL:
-                for c in content:
-                    poll_response.content_blocks.append(c.to_content_block_11())
-        else:
-            # Split into multiple result sets
-            result_set = handlers.create_result_set(poll_service, prp, content)
-            rsp_1 = models.ResultSetPart.objects.get(result_set__pk=result_set.pk, part_number=1)
-            poll_response = rsp_1.to_poll_response_11(prp.message_id)
-            result_set.last_part_returned = rsp_1
-            result_set.save()
-            response = poll_response
-
-        return poll_response
-
-    @classmethod
-    def create_pending_response(cls, poll_service, prp, content):
+    def create_pending_response(cls, service, prp, content):
         """
         Arguments:
             poll_service (models.PollService) - The TAXII Poll Service being invoked
@@ -138,136 +65,238 @@ class PollRequest11Handler(BaseMessageHandler):
             # TODO: Need to try pushing or something.
         return sm
 
+
     @classmethod
-    def handle_message(cls, poll_service, poll_request, django_request):
-        """
-        Handles a TAXII 1.1 Poll Request.
+    def handle_message(cls, service, request):
 
-        Workflow:
-            1. Create a util.PollRequestProperties object from the tm11.PollRequest
-            2. If a Query Handler exists, call the `QueryHandler.update_db_kwargs( ... )`
-               method of the Query Handler. This allows the QueryHandler a hook to modify the
-               database query arguments before the query is sent do the database.
-            3. Call `content = cls.get_content(PollRequestProperties, db_kwargs)`, which returns a list of
-               objects, each of which must have a `to_content_block_11()` function.
-            4. If a Query Handler exists, call the `QueryHandler.filter_content( ... )`
-               function. This allows the QueryHandler a hook to modify the results after they have been returned
-               from the database, but before they are returned to the requestor.
-            5. If the results are available "now", return the result of calling
-               `create_poll_response`.
-            6. (Experimental) If the results are not available "now", return the result
-                of calling `create_pending_response`.
-        """
-        # Populate a PollRequestProperties object from the poll request
-        # A lot of magic happens in this function call
-        prp = PollRequestProperties.from_poll_request_11(poll_service, poll_request)
-        supported_query = prp.supported_query
+        collection = service.get_collection(request.collection_name)
 
-        # Get the kwargs to search the DB with
-        db_kwargs = prp.get_db_kwargs()
+        if not collection:
+            message = 'The collection you requested was not found'
+            details = {SD_ITEM: name}
+            raise StatusMessageException(ST_NOT_FOUND, message=message,
+                    in_response_to=request.message_id, status_details=details)
 
-        # If a query handler exists, allow it to
-        # inject kwargs
-        if supported_query is not None:
-            supported_query.query_handler.get_handler_class().update_db_kwargs(prp, db_kwargs)
+        timeframe = (request.exclusive_begin_timestamp_label,
+                request.inclusive_end_timestamp_label)
 
-        # Get content from the database.
-        # content MUST be an iterable where each
-        # object has a `to_content_block_11()` function
-        content_blocks = cls.get_content(prp, db_kwargs)
+        params = request.poll_parameters
 
-        # If there is a query handler,
-        # allow it do to post-dbquery filtering
-        if supported_query:
-            content_blocks = supported_query.query_handler.get_handler_class().filter_content(prp, content_blocks)
+        requested_bindings = to_content_bindings(params.content_bindings, version=11)
+        content_bindings = collection.get_matching_bindings(requested_bindings)
 
-        # The way this handler is written, this will never be false
-        results_available = True  # TODO: Can this flag be usefully implemented?
+        if requested_bindings and not content_bindings:
+            details = {SD_SUPPORTED_CONTENT: collection.get_supported_content(version=11)}
+            raise StatusMessageException(ST_UNSUPPORTED_CONTENT_BINDING,
+                    in_response_to=request.message_id, status_details=details)
 
-        if results_available:
-            response = cls.create_poll_response(poll_service, prp, content_blocks)
+        if (request.inclusive_end_timestamp_label and request.exclusive_begin_timestamp_label) and \
+            request.exclusive_begin_timestamp_label > request.inclusive_end_timestamp_label :
+
+                message = "Exclusive begin timestamp label is later than inclusive end timestamp label"
+                raise_failure(message, request.message_id)
+
+
+        result_part = 1
+
+        try:
+            total_count = service.get_content_count(collection,
+                    timeframe=timeframe, content_bindings=content_bindings)
+
+        except ResultsNotReady:
+            raise Exception('Not implemented yet')
+            return cls.create_pending_response(poll_service, prp, content_blocks)
+
+        has_more = total_count > (result_part * service.max_result_size)
+        capped_count = min(service.max_result_count, total_count)
+        is_partial = (capped_count < total_count)
+
+        if has_more:
+            # create ResultSet
+            result_set = service.create_result_set(
+                collection = collection,
+                total_count = total_count,
+                last_part_returned = result_part
+                #subscription
+            )
+            result_id = result_set.id
         else:
-            response = cls.create_pending_response(poll_service, prp, content_blocks)
+            result_id = None
+
+        response = tm11.PollResponse(
+            message_id = generate_message_id(),
+            in_response_to = request.message_id,
+            collection_name = collection.name,
+
+            more = has_more,
+            result_id = result_id,
+            result_part_number = result_part,
+
+            exclusive_begin_timestamp_label = request.exclusive_begin_timestamp_label,
+            inclusive_end_timestamp_label = request.inclusive_end_timestamp_label,
+            record_count = tm11.RecordCount(capped_count, is_partial),
+            # subscription_id
+        )
+
+        #count_only = (params.response_type == RT_COUNT_ONLY)
+        if params.response_type == RT_FULL:
+
+            content_blocks = service.get_content(collection, timeframe=timeframe,
+                    content_bindings=content_bindings, part_number=result_part)
+
+            for block in content_blocks:
+                response.content_blocks.append(to_content_block(block, version=11))
 
         return response
 
 
+
 class PollRequest10Handler(BaseMessageHandler):
-    """
-    Built-in TAXII 1.0 Poll Request Handler
-    """
+
     supported_request_messages = [tm10.PollRequest]
-    version = "1"
 
     @classmethod
-    def get_content(cls, prp, query_kwargs):
-        """
+    def handle_message(cls, service, request):
 
-        :param prp: PollRequestProperties
-        :param query_kwargs: The parameters of the search for content
-        :return: A list of models.ContentBlock objects. Classes that override this  \
-                 method only need to return an iterable where each instance has a \
-                 'to_content_block_10()' function.
-        """
-        content = prp.collection.content_blocks.filter(**query_kwargs).order_by('timestamp_label')
+        collection = service.get_collection(request.feed_name)
 
-        return content
+        requested_bindings = to_content_bindings(request.content_bindings, version=10)
+        content_bindings = collection.get_matching_bindings(requested_bindings)
 
-    @classmethod
-    def create_poll_response(cls, poll_service, prp, content_blocks):
-        """
+         # Only Data Feeds existed in TAXII 1.0
+        if collection.type != collection.TYPE_FEED:
+            message = "The Named Data Collection is not a Data Feed, it is a Data Set. " + \
+                      "Only Data Feeds can be polled in TAXII 1.0"
+            details = {SD_ITEM: request.feed_name}
+            raise StatusMessageException(ST_NOT_FOUND, message=message,
+                    status_details=details, in_response_to=request.message_id)
 
-        :param poll_service:
-        :param prp:
-        :param content_blocks:
-        :return:
-        """
+        timeframe = (request.exclusive_begin_timestamp_label,
+                request.inclusive_end_timestamp_label)
 
-        ietl = prp.exclusive_begin_timestamp_label
-        if ietl is not None:
-            ietl += timedelta(milliseconds=1)
+        if request.inclusive_end_timestamp_label:
+            end_ts = request.inclusive_end_timestamp_label
+        else:
+            end_ts = get_utc_now()
 
-        pr = tm10.PollResponse(message_id=generate_message_id(),
-                               in_response_to=prp.message_id,
-                               feed_name=prp.collection.name,
-                               inclusive_begin_timestamp_label=ietl,
-                               inclusive_end_timestamp_label=prp.inclusive_end_timestamp_label)
+        response = tm10.PollResponse(
+            message_id = generate_message_id(),
+            in_response_to = request.message_id,
+            feed_name = collection.name,
 
-        for content_block in content_blocks:
-            pr.content_blocks.append(content_block.to_content_block_10())
+            inclusive_begin_timestamp_label = request.exclusive_begin_timestamp_label,
+            inclusive_end_timestamp_label = end_ts,
+        )
 
-        return pr
+        content_blocks = service.get_content(collection, timeframe=timeframe,
+                content_bindings=content_bindings)
 
-    @classmethod
-    def handle_message(cls, poll_service, poll_message, django_request):
-        """
-        TODO: This isn't tested
-        """
-        prp = PollRequestProperties.from_poll_request_10(poll_service, poll_message)
-        query_kwargs = prp.get_db_kwargs()
-        content_blocks = cls.get_content(prp, query_kwargs)
-        response = cls.create_poll_response(poll_service, prp, content_blocks)
+        for block in content_blocks:
+            response.content_blocks.append(to_content_block(block, version=10))
+
         return response
 
 
 class PollRequestHandler(BaseMessageHandler):
-    """
-    Built-in TAXII 1.1 and TAXII 1.0 Poll Request Handler
-    """
 
     supported_request_messages = [tm10.PollRequest, tm11.PollRequest]
-    version = "1"
 
     @staticmethod
-    def handle_message(poll_service, poll_request, django_request):
-        """
-        Passes the request to either PollRequest10Handler or PollRequest11Handler
-        """
-        if isinstance(poll_request, tm10.PollRequest):
-            return PollRequest10Handler.handle_message(poll_service, poll_request, django_request)
-        elif isinstance(poll_request, tm11.PollRequest):
-            return PollRequest11Handler.handle_message(poll_service, poll_request, django_request)
+    def handle_message(service, request):
+        if isinstance(request, tm10.PollRequest):
+            return PollRequest10Handler.handle_message(service, request)
+        elif isinstance(request, tm11.PollRequest):
+            return PollRequest11Handler.handle_message(service, request)
         else:
-            raise StatusMessageException(poll_request.message_id,
-                                         ST_FAILURE,
-                                         "TAXII Message not supported by Message Handler.")
+            raise_failure("TAXII Message not supported by message handler", request.message_id)
+
+
+
+
+
+
+def to_content_block(entity, version):
+
+    if version == 10:
+
+        content_binding = entity.content_binding.binding
+        cb = tm10.ContentBlock(
+            content_binding = content_binding,
+            content = entity.content,
+            timestamp_label = entity.timestamp_label,
+        )
+
+    elif version == 11:
+        content_binding = tm11.ContentBinding(
+            entity.content_binding.binding,
+            subtype_ids = entity.content_binding.subtypes
+        )
+        cb = tm11.ContentBlock(
+            content_binding = content_binding,
+            content = entity.content,
+            timestamp_label = entity.timestamp_label,
+            message = entity.message,
+        )
+
+    return cb
+
+
+
+
+#@staticmethod
+#def from_poll_request_10(poll_service, poll_request):
+#    prp = PollRequestProperties()
+#    prp.poll_request = poll_request
+#    prp.message_id = poll_request.message_id
+#    prp.collection = poll_service.validate_collection_name(poll_request.feed_name, poll_request.message_id)
+#
+#    if poll_request.subscription_id:
+#        try:
+#            s = models.Subscription.objects.get(subscription_id=poll_request.subscription_id)
+#            prp.subscription = s
+#        except models.Subscription.DoesNotExist:
+#            raise StatusMessageException(poll_request.message_id,
+#                                         ST_NOT_FOUND,
+#                                         status_detail={SD_ITEM: poll_request.subscription_id})
+#        prp.response_type = None
+#        prp.content_bindings = s.content_binding.all()
+#        prp.allow_asynch = None
+#        prp.delivery_parameters = s.delivery_parameters
+#    else:
+#        prp.response_type = None
+#        prp.content_bindings = prp.collection.get_binding_intersection_10(poll_request.content_bindings, prp.message_id)
+#        prp.delivery_parameters = None
+#
+#    if prp.collection.type != CT_DATA_FEED:  # Only Data Feeds existed in TAXII 1.0
+#        raise StatusMessageException(poll_request.message_id,
+#                                     ST_NOT_FOUND,
+#                                     "The Named Data Collection is not a Data Feed, it is a Data Set. "
+#                                     "Only Data Feeds can be"
+#                                     "Polled in TAXII 1.0",
+#                                     {SD_ITEM: poll_request.feed_name})
+#
+#    current_datetime = datetime.datetime.now(tzutc())
+#    # If the request specifies a timestamp label in an acceptable range, use it.
+#    # Otherwise, don't use a begin timestamp label
+#    if poll_request.exclusive_begin_timestamp_label:
+#        pr_ebtl = poll_request.exclusive_begin_timestamp_label
+#        if pr_ebtl < current_datetime:
+#            prp.exclusive_begin_timestamp_label = poll_request.exclusive_begin_timestamp_label
+#
+#    # Use either the specified end timestamp label;
+#    # or the current time iff the specified end timestmap label is after the current time
+#    prp.inclusive_end_timestamp_label = current_datetime
+#    if poll_request.inclusive_end_timestamp_label:
+#        pr_ietl = poll_request.inclusive_end_timestamp_label
+#        if pr_ietl < current_datetime:
+#            prp.inclusive_end_timestamp_label = poll_request.inclusive_end_timestamp_label
+#
+#    if ((prp.inclusive_end_timestamp_label is not None and prp.exclusive_begin_timestamp_label is not None) and
+#        prp.inclusive_end_timestamp_label < prp.exclusive_begin_timestamp_label):
+#        raise StatusMessageException(prp.message_id,
+#                                     ST_FAILURE,
+#                                     message="Invalid Timestamp Labels: End TS Label is earlier "
+#                                             "than Begin TS Label")
+#
+#    return prp
+#

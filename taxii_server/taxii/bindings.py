@@ -11,11 +11,10 @@ ValidatorAndParser = namedtuple('ValidatorAndParser', ['validator', 'parser'])
 
 
 CONTENT_BINDINGS = [
-    ContentBinding(binding=CB_STIX_XML_10, subtypes=None),
-    ContentBinding(binding=CB_STIX_XML_101, subtypes=None),
-    ContentBinding(binding=CB_STIX_XML_11, subtypes=None),
-    ContentBinding(binding=CB_STIX_XML_111, subtypes=None),
-    #ContentBinding(main=CB_CAP_11, subtype=None),
+    CB_STIX_XML_10,
+    CB_STIX_XML_101,
+    CB_STIX_XML_11,
+    CB_STIX_XML_111,
 ]
 
 ALL_PROTOCOL_BINDINGS = [
@@ -42,4 +41,5 @@ MESSAGE_VALIDATOR_PARSER = {
     VID_TAXII_XML_10: ValidatorAndParser(SchemaValidator(SchemaValidator.TAXII_10_SCHEMA), tm10.get_message_from_xml),
     VID_TAXII_XML_11: ValidatorAndParser(SchemaValidator(SchemaValidator.TAXII_11_SCHEMA), tm11.get_message_from_xml)
 }
+
 

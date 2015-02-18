@@ -58,7 +58,7 @@ def manager():
     for service, collections in coll_mapping.items():
         for coll in collections:
             coll = manager.save_collection(coll)
-            manager.assign_collection(coll, services_ids=[service])
+            manager.assign_collection(coll.id, services_ids=[service])
 
     return manager
 
@@ -79,7 +79,7 @@ def test_inbox_request_all_content(server, version, manager, https):
     headers = prepare_headers(version, https)
 
     blocks = [
-        make_content(version, content_binding=CUSTOM_CONTENT_BINDING, subtype=CONTENT_SUBTYPE),
+        make_content(version, content_binding=CUSTOM_CONTENT_BINDING, subtype=CONTENT_BINDING_SUBTYPE),
         make_content(version, content_binding=INVALID_CONTENT_BINDING)
     ]
     inbox_message = make_inbox_message(version, blocks=blocks)
@@ -92,7 +92,7 @@ def test_inbox_request_all_content(server, version, manager, https):
     assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
-    blocks = manager.get_content_blocks()
+    blocks = manager.get_content(None)
     assert len(blocks) == len(blocks)
 
 
@@ -123,7 +123,7 @@ def test_inbox_request_inbox_valid_content_binding(server, manager, version, htt
     inbox = get_service(server, 'inbox-B')
 
     blocks = [
-        make_content(version, content_binding=CUSTOM_CONTENT_BINDING, subtype=CONTENT_SUBTYPE),
+        make_content(version, content_binding=CUSTOM_CONTENT_BINDING, subtype=CONTENT_BINDING_SUBTYPE),
         make_content(version, content_binding=CB_STIX_XML_111)
     ]
 
@@ -136,7 +136,7 @@ def test_inbox_request_inbox_valid_content_binding(server, manager, version, htt
     assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
-    blocks = manager.get_content_blocks()
+    blocks = manager.get_content(None)
     assert len(blocks) == len(blocks)
 
 
@@ -157,7 +157,7 @@ def test_inbox_request_inbox_invalid_inbox_content_binding(server, manager, vers
     assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
-    blocks = manager.get_content_blocks()
+    blocks = manager.get_content(None)
 
     # Content blocks with invalid content should be ignored
     assert len(blocks) == 0
@@ -183,7 +183,7 @@ def test_inbox_request_collection_content_bindings_filtering(server, manager, ve
     assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
-    blocks = manager.get_content_blocks()
+    blocks = manager.get_content(None)
 
     # Content blocks with invalid content should be ignored
     assert len(blocks) == 1

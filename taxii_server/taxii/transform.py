@@ -8,10 +8,11 @@ from libtaxii.constants import *
 from lxml.etree import XMLSyntaxError
 
 from .exceptions import StatusMessageException, StatusBadMessage, StatusUnsupportedQuery
-from .bindings import MESSAGE_VALIDATOR_PARSER
+from .bindings import MESSAGE_VALIDATOR_PARSER, ContentBinding
 
 import structlog
 log = structlog.get_logger(__name__)
+
 
 def parse_message(content_type, body, do_validate=True):
 
@@ -81,6 +82,18 @@ def service_to_instances(service, version):
 #    return service_instances
 
     return service_instances
+
+
+def to_content_binding(raw_content_binding, version):
+    if version == 10:
+        return ContentBinding(binding=raw_content_binding, subtypes=None)
+    elif version == 11:
+        return ContentBinding(binding=raw_content_binding.binding_id,
+                subtypes=raw_content_binding.subtype_ids)
+
+
+def to_content_bindings(bindings, version):
+    return map(lambda b: to_content_binding(b, version), bindings)
 
 
 
