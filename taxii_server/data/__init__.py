@@ -32,28 +32,59 @@ class DataManager(object):
         return self.api.get_collections(service_id=service_id)
 
 
+    def get_collection(self, name, service_id):
+        return self.api.get_collection(name, service_id)
+
+
     def save_collection(self, entity):
         return self.api.save_collection(entity)
 
 
-    def assign_collection(self, entity, services_ids):
-        return self.api.assign_collection(entity, services_ids)
+    def assign_collection(self, coll_id, services_ids):
+        return self.api.assign_collection(coll_id, services_ids)
 
 
-    def save_content_block(self, content_block_entity, inbox_message_entity, collections=[]):
+    def save_content(self, content_entity, inbox_message_entity=None, collections=[]):
 
-        content_block_entity = self.api.save_entity(content_block_entity)
+        content_entity = self.api.save_content(content_entity)
 
-        self.api.add_content_block(content_block_entity, collections)
+        collection_ids = [c.id for c in collections]
 
-        signal(POST_SAVE_CONTENT_BLOCK).send(self, content_block=content_block_entity,
+        self.api.add_content(content_entity, collection_ids)
+
+        signal(POST_SAVE_CONTENT_BLOCK).send(self, content_block=content_entity,
                 inbox_message=inbox_message_entity, collections=collections)
 
-
-    def get_content_blocks(self, collection=None):
-        cid = collection.id if collection else None
-        return self.api.get_content_blocks(collection_id=cid)
+        return content_entity
 
 
-    def save_inbox_message(self, inbox_message):
-        return self.api.save_entity(inbox_message)
+    def get_content_count(self, collection_id, start_time=None,
+            end_time=None, bindings=[]):
+
+        return self.api.get_content_count(
+            collection_id = collection_id,
+            start_time = start_time,
+            end_time = end_time,
+            bindings = bindings,
+        )
+
+
+    def get_content(self, collection_id, count_only=False, start_time=None,
+            end_time=None, bindings=[], offset=0, limit=10):
+
+        return self.api.get_content(
+            collection_id = collection_id,
+            start_time = start_time,
+            end_time = end_time,
+            bindings = bindings,
+            offset = offset,
+            limit = limit,
+        )
+
+
+    def save_inbox_message(self, inbox_message, service_id=None):
+        return self.api.save_inbox_message(inbox_message, service_id=service_id)
+
+
+
+

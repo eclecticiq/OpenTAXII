@@ -1,9 +1,17 @@
-import sqlalchemy
+import json
+import pytz
 from sqlalchemy import orm, engine
+from sqlalchemy import and_
+
+from sqlalchemy.orm import exc
 
 from taxii_server.taxii.entities import *
 
 from . import models
+
+import structlog
+
+log = structlog.getLogger(__name__)
 
 
 class SQLDB(object):
@@ -27,19 +35,26 @@ class SQLDB(object):
         self.Base.metadata.create_all(bind=self.engine)
 
 
-    def add_content_block(self, content_block, collections):
+    def add_content(self, content_block, collection_ids):
 
-        if not collections:
+        if not collection_ids:
             return
 
         s = self.Session()
         content_block_obj = self.ContentBlock.query.get(content_block.id)
 
-        criteria = self.DataCollection.id.in_([c.id for c in collections])
+        criteria = self.DataCollection.id.in_(collection_ids)
+        collections = self.DataCollection.query.filter(criteria).all()
 
-        for collection in self.DataCollection.query.filter(criteria):
+        if not collections:
+            raise ValueError("No collection were found with ids: %s" % collection_ids)
+
+        for collection in collections:
             collection.content_blocks.append(content_block_obj)
             s.add(collection)
+
+            log.debug("Content block id=%s added to collection id=%s, name=%s" % (
+                    content_block.id, collection.id, collection.name))
 
         s.commit()
 
@@ -68,37 +83,79 @@ class SQLDB(object):
         return map(to_collection_entity, collections)
 
 
-    def get_collection(self, name):
+    def get_collection(self, name, service_id):
 
-        collections = self.DataCollection.filter_by(name=name).all()
-        return map(to_collection_entity, collections)
+        service = self.Service.query.get(service_id)
+
+        for c in service.collections:
+            if c.name == name:
+                return to_collection_entity(c)
 
 
-    def get_content_blocks(self, collection_id=None):
+    def _get_content_query(self, collection_id=None, start_time=None,
+            end_time=None, bindings=[]):
+
+        query = self.ContentBlock.query
 
         if collection_id:
-            collection = self.DataCollection.query.get(collection_id)
-            content_blocks = collection.content_blocks
+            query = query.filter(self.ContentBlock.collections.any(id=collection_id))
 
-        content_blocks = self.ContentBlock.query.all()
+        if start_time:
+            query = query.filter(self.ContentBlock.date_created > start_time)
 
-        return blocks_to_entities(content_blocks)
+        if end_time:
+            query = query.filter(self.ContentBlock.date_created <= end_time)
+
+        if bindings:
+            #FIXME: not implemented
+            pass
+
+        return query
+
+
+    def get_content_count(self, collection_id=None, start_time=None,
+            end_time=None, bindings=[]):
+
+        return self._get_content_query(collection_id=collection_id, start_time=start_time,
+                end_time=end_time, bindings=bindings).count()
+
+
+    def get_content(self, collection_id=None, count_only=False, start_time=None,
+            end_time=None, bindings=[], offset=0, limit=10):
+
+        query = self._get_content_query(collection_id=collection_id, start_time=start_time,
+                end_time=end_time, bindings=bindings)
+        
+        blocks = query[offset : offset + limit]
+
+        return map(to_block_entity, blocks)
 
 
     def save_collection(self, entity):
 
-        coll = entity_to_model(entity, self.DataCollection)
+        collection = self.DataCollection(
+            id = entity.id,
+            name = entity.name,
+            type = entity.type,
+            description = entity.description,
+            available = entity.available,
+            accept_all_content = entity.accept_all_content,
+            bindings = serialize_content_bindings(entity.supported_content)
+        )
 
         s = self.Session()
-        coll = s.merge(coll)
+        updated = s.merge(collection)
         s.commit()
 
-        return to_collection_entity(coll)
+        return to_collection_entity(updated)
 
 
-    def assign_collection(self, entity, services_ids):
+    def assign_collection(self, coll_id, services_ids):
+        
+        if not coll_id:
+            raise Exception('Collection does not exists!')
 
-        coll = self.DataCollection.query.get(entity.id)
+        coll = self.DataCollection.query.get(coll_id)
 
         s = self.Session()
 
@@ -115,6 +172,7 @@ class SQLDB(object):
         if s:
             return (s.type, s.id, s.properties)
 
+
     def save_service(self, type, properties, id=None):
 
         service = self.Service(id=id, type=type, properties=properties)
@@ -125,22 +183,63 @@ class SQLDB(object):
         return service
 
 
+    def save_inbox_message(self, entity, service_id=None):
 
-    def save_entity(self, entity):
-        if isinstance(entity, CollectionEntity):
-            model_cls = self.DataCollection
-        elif isinstance(entity, ContentBlockEntity):
-            model_cls = self.ContentBlock
-        elif isinstance(entity, InboxMessageEntity):
-            model_cls = self.InboxMessage
+        if entity.destination_collections:
+            names = json.dumps(entity.destination_collections) 
+        else:
+            names = None
 
-        model = entity_to_model(entity, model_cls)
+        m = self.InboxMessage(
+            id = entity.id,
+            message_id = entity.message_id,
+            original_message = entity.original_message,
+            content_block_count = entity.content_block_count,
+            destination_collections = names,
+
+            result_id = entity.result_id,
+            record_count = entity.record_count,
+            partial_count = entity.partial_count,
+
+            subscription_collection_name = entity.subscription_collection_name,
+            subscription_id = entity.subscription_id,
+
+            exclusive_begin_timestamp_label = entity.exclusive_begin_timestamp_label,
+            inclusive_end_timestamp_label = entity.inclusive_end_timestamp_label,
+        )
 
         s = self.Session()
-        s.add(model)
+        message = s.merge(m)
         s.commit()
 
-        return model_to_entity(model, entity.__class__)
+        return to_inbox_message_entity(message)
+
+
+
+    def save_content(self, entity):
+
+        if entity.content_binding:
+            binding = entity.content_binding.binding
+            subtype = entity.content_binding.subtypes[0] \
+                    if entity.content_binding.subtypes else None
+        else:
+            binding = None
+            subtype = None
+
+        content = self.ContentBlock(
+            id = entity.id,
+            timestamp_label = entity.timestamp_label,
+            inbox_message_id = entity.inbox_message_id,
+            content = entity.content,
+            binding_id = binding,
+            binding_subtype = subtype
+        )
+
+        s = self.Session()
+        updated = s.merge(content)
+        s.commit()
+
+        return to_block_entity(updated)
 
 
 
@@ -151,19 +250,6 @@ def include_all(obj, module):
     return obj
 
 
-def entity_to_model(entity, model_cls):
-    if hasattr(entity, '_asdict'):
-        return model_cls(**entity._asdict())
-    return model_cls(**entity.as_dict())
-
-
-def model_to_entity(model, entity_cls):
-    params = dict()
-    for k in entity_cls._fields:
-        params[k] = getattr(model, k, None)
-    return entity_cls(**params)
-
-
 def to_collection_entity(model):
     return CollectionEntity(
         id = model.id,
@@ -172,10 +258,70 @@ def to_collection_entity(model):
         type = model.type,
         description = model.description,
         accept_all_content = model.accept_all_content,
-        supported_content = model.supported_content
+        supported_content = deserialize_content_bindings(model.bindings)
     )
 
 
-def blocks_to_entities(blocks):
-    return map(lambda o: model_to_entity(o, ContentBlockEntity), blocks)
+def to_block_entity(model):
+
+    subtypes = [model.binding_subtype] if model.binding_subtype else None
+
+    return ContentBlockEntity(
+        id = model.id,
+        content = model.content,
+
+        timestamp_label = enforce_timezone(model.timestamp_label),
+        content_binding = ContentBindingEntity(model.binding_id, subtypes=subtypes),
+        message = model.message,
+        inbox_message_id = model.inbox_message_id,
+    )
+
+def to_inbox_message_entity(model):
+
+    if model.destination_collections:
+        names = json.loads(model.destination_collections) 
+    else:
+        names = []
+
+    return InboxMessageEntity(
+        id = model.id,
+        message_id = model.message_id,
+        original_message = model.original_message,
+        content_block_count = model.content_block_count,
+        destination_collections = names,
+
+        result_id = model.result_id,
+        record_count = model.record_count,
+        partial_count = model.partial_count,
+
+        subscription_collection_name = model.subscription_collection_name,
+        subscription_id = model.subscription_id,
+
+        exclusive_begin_timestamp_label = model.exclusive_begin_timestamp_label,
+        inclusive_end_timestamp_label = model.inclusive_end_timestamp_label,
+    )
+
+
+def serialize_content_bindings(content_bindings):
+    return json.dumps([(c.binding, c.subtypes) for c in content_bindings])
+
+
+def deserialize_content_bindings(content_bindings):
+    raw_bindings = json.loads(content_bindings)
+
+    bindings = []
+    for (binding, subtypes) in raw_bindings:
+        entity = ContentBindingEntity(binding, subtypes=subtypes)
+        bindings.append(entity)
+
+    return bindings
+
+
+# SQLite does not preserve TZ information
+def enforce_timezone(date):
+
+    if date.tzinfo:
+        return date
+
+    return date.replace(tzinfo=pytz.UTC)
 
