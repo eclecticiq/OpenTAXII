@@ -72,24 +72,37 @@ def collection_management_response(service, in_response_to, version):
 
 
 def collection_to_feed_information(service, coll):
+    polling_instances = []
+    for poll in service.get_polling_service_instances(coll):
+        polling_instances.extend(poll_service_to_polling_service_instance(poll, version=10))
+
+    push_methods = service.get_push_methods(coll)
+    subscription_methods = service.get_subscription_methods(coll)
+
     return tm10.FeedInformation(
         feed_name = coll.name,
         feed_description = coll.description,
         supported_contents = coll.get_supported_content(version=10),
         available = coll.available,
 
-        push_methods = service.get_push_methods(coll, version=10),
-        polling_service_instances = service.get_polling_service_instances(coll, version=10),
-        subscription_methods = service.get_subscription_methods(coll, version=10),
+        push_methods = push_methods,
+        polling_service_instances = polling_instances,
+        subscription_methods = subscription_methods
         # collection_volume, collection_type, and receiving_inbox_services are not supported in TAXII 1.0
     )
 
 def collection_to_collection_information(service, coll):
 
-    inboxe_instances = []
-
+    inbox_instances = []
     for inbox in service.get_receiving_inbox_services(coll):
-        inboxe_instances.extend(inbox_to_receiving_inbox_instance(inbox))
+        inbox_instances.extend(inbox_to_receiving_inbox_instance(inbox))
+
+    polling_instances = []
+    for poll in service.get_polling_service_instances(coll):
+        polling_instances.extend(poll_service_to_polling_service_instance(poll, version=11))
+
+    push_methods = service.get_push_methods(coll)
+    subscription_methods = service.get_subscription_methods(coll)
 
     return tm11.CollectionInformation(
         collection_name = coll.name,
@@ -97,13 +110,13 @@ def collection_to_collection_information(service, coll):
         supported_contents = coll.get_supported_content(version=11),
         available = coll.available,
 
-        push_methods = service.get_push_methods(coll, version=11),
-        polling_service_instances = service.get_polling_service_instances(coll, version=11),
-        subscription_methods = service.get_subscription_methods(coll, version=11),
+        push_methods = push_methods,
+        polling_service_instances = polling_instances,
+        subscription_methods = subscription_methods,
 
         collection_volume = service.get_volume(coll),
         collection_type = coll.type,
-        receiving_inbox_services = inboxe_instances
+        receiving_inbox_services = inbox_instances
     )
 
 
@@ -121,5 +134,20 @@ def inbox_to_receiving_inbox_instance(inbox):
 
     return inbox_instances
 
+
+def poll_service_to_polling_service_instance(service, version):
+
+    instances = []
+
+    for binding in service.supported_protocol_bindings:
+        
+        address = service.absolute_address(binding)
+
+        instance = (tm11 if version == 11 else tm10).PollingServiceInstance(
+                binding, address, service.supported_message_bindings)
+
+        instances.append(instance)
+
+    return instances
 
 

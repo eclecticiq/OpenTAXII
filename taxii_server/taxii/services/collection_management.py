@@ -31,14 +31,17 @@ class CollectionManagementService(TaxiiService):
         return self.server.data_manager.get_collections(service_id=self.id)
 
 
-    def get_push_methods(self, collection, version):
+    def get_push_methods(self, collection):
         # Push delivery is not implemented
         pass
 
-    def get_polling_service_instances(self, collection, version):
-        pass
+    def get_polling_service_instances(self, collection):
+        service_ids = self.server.data_manager.get_service_ids_for_collection(collection,
+                service_type='poll')
+        services = self.server.get_services(service_ids)
+        return services
 
-    def get_subscription_methods(self, collection, version):
+    def get_subscription_methods(self, collection):
         # Subscription service is not implemented
         pass
 
@@ -50,6 +53,6 @@ class CollectionManagementService(TaxiiService):
         return services
 
     def get_volume(self, collection):
-        return 10
+        return self.server.data_manager.get_content_count(collection.id)
 
 

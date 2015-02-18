@@ -15,8 +15,7 @@ from taxii_server.data.sql import SQLDB
 from taxii_server.data import DataManager
 from taxii_server.taxii import entities
 
-from utils import get_service, prepare_headers, as_tm
-from taxii_server.taxii.utils import get_utc_now
+from utils import get_service, prepare_headers, as_tm, persist_content
 from fixtures import *
 
 
@@ -62,20 +61,6 @@ def prepare_request(collection_name, version, only_count=False, bindings=[]):
             feed_name = collection_name,
             content_bindings = content_bindings
         )
-
-
-def persist_content(manager, collection_name, service_id, timestamp=None):
-
-    timestamp = timestamp or get_utc_now()
-
-    content = entities.ContentBlockEntity(content=CONTENT, timestamp_label=timestamp,
-            message=MESSAGE, content_binding=BINDING_ENTITY)
-
-    collection = manager.get_collection(collection_name, service_id)
-
-    content = manager.save_content(content, collections=[collection])
-
-    return content
 
 
 @pytest.mark.parametrize(("https", "version"), [
