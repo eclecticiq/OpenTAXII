@@ -6,10 +6,14 @@ from taxii_server.options import ServerConfig
 
 from taxii_server.data.sql import SQLDB
 from taxii_server.data import DataManager
+from taxii_server.taxii import entities
 
 from utils import get_service, prepare_headers, as_tm
 from fixtures import *
 
+ASSIGNED_SERVICES = ['collection-management-A', 'inbox-A', 'inbox-B', 'poll-A']
+ASSIGNED_INBOX_INSTANCES = sum(len(v['protocol_bindings']) \
+        for k, v in SERVICES.items() if k in ASSIGNED_SERVICES and k.startswith('inbox'))
 
 @pytest.fixture
 def manager():
@@ -25,11 +29,9 @@ def server(manager):
 
     server = TAXIIServer(DOMAIN, data_manager=manager)
 
-    services = ['collection-management-A', 'inbox-A', 'inbox-B']
-
     for coll in COLLECTIONS_B:
         coll = manager.save_collection(coll)
-        manager.assign_collection(coll, services_ids=services)
+        manager.assign_collection(coll.id, services_ids=ASSIGNED_SERVICES)
 
     return server
 
@@ -81,7 +83,7 @@ def test_collections_inboxes(server, https):
     for coll in response.collection_informations:
         inboxes = coll.receiving_inbox_services
 
-        assert len(inboxes) == 4
+        assert len(inboxes) == ASSIGNED_INBOX_INSTANCES
 
 
 @pytest.mark.parametrize("https", [True, False])
@@ -100,7 +102,7 @@ def test_collections_supported_content(server, version, https):
             return next(c for c in response.collection_informations \
                     if c.collection_name == name)
 
-        assert get_coll(COLLECTION_OPEN).collection_type == CollectionEntity.TYPE_SET
+        assert get_coll(COLLECTION_OPEN).collection_type == entities.CollectionEntity.TYPE_SET
 
     else:
         def get_coll(name):
