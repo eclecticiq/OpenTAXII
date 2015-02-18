@@ -10,8 +10,8 @@ from .taxii.status import process_status_exception
 
 from .options import ServerConfig
 from .server import TAXIIServer
-from .persistence.sql import SQLDB
-from .persistence import DataStorage
+from .data.sql import SQLDB
+from .data import DataManager
 from .utils import configure_logging
 
 import structlog
@@ -20,7 +20,7 @@ log = structlog.get_logger(__name__)
 
 def create_app(server_properties=None, services_properties=None):
 
-    config = ServerConfig.load(server_properties=server_properties,
+    config = ServerConfig(server_properties=server_properties,
             services_properties=services_properties)
 
     app = Flask(__name__)
@@ -36,14 +36,18 @@ def create_app(server_properties=None, services_properties=None):
 
 def create_server(config):
 
-    storage = DataStorage(api=SQLDB(config.server.db_connection,
-        create_tables=config.server.create_tables))
+    manager = DataManager(
+        config = config,
+        api = SQLDB(**config['server']['api'])
+    )
 
-    server = TAXIIServer(domain=config.server.domain, services_properties=config.unpacked_services,
-            storage=storage)
+    server = TAXIIServer(
+        domain = config['server']['domain'],
+        data_manager = manager
+    )
 
-    if config.server.storage_hooks:
-        importlib.import_module(config.server.storage_hooks)
+    if config['server']['hooks']:
+        importlib.import_module(config['server']['hooks'])
 
     return server
 

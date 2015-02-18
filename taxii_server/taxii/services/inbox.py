@@ -5,7 +5,7 @@ from libtaxii.constants import (
 )
 from libtaxii import messages_11 as tm11
 
-from ..utils import is_content_supported
+from ..utils import is_content_supported, prepare_supported_content
 from ..bindings import ContentBinding
 from ..transform import service_to_instances
 from ..exceptions import StatusMessageException
@@ -48,7 +48,7 @@ class InboxService(TaxiiService):
 
 
     def get_destination_collections(self):
-        return self.server.storage.get_collections(self.id)
+        return self.server.data_manager.get_collections(self.id)
 
 
     def validate_destination_collection_names(self, name_list, in_response_to):
@@ -96,25 +96,11 @@ class InboxService(TaxiiService):
         return service_instances
 
 
+
     def get_supported_content(self, version):
 
         if self.accept_all_content:
-            return  # Indicates accept all
+            return []
 
-        return_list = []
-
-        if version == 10:
-            for content in self.supported_content:
-                return_list.append(content.binding)
-
-        elif version == 11:
-            supported_content = {}
-
-            for content in self.supported_content:
-                if content.binding not in supported_content:
-                    supported_content[content.binding] = tm11.ContentBinding(binding_id=content.binding, subtype_ids=content.subtypes)
-
-            return_list = supported_content.values()
-
-        return return_list
+        return prepare_supported_content(self.supported_content, version)
 

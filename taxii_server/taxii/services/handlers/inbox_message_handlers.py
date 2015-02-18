@@ -21,7 +21,7 @@ class InboxMessage11Handler(BaseMessageHandler):
         message = InboxMessageEntity.to_entity(inbox_message,
                 received_via=inbox_service.id, version=11)
 
-        message = inbox_service.server.storage.save_inbox_message(message)
+        message = inbox_service.server.data_manager.save_inbox_message(message)
 
         for content_block in inbox_message.content_blocks:
 
@@ -44,7 +44,7 @@ class InboxMessage11Handler(BaseMessageHandler):
 
             block = ContentBlockEntity.to_entity(content_block, inbox_message_entity=message, version=11)
 
-            inbox_service.server.storage.save_content_block(block, inbox_message_entity=message,
+            inbox_service.server.data_manager.save_content_block(block, inbox_message_entity=message,
                     collections=supporting_collections)
 
 
@@ -71,7 +71,8 @@ class InboxMessage10Handler(BaseMessageHandler):
 
         message = InboxMessageEntity.to_entity(inbox_message,
                 received_via=inbox_service.id, version=10)
-        message = inbox_service.server.storage.save_inbox_message(message)
+
+        message = inbox_service.server.data_manager.save_inbox_message(message)
 
         for content_block in inbox_message.content_blocks:
             is_supported = inbox_service.is_content_supported(content_block.content_binding, version=10)
@@ -81,7 +82,7 @@ class InboxMessage10Handler(BaseMessageHandler):
 
             block = ContentBlockEntity.to_entity(content_block, inbox_message_entity=message, version=10)
 
-            inbox_service.server.storage.save_content_block(block, inbox_message_entity=message,
+            inbox_service.server.data_manager.save_content_block(block, inbox_message_entity=message,
                     collections=collections)
 
 

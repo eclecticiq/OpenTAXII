@@ -3,6 +3,7 @@ import dateutil
 from dateutil.tz import tzutc
 
 from libtaxii.constants import *
+from libtaxii import messages_11 as tm11
 
 from .exceptions import StatusMessageException
 
@@ -22,6 +23,25 @@ def is_content_supported(supported_bindings, content_binding, version=None):
     ]
 
     return any(matches)
+
+
+def prepare_supported_content(supported_content, version):
+    return_list = []
+
+    if version == 10:
+        for content in supported_content:
+            return_list.append(content.binding)
+
+    elif version == 11:
+        bindings = {}
+
+        for content in supported_content:
+            if content.binding not in bindings:
+                bindings[content.binding] = tm11.ContentBinding(binding_id=content.binding, subtype_ids=content.subtypes)
+
+        return_list = bindings.values()
+
+    return return_list
 
 
 

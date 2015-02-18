@@ -12,11 +12,10 @@ Base = declarative_base()
 from datetime import datetime
 import json
 
-__all__ = ['Base', 'InboxMessage', 'ContentBlock', 'DataCollection']
+__all__ = ['Base', 'InboxMessage', 'ContentBlock', 'DataCollection', 'Service']
 
 
 MAX_NAME_LENGTH = 256
-
 
 
 class Timestamped(Base):
@@ -97,6 +96,31 @@ collection_to_content_block = Table('collection_to_content_block', Base.metadata
     Column('content_block_id', Integer, ForeignKey('content_blocks.id'))
 )
 
+service_to_collection = Table('service_to_collection', Base.metadata,
+    Column('service_id', Integer, ForeignKey('services.id')),
+    Column('collection_id', Integer, ForeignKey('data_collections.id'))
+)
+
+
+class Service(Base):
+
+    __tablename__ = 'services'
+
+    id = Column(String(MAX_NAME_LENGTH), primary_key=True)
+    type = Column(String(MAX_NAME_LENGTH))
+
+    _properties = Column(Text, nullable=False)
+
+    collections = relationship('DataCollection', secondary=service_to_collection)
+
+    @property
+    def properties(self):
+        return json.loads(self._properties)
+
+    @properties.setter
+    def properties(self, properties):
+        self._properties = json.dumps(properties)
+
 
 class DataCollection(Timestamped):
 
@@ -105,16 +129,16 @@ class DataCollection(Timestamped):
     id = Column(Integer, primary_key=True)
     name = Column(String(MAX_NAME_LENGTH))
 
-    inbox_id = Column(Text, nullable=True)
-
-    description = Column(Text, nullable=True)
     type = Column(String(MAX_NAME_LENGTH))
-    enabled = Column(Boolean, default=True)
+    description = Column(Text, nullable=True)
+
+    available = Column(Boolean, default=True)
     accept_all_content = Column(Boolean, default=False)
 
     _supported_content = Column(Text, nullable=True)
 
     content_blocks = relationship('ContentBlock', secondary=collection_to_content_block)
+
 
     def __init__(self, supported_content=None, **kwargs):
         super(DataCollection, self).__init__(**kwargs)
@@ -122,7 +146,7 @@ class DataCollection(Timestamped):
 
     @property
     def supported_content(self):
-        return map(lambda x: ContentBinding(*x), json.loads(self._supported_content)) if self._supported_content else None
+        return map(lambda x: ContentBinding(*x), json.loads(self._supported_content)) if self._supported_content else []
 
     @supported_content.setter
     def supported_content(self, binding):

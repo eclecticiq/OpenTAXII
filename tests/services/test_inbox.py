@@ -7,8 +7,8 @@ from taxii_server.taxii import exceptions
 from taxii_server.server import TAXIIServer
 from taxii_server.options import ServerConfig
 
-from taxii_server.persistence.sql import SQLDB
-from taxii_server.persistence import DataStorage
+from taxii_server.data.sql import SQLDB
+from taxii_server.data import DataManager
 
 from utils import get_service, prepare_headers, as_tm
 from fixtures import *
@@ -45,27 +45,34 @@ def make_inbox_message(version, blocks=None, dest_collection=None):
 
 
 @pytest.fixture
-def storage():
+def manager():
     db_connection = 'sqlite://' # in-memory DB
-    storage = DataStorage(api=SQLDB(db_connection, create_tables=True))
-    return storage
+
+    config = ServerConfig(services_properties=SERVICES)
+    manager = DataManager(config=config, api=SQLDB(db_connection, create_tables=True))
+
+    coll_mapping = {
+        'inbox-A' : COLLECTIONS_A,
+        'inbox-B' : COLLECTIONS_B
+    }
+    for service, collections in coll_mapping.items():
+        for coll in collections:
+            coll = manager.save_collection(coll)
+            manager.assign_collection(coll, services_ids=[service])
+
+    return manager
 
 
 @pytest.fixture
-def server(storage):
+def server(manager):
     
-    config = ServerConfig.load(services_properties=SERVICES)
-    server = TAXIIServer(DOMAIN, config.unpacked_services, storage=storage)
-
-    collections = map(storage.save_collection, COLLECTIONS)
-
-    return server
+    return TAXIIServer(DOMAIN, data_manager=manager)
 
 
 
 @pytest.mark.parametrize("https", [True, False])
 @pytest.mark.parametrize("version", [11, 10])
-def test_inbox_request_all_content(server, version, storage, https):
+def test_inbox_request_all_content(server, version, manager, https):
 
     inbox_a = get_service(server, 'inbox-A')
 
@@ -85,7 +92,7 @@ def test_inbox_request_all_content(server, version, storage, https):
     assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
-    blocks = storage.get_content_blocks()
+    blocks = manager.get_content_blocks()
     assert len(blocks) == len(blocks)
 
 
@@ -111,7 +118,7 @@ def test_inbox_request_destination_collection(server, https):
 
 @pytest.mark.parametrize("https", [True, False])
 @pytest.mark.parametrize("version", [11, 10])
-def test_inbox_request_inbox_valid_content_binding(server, storage, version, https):
+def test_inbox_request_inbox_valid_content_binding(server, manager, version, https):
 
     inbox = get_service(server, 'inbox-B')
 
@@ -129,13 +136,13 @@ def test_inbox_request_inbox_valid_content_binding(server, storage, version, htt
     assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
-    blocks = storage.get_content_blocks()
+    blocks = manager.get_content_blocks()
     assert len(blocks) == len(blocks)
 
 
 @pytest.mark.parametrize("https", [True, False])
 @pytest.mark.parametrize("version", [11, 10])
-def test_inbox_request_inbox_invalid_inbox_content_binding(server, storage, version, https):
+def test_inbox_request_inbox_invalid_inbox_content_binding(server, manager, version, https):
 
     inbox = get_service(server, 'inbox-B')
 
@@ -150,7 +157,7 @@ def test_inbox_request_inbox_invalid_inbox_content_binding(server, storage, vers
     assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
-    blocks = storage.get_content_blocks()
+    blocks = manager.get_content_blocks()
 
     # Content blocks with invalid content should be ignored
     assert len(blocks) == 0
@@ -158,7 +165,7 @@ def test_inbox_request_inbox_invalid_inbox_content_binding(server, storage, vers
 
 @pytest.mark.parametrize("https", [True, False])
 @pytest.mark.parametrize("version", [11, 10])
-def test_inbox_request_collection_content_bindings_filtering(server, storage, version, https):
+def test_inbox_request_collection_content_bindings_filtering(server, manager, version, https):
 
     inbox = get_service(server, 'inbox-B')
     headers = prepare_headers(version, https)
@@ -176,7 +183,7 @@ def test_inbox_request_collection_content_bindings_filtering(server, storage, ve
     assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
-    blocks = storage.get_content_blocks()
+    blocks = manager.get_content_blocks()
 
     # Content blocks with invalid content should be ignored
     assert len(blocks) == 1

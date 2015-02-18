@@ -4,6 +4,7 @@ from libtaxii.constants import VID_TAXII_XML_10, VID_TAXII_XML_11
 
 from ..exceptions import StatusMessageException, raise_failure
 from ..transform import service_to_instances
+from ..bindings import PROTOCOL_TO_SCHEME
 
 
 class TaxiiService(object):
@@ -17,16 +18,19 @@ class TaxiiService(object):
     supported_message_bindings = [VID_TAXII_XML_10, VID_TAXII_XML_11]
     supported_protocol_bindings = []
 
-    def __init__(self, id, server, address, description=None, protocol_bindings=[]):
+    def __init__(self, id, server, address, description=None,
+            protocol_bindings=[], enabled=True):
+
         self.id = id
         self.server = server
         self.address = address
         self.description = description
         self.supported_protocol_bindings = protocol_bindings
 
+        self.enabled = enabled
+
 
     def process(self, headers, taxii_message):
-
 
         handler = self.get_message_handler(taxii_message)
 
@@ -63,6 +67,16 @@ class TaxiiService(object):
     @property
     def uid(self):
         return hashlib.md5(self.id + self.address).hexdigest() 
+
+    def absolute_address(self, binding):
+        address = self.address
+
+        if binding in PROTOCOL_TO_SCHEME:
+            scheme = PROTOCOL_TO_SCHEME[binding]
+            if scheme and not address.startswith(scheme):
+                address = scheme + address
+
+        return address
 
 
     def __repr__(self):
