@@ -48,11 +48,16 @@ COLLECTION_MANAGEMENT = dict(
     protocol_bindings = PROTOCOL_BINDINGS
 )
 
+POLL_RESULT_SIZE = 20
+POLL_MAX_COUNT = 15 
+
 POLL = dict(
     type = 'poll',
     description = 'Poll service description',
     address = '/relative/path/poll',
-    protocol_bindings = PROTOCOL_BINDINGS
+    protocol_bindings = PROTOCOL_BINDINGS,
+    max_result_size = POLL_RESULT_SIZE,
+    max_result_count = POLL_MAX_COUNT 
 )
 
 DOMAIN = 'www.some-example.com'
