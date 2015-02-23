@@ -10,7 +10,7 @@ Base = declarative_base()
 
 from datetime import datetime
 
-__all__ = ['Base', 'ContentBlock', 'DataCollection', 'Service', 'InboxMessage']
+__all__ = ['Base', 'ContentBlock', 'DataCollection', 'Service', 'InboxMessage', 'ResultSet']
 
 
 MAX_NAME_LENGTH = 256
@@ -109,8 +109,6 @@ class InboxMessage(Timestamped):
 
     message_id = Column(String(MAX_NAME_LENGTH))
 
-    sending_ip = Column(String(MAX_NAME_LENGTH), nullable=True)
-
     result_id = Column(String(MAX_NAME_LENGTH), nullable=True)
 
     # Record Count items
@@ -135,21 +133,17 @@ class InboxMessage(Timestamped):
         return 'InboxMessage(%s, %s)' % (self.message_id, self.date_created)
 
 
-#class QueryScope(Timestamped):
-#    """
-#    Model for Query Scope
-#    """
-#    name = Column(String(MAX_NAME_LENGTH))
-#    description = Column(Text, nullable=True)
-#
-#    supported_query_id = Column(Integer, ForeignKey('supported_query.id'))
-#    supported_query = relationship('SupportedQuery', backref='query_scopes')
-#
-#    scope = Column(String(MAX_NAME_LENGTH))
-#    scope_type = Column(String(MAX_NAME_LENGTH))
-#
-#    def __str__(self):
-#        return u'%s(%s=%s)' % (self.__class__.__name__, self.name, self.scope)
-#
+class ResultSet(Timestamped):
 
+    __tablename__ = 'result_sets'
+
+    id = Column(String(MAX_NAME_LENGTH), primary_key=True)
+
+    collection_id = Column(Integer, ForeignKey('data_collections.id', onupdate="CASCADE", ondelete="CASCADE"))
+    collection = relationship('DataCollection', backref='result_sets')
+
+    bindings = Column(String(MAX_NAME_LENGTH))
+
+    begin_time = Column(DateTime(timezone=True), nullable=True)
+    end_time = Column(DateTime(timezone=True), nullable=True)
 

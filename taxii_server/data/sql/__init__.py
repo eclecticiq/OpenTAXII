@@ -239,9 +239,28 @@ class SQLDB(object):
         updated = s.merge(content)
         s.commit()
 
-        print updated
-
         return to_block_entity(updated)
+
+
+    def save_result_set(self, entity):
+
+        result_set = self.ResultSet(
+            id = entity.result_id,
+            collection_id = entity.collection_id,
+            bindings = serialize_content_bindings(entity.content_bindings),
+            begin_time = entity.timeframe[0],
+            end_time = entity.timeframe[1]
+        )
+
+        s = self.Session()
+        updated = s.merge(result_set)
+        s.commit()
+
+        return to_result_set_entity(updated)
+
+
+    def get_result_set(self, result_set_id):
+        return to_result_set_entity(self.ResultSet.query.get(result_set_id))
 
 
 
@@ -299,8 +318,16 @@ def to_inbox_message_entity(model):
         subscription_collection_name = model.subscription_collection_name,
         subscription_id = model.subscription_id,
 
-        exclusive_begin_timestamp_label = model.exclusive_begin_timestamp_label,
-        inclusive_end_timestamp_label = model.inclusive_end_timestamp_label,
+        exclusive_begin_timestamp_label = enforce_timezone(model.exclusive_begin_timestamp_label),
+        inclusive_end_timestamp_label = enforce_timezone(model.inclusive_end_timestamp_label),
+    )
+
+def to_result_set_entity(model):
+    return ResultSetEntity(
+        result_id = model.id,
+        collection_id = model.collection_id,
+        content_bindings = deserialize_content_bindings(model.bindings),
+        timeframe = map(enforce_timezone, (model.begin_time, model.end_time))
     )
 
 
@@ -321,6 +348,9 @@ def deserialize_content_bindings(content_bindings):
 
 # SQLite does not preserve TZ information
 def enforce_timezone(date):
+
+    if not date:
+        return
 
     if date.tzinfo:
         return date

@@ -86,5 +86,11 @@ class DataManager(object):
         return self.api.save_inbox_message(inbox_message, service_id=service_id)
 
 
+    def save_result_set(self, result_set_entity):
+        return self.api.save_result_set(result_set_entity)
+
+
+    def get_result_set(self, result_set_id):
+        return self.api.get_result_set(result_set_id)
 
 

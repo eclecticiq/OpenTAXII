@@ -56,31 +56,24 @@ class CollectionEntity(object):
 
         return is_content_supported(self.supported_content, content_binding)
 
-
     def as_dict(self):
         return self.__dict__
 
-
     def get_supported_content(self, version):
-
         if self.accept_all_content:
             return []
 
         return prepare_supported_content(self.supported_content, version)
 
 
-
     def get_matching_bindings(self, requested_bindings):
-
         if self.accept_all_content:
             return requested_bindings
 
         return content_bindings_intersection(self.supported_content, requested_bindings)
 
-
     def __repr__(self):
         return "CollectionEntity(name=%s, type=%s, supported_content=%s)" % (self.name, self.type, self.supported_content)
-
 
 
 class ContentBlockEntity(object):
@@ -96,13 +89,11 @@ class ContentBlockEntity(object):
         self.message = message
         self.inbox_message_id = inbox_message_id
 
-
     def as_dict(self):
         return self.__dict__
 
     def __repr__(self):
         return "ContentBlockEntity(%s)" % ", ".join(("%s=%s" % (k, v)) for k, v in sorted(self.as_dict().items()))
-
 
 
 class InboxMessageEntity(object):
@@ -136,3 +127,18 @@ class InboxMessageEntity(object):
     def __repr__(self):
         return "InboxMessageEntity(%s)" % ", ".join(("%s=%s" % (k, v)) \
                 for k, v in sorted(self.as_dict().items()) if k != 'original_message')
+
+
+class ResultSetEntity(object):
+
+    def __init__(self, result_id, collection_id, content_bindings=[], timeframe=None):
+
+        self.result_id = result_id
+
+        self.collection_id = collection_id
+        self.content_bindings = content_bindings
+        self.timeframe = timeframe
+
+
+    def __repr__(self):
+        return "ResultSetEntity('%s', collection=%s)" % (self.result_id, self.collection.id)

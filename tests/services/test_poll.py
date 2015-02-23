@@ -51,7 +51,7 @@ def prepare_request(collection_name, version, only_count=False, bindings=[]):
             collection_name = collection_name,
             poll_parameters = tm11.PollParameters(
                 response_type = constants.RT_FULL if not only_count else constants.RT_COUNT_ONLY,
-                content_bindings = content_bindings
+                content_bindings = content_bindings,
             )
         )
     elif version == 10:
@@ -61,6 +61,17 @@ def prepare_request(collection_name, version, only_count=False, bindings=[]):
             feed_name = collection_name,
             content_bindings = content_bindings
         )
+
+
+def prepare_fulfilment_request(collection_name, result_id, part_number):
+
+    return tm11.PollFulfillmentRequest(
+        message_id = MESSAGE_ID,
+        collection_name = collection_name,
+        result_id = result_id,
+        result_part_number = part_number
+    )
+
 
 
 @pytest.mark.parametrize(("https", "version"), [
@@ -131,7 +142,7 @@ def test_poll_get_content_count(server, manager, https):
 
     headers = prepare_headers(version, https)
 
-    # count only request
+    # count-only request
     request = prepare_request(collection_name=COLLECTION_OPEN, only_count=True, version=version)
 
     response = service.process(headers, request)
@@ -139,6 +150,104 @@ def test_poll_get_content_count(server, manager, https):
     assert isinstance(response, tm11.PollResponse)
 
     assert response.record_count.record_count == blocks_amount
+    assert response.record_count.partial_count is False
     assert len(response.content_blocks) == 0
 
+
+
+@pytest.mark.parametrize("https", [True, False])
+def test_poll_max_count_max_size(server, manager, https):
+
+    version = 11
+
+    service = get_service(server, 'poll-A')
+
+    blocks_amount = 30
+
+    for i in range(blocks_amount):
+        persist_content(manager, COLLECTION_OPEN, service.id)
+
+    headers = prepare_headers(version, https)
+
+    # count-only request
+    request = prepare_request(collection_name=COLLECTION_OPEN, only_count=True, version=version)
+    response = service.process(headers, request)
+
+    assert isinstance(response, tm11.PollResponse)
+
+    assert response.record_count.record_count == POLL_MAX_COUNT
+    assert len(response.content_blocks) == 0
+
+
+    # content request
+    request = prepare_request(collection_name=COLLECTION_OPEN, version=version)
+    response = service.process(headers, request)
+
+    assert isinstance(response, tm11.PollResponse)
+
+    assert response.record_count.record_count == POLL_MAX_COUNT
+    assert response.record_count.partial_count is True
+    assert len(response.content_blocks) == POLL_RESULT_SIZE
+
+    assert response.more is True
+    assert response.result_id is not None
+
+
+@pytest.mark.parametrize("https", [True, False])
+def test_poll_fulfilment_request(server, manager, https):
+
+    version = 11
+
+    service = get_service(server, 'poll-A')
+
+    blocks_amount = 30
+
+    for i in range(blocks_amount):
+        persist_content(manager, COLLECTION_OPEN, service.id)
+
+    headers = prepare_headers(version, https)
+
+    # first content request
+    request = prepare_request(collection_name=COLLECTION_OPEN, version=version)
+    response = service.process(headers, request)
+
+    assert isinstance(response, tm11.PollResponse)
+
+    assert response.record_count.record_count == POLL_MAX_COUNT
+    assert response.record_count.partial_count is True
+    assert len(response.content_blocks) == POLL_RESULT_SIZE
+
+    assert response.more is True
+    assert response.result_id is not None
+
+    # poll fullfilment request
+    result_id = response.result_id
+    part_number = 2
+    request = prepare_fulfilment_request(COLLECTION_OPEN, result_id, part_number)
+    response = service.process(headers, request)
+
+    assert isinstance(response, tm11.PollResponse)
+
+    assert response.record_count.record_count == POLL_MAX_COUNT
+    assert response.record_count.partial_count is True
+    assert len(response.content_blocks) == (blocks_amount - POLL_RESULT_SIZE)
+
+    assert response.more is False
+    assert response.result_id == result_id
+
+
+    # poll fullfilment request over the top
+    result_id = response.result_id
+    part_number = 3
+    request = prepare_fulfilment_request(COLLECTION_OPEN, result_id, part_number)
+    response = service.process(headers, request)
+
+    assert isinstance(response, tm11.PollResponse)
+
+    assert response.record_count.record_count == POLL_MAX_COUNT
+    assert response.record_count.partial_count is True
+    assert len(response.content_blocks) == 0
+
+    assert response.more is False
+    assert response.result_id == result_id
 
