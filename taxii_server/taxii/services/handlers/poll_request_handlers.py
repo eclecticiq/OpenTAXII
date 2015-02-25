@@ -9,12 +9,38 @@ from ...exceptions import StatusMessageException, raise_failure
 from ....data.exceptions import ResultsNotReady
 
 from ...entities import CollectionEntity
-from ...transform import to_content_bindings
+from ...converters import content_block_entity_to_content_block, content_binding_entities_to_content_bindings
 from ...utils import get_utc_now
 
 
 import structlog
 log = structlog.getLogger(__name__)
+
+
+def retrieve_subscription(service, subscription_id, in_response_to):
+
+    subscription = service.get_subscription(subscription_id)
+
+    if not subscription:
+        message = "The subscription requested was not found"
+        details = {SD_ITEM: subscription_id}
+        raise StatusMessageException(ST_NOT_FOUND, message=message,
+                in_response_to=request.message_id, status_details=details)
+
+    return subscription
+
+
+def retrieve_collection(service, collection_name, in_response_to):
+
+    collection = service.get_collection(collection_name)
+
+    if not collection:
+        message = "The collection requested was not found"
+        details = {SD_ITEM: collection_name}
+        raise StatusMessageException(ST_NOT_FOUND, message=message,
+                in_response_to=request.message_id, status_details=details)
+
+    return collection
 
 
 class PollRequest11Handler(BaseMessageHandler):
@@ -23,34 +49,48 @@ class PollRequest11Handler(BaseMessageHandler):
 
 
     @classmethod
-    def get_collection(cls, service, collection_name, in_response_to):
-
-        collection = service.get_collection(collection_name)
-
-        if not collection:
-            message = "The collection you requested was not found"
-            details = {SD_ITEM: collection_name}
-            raise StatusMessageException(ST_NOT_FOUND, message=message,
-                    in_response_to=request.message_id, status_details=details)
-
-        return collection
-
-
-    @classmethod
     def handle_message(cls, service, request):
 
-        collection = cls.get_collection(service, request.collection_name, request.message_id)
+        if service.subscription_required and not request.subscription_id:
+            message = "Subscription required"
+            raise StatusMessageException(ST_DENIED, message=message,
+                    in_response_to=request.message_id)
+
+        if request.subscription_id and request.poll_parameters:
+            message = "Both subscription ID and Poll Parameters present"
+            log.warn(message, service_id=service.id, subscription_id=request.subscription_id)
+
+        collection = retrieve_collection(service, request.collection_name, request.message_id)
+
+        if request.subscription_id:
+            subscription = retrieve_subscription(service, request.subscription_id,
+                    request.message_id)
+
+            if collection.id != subscription.collection_id:
+                details = {SD_ITEM: request.collection_name}
+                raise StatusMessageException(ST_NOT_FOUND, status_details=details,
+                        in_response_to=request.message_id)
+
+            content_bindings = subscription.params.content_bindings
+            response_type = subscription.params.response_type
+            allow_async = False
+
+        else:
+            params = request.poll_parameters
+            raw_bindings = params.content_bindings 
+
+            requested_bindings = content_binding_entities_to_content_bindings(raw_bindings, version=11)
+            content_bindings = collection.get_matching_bindings(requested_bindings)
+
+            if requested_bindings and not content_bindings:
+                details = {SD_SUPPORTED_CONTENT: collection.get_supported_content(version=11)}
+                raise StatusMessageException(ST_UNSUPPORTED_CONTENT_BINDING,
+                        in_response_to=request.message_id, status_details=details)
+
+            response_type = params.response_type
+            allow_async = params.allow_asynch
 
         start, end = request.exclusive_begin_timestamp_label, request.inclusive_end_timestamp_label
-        params = request.poll_parameters
-
-        requested_bindings = to_content_bindings(params.content_bindings, version=11)
-        content_bindings = collection.get_matching_bindings(requested_bindings)
-
-        if requested_bindings and not content_bindings:
-            details = {SD_SUPPORTED_CONTENT: collection.get_supported_content(version=11)}
-            raise StatusMessageException(ST_UNSUPPORTED_CONTENT_BINDING,
-                    in_response_to=request.message_id, status_details=details)
 
         if (start and end) and (start > end):
             message = "Exclusive begin timestamp label is later than inclusive end timestamp label"
@@ -62,14 +102,16 @@ class PollRequest11Handler(BaseMessageHandler):
             timeframe = (start, end),
             content_bindings = content_bindings,
             in_response_to = request.message_id,
-            allow_async = params.allow_asynch,
-            return_content = (params.response_type == RT_FULL)
+            allow_async = allow_async,
+            return_content = (response_type == RT_FULL),
+            subscription_id = request.subscription_id
         )
 
 
     @classmethod
     def prepare_poll_response(cls, service, collection, in_response_to, timeframe=(None, None),
-            content_bindings=None, result_part=1, allow_async=False, return_content=True, result_id=None):
+            content_bindings=None, result_part=1, allow_async=False, return_content=True,
+            result_id=None, subscription_id=None):
 
         try:
             total_count = service.get_content_count(collection,
@@ -116,7 +158,7 @@ class PollRequest11Handler(BaseMessageHandler):
             exclusive_begin_timestamp_label = timeframe[0] if timeframe else None,
             inclusive_end_timestamp_label = timeframe[1] if timeframe else None,
             record_count = tm11.RecordCount(capped_count, is_partial),
-            # subscription_id
+            subscription_id = subscription_id
         )
 
         if return_content:
@@ -125,7 +167,7 @@ class PollRequest11Handler(BaseMessageHandler):
                     content_bindings=content_bindings, part_number=result_part)
 
             for block in content_blocks:
-                response.content_blocks.append(to_content_block(block, version=11))
+                response.content_blocks.append(content_block_entity_to_content_block(block, version=11))
 
         return response
 
@@ -138,10 +180,21 @@ class PollRequest10Handler(BaseMessageHandler):
     @classmethod
     def handle_message(cls, service, request):
 
-        collection = service.get_collection(request.feed_name)
+        collection = retrieve_collection(service, request.feed_name, request.message_id)
 
-        requested_bindings = to_content_bindings(request.content_bindings, version=10)
-        content_bindings = collection.get_matching_bindings(requested_bindings)
+        if request.subscription_id:
+            subscription = retrieve_subscription(service, request.subscription_id,
+                    request.message_id)
+
+            if collection.id != subscription.collection_id:
+                details = {SD_ITEM: request.collection_name}
+                raise StatusMessageException(ST_NOT_FOUND, status_details=details,
+                        in_response_to=request.message_id)
+
+            content_bindings = subscription.params.content_bindings
+        else:
+            requested_bindings = content_binding_entities_to_content_bindings(request.content_bindings, version=10)
+            content_bindings = collection.get_matching_bindings(requested_bindings)
 
          # Only Data Feeds existed in TAXII 1.0
         if collection.type != collection.TYPE_FEED:
@@ -168,7 +221,7 @@ class PollRequest10Handler(BaseMessageHandler):
                 content_bindings=content_bindings)
 
         for block in content_blocks:
-            response.content_blocks.append(to_content_block(block, version=10))
+            response.content_blocks.append(content_block_entity_to_content_block(block, version=10))
 
         return response
 
@@ -186,31 +239,6 @@ class PollRequestHandler(BaseMessageHandler):
         else:
             raise_failure("TAXII Message not supported by message handler", request.message_id)
 
-
-def to_content_block(entity, version):
-
-    if version == 10:
-
-        content_binding = entity.content_binding.binding
-        cb = tm10.ContentBlock(
-            content_binding = content_binding,
-            content = entity.content,
-            timestamp_label = entity.timestamp_label,
-        )
-
-    elif version == 11:
-        content_binding = tm11.ContentBinding(
-            entity.content_binding.binding,
-            subtype_ids = entity.content_binding.subtypes
-        )
-        cb = tm11.ContentBlock(
-            content_binding = content_binding,
-            content = entity.content,
-            timestamp_label = entity.timestamp_label,
-            message = entity.message,
-        )
-
-    return cb
 
 
 

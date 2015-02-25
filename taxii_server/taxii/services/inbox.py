@@ -5,10 +5,12 @@ from libtaxii.constants import (
 )
 from libtaxii import messages_11 as tm11
 
-from ..utils import is_content_supported, prepare_supported_content
-from ..bindings import ContentBinding
+from ..utils import is_content_supported
+from ..entities import ContentBindingEntity
 from ..transform import service_to_instances
 from ..exceptions import StatusMessageException
+
+from ..converters import content_binding_entities_to_content_bindings
 
 from .abstract import TaxiiService
 from .handlers import InboxMessageHandler
@@ -33,7 +35,7 @@ class InboxService(TaxiiService):
         super(InboxService, self).__init__(**kwargs)
 
         self.accept_all_content = accept_all_content
-        self.supported_content = [ContentBinding(binding=b, subtypes=None) for b in supported_content]
+        self.supported_content = map(ContentBindingEntity, supported_content)
 
         self.destination_collection_required = destination_collection_required
 
@@ -101,5 +103,5 @@ class InboxService(TaxiiService):
         if self.accept_all_content:
             return []
 
-        return prepare_supported_content(self.supported_content, version)
+        return content_binding_entities_to_content_bindings(self.supported_content, version)
 

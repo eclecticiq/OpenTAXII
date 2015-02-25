@@ -8,10 +8,10 @@ from ...exceptions import StatusMessageException, raise_failure
 from ....data.exceptions import ResultsNotReady
 
 from ...entities import CollectionEntity
-from ...transform import to_content_bindings
 from ...utils import get_utc_now
 
-from .poll_request_handlers import PollRequest11Handler
+from .poll_request_handlers import PollRequest11Handler, retrieve_collection
+
 
 class PollFulfilmentRequest11Handler(BaseMessageHandler):
 
@@ -26,7 +26,7 @@ class PollFulfilmentRequest11Handler(BaseMessageHandler):
 
         result_set = service.get_result_set(result_id)
 
-        collection = PollRequest11Handler.get_collection(service, collection_name,
+        collection = retrieve_collection(service, collection_name,
                 in_response_to=request.message_id)
 
         if not result_set or result_set.collection_id != collection.id:
@@ -59,6 +59,5 @@ class PollFulfilmentRequestHandler(BaseMessageHandler):
             return PollFulfilmentRequest11Handler.handle_message(service, request)
         else:
             raise_failure("TAXII Message not supported by message handler", request.message_id)
-
 
 

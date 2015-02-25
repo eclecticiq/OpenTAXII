@@ -3,8 +3,6 @@ import sys
 from libtaxii.constants import (
         MSG_POLL_REQUEST, MSG_POLL_FULFILLMENT_REQUEST, SVC_POLL
 )
-from libtaxii.common import generate_message_id
-
 from .abstract import TaxiiService
 from .handlers import PollRequestHandler, PollFulfilmentRequestHandler
 from ..exceptions import StatusMessageException
@@ -84,7 +82,7 @@ class PollService(TaxiiService):
 
     def create_result_set(self, collection, content_bindings=[], timeframe=(None, None)):
 
-        result_id = generate_message_id()
+        result_id = self.generate_id()
 
         entity = ResultSetEntity(
             result_id = result_id,
@@ -99,3 +97,6 @@ class PollService(TaxiiService):
     def get_result_set(self, result_set_id):
         return self.server.data_manager.get_result_set(result_set_id)
 
+
+    def get_subscription(self, subscription_id):
+        return self.server.data_manager.get_subscription(subscription_id)
