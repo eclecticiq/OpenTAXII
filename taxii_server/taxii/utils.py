@@ -5,6 +5,10 @@ from libtaxii.constants import *
 from libtaxii import messages_11 as tm11
 
 from .exceptions import StatusMessageException
+from .bindings import MESSAGE_VALIDATOR_PARSER
+
+import structlog
+log = structlog.getLogger(__name__)
 
 
 def get_utc_now():
@@ -28,23 +32,30 @@ def is_content_supported(supported_bindings, content_binding, version=None):
     return any(matches)
 
 
-def prepare_supported_content(supported_content, version):
-    return_list = []
+def parse_message(content_type, body, do_validate=True):
 
-    if version == 10:
-        for content in supported_content:
-            return_list.append(content.binding)
+    validator_parser = MESSAGE_VALIDATOR_PARSER[content_type]
 
-    elif version == 11:
-        bindings = {}
+    if do_validate:
+        try:
+            result = validator_parser.validator.validate_string(body)
+            if not result.valid:
+                errors = '; '.join([str(err) for err in result.error_log])
+                raise StatusBadMessage('Request was not schema valid: %s' % errors)
+        except XMLSyntaxError as e:
+            log.error("Not well-formed XML. Body: '%s'" % body, exc_info=True)
+            raise StatusBadMessage('Request was not well-formed XML', e=e)
 
-        for content in supported_content:
-            if content.binding not in bindings:
-                bindings[content.binding] = tm11.ContentBinding(binding_id=content.binding, subtype_ids=content.subtypes)
+    try:
+        taxii_message = validator_parser.parser(body)
+    except tm11.UnsupportedQueryException as e:
+        # TODO: Is it possible to give the real message id?
+        # TODO: Is it possible to indicate which query aspects are supported?
+        # This might require a change in how libtaxii works
+        log.error("Unsupported query", exc_info=True)
+        raise StatusUnsupportedQuery()
 
-        return_list = bindings.values()
-
-    return return_list
+    return taxii_message
 
 
 
