@@ -10,7 +10,7 @@ Base = declarative_base()
 
 from datetime import datetime
 
-__all__ = ['Base', 'ContentBlock', 'DataCollection', 'Service', 'InboxMessage', 'ResultSet']
+__all__ = ['Base', 'ContentBlock', 'DataCollection', 'Service', 'InboxMessage', 'ResultSet', 'Subscription']
 
 
 MAX_NAME_LENGTH = 256
@@ -108,7 +108,6 @@ class InboxMessage(Timestamped):
     id = Column(Integer, primary_key=True)
 
     message_id = Column(String(MAX_NAME_LENGTH))
-
     result_id = Column(String(MAX_NAME_LENGTH), nullable=True)
 
     # Record Count items
@@ -122,11 +121,10 @@ class InboxMessage(Timestamped):
     exclusive_begin_timestamp_label = Column(DateTime(timezone=True), nullable=True)
     inclusive_end_timestamp_label = Column(DateTime(timezone=True), nullable=True)
 
-    #received_via = models.ForeignKey('InboxService', blank=True, null=True)
-
     original_message = Column(Text, nullable=False)
     content_block_count = Column(Integer)
 
+    # No reason to have a proper reference here
     destination_collections = Column(Text, nullable=True)
 
     def __str__(self):
@@ -147,3 +145,17 @@ class ResultSet(Timestamped):
     begin_time = Column(DateTime(timezone=True), nullable=True)
     end_time = Column(DateTime(timezone=True), nullable=True)
 
+
+class Subscription(Timestamped):
+
+    __tablename__ = 'subscriptions'
+
+    id = Column(String(MAX_NAME_LENGTH), primary_key=True)
+
+    collection_id = Column(Integer, ForeignKey('data_collections.id', onupdate="CASCADE", ondelete="CASCADE"))
+    collection = relationship('DataCollection', backref='subscriptions')
+
+    params = Column(Text, nullable=True)
+
+    # FIXME: proper enum type
+    status = Column(String(MAX_NAME_LENGTH))

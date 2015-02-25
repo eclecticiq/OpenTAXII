@@ -35,6 +35,14 @@ class SQLDB(object):
         self.Base.metadata.create_all(bind=self.engine)
 
 
+    def _merge(self, object):
+        s = self.Session()
+        updated = s.merge(object)
+        s.commit()
+        return updated
+
+
+
     def add_content(self, content_block, collection_ids):
 
         if not collection_ids:
@@ -53,8 +61,7 @@ class SQLDB(object):
             collection.content_blocks.append(content_block_obj)
             s.add(collection)
 
-            log.debug("Content block id=%s added to collection id=%s, name=%s" % (
-                    content_block.id, collection.id, collection.name))
+            log.debug("Content block added to collection", content_block_id=content_block.id, collection_id=collection.id, collection_name=collection.name)
 
         s.commit()
 
@@ -143,28 +150,31 @@ class SQLDB(object):
             bindings = serialize_content_bindings(entity.supported_content)
         )
 
-        s = self.Session()
-        updated = s.merge(collection)
-        s.commit()
+        updated = self._merge(collection)
+
+        log.debug("Collection saved", collection_id=updated.id, collection_name=updated.name)
 
         return to_collection_entity(updated)
 
 
-    def assign_collection(self, coll_id, services_ids):
+    def assign_collection(self, collection_id, services_ids):
         
-        if not coll_id:
+        if not collection_id:
             raise Exception('Collection does not exists!')
 
-        coll = self.DataCollection.query.get(coll_id)
+        collection = self.DataCollection.query.get(collection_id)
 
         s = self.Session()
 
         for sid in services_ids:
             service = self.Service.query.get(sid)
-            service.collections.append(coll)
-            s.add(service)
+            collection.services.append(service)
 
+        s.add(collection)
         s.commit()
+
+        log.debug("Collection attached to services", collection_id=collection.id, collection_name=collection.name, service_ids=services_ids)
+
 
 
     def get_service(self, id):
@@ -174,13 +184,8 @@ class SQLDB(object):
 
 
     def save_service(self, type, properties, id=None):
-
         service = self.Service(id=id, type=type, properties=properties)
-        s = self.Session()
-        s.merge(service)
-        s.commit()
-
-        return service
+        self._merge(service)
 
 
     def save_inbox_message(self, entity, service_id=None):
@@ -190,7 +195,7 @@ class SQLDB(object):
         else:
             names = None
 
-        m = self.InboxMessage(
+        message = self.InboxMessage(
             id = entity.id,
             message_id = entity.message_id,
             original_message = entity.original_message,
@@ -208,11 +213,9 @@ class SQLDB(object):
             inclusive_end_timestamp_label = entity.inclusive_end_timestamp_label,
         )
 
-        s = self.Session()
-        message = s.merge(m)
-        s.commit()
+        updated = self._merge(message)
 
-        return to_inbox_message_entity(message)
+        return to_inbox_message_entity(updated)
 
 
 
@@ -235,9 +238,7 @@ class SQLDB(object):
             binding_subtype = subtype
         )
 
-        s = self.Session()
-        updated = s.merge(content)
-        s.commit()
+        updated = self._merge(content)
 
         return to_block_entity(updated)
 
@@ -252,16 +253,43 @@ class SQLDB(object):
             end_time = entity.timeframe[1]
         )
 
-        s = self.Session()
-        updated = s.merge(result_set)
-        s.commit()
+        updated = self._merge(result_set)
 
         return to_result_set_entity(updated)
 
 
     def get_result_set(self, result_set_id):
-        return to_result_set_entity(self.ResultSet.query.get(result_set_id))
+        result_set = self.ResultSet.query.get(result_set_id)
+        if result_set:
+            return to_result_set_entity(result_set)
 
+
+    def get_subscription(self, subscription_id):
+        s = self.Subscription.query.get(subscription_id)
+        if s:
+            return to_subscription_entity(s)
+
+
+    def save_subscription(self, entity):
+
+        if entity.params:
+            params = entity.params.as_dict()
+            if params['content_bindings']:
+                params['content_bindings'] = serialize_content_bindings(params['content_bindings'])
+
+        subscription = self.Subscription(
+            id = entity.subscription_id,
+            collection_id = entity.collection_id,
+            params = json.dumps(params),
+            status = entity.status
+        )
+
+
+        updated = self._merge(subscription)
+
+        log.debug("Subscription saved", subscription_id=updated.id, collection_id=updated.collection_id, status=updated.status)
+
+        return to_subscription_entity(updated)
 
 
 def include_all(obj, module):
@@ -328,6 +356,24 @@ def to_result_set_entity(model):
         collection_id = model.collection_id,
         content_bindings = deserialize_content_bindings(model.bindings),
         timeframe = map(enforce_timezone, (model.begin_time, model.end_time))
+    )
+
+
+def to_subscription_entity(model):
+
+    if model.params:
+        parsed = dict(json.loads(model.params))
+        if parsed['content_bindings']:
+            parsed['content_bindings'] = deserialize_content_bindings(parsed['content_bindings'])
+        params = PollRequestParamsEntity(**parsed)
+    else:
+        params = None
+
+    return SubscriptionEntity(
+        subscription_id = model.id,
+        collection_id = model.collection_id,
+        poll_request_params = params,
+        status = model.status
     )
 
 
