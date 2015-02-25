@@ -6,9 +6,7 @@ from libtaxii.constants import *
 
 from collections import namedtuple
 
-ContentBinding = namedtuple("ContentBinding", "binding subtypes")
 ValidatorAndParser = namedtuple('ValidatorAndParser', ['validator', 'parser'])
-
 
 CONTENT_BINDINGS = [
     CB_STIX_XML_10,

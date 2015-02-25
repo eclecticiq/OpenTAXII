@@ -41,11 +41,14 @@ DISCOVERY_B = dict(
     protocol_bindings = [VID_TAXII_HTTP_10]
 )
 
+SUBSCRIPTION_MESSAGE = 'message about subscription'
+
 COLLECTION_MANAGEMENT = dict(
     type = 'collection_management',
     description = 'Collection management description',
     address = '/relative/path/collection-management',
-    protocol_bindings = PROTOCOL_BINDINGS
+    protocol_bindings = PROTOCOL_BINDINGS,
+    subscription_message = SUBSCRIPTION_MESSAGE
 )
 
 POLL_RESULT_SIZE = 20

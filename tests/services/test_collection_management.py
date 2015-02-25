@@ -14,6 +14,8 @@ from fixtures import *
 ASSIGNED_SERVICES = ['collection-management-A', 'inbox-A', 'inbox-B', 'poll-A']
 ASSIGNED_INBOX_INSTANCES = sum(len(v['protocol_bindings']) \
         for k, v in SERVICES.items() if k in ASSIGNED_SERVICES and k.startswith('inbox'))
+ASSIGNED_SUBSCTRIPTION_INSTANCES = sum(len(v['protocol_bindings']) \
+        for k, v in SERVICES.items() if k in ASSIGNED_SERVICES and k.startswith('collection-'))
 
 @pytest.fixture
 def manager():
@@ -84,6 +86,25 @@ def test_collections_inboxes(server, https):
         inboxes = coll.receiving_inbox_services
 
         assert len(inboxes) == ASSIGNED_INBOX_INSTANCES
+
+
+@pytest.mark.parametrize("https", [True, False])
+@pytest.mark.parametrize("version", [11, 10])
+def test_collections_subscribe_instances(server, version, https):
+
+    service = get_service(server, 'collection-management-A')
+
+    headers = prepare_headers(version, https)
+    request = prepare_request(version)
+    response = service.process(headers, request)
+
+    if version == 11:
+        collections = response.collection_informations
+    else:
+        collections = response.feed_informations
+    
+    for c in collections:
+        assert len(c.subscription_methods) == ASSIGNED_SUBSCTRIPTION_INSTANCES
 
 
 @pytest.mark.parametrize("https", [True, False])

@@ -1,21 +1,34 @@
 from collections import namedtuple
 
 from .bindings import *
-from .utils import is_content_supported, prepare_supported_content, content_bindings_intersection
-from .transform import to_content_binding, to_content_bindings
+from .utils import is_content_supported, content_bindings_intersection
+
+from libtaxii.constants import (
+    CT_DATA_FEED, CT_DATA_SET, 
+    SS_ACTIVE, SS_PAUSED, SS_UNSUBSCRIBED
+)
+
+#: Tuple of all TAXII 1.1 Subscription Statues
+SS_TYPES_11 = (SS_ACTIVE, SS_PAUSED, SS_UNSUBSCRIBED)
+
+class Entity(object):
+
+    def __repr__(self):
+        pairs = ["%s=%s" % (k, v) for k, v in sorted(self.as_dict().items())]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(pairs))
+
+    def as_dict(self):
+        return self.__dict__
 
 
-class ContentBindingEntity(object):
+class ContentBindingEntity(Entity):
 
     def __init__(self, binding, subtypes=[]):
         self.binding = binding
         self.subtypes = subtypes
 
-    def __repr__(self):
-        return "ContentBindingEntity(%s, %s)" % (self.binding, self.subtypes)
-    
 
-class CollectionEntity(object):
+class CollectionEntity(Entity):
 
     TYPE_FEED = CT_DATA_FEED
     TYPE_SET = CT_DATA_SET
@@ -56,15 +69,6 @@ class CollectionEntity(object):
 
         return is_content_supported(self.supported_content, content_binding)
 
-    def as_dict(self):
-        return self.__dict__
-
-    def get_supported_content(self, version):
-        if self.accept_all_content:
-            return []
-
-        return prepare_supported_content(self.supported_content, version)
-
 
     def get_matching_bindings(self, requested_bindings):
         if self.accept_all_content:
@@ -76,7 +80,7 @@ class CollectionEntity(object):
         return "CollectionEntity(name=%s, type=%s, supported_content=%s)" % (self.name, self.type, self.supported_content)
 
 
-class ContentBlockEntity(object):
+class ContentBlockEntity(Entity):
 
     def __init__(self, content, timestamp_label, content_binding=None, id=None,
             message=None, inbox_message_id=None):
@@ -89,14 +93,10 @@ class ContentBlockEntity(object):
         self.message = message
         self.inbox_message_id = inbox_message_id
 
-    def as_dict(self):
-        return self.__dict__
-
-    def __repr__(self):
-        return "ContentBlockEntity(%s)" % ", ".join(("%s=%s" % (k, v)) for k, v in sorted(self.as_dict().items()))
 
 
-class InboxMessageEntity(object):
+
+class InboxMessageEntity(Entity):
 
     def __init__(self, message_id, original_message, content_block_count, id=None,
             result_id=None, destination_collections=[], record_count=None,
@@ -121,15 +121,10 @@ class InboxMessageEntity(object):
         self.exclusive_begin_timestamp_label = exclusive_begin_timestamp_label
         self.inclusive_end_timestamp_label = inclusive_end_timestamp_label
 
-    def as_dict(self):
-        return self.__dict__
-
-    def __repr__(self):
-        return "InboxMessageEntity(%s)" % ", ".join(("%s=%s" % (k, v)) \
-                for k, v in sorted(self.as_dict().items()) if k != 'original_message')
 
 
-class ResultSetEntity(object):
+
+class ResultSetEntity(Entity):
 
     def __init__(self, result_id, collection_id, content_bindings=[], timeframe=None):
 
@@ -140,5 +135,27 @@ class ResultSetEntity(object):
         self.timeframe = timeframe
 
 
-    def __repr__(self):
-        return "ResultSetEntity('%s', collection=%s)" % (self.result_id, self.collection.id)
+
+class PollRequestParamsEntity(Entity):
+
+    def __init__(self, response_type=RT_FULL, accept_all_content=False, content_bindings=[]):
+
+        self.response_type = response_type
+        self.accept_all_content = accept_all_content
+        self.content_bindings = content_bindings
+
+
+
+class SubscriptionEntity(Entity):
+
+    ACTIVE = SS_ACTIVE
+    PAUSED = SS_PAUSED
+    UNSUBSCRIBED = SS_UNSUBSCRIBED
+
+    def __init__(self, collection_id=None, subscription_id=None, status=ACTIVE, poll_request_params=None):
+
+        self.subscription_id = subscription_id
+        self.collection_id = collection_id
+        self.params = poll_request_params
+        self.status = status
+

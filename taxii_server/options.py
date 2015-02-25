@@ -2,7 +2,6 @@ import os
 import sys
 import anyconfig
 
-from .taxii.bindings import ContentBinding
 from .utils import SimpleRenderer
 
 import structlog

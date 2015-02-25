@@ -6,7 +6,7 @@ from .collection_information_request_handlers import CollectionInformationReques
 from .poll_request_handlers import PollRequestHandler
 from .poll_fulfilment_request_handlers import PollFulfilmentRequestHandler
 
-#from .subscription_request_handlers import SubscriptionRequestHandler
+from .subscription_request_handlers import SubscriptionRequestHandler
 
 
 #import query_handlers.stix_xml_111_handler as sx111h

@@ -65,3 +65,15 @@ class TAXIIServer(object):
     def get_services(self, ids):
         return filter(lambda s: s.id in ids, self.services)
 
+
+    def get_services_for_collection(self, collection, service_type):
+
+        if not service_type in TYPE_TO_SERVICE:
+            raise ValueError('Wrong service type')
+
+        service_ids = self.data_manager.get_service_ids_for_collection(collection,
+                service_type=service_type)
+        services = self.get_services(service_ids)
+
+        return services
+

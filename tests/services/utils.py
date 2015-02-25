@@ -53,3 +53,25 @@ def persist_content(manager, collection_name, service_id, timestamp=None):
 
     return content
 
+
+def prepare_subscription_request(collection, action, version, subscription_id=None, params=None):
+
+    data = dict(
+        action = action,
+        message_id = MESSAGE_ID,
+        subscription_id = subscription_id,
+    )
+
+    mod = as_tm(version)
+
+    if version == 11:
+        cls = mod.ManageCollectionSubscriptionRequest
+        data.update(dict(
+            collection_name = collection,
+            subscription_parameters = mod.SubscriptionParameters(**params) if params else None
+        ))
+    else:
+        cls = mod.ManageFeedSubscriptionRequest
+        data['feed_name'] = collection
+
+    return cls(**data)

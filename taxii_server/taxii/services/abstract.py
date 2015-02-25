@@ -1,10 +1,12 @@
 import hashlib
 
+from libtaxii.common import generate_message_id
 from libtaxii.constants import VID_TAXII_XML_10, VID_TAXII_XML_11
 
 from ..exceptions import StatusMessageException, raise_failure
 from ..transform import service_to_instances
 from ..bindings import PROTOCOL_TO_SCHEME
+
 
 
 class TaxiiService(object):
@@ -28,6 +30,10 @@ class TaxiiService(object):
         self.supported_protocol_bindings = protocol_bindings
 
         self.enabled = enabled
+
+
+    def generate_id(self):
+        return generate_message_id()
 
 
     def process(self, headers, taxii_message):
@@ -67,6 +73,7 @@ class TaxiiService(object):
     @property
     def uid(self):
         return hashlib.md5(self.id + self.address).hexdigest() 
+
 
     def absolute_address(self, binding):
         address = self.address
