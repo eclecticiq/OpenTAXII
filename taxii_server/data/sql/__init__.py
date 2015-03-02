@@ -42,7 +42,6 @@ class SQLDB(object):
         return updated
 
 
-
     def add_content(self, content_block, collection_ids):
 
         if not collection_ids:
@@ -61,7 +60,8 @@ class SQLDB(object):
             collection.content_blocks.append(content_block_obj)
             s.add(collection)
 
-            log.debug("Content block added to collection", content_block_id=content_block.id, collection_id=collection.id, collection_name=collection.name)
+            log.debug("Content block added to collection", content_block_id=content_block.id,
+                    collection_id=collection.id, collection_name=collection.name)
 
         s.commit()
 

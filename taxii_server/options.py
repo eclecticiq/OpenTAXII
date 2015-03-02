@@ -53,17 +53,3 @@ class ServerConfig(dict):
 
         return services
 
-
-
-
-class SectionProxy(object):
-
-    def __init__(self, getter):
-        self.get = getter
-
-    def __getattr__(self, key):
-        return self.get(key)
-        
-
-
-

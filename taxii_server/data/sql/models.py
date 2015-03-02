@@ -159,3 +159,5 @@ class Subscription(Timestamped):
 
     # FIXME: proper enum type
     status = Column(String(MAX_NAME_LENGTH))
+
+
