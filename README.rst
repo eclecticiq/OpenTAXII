@@ -1,4 +1,4 @@
-taxii-server
+OpenTAXII
 ============
 
 TAXII server implementation
