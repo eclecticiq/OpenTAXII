@@ -1,12 +1,10 @@
 import pytest
 import tempfile
 
-from taxii_server.server import TAXIIServer
-from taxii_server.options import ServerConfig
-
-from taxii_server.data.sql import SQLDB
-from taxii_server.data import DataManager
-from taxii_server.taxii import entities
+from opentaxii.server import TAXIIServer
+from opentaxii.config import ServerConfig
+from opentaxii.utils import create_manager, create_services_from_config
+from opentaxii.taxii import entities
 
 from utils import get_service, prepare_headers, as_tm, persist_content
 from fixtures import *
@@ -19,21 +17,28 @@ ASSIGNED_SUBSCTRIPTION_INSTANCES = sum(len(v['protocol_bindings']) \
 
 @pytest.fixture
 def manager():
-    db_connection = 'sqlite://' # in-memory DB
+    config = ServerConfig()
+    config.update_persistence_api_config(
+        'opentaxii.persistence.sqldb.SQLDatabaseAPI', {
+            'db_connection' : 'sqlite://', # in-memory DB
+            'create_tables' : True
+    })
+    config['services'].update(SERVICES)
 
-    config = ServerConfig(services_properties=SERVICES)
-    manager = DataManager(config=config, api=SQLDB(db_connection, create_tables=True))
+    manager = create_manager(config)
+    create_services_from_config(config, manager=manager)
+
     return manager
 
 
 @pytest.fixture()
 def server(manager):
 
-    server = TAXIIServer(DOMAIN, data_manager=manager)
+    server = TAXIIServer(DOMAIN, manager=manager)
 
     for coll in COLLECTIONS_B:
-        coll = manager.save_collection(coll)
-        manager.assign_collection(coll.id, services_ids=ASSIGNED_SERVICES)
+        coll = manager.create_collection(coll)
+        manager.attach_collection_to_services(coll.id, services_ids=ASSIGNED_SERVICES)
 
     return server
 

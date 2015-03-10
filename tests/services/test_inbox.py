@@ -3,12 +3,10 @@ import pytest
 from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
 
-from taxii_server.taxii import exceptions
-from taxii_server.server import TAXIIServer
-from taxii_server.options import ServerConfig
-
-from taxii_server.data.sql import SQLDB
-from taxii_server.data import DataManager
+from opentaxii.taxii import exceptions
+from opentaxii.server import TAXIIServer
+from opentaxii.config import ServerConfig
+from opentaxii.utils import create_manager, create_services_from_config
 
 from utils import get_service, prepare_headers, as_tm
 from fixtures import *
@@ -46,10 +44,17 @@ def make_inbox_message(version, blocks=None, dest_collection=None):
 
 @pytest.fixture
 def manager():
-    db_connection = 'sqlite://' # in-memory DB
+    config = ServerConfig()
+    config.update_persistence_api_config(
+        'opentaxii.persistence.sqldb.SQLDatabaseAPI', {
+            'db_connection' : 'sqlite://', # in-memory DB
+            'create_tables' : True
+        }
+    )
+    config['services'].update(SERVICES)
 
-    config = ServerConfig(services_properties=SERVICES)
-    manager = DataManager(config=config, api=SQLDB(db_connection, create_tables=True))
+    manager = create_manager(config)
+    create_services_from_config(manager=manager, config=config)
 
     coll_mapping = {
         'inbox-A' : COLLECTIONS_A,
@@ -57,8 +62,8 @@ def manager():
     }
     for service, collections in coll_mapping.items():
         for coll in collections:
-            coll = manager.save_collection(coll)
-            manager.assign_collection(coll.id, services_ids=[service])
+            coll = manager.create_collection(coll)
+            manager.attach_collection_to_services(coll.id, services_ids=[service])
 
     return manager
 
@@ -66,7 +71,7 @@ def manager():
 @pytest.fixture
 def server(manager):
     
-    return TAXIIServer(DOMAIN, data_manager=manager)
+    return TAXIIServer(DOMAIN, manager=manager)
 
 
 
@@ -92,7 +97,7 @@ def test_inbox_request_all_content(server, version, manager, https):
     assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
-    blocks = manager.get_content(None)
+    blocks = manager.get_content_blocks(None)
     assert len(blocks) == len(blocks)
 
 
@@ -136,7 +141,7 @@ def test_inbox_request_inbox_valid_content_binding(server, manager, version, htt
     assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
-    blocks = manager.get_content(None)
+    blocks = manager.get_content_blocks(None)
     assert len(blocks) == len(blocks)
 
 
@@ -157,7 +162,7 @@ def test_inbox_request_inbox_invalid_inbox_content_binding(server, manager, vers
     assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
-    blocks = manager.get_content(None)
+    blocks = manager.get_content_blocks(None)
 
     # Content blocks with invalid content should be ignored
     assert len(blocks) == 0
@@ -183,7 +188,7 @@ def test_inbox_request_collection_content_bindings_filtering(server, manager, ve
     assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
-    blocks = manager.get_content(None)
+    blocks = manager.get_content_blocks(None)
 
     # Content blocks with invalid content should be ignored
     assert len(blocks) == 1

@@ -1,8 +1,8 @@
 from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
 
-from taxii_server.taxii.http import *
-from taxii_server.taxii.utils import get_utc_now
+from opentaxii.taxii.http import *
+from opentaxii.taxii.utils import get_utc_now
 
 from fixtures import *
 
@@ -40,16 +40,21 @@ def prepare_headers(version, https):
     return headers
 
 
-def persist_content(manager, collection_name, service_id, timestamp=None):
+def persist_content(manager, collection_name, service_id, timestamp=None,
+        binding=CB_STIX_XML_111, subtypes=[]):
 
     timestamp = timestamp or get_utc_now()
 
+    content_binding = entities.ContentBindingEntity(
+        binding = binding,
+        subtypes = subtypes
+    )
+
     content = entities.ContentBlockEntity(content=CONTENT, timestamp_label=timestamp,
-            message=MESSAGE, content_binding=BINDING_ENTITY)
+            message=MESSAGE, content_binding=content_binding)
 
     collection = manager.get_collection(collection_name, service_id)
-
-    content = manager.save_content(content, collections=[collection])
+    content = manager.create_content(content, collections=[collection])
 
     return content
 
