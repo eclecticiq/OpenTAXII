@@ -7,38 +7,41 @@ from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
 from libtaxii import constants
 
-from taxii_server.server import TAXIIServer
-from taxii_server.options import ServerConfig
-from taxii_server.taxii import exceptions
+from opentaxii.server import TAXIIServer
+from opentaxii.config import ServerConfig
+from opentaxii.utils import create_manager, create_services_from_config
+from opentaxii.taxii import exceptions, entities
 
-from taxii_server.data.sql import SQLDB
-from taxii_server.data import DataManager
-from taxii_server.taxii import entities
-
-from utils import get_service, prepare_headers, as_tm, persist_content
-from utils import prepare_subscription_request
+from utils import get_service, prepare_headers, as_tm, persist_content, prepare_subscription_request
 from fixtures import *
 
 
 @pytest.fixture
 def manager():
-    db_connection = 'sqlite://' # in-memory DB
+    config = ServerConfig()
+    config.update_persistence_api_config(
+        'opentaxii.persistence.sqldb.SQLDatabaseAPI', {
+            'db_connection' : 'sqlite://', # in-memory DB
+            'create_tables' : True
+    })
+    config['services'].update(SERVICES)
 
-    config = ServerConfig(services_properties=SERVICES)
-    manager = DataManager(config=config, api=SQLDB(db_connection, create_tables=True))
+    manager = create_manager(config)
+    create_services_from_config(config, manager=manager)
+
     return manager
 
 
 @pytest.fixture()
 def server(manager):
 
-    server = TAXIIServer(DOMAIN, data_manager=manager)
+    server = TAXIIServer(DOMAIN, manager=manager)
 
     services = ['poll-A', 'collection-management-A']
 
     for coll in COLLECTIONS_B:
-        coll = manager.save_collection(coll)
-        manager.assign_collection(coll.id, services_ids=services)
+        coll = manager.create_collection(coll)
+        manager.attach_collection_to_services(coll.id, services_ids=services)
 
     return server
 
@@ -109,7 +112,7 @@ def test_poll_empty_response(server, version, https):
 def test_poll_get_content(server, version, manager, https):
 
     service = get_service(server, 'poll-A')
-    original = persist_content(manager, COLLECTION_ONLY_STIX, service.id)
+    original = persist_content(manager, COLLECTION_ONLY_STIX, service.id, binding=CB_STIX_XML_111)
 
     # wrong collection
     headers = prepare_headers(version, https)
@@ -135,6 +138,14 @@ def test_poll_get_content(server, version, manager, https):
 
     assert original.content == block.content
     assert original.timestamp_label == block.timestamp_label
+
+    # right collection and request with wrong content_type
+    headers = prepare_headers(version, https)
+    request = prepare_request(collection_name=COLLECTION_ONLY_STIX,
+            version=version, bindings=[CUSTOM_CONTENT_BINDING])
+
+    with pytest.raises(exceptions.StatusMessageException):
+        response = service.process(headers, request)
 
 
 @pytest.mark.parametrize("https", [True, False])

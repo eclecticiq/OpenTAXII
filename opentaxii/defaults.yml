@@ -1,12 +1,13 @@
 ---
 server:
   domain: example.com
-  api:
-    db_connection: sqlite:////tmp/server.db
-    create_tables: yes
+  persistence_api:
+    class: opentaxii.persistence.sqldb.SQLDatabaseAPI
+    parameters:
+      db_connection: sqlite:////tmp/server.db
+      create_tables: yes
   logging:
-    taxii_server: debug
-    libtaxii: info
+    opentaxii: debug
     "": info
   hooks: 
 

@@ -4,7 +4,7 @@ from libtaxii.constants import VID_TAXII_XML_10, VID_TAXII_XML_11
 from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
 
-from taxii_server.taxii import exceptions, transform
+from opentaxii.taxii import exceptions, transform
 
 MESSAGE_ID = '123'
 

@@ -54,16 +54,9 @@ class ServerConfig(dict):
         return services
 
 
-
-
-class SectionProxy(object):
-
-    def __init__(self, getter):
-        self.get = getter
-
-    def __getattr__(self, key):
-        return self.get(key)
-        
-
-
+    def update_persistence_api_config(self, api_class, api_parameters):
+        self['server']['persistence_api'].update({
+            'class': api_class,
+            'parameters': api_parameters
+        })
 

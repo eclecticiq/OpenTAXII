@@ -1,14 +1,14 @@
 from setuptools import setup, find_packages
 
 setup(
-    name = "taxii-server",
+    name = "opentaxii",
     version = "0.0.1",
 
     packages = find_packages(),
     include_package_data = True,
 
     package_data = {
-        'taxii_server' : ['*.yml']
+        'opentaxii' : ['*.yml']
     },
 
     install_requires = [

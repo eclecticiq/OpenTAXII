@@ -1,15 +1,13 @@
-
 import pytest
-import tempfile
 
 from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
 from libtaxii.constants import ST_SUCCESS, ST_NOT_FOUND, ST_FAILURE
 
-from taxii_server.middleware import create_app
-from taxii_server.utils import configure_logging
-
-from taxii_server.taxii.http import *
+from opentaxii.middleware import create_app
+from opentaxii.taxii.http import *
+from opentaxii.config import ServerConfig
+from opentaxii.utils import create_services_from_config
 
 INBOX = dict(
     type = 'inbox',
@@ -28,27 +26,29 @@ DISCOVERY = dict(
     protocol_bindings = ['urn:taxii.mitre.org:protocol:http:1.0']
 )
 
-
 SERVICES = {
     'inboxA' : INBOX,
     'discoveryA' : DISCOVERY
 }
+
 INSTANCES_CONFIGURED = sum(len(s['protocol_bindings']) for s in SERVICES.values())
 MESSAGE_ID = '123'
 
-configure_logging('debug')
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def client():
-    tempdir = tempfile.mkdtemp()
+    config = ServerConfig()
+    config.update_persistence_api_config(
+        'opentaxii.persistence.sqldb.SQLDatabaseAPI', {
+            'db_connection' : 'sqlite:///tmp/test-db.sqlite3',
+            'create_tables' : True
+    })
+    config['services'].update(SERVICES)
+    create_services_from_config(config)
 
-    server_config = dict(
-        db_connection = 'sqlite:///%s/server.db' % tempdir,
-        create_tables = True
-    )
-
-    app = create_app(server_properties=server_config, services_properties=SERVICES)
+    app = create_app(config)
     app.config['TESTING'] = True
+
 
     return app.test_client()
 

@@ -6,10 +6,10 @@ from libtaxii.common import generate_message_id
 
 from .base_handlers import BaseMessageHandler
 from ...exceptions import StatusMessageException, raise_failure
-from ....data.exceptions import ResultsNotReady
+from ....persistence.exceptions import ResultsNotReady
 
 from ...entities import CollectionEntity
-from ...converters import content_block_entity_to_content_block, content_binding_entities_to_content_bindings
+from ...converters import content_block_entity_to_content_block, parse_content_bindings, content_binding_entities_to_content_bindings
 from ...utils import get_utc_now
 
 
@@ -58,7 +58,7 @@ class PollRequest11Handler(BaseMessageHandler):
 
         if request.subscription_id and request.poll_parameters:
             message = "Both subscription ID and Poll Parameters present"
-            log.warn(message, service_id=service.id, subscription_id=request.subscription_id)
+            log.warning(message, service_id=service.id, subscription_id=request.subscription_id)
 
         collection = retrieve_collection(service, request.collection_name, request.message_id)
 
@@ -79,11 +79,13 @@ class PollRequest11Handler(BaseMessageHandler):
             params = request.poll_parameters
             raw_bindings = params.content_bindings 
 
-            requested_bindings = content_binding_entities_to_content_bindings(raw_bindings, version=11)
+            requested_bindings = parse_content_bindings(raw_bindings, version=11)
             content_bindings = collection.get_matching_bindings(requested_bindings)
 
             if requested_bindings and not content_bindings:
-                details = {SD_SUPPORTED_CONTENT: collection.get_supported_content(version=11)}
+                supported_bindings = content_binding_entities_to_content_bindings(
+                        collection.supported_content, version=11)
+                details = {SD_SUPPORTED_CONTENT: supported_bindings}
                 raise StatusMessageException(ST_UNSUPPORTED_CONTENT_BINDING,
                         in_response_to=request.message_id, status_details=details)
 
@@ -114,7 +116,7 @@ class PollRequest11Handler(BaseMessageHandler):
             result_id=None, subscription_id=None):
 
         try:
-            total_count = service.get_content_count(collection,
+            total_count = service.get_content_blocks_count(collection,
                     timeframe=timeframe, content_bindings=content_bindings)
         except ResultsNotReady:
             if not allow_sync:
@@ -163,7 +165,7 @@ class PollRequest11Handler(BaseMessageHandler):
 
         if return_content:
 
-            content_blocks = service.get_content(collection, timeframe=timeframe,
+            content_blocks = service.get_content_blocks(collection, timeframe=timeframe,
                     content_bindings=content_bindings, part_number=result_part)
 
             for block in content_blocks:
@@ -193,8 +195,15 @@ class PollRequest10Handler(BaseMessageHandler):
 
             content_bindings = subscription.params.content_bindings
         else:
-            requested_bindings = content_binding_entities_to_content_bindings(request.content_bindings, version=10)
+            requested_bindings = parse_content_bindings(request.content_bindings, version=10)
             content_bindings = collection.get_matching_bindings(requested_bindings)
+
+            if requested_bindings and not content_bindings:
+                supported_bindings = content_binding_entities_to_content_bindings(
+                        collection.supported_content, version=10)
+                details = {SD_SUPPORTED_CONTENT: supported_bindings}
+                raise StatusMessageException(ST_UNSUPPORTED_CONTENT_BINDING,
+                        in_response_to=request.message_id, status_details=details)
 
          # Only Data Feeds existed in TAXII 1.0
         if collection.type != collection.TYPE_FEED:
@@ -217,7 +226,7 @@ class PollRequest10Handler(BaseMessageHandler):
             inclusive_end_timestamp_label = end_response,
         )
 
-        content_blocks = service.get_content(collection, timeframe=(start, end),
+        content_blocks = service.get_content_blocks(collection, timeframe=(start, end),
                 content_bindings=content_bindings)
 
         for block in content_blocks:

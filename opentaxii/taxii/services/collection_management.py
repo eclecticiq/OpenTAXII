@@ -42,11 +42,11 @@ class CollectionManagementService(TaxiiService):
 
     @property
     def advertised_collections(self):
-        return self.server.data_manager.get_collections(service_id=self.id)
+        return self.server.manager.get_collections(service_id=self.id)
 
 
     def get_collection(self, name):
-        return self.server.data_manager.get_collection(name, self.id)
+        return self.server.manager.get_collection(name, self.id)
 
 
     def get_push_methods(self, collection):
@@ -66,15 +66,15 @@ class CollectionManagementService(TaxiiService):
 
     def create_subscription(self, subscription):
         subscription.subscription_id = self.generate_id()
-        return self.server.data_manager.create_subscription(subscription)
+        return self.server.manager.create_subscription(subscription)
 
 
     def get_subscription(self, subscription_id):
-        return self.server.data_manager.get_subscription(subscription_id)
+        return self.server.manager.get_subscription(subscription_id)
 
 
     def update_subscription(self, subscription, new_status):
-        return self.server.data_manager.update_subscription(subscription, new_status)
+        return self.server.manager.update_subscription(subscription, new_status)
 
 
     def get_receiving_inbox_services(self, collection):
@@ -82,6 +82,6 @@ class CollectionManagementService(TaxiiService):
 
 
     def get_volume(self, collection):
-        return self.server.data_manager.get_content_count(collection.id)
+        return self.server.manager.get_content_blocks_count(collection.id)
 
 

@@ -17,19 +17,19 @@ class InboxMessage11Handler(BaseMessageHandler):
     supported_request_messages = [tm11.InboxMessage]
 
     @classmethod
-    def handle_message(cls, inbox_service, inbox_message):
+    def handle_message(cls, service, request):
 
-        collections = inbox_service.validate_destination_collection_names(
-                inbox_message.destination_collection_names, inbox_message.message_id)
+        collections = service.validate_destination_collection_names(
+                request.destination_collection_names, request.message_id)
 
-        message = inbox_message_to_inbox_message_entity(inbox_message, version=11)
+        message = inbox_message_to_inbox_message_entity(request,
+                service_id=service.id, version=11)
 
-        message = inbox_service.server.data_manager.save_inbox_message(message,
-                service_id=inbox_service.id)
+        message = service.server.manager.create_inbox_message(message)
 
-        for content_block in inbox_message.content_blocks:
+        for content_block in request.content_blocks:
 
-            is_supported = inbox_service.is_content_supported(content_block.content_binding, version=11)
+            is_supported = service.is_content_supported(content_block.content_binding, version=11)
 
             # FIXME: is it correct to skip unsupported content blocks?
             # 3.2 Inbox Exchange, http://taxii.mitre.org/specifications/version1.1/TAXII_Services_Specification.pdf
@@ -48,16 +48,16 @@ class InboxMessage11Handler(BaseMessageHandler):
                 log.warning("No collection that support binding %s were found" % content_block.content_binding)
                 continue
 
-            block = content_block_to_content_block_entity(content_block, inbox_message_entity=message, version=11)
+            block = content_block_to_content_block_entity(content_block, version=11)
 
-            inbox_service.server.data_manager.save_content(block, inbox_message_entity=message,
-                    collections=supporting_collections)
+            service.server.manager.create_content(block, inbox_message=message,
+                    collections=supporting_collections, service_id=service.id)
 
 
         # Create and return a Status Message indicating success
         status_message = tm11.StatusMessage(
             message_id = cls.generate_id(),
-            in_response_to = inbox_message.message_id,
+            in_response_to = request.message_id,
             status_type = ST_SUCCESS
         )
 
@@ -69,30 +69,30 @@ class InboxMessage10Handler(BaseMessageHandler):
     supported_request_messages = [tm10.InboxMessage]
 
     @classmethod
-    def handle_message(cls, inbox_service, inbox_message):
+    def handle_message(cls, service, request):
 
-        collections = inbox_service.get_destination_collections()
+        collections = service.get_destination_collections()
 
-        message = inbox_message_to_inbox_message_entity(inbox_message, version=10)
+        message = inbox_message_to_inbox_message_entity(request,
+                service_id=service.id, version=10)
 
-        message = inbox_service.server.data_manager.save_inbox_message(message,
-                service_id=inbox_service.id)
+        message = service.server.manager.create_inbox_message(message)
 
-        for content_block in inbox_message.content_blocks:
-            is_supported = inbox_service.is_content_supported(content_block.content_binding, version=10)
+        for content_block in request.content_blocks:
+            is_supported = service.is_content_supported(content_block.content_binding, version=10)
 
             if not is_supported:
                 log.warning("Content block binding is not supported: %s" % content_block.content_binding)
                 continue
 
-            block = content_block_to_content_block_entity(content_block, inbox_message_entity=message, version=10)
+            block = content_block_to_content_block_entity(content_block, version=10)
 
-            inbox_service.server.data_manager.save_content(block, inbox_message_entity=message,
-                    collections=collections)
+            service.server.manager.create_content(block, inbox_message=message,
+                    collections=collections, service_id=service.id)
 
         status_message = tm10.StatusMessage(
             message_id = cls.generate_id(),
-            in_response_to = inbox_message.message_id,
+            in_response_to = request.message_id,
             status_type = ST_SUCCESS
         )
 
@@ -104,11 +104,11 @@ class InboxMessageHandler(BaseMessageHandler):
     supported_request_messages = [tm10.InboxMessage, tm11.InboxMessage]
 
     @staticmethod
-    def handle_message(inbox_service, inbox_message):
-        if isinstance(inbox_message, tm10.InboxMessage):
-            return InboxMessage10Handler.handle_message(inbox_service, inbox_message)
-        elif isinstance(inbox_message, tm11.InboxMessage):
-            return InboxMessage11Handler.handle_message(inbox_service, inbox_message)
+    def handle_message(service, request):
+        if isinstance(request, tm10.InboxMessage):
+            return InboxMessage10Handler.handle_message(service, request)
+        elif isinstance(request, tm11.InboxMessage):
+            return InboxMessage11Handler.handle_message(service, request)
         else:
-            raise_failure("TAXII Message not supported by message handler", inbox_message.message_id)
+            raise_failure("TAXII Message not supported by message handler", request.message_id)
 

@@ -1,17 +1,14 @@
 import json
+from datetime import datetime
+
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.schema import Table, Column, ForeignKey, Index, UniqueConstraint, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String, Date, DateTime, Boolean, Text, Enum
-
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import event
-
-Base = declarative_base()
-
-from datetime import datetime
 
 __all__ = ['Base', 'ContentBlock', 'DataCollection', 'Service', 'InboxMessage', 'ResultSet', 'Subscription']
 
+Base = declarative_base()
 
 MAX_NAME_LENGTH = 256
 
@@ -23,18 +20,17 @@ class Timestamped(Base):
     date_updated = Column(DateTime(timezone=True), default=datetime.now, onupdate=datetime.now)
 
 
-
 class ContentBlock(Timestamped):
 
     __tablename__ = 'content_blocks'
 
     id = Column(Integer, primary_key=True)
-
     message = Column(Text, nullable=True)
 
     timestamp_label = Column(DateTime(timezone=True), default=datetime.now)
 
-    inbox_message_id = Column(Integer, ForeignKey('inbox_messages.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=True)
+    inbox_message_id = Column(Integer, ForeignKey('inbox_messages.id',
+        onupdate="CASCADE", ondelete="CASCADE"), nullable=True)
     inbox_message = relationship('InboxMessage', backref='content_blocks')
 
     content = Column(Text)
@@ -42,14 +38,13 @@ class ContentBlock(Timestamped):
     binding_id = Column(String(MAX_NAME_LENGTH))
     binding_subtype = Column(String(MAX_NAME_LENGTH))
 
-    def __str__(self):
+    def __repr__(self):
         return 'ContentBlock(id=%s, inbox_message=%s, binding=[%s, %s])' % (
                 self.id, self.inbox_message_id, self.binding_id, self.binding_subtype)
 
 
-
 service_to_collection = Table('service_to_collection', Base.metadata,
-    Column('service_id', Integer, ForeignKey('services.id')),
+    Column('service_id', String(MAX_NAME_LENGTH), ForeignKey('services.id')),
     Column('collection_id', Integer, ForeignKey('data_collections.id'))
 )
 
@@ -97,7 +92,7 @@ class DataCollection(Timestamped):
 
     bindings = Column(String(MAX_NAME_LENGTH))
 
-    def __str__(self):
+    def __repr__(self):
         return u'DataCollection(%s, %s)' % (self.name, self.type)
 
 
@@ -110,11 +105,9 @@ class InboxMessage(Timestamped):
     message_id = Column(String(MAX_NAME_LENGTH))
     result_id = Column(String(MAX_NAME_LENGTH), nullable=True)
 
-    # Record Count items
     record_count = Column(Integer, nullable=True)
     partial_count = Column(Boolean, default=False)
 
-    # Subscription Information items
     subscription_collection_name = Column(String(MAX_NAME_LENGTH), nullable=True)
     subscription_id = Column(String(MAX_NAME_LENGTH), nullable=True)
 
@@ -124,10 +117,13 @@ class InboxMessage(Timestamped):
     original_message = Column(Text, nullable=False)
     content_block_count = Column(Integer)
 
-    # No reason to have a proper reference here
+    # FIXME: should be a proper reference ID
     destination_collections = Column(Text, nullable=True)
 
-    def __str__(self):
+    service_id = Column(String(MAX_NAME_LENGTH), ForeignKey('services.id', onupdate="CASCADE", ondelete="CASCADE"))
+    service = relationship('Service', backref='inbox_messages')
+
+    def __repr__(self):
         return 'InboxMessage(%s, %s)' % (self.message_id, self.date_created)
 
 
@@ -159,3 +155,5 @@ class Subscription(Timestamped):
 
     # FIXME: proper enum type
     status = Column(String(MAX_NAME_LENGTH))
+
+

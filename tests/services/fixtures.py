@@ -1,6 +1,6 @@
 from libtaxii.constants import *
 
-from taxii_server.taxii import entities
+from opentaxii.taxii import entities
 
 PROTOCOL_BINDINGS = [VID_TAXII_HTTP_10, VID_TAXII_HTTPS_10]
 
@@ -83,11 +83,6 @@ CONTENT = 'some-content'
 CONTENT_BINDINGS_ONLY_STIX = [CB_STIX_XML_111]
 CONTENT_BINDINGS_STIX_AND_CUSTOM = CONTENT_BINDINGS_ONLY_STIX + [CUSTOM_CONTENT_BINDING]
 CONTENT_BINDING_SUBTYPE = 'custom-subtype'
-
-BINDING_ENTITY = entities.ContentBindingEntity(
-    binding = CUSTOM_CONTENT_BINDING,
-    subtypes = [CONTENT_BINDING_SUBTYPE]
-)
 
 MESSAGE = 'test-message'
 

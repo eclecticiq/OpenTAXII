@@ -8,8 +8,7 @@ from libtaxii.constants import (
     SS_ACTIVE, SS_PAUSED, SS_UNSUBSCRIBED
 )
 
-#: Tuple of all TAXII 1.1 Subscription Statues
-SS_TYPES_11 = (SS_ACTIVE, SS_PAUSED, SS_UNSUBSCRIBED)
+#SS_TYPES_11 = (SS_ACTIVE, SS_PAUSED, SS_UNSUBSCRIBED)
 
 class Entity(object):
 
@@ -19,6 +18,16 @@ class Entity(object):
 
     def as_dict(self):
         return self.__dict__
+
+
+class ServiceEntity(Entity):
+
+    def __init__(self, type, properties, id=None):
+
+        self.id = id
+
+        self.type = type
+        self.properties = properties
 
 
 class ContentBindingEntity(Entity):
@@ -94,20 +103,21 @@ class ContentBlockEntity(Entity):
         self.inbox_message_id = inbox_message_id
 
 
-
-
 class InboxMessageEntity(Entity):
 
-    def __init__(self, message_id, original_message, content_block_count, id=None,
-            result_id=None, destination_collections=[], record_count=None,
-            partial_count=False, subscription_collection_name=None, subscription_id=None,
-            exclusive_begin_timestamp_label=None, inclusive_end_timestamp_label=None):
+    def __init__(self, message_id, original_message, content_block_count,
+            service_id, id=None, result_id=None, destination_collections=[],
+            record_count=None, partial_count=False, subscription_collection_name=None,
+            subscription_id=None, exclusive_begin_timestamp_label=None,
+            inclusive_end_timestamp_label=None):
 
         self.id = id
 
         self.message_id = message_id
         self.original_message = original_message
         self.content_block_count = content_block_count
+
+        self.service_id = service_id
 
         self.destination_collections = destination_collections
 
@@ -123,7 +133,6 @@ class InboxMessageEntity(Entity):
 
 
 
-
 class ResultSetEntity(Entity):
 
     def __init__(self, result_id, collection_id, content_bindings=[], timeframe=None):
@@ -135,7 +144,6 @@ class ResultSetEntity(Entity):
         self.timeframe = timeframe
 
 
-
 class PollRequestParamsEntity(Entity):
 
     def __init__(self, response_type=RT_FULL, accept_all_content=False, content_bindings=[]):
@@ -143,7 +151,6 @@ class PollRequestParamsEntity(Entity):
         self.response_type = response_type
         self.accept_all_content = accept_all_content
         self.content_bindings = content_bindings
-
 
 
 class SubscriptionEntity(Entity):

@@ -49,7 +49,7 @@ class InboxService(TaxiiService):
 
 
     def get_destination_collections(self):
-        return self.server.data_manager.get_collections(self.id)
+        return self.server.manager.get_collections(self.id)
 
 
     def validate_destination_collection_names(self, name_list, in_response_to):

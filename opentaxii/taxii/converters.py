@@ -208,12 +208,13 @@ def subscription_to_subscription_instance(subscription, polling_services, versio
 
 
 
-def inbox_message_to_inbox_message_entity(inbox_message, version):
+def inbox_message_to_inbox_message_entity(inbox_message, service_id, version):
 
     params = dict(
         message_id = inbox_message.message_id,
         original_message = inbox_message.to_xml(), #FIXME: raw?
         content_block_count = len(inbox_message.content_blocks),
+        service_id = service_id
     )
 
     if version == 10:
@@ -256,7 +257,7 @@ def inbox_message_to_inbox_message_entity(inbox_message, version):
     return InboxMessageEntity(**params)
 
 
-def content_block_to_content_block_entity(content_block, inbox_message_entity, version):
+def content_block_to_content_block_entity(content_block, version, inbox_message_id=None):
 
     content_binding = parse_content_binding(content_block.content_binding, version=version)
 
@@ -266,7 +267,7 @@ def content_block_to_content_block_entity(content_block, inbox_message_entity, v
     return ContentBlockEntity(
         id = None,
         message = message,
-        inbox_message_id = inbox_message_entity.id,
+        inbox_message_id = inbox_message_id,
         content = content_block.content,
         timestamp_label = content_block.timestamp_label,
         content_binding = content_binding
