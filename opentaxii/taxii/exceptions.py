@@ -9,7 +9,7 @@ class StatusMessageException(Exception):
     def __init__(self, status_type, in_response_to='0', message=None, status_details=None,
             extended_headers=None, e=None):
 
-        super(StatusMessageException, self).__init__(e or message)
+        super(StatusMessageException, self).__init__(e or message or status_type)
 
         self.in_response_to = in_response_to
         self.status_type = status_type

@@ -39,7 +39,7 @@ class PollService(TaxiiService):
 
 
     def get_collection(self, name):
-        return self.server.data_manager.get_collection(name, self.id)
+        return self.server.manager.get_collection(name, self.id)
 
 
     def get_offset_limit(self, part_number):
@@ -50,12 +50,12 @@ class PollService(TaxiiService):
         return offset, limit
 
 
-    def get_content_count(self, collection, timeframe=None,
+    def get_content_blocks_count(self, collection, timeframe=None,
             content_bindings=[], part_number=1):
 
         start_time, end_time = timeframe or (None, None)
 
-        return self.server.data_manager.get_content_count(
+        return self.server.manager.get_content_blocks_count(
             collection_id = collection.id,
             start_time = start_time,
             end_time = end_time,
@@ -63,14 +63,14 @@ class PollService(TaxiiService):
         )
 
 
-    def get_content(self, collection, timeframe=None,
-            content_bindings=[], part_number=1):
+    def get_content_blocks(self, collection, timeframe=None, content_bindings=[],
+            part_number=1):
 
         start_time, end_time = timeframe or (None, None)
 
         offset, limit = self.get_offset_limit(part_number)
 
-        return self.server.data_manager.get_content(
+        return self.server.manager.get_content_blocks(
             collection_id = collection.id,
             start_time = start_time,
             end_time = end_time,
@@ -91,12 +91,12 @@ class PollService(TaxiiService):
             timeframe = timeframe
         )
 
-        return self.server.data_manager.save_result_set(entity)
+        return self.server.manager.create_result_set(entity)
 
 
     def get_result_set(self, result_set_id):
-        return self.server.data_manager.get_result_set(result_set_id)
-
+        return self.server.manager.get_result_set(result_set_id)
 
     def get_subscription(self, subscription_id):
-        return self.server.data_manager.get_subscription(subscription_id)
+        return self.server.manager.get_subscription(subscription_id)
+

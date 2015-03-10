@@ -208,12 +208,13 @@ def subscription_to_subscription_instance(subscription, polling_services, versio
 
 
 
-def inbox_message_to_inbox_message_entity(inbox_message, version):
+def inbox_message_to_inbox_message_entity(inbox_message, service_id, version):
 
     params = dict(
         message_id = inbox_message.message_id,
         original_message = inbox_message.to_xml(), #FIXME: raw?
         content_block_count = len(inbox_message.content_blocks),
+        service_id = service_id
     )
 
     if version == 10:

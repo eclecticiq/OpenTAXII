@@ -1,4 +1,3 @@
-import importlib
 from functools import wraps
 from flask import Flask, request, jsonify, make_response
 
@@ -8,20 +7,17 @@ from .taxii.transform import parse_message
 from .taxii.exceptions import StatusMessageException, StatusFailureMessage
 from .taxii.status import process_status_exception
 
-from .options import ServerConfig
+from .config import ServerConfig
 from .server import TAXIIServer
-from .data.sql import SQLDB
-from .data import DataManager
-from .utils import configure_logging
+from .persistence import DataManager
+
+from .utils import import_module, create_manager
 
 import structlog
 log = structlog.get_logger(__name__)
 
 
-def create_app(server_properties=None, services_properties=None):
-
-    config = ServerConfig(server_properties=server_properties,
-            services_properties=services_properties)
+def create_app(config):
 
     app = Flask(__name__)
     app = attach_taxii_server(app, create_server(config))
@@ -36,24 +32,19 @@ def create_app(server_properties=None, services_properties=None):
 
 def create_server(config):
 
-    manager = DataManager(
-        config = config,
-        api = SQLDB(**config['server']['api'])
-    )
+    signal_hooks = config['server']['hooks']
+    if signal_hooks:
+        import_module(signal_hooks)
 
-    server = TAXIIServer(
-        domain = config['server']['domain'],
-        data_manager = manager
-    )
+    manager = create_manager(config)
 
-    if config['server']['hooks']:
-        importlib.import_module(config['server']['hooks'])
+    domain = config['server']['domain']
+    server = TAXIIServer(domain=domain, manager=manager)
 
     return server
 
 
 def attach_taxii_server(app, server):
-
     for path, service in server.path_to_service.items():
         app.add_url_rule(
             path,
@@ -61,7 +52,6 @@ def attach_taxii_server(app, server):
             view_func = service_wrapper(service),
             methods = ['POST']
         )
-
     return app
 
 
@@ -127,7 +117,6 @@ def validate_request_headers_post_parse(headers):
 
     # Validate the X-TAXII-Protocol header
     # TODO: Look into the service properties instead of assuming both are supported
-    # ?
     if taxii_protocol and taxii_protocol not in ALL_PROTOCOL_BINDINGS:
         raise_failure("The specified value of X-TAXII-Protocol is not supported")
 
@@ -146,7 +135,6 @@ def validate_response_headers(headers):
 def make_taxii_response(taxii_xml, taxii_headers):
 
     validate_response_headers(taxii_headers)
-
     response = make_response(taxii_xml)
 
     h = response.headers

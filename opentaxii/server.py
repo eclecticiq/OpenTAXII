@@ -19,15 +19,15 @@ TYPE_TO_SERVICE = dict(
 class TAXIIServer(object):
 
 
-    def __init__(self, domain, data_manager):
+    def __init__(self, domain, manager):
 
-        self.data_manager = data_manager
+        self.manager = manager
         self.domain = domain
 
         self.services = []
         self.path_to_service = dict()
 
-        self._create_services(data_manager.get_services())
+        self._create_services(manager.get_services())
 
         log.info('%d services configured' % len(self.services))
 
@@ -36,9 +36,9 @@ class TAXIIServer(object):
 
         discovery_services = []
 
-        for _type, id, props in services:
+        for service in services:
 
-            _props = dict(props)
+            _props = dict(service.properties)
             _props['server'] = self
 
             raw_address = _props['address']
@@ -46,10 +46,10 @@ class TAXIIServer(object):
 
             path, _props['address'] = get_path_and_address(self.domain, raw_address)
 
-            if _type not in TYPE_TO_SERVICE:
-                raise RuntimeError('Unknown service type "%s"' % _type)
+            if service.type not in TYPE_TO_SERVICE:
+                raise RuntimeError('Unknown service type "%s"' % service.type)
 
-            service = TYPE_TO_SERVICE[_type](id=id, **_props)
+            service = TYPE_TO_SERVICE[service.type](id=service.id, **_props)
 
             self.services.append(service)
 
@@ -71,9 +71,9 @@ class TAXIIServer(object):
         if not service_type in TYPE_TO_SERVICE:
             raise ValueError('Wrong service type')
 
-        service_ids = self.data_manager.get_service_ids_for_collection(collection,
+        service_entities = self.manager.get_services_for_collection(collection,
                 service_type=service_type)
-        services = self.get_services(service_ids)
+        services = self.get_services([e.id for e in service_entities])
 
         return services
 

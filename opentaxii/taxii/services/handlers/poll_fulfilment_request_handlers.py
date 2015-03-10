@@ -5,7 +5,7 @@ from libtaxii.common import generate_message_id
 
 from .base_handlers import BaseMessageHandler
 from ...exceptions import StatusMessageException, raise_failure
-from ....data.exceptions import ResultsNotReady
+from ....persistence.exceptions import ResultsNotReady
 
 from ...entities import CollectionEntity
 from ...utils import get_utc_now

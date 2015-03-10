@@ -45,10 +45,11 @@ def action_subscribe(request, service, collection, version, **kwargs):
             requested_bindings = parse_content_bindings(params.content_bindings, version=version)
             supported_contents = collection.get_matching_bindings(requested_bindings)
 
-            if not supported_contents:
+            if requested_bindings and not supported_contents:
                 details = {SD_SUPPORTED_CONTENT: collection.get_supported_content(version=version)}
                 raise StatusMessageException(ST_UNSUPPORTED_CONTENT_BINDING,
                         in_response_to=request.message_id, status_details=details)
+
     else:
         accept_all_content = True
         supported_contents = []
@@ -160,8 +161,6 @@ class SubscriptionRequest11Handler(BaseMessageHandler):
 
         results = ACTIONS[request.action](service=service, request=request,
                 collection=collection, subscription=subscription, version=11)
-
-        print results
 
         if not isinstance(results, list):
             results = [results]

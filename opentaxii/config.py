@@ -53,3 +53,10 @@ class ServerConfig(dict):
 
         return services
 
+
+    def update_persistence_api_config(self, api_class, api_parameters):
+        self['server']['persistence_api'].update({
+            'class': api_class,
+            'parameters': api_parameters
+        })
+

@@ -22,7 +22,10 @@ class InboxMessage11Handler(BaseMessageHandler):
         collections = service.validate_destination_collection_names(
                 request.destination_collection_names, request.message_id)
 
-        message = inbox_message_to_inbox_message_entity(request, version=11)
+        message = inbox_message_to_inbox_message_entity(request,
+                service_id=service.id, version=11)
+
+        message = service.server.manager.create_inbox_message(message)
 
         for content_block in request.content_blocks:
 
@@ -47,7 +50,7 @@ class InboxMessage11Handler(BaseMessageHandler):
 
             block = content_block_to_content_block_entity(content_block, version=11)
 
-            service.server.data_manager.save_content(block, inbox_message=message,
+            service.server.manager.create_content(block, inbox_message=message,
                     collections=supporting_collections, service_id=service.id)
 
 
@@ -70,7 +73,10 @@ class InboxMessage10Handler(BaseMessageHandler):
 
         collections = service.get_destination_collections()
 
-        message = inbox_message_to_inbox_message_entity(request, version=10)
+        message = inbox_message_to_inbox_message_entity(request,
+                service_id=service.id, version=10)
+
+        message = service.server.manager.create_inbox_message(message)
 
         for content_block in request.content_blocks:
             is_supported = service.is_content_supported(content_block.content_binding, version=10)
@@ -81,7 +87,7 @@ class InboxMessage10Handler(BaseMessageHandler):
 
             block = content_block_to_content_block_entity(content_block, version=10)
 
-            service.server.data_manager.save_content(block, inbox_message=message,
+            service.server.manager.create_content(block, inbox_message=message,
                     collections=collections, service_id=service.id)
 
         status_message = tm10.StatusMessage(
