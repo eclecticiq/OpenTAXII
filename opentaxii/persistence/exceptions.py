@@ -1,0 +1,3 @@
+
+class ResultsNotReady(Exception):
+    pass
