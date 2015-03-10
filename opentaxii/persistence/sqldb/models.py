@@ -10,14 +10,16 @@ __all__ = ['Base', 'ContentBlock', 'DataCollection', 'Service', 'InboxMessage', 
 
 Base = declarative_base()
 
-MAX_NAME_LENGTH = 256
+MAX_STR_LEN = 256
 
 
 class Timestamped(Base):
     __abstract__ = True
 
-    date_created = Column(DateTime(timezone=True), default=datetime.now)
-    date_updated = Column(DateTime(timezone=True), default=datetime.now, onupdate=datetime.now)
+    date_created = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    date_updated = Column(DateTime(timezone=True), default=datetime.utcnow,
+            onupdate=datetime.utcnow)
 
 
 class ContentBlock(Timestamped):
@@ -27,7 +29,7 @@ class ContentBlock(Timestamped):
     id = Column(Integer, primary_key=True)
     message = Column(Text, nullable=True)
 
-    timestamp_label = Column(DateTime(timezone=True), default=datetime.now)
+    timestamp_label = Column(DateTime(timezone=True), default=datetime.utcnow)
 
     inbox_message_id = Column(Integer, ForeignKey('inbox_messages.id',
         onupdate="CASCADE", ondelete="CASCADE"), nullable=True)
@@ -35,8 +37,8 @@ class ContentBlock(Timestamped):
 
     content = Column(Text)
 
-    binding_id = Column(String(MAX_NAME_LENGTH))
-    binding_subtype = Column(String(MAX_NAME_LENGTH))
+    binding_id = Column(String(MAX_STR_LEN))
+    binding_subtype = Column(String(MAX_STR_LEN))
 
     def __repr__(self):
         return 'ContentBlock(id=%s, inbox_message=%s, binding=[%s, %s])' % (
@@ -44,7 +46,7 @@ class ContentBlock(Timestamped):
 
 
 service_to_collection = Table('service_to_collection', Base.metadata,
-    Column('service_id', String(MAX_NAME_LENGTH), ForeignKey('services.id')),
+    Column('service_id', String(MAX_STR_LEN), ForeignKey('services.id')),
     Column('collection_id', Integer, ForeignKey('data_collections.id'))
 )
 
@@ -53,8 +55,8 @@ class Service(Base):
 
     __tablename__ = 'services'
 
-    id = Column(String(MAX_NAME_LENGTH), primary_key=True)
-    type = Column(String(MAX_NAME_LENGTH))
+    id = Column(String(MAX_STR_LEN), primary_key=True)
+    type = Column(String(MAX_STR_LEN))
 
     _properties = Column(Text, nullable=False)
 
@@ -80,9 +82,9 @@ class DataCollection(Timestamped):
     __tablename__ = 'data_collections'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(MAX_NAME_LENGTH))
+    name = Column(String(MAX_STR_LEN))
 
-    type = Column(String(MAX_NAME_LENGTH))
+    type = Column(String(MAX_STR_LEN))
     description = Column(Text, nullable=True)
 
     available = Column(Boolean, default=True)
@@ -90,7 +92,7 @@ class DataCollection(Timestamped):
 
     content_blocks = relationship('ContentBlock', secondary=collection_to_content_block, backref="collections")
 
-    bindings = Column(String(MAX_NAME_LENGTH))
+    bindings = Column(String(MAX_STR_LEN))
 
     def __repr__(self):
         return u'DataCollection(%s, %s)' % (self.name, self.type)
@@ -102,14 +104,14 @@ class InboxMessage(Timestamped):
 
     id = Column(Integer, primary_key=True)
 
-    message_id = Column(String(MAX_NAME_LENGTH))
-    result_id = Column(String(MAX_NAME_LENGTH), nullable=True)
+    message_id = Column(String(MAX_STR_LEN))
+    result_id = Column(String(MAX_STR_LEN), nullable=True)
 
     record_count = Column(Integer, nullable=True)
     partial_count = Column(Boolean, default=False)
 
-    subscription_collection_name = Column(String(MAX_NAME_LENGTH), nullable=True)
-    subscription_id = Column(String(MAX_NAME_LENGTH), nullable=True)
+    subscription_collection_name = Column(String(MAX_STR_LEN), nullable=True)
+    subscription_id = Column(String(MAX_STR_LEN), nullable=True)
 
     exclusive_begin_timestamp_label = Column(DateTime(timezone=True), nullable=True)
     inclusive_end_timestamp_label = Column(DateTime(timezone=True), nullable=True)
@@ -120,7 +122,7 @@ class InboxMessage(Timestamped):
     # FIXME: should be a proper reference ID
     destination_collections = Column(Text, nullable=True)
 
-    service_id = Column(String(MAX_NAME_LENGTH), ForeignKey('services.id', onupdate="CASCADE", ondelete="CASCADE"))
+    service_id = Column(String(MAX_STR_LEN), ForeignKey('services.id', onupdate="CASCADE", ondelete="CASCADE"))
     service = relationship('Service', backref='inbox_messages')
 
     def __repr__(self):
@@ -131,12 +133,12 @@ class ResultSet(Timestamped):
 
     __tablename__ = 'result_sets'
 
-    id = Column(String(MAX_NAME_LENGTH), primary_key=True)
+    id = Column(String(MAX_STR_LEN), primary_key=True)
 
     collection_id = Column(Integer, ForeignKey('data_collections.id', onupdate="CASCADE", ondelete="CASCADE"))
     collection = relationship('DataCollection', backref='result_sets')
 
-    bindings = Column(String(MAX_NAME_LENGTH))
+    bindings = Column(String(MAX_STR_LEN))
 
     begin_time = Column(DateTime(timezone=True), nullable=True)
     end_time = Column(DateTime(timezone=True), nullable=True)
@@ -146,7 +148,7 @@ class Subscription(Timestamped):
 
     __tablename__ = 'subscriptions'
 
-    id = Column(String(MAX_NAME_LENGTH), primary_key=True)
+    id = Column(String(MAX_STR_LEN), primary_key=True)
 
     collection_id = Column(Integer, ForeignKey('data_collections.id', onupdate="CASCADE", ondelete="CASCADE"))
     collection = relationship('DataCollection', backref='subscriptions')
@@ -154,6 +156,6 @@ class Subscription(Timestamped):
     params = Column(Text, nullable=True)
 
     # FIXME: proper enum type
-    status = Column(String(MAX_NAME_LENGTH))
+    status = Column(String(MAX_STR_LEN))
 
 
