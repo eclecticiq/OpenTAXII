@@ -180,11 +180,13 @@ def collection_to_feedcollection_information(service, collection, version):
         )
 
 
-def subscription_to_subscription_instance(subscription, polling_services, version, subscription_parameters=None):
+def subscription_to_subscription_instance(subscription, polling_services,
+        version, subscription_parameters=None):
 
     polling_instances = []
     for poll in polling_services:
-        polling_instances.extend(poll_service_to_polling_service_instance(poll, version=version, poll_instance_cls=True))
+        polling_instances.extend(poll_service_to_polling_service_instance(
+            poll, version=version, poll_instance_cls=True))
 
     params = dict(
         subscription_id = subscription.subscription_id,
@@ -196,9 +198,14 @@ def subscription_to_subscription_instance(subscription, polling_services, versio
 
         params.update(dict(
             status = subscription.status,
-            subscription_parameters = subscription_parameters,
             push_parameters = push_params,
         ))
+
+        if subscription_parameters:
+            params['subscription_parameters'] = tm11.SubscriptionParameters(
+                response_type = subscription_parameters.response_type,
+                content_bindings = subscription_parameters.content_bindings
+            )
 
         return tm11.SubscriptionInstance(**params)
     else:
@@ -293,5 +300,4 @@ def content_block_entity_to_content_block(entity, version):
             timestamp_label = entity.timestamp_label,
             message = entity.message,
         )
-
 

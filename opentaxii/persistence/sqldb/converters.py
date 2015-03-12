@@ -84,7 +84,7 @@ def to_subscription_entity(model):
         parsed = dict(json.loads(model.params))
         if parsed['content_bindings']:
             parsed['content_bindings'] = deserialize_content_bindings(parsed['content_bindings'])
-        params = entities.PollRequestParamsEntity(**parsed)
+        params = entities.PollRequestParametersEntity(**parsed)
     else:
         params = None
 

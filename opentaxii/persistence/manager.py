@@ -87,11 +87,14 @@ class DataManager(object):
     def get_result_set(self, result_set_id):
         return self.api.get_result_set(result_set_id)
 
-    def create_subscription(self, subscription):
-        return self.api.create_subscription(subscription)
+    def create_subscription(self, subscription, service_id=None):
+        return self.api.create_subscription(subscription, service_id=service_id)
 
     def get_subscription(self, subscription_id):
         return self.api.get_subscription(subscription_id)
+
+    def get_subscriptions(self, service_id):
+        return self.api.get_subscriptions(service_id=service_id)
 
     def update_subscription(self, subscription, new_status):
         subscription.status = new_status

@@ -144,13 +144,26 @@ class ResultSetEntity(Entity):
         self.timeframe = timeframe
 
 
-class PollRequestParamsEntity(Entity):
+class SubscriptionParameters(Entity):
 
-    def __init__(self, response_type=RT_FULL, accept_all_content=False, content_bindings=[]):
+    # Not supported: query
+
+    def __init__(self, response_type=RT_FULL, content_bindings=[]):
 
         self.response_type = response_type
-        self.accept_all_content = accept_all_content
         self.content_bindings = content_bindings
+
+
+class PollRequestParametersEntity(SubscriptionParameters):
+
+    # These fields are not supported:
+    # allow_asynch
+    # delivery_parameters
+
+    def __init__(self, response_type=RT_FULL, content_bindings=[]):
+
+        super(PollRequestParametersEntity, self).__init__(
+                response_type=response_type, content_bindings=content_bindings)
 
 
 class SubscriptionEntity(Entity):
@@ -159,7 +172,8 @@ class SubscriptionEntity(Entity):
     PAUSED = SS_PAUSED
     UNSUBSCRIBED = SS_UNSUBSCRIBED
 
-    def __init__(self, collection_id=None, subscription_id=None, status=ACTIVE, poll_request_params=None):
+    def __init__(self, collection_id=None, subscription_id=None, status=ACTIVE,
+            poll_request_params=None):
 
         self.subscription_id = subscription_id
         self.collection_id = collection_id

@@ -1,20 +1,17 @@
+import structlog
+
 import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10
 from libtaxii.constants import *
 from libtaxii.common import generate_message_id
 
 from .base_handlers import BaseMessageHandler
+
 from ...exceptions import StatusMessageException, raise_failure
-
-from ...utils import get_utc_now
-
 from ...converters import subscription_to_subscription_instance, parse_content_bindings
+from ...entities import PollRequestParametersEntity, SubscriptionEntity
 
-from ...entities import PollRequestParamsEntity, SubscriptionEntity
-
-import structlog
 log = structlog.getLogger(__name__)
-
 
 
 def retrieve_collection(service, collection_name, in_response_to):
@@ -55,9 +52,8 @@ def action_subscribe(request, service, collection, version, **kwargs):
         supported_contents = []
         response_type = None
 
-    poll_request_params = PollRequestParamsEntity(
+    poll_request_params = PollRequestParametersEntity(
         response_type = response_type,
-        accept_all_content = accept_all_content,
         content_bindings = supported_contents,
     )
 
@@ -88,9 +84,13 @@ def action_status(service, subscription, **kwargs):
 
 
 def action_pause(service, subscription, **kwargs):
+    if subscription.status == SubscriptionEntity.PAUSED:
+        return subscription
     return service.update_subscription(subscription, SubscriptionEntity.PAUSED)
 
 def action_resume(service, subscription, **kwargs):
+    if subscription.status != SubscriptionEntity.PAUSED:
+        return subscription
     return service.update_subscription(subscription, SubscriptionEntity.ACTIVE)
 
 
@@ -159,11 +159,13 @@ class SubscriptionRequest11Handler(BaseMessageHandler):
             message = service.subscription_message,
         )
 
-        results = ACTIONS[request.action](service=service, request=request,
+        result = ACTIONS[request.action](service=service, request=request,
                 collection=collection, subscription=subscription, version=11)
 
-        if not isinstance(results, list):
-            results = [results]
+        if isinstance(result, list):
+            results = result
+        else:
+            results = [result]
 
         polling_services = service.get_polling_services(collection)
 
@@ -172,11 +174,10 @@ class SubscriptionRequest11Handler(BaseMessageHandler):
                 subscription = s,
                 polling_services = polling_services,
                 version = 11,
-                subscription_parameters = request.subscription_parameters
+                subscription_parameters = s.params
             )
 
             response.subscription_instances.append(instance)
-
 
         return response
 

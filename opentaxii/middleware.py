@@ -145,7 +145,7 @@ def make_taxii_response(taxii_xml, taxii_headers):
 
 
 def handle_status_exception(error):
-    log.error('Status exception: %s' % error, exc_info=True)
+    log.warning('Status exception', exc_info=True)
 
     if 'application/xml' not in request.accept_mimetypes:
         return 'Unacceptable', 406
@@ -155,7 +155,7 @@ def handle_status_exception(error):
 
 
 def handle_internal_error(error):
-    log.error('Internal error: %s' % error, exc_info=True)
+    log.error('Internal error', exc_info=True)
 
     if 'application/xml' not in request.accept_mimetypes:
         return 'Unacceptable', 406

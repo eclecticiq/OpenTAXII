@@ -35,6 +35,8 @@ services_defaults:
   collection_management:
     address: /services/collection-management
     description: Default Collection Management Service description
+    subscriptions_supported: yes
+    subscription_message: Default subscription message
     protocol_bindings:
       - urn:taxii.mitre.org:protocol:http:1.0
       - urn:taxii.mitre.org:protocol:https:1.0

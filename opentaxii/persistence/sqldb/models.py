@@ -51,7 +51,7 @@ service_to_collection = Table('service_to_collection', Base.metadata,
 )
 
 
-class Service(Base):
+class Service(Timestamped):
 
     __tablename__ = 'services'
 
@@ -158,4 +158,6 @@ class Subscription(Timestamped):
     # FIXME: proper enum type
     status = Column(String(MAX_STR_LEN))
 
+    service_id = Column(String(MAX_STR_LEN), ForeignKey('services.id', onupdate="CASCADE", ondelete="CASCADE"))
+    service = relationship('Service', backref='subscriptions')
 

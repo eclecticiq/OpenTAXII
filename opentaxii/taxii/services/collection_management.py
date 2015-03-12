@@ -59,27 +59,29 @@ class CollectionManagementService(TaxiiService):
 
     def get_subscription_services(self, collection):
         services = []
-        for s in self.server.get_services_for_collection(collection, 'collection_management'):
+        all_services = self.server.get_services_for_collection(collection,
+                'collection_management')
+        for s in all_services:
             if s.subscriptions_supported:
                 services.append(s)
         return services
 
     def create_subscription(self, subscription):
         subscription.subscription_id = self.generate_id()
-        return self.server.manager.create_subscription(subscription)
-
+        return self.server.manager.create_subscription(subscription,
+                service_id=self.id)
 
     def get_subscription(self, subscription_id):
         return self.server.manager.get_subscription(subscription_id)
 
+    def get_subscriptions(self):
+        return self.server.manager.get_subscriptions(service_id=self.id)
 
     def update_subscription(self, subscription, new_status):
         return self.server.manager.update_subscription(subscription, new_status)
 
-
     def get_receiving_inbox_services(self, collection):
         return self.server.get_services_for_collection(collection, 'inbox')
-
 
     def get_volume(self, collection):
         return self.server.manager.get_content_blocks_count(collection.id)

@@ -301,28 +301,30 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
         return conv.to_result_set_entity(updated)
 
-
     def create_result_set(self, entity):
         return self.update_result_set(entity)
-
 
     def get_result_set(self, result_set_id):
         result_set = self.ResultSet.query.get(result_set_id)
         return conv.to_result_set_entity(result_set)
 
-
     def get_subscription(self, subscription_id):
         s = self.Subscription.query.get(subscription_id)
         return conv.to_subscription_entity(s)
 
+    def get_subscriptions(self, service_id):
+        service = self.Service.query.get(service_id)
+        return map(conv.to_subscription_entity, service.subscriptions)
 
-    def update_subscription(self, entity):
+    def update_subscription(self, entity, service_id=None):
 
         if entity.params:
             params = entity.params.as_dict()
-            if params['content_bindings']:
+            if params.get('content_bindings'):
                 params['content_bindings'] = conv.serialize_content_bindings(
                         params['content_bindings'])
+        else:
+            params = {}
 
         subscription = self.Subscription(
             id = entity.subscription_id,
@@ -330,6 +332,8 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
             params = json.dumps(params),
             status = entity.status
         )
+        if service_id:
+            subscription.service_id = service_id
 
         updated = self._merge(subscription)
 
@@ -337,8 +341,8 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
         return conv.to_subscription_entity(updated)
 
-    def create_subscription(self, entity):
-        return self.update_subscription(entity)
+    def create_subscription(self, entity, service_id=None):
+        return self.update_subscription(entity, service_id=service_id)
 
 
 def include_all(obj, module):
