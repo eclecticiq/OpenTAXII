@@ -7,41 +7,21 @@ from .taxii.transform import parse_message
 from .taxii.exceptions import StatusMessageException, StatusFailureMessage
 from .taxii.status import process_status_exception
 
-from .config import ServerConfig
-from .server import TAXIIServer
-from .persistence import DataManager
-
-from .utils import import_module, create_manager
-
 import structlog
 log = structlog.get_logger(__name__)
 
 
-def create_app(config):
+def create_app(server):
 
     app = Flask(__name__)
-    app = attach_taxii_server(app, create_server(config))
+    app = attach_taxii_server(app, server)
 
-    app.taxii_config = config
+    app.taxii = server
 
     app.register_error_handler(500, handle_internal_error)
     app.register_error_handler(StatusMessageException, handle_status_exception)
 
     return app
-
-
-def create_server(config):
-
-    signal_hooks = config['server']['hooks']
-    if signal_hooks:
-        import_module(signal_hooks)
-
-    manager = create_manager(config)
-
-    domain = config['server']['domain']
-    server = TAXIIServer(domain=domain, manager=manager)
-
-    return server
 
 
 def attach_taxii_server(app, server):

@@ -1,12 +1,14 @@
+import structlog
 from collections import namedtuple
-
 from .taxii.services import (
         DiscoveryService, InboxService, CollectionManagementService,
         PollService
 )
-from .utils import get_path_and_address
+from .config import ServerConfig
+from .persistence import PersistenceManager
+from .auth import AuthManager
+from .utils import get_path_and_address, attach_signal_hooks, load_api
 
-import structlog
 log = structlog.get_logger(__name__)
 
 TYPE_TO_SERVICE = dict(
@@ -18,16 +20,23 @@ TYPE_TO_SERVICE = dict(
 
 class TAXIIServer(object):
 
+    def __init__(self, domain, persistence_manager, auth_manager):
 
-    def __init__(self, domain, manager):
-
-        self.manager = manager
         self.domain = domain
+
+        self.persistence = persistence_manager
+        self.auth = auth_manager
 
         self.services = []
         self.path_to_service = dict()
 
-        self._create_services(manager.get_services())
+        self.reload_services()
+
+
+    def reload_services(self):
+        self.services = []
+        self.path_to_service = dict()
+        self._create_services(self.persistence.get_services())
 
         log.info('%d services configured' % len(self.services))
 
@@ -71,9 +80,27 @@ class TAXIIServer(object):
         if not service_type in TYPE_TO_SERVICE:
             raise ValueError('Wrong service type')
 
-        service_entities = self.manager.get_services_for_collection(collection,
+        service_entities = self.persistence.get_services_for_collection(collection,
                 service_type=service_type)
         services = self.get_services([e.id for e in service_entities])
 
         return services
+
+
+def create_server(config=None):
+
+    config = config or ServerConfig()
+    attach_signal_hooks(config)
+
+    persistence_api = load_api(config['server']['persistence_api'])
+    persistence_manager = PersistenceManager(api=persistence_api)
+
+    auth_api = load_api(config['server']['auth_api'])
+    auth_manager = AuthManager(api=auth_api)
+
+    domain = config['server']['domain']
+    server = TAXIIServer(domain, persistence_manager=persistence_manager,
+            auth_manager=auth_manager)
+
+    return server
 

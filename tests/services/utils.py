@@ -6,6 +6,7 @@ from opentaxii.taxii.utils import get_utc_now
 
 from fixtures import *
 
+
 def as_tm(version):
     if version == 10:
         return tm10

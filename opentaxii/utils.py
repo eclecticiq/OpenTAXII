@@ -7,8 +7,10 @@ import urlparse
 import importlib
 
 from datetime import datetime
-from opentaxii.persistence import DataManager
-from opentaxii.taxii.entities import ServiceEntity
+
+from .config import ServerConfig
+from .persistence import PersistenceManager
+from .taxii.entities import ServiceEntity
 
 def get_path_and_address(domain, address):
     parsed = urlparse.urlparse(address)
@@ -39,22 +41,20 @@ def import_module(module_name):
     importlib.import_module(module_name)
 
 
-def create_manager(config):
-    api_arguments = config['server']['persistence_api']
-    api_class = import_class(api_arguments['class'])
-    if api_arguments['parameters']:
-        api_instance = api_class(**api_arguments['parameters'])
+def load_api(api_config):
+    cls = import_class(api_config['class'])
+    params = api_config['parameters']
+    if params:
+        instance = cls(**params)
     else:
-        api_instance = api_class()
-    return DataManager(api=api_instance)
+        instance = cls()
+    return instance
 
 
-def create_services_from_config(config, manager=None):
-
-    manager = manager or create_manager(config)
-
+def create_services_from_config(config, persistence_manager):
     for _type, id, props in config.services:
-        service = manager.create_service(ServiceEntity(id=id, type=_type, properties=props))
+        service = persistence_manager.create_service(ServiceEntity(
+            id=id, type=_type, properties=props))
 
 
 def configure_logging(logging_levels):
@@ -77,4 +77,28 @@ def configure_logging(logging_levels):
 
     for logger, level in logging_levels.items():
         logging.getLogger(logger).setLevel(level.upper())
+
+
+def get_config_for_tests(domain, services, db_connection=None):
+
+    db_connection = db_connection or 'sqlite://' 
+
+    config = ServerConfig()
+    config['server']['persistence_api'].update({
+        'class' : 'opentaxii.persistence.sqldb.SQLDatabaseAPI',
+        'parameters' : {
+            'db_connection' : db_connection,
+            'create_tables' : True
+        }
+    })
+    config['server']['domain'] = domain
+    config['services'].update(services)
+    return config
+
+
+def attach_signal_hooks(config):
+    signal_hooks = config['server']['hooks']
+    if signal_hooks:
+        import_module(signal_hooks)
+
 

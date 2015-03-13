@@ -1,3 +1,3 @@
 
-from .manager import DataManager
+from .manager import PersistenceManager
 from .api import OpenTAXIIPersistenceAPI

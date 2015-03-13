@@ -1,9 +1,8 @@
 import pytest
 import tempfile
 
-from opentaxii.server import TAXIIServer
-from opentaxii.config import ServerConfig
-from opentaxii.utils import create_manager, create_services_from_config
+from opentaxii.server import create_server
+from opentaxii.utils import create_services_from_config, get_config_for_tests
 
 from utils import get_service, prepare_headers, as_tm
 from fixtures import *
@@ -12,19 +11,11 @@ from fixtures import *
 @pytest.fixture(scope='module')
 def server():
 
-    config = ServerConfig()
-    config.update_persistence_api_config(
-        'opentaxii.persistence.sqldb.SQLDatabaseAPI', {
-            'db_connection' : 'sqlite://', # in-memory DB
-            'create_tables' : True
-        }
-    )
-    config['services'].update(SERVICES)
+    config = get_config_for_tests(DOMAIN, SERVICES)
 
-    manager = create_manager(config)
-    create_services_from_config(config, manager=manager)
-
-    server = TAXIIServer(DOMAIN, manager=manager)
+    server = create_server(config)
+    create_services_from_config(config, server.persistence)
+    server.reload_services()
 
     return server
 

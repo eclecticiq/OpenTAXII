@@ -4,7 +4,12 @@ server:
   persistence_api:
     class: opentaxii.persistence.sqldb.SQLDatabaseAPI
     parameters:
-      db_connection: sqlite:////tmp/server.db
+      db_connection: sqlite:////tmp/data.db
+      create_tables: yes
+  auth_api:
+    class: opentaxii.auth.sqldb.SQLDatabaseAPI
+    parameters:
+      db_connection: sqlite:////tmp/auth.db
       create_tables: yes
   logging:
     opentaxii: debug

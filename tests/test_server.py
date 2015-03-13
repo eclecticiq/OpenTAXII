@@ -1,8 +1,7 @@
 import pytest
 
-from opentaxii.server import TAXIIServer
-from opentaxii.config import ServerConfig
-from opentaxii.utils import create_manager, create_services_from_config
+from opentaxii.server import create_server
+from opentaxii.utils import create_services_from_config, get_config_for_tests
 
 INBOX = dict(
     type = 'inbox',
@@ -40,20 +39,11 @@ DOMAIN = 'example.com'
 
 @pytest.fixture(scope='module')
 def server():
+    config = get_config_for_tests(DOMAIN, SERVICES)
+    server = create_server(config)
 
-    config = ServerConfig()
-    config.update_persistence_api_config(
-        'opentaxii.persistence.sqldb.SQLDatabaseAPI', {
-            'db_connection' : 'sqlite://', # in-memory DB
-            'create_tables' : True
-        }
-    )
-    config['services'].update(SERVICES)
-
-    manager = create_manager(config)
-    create_services_from_config(manager=manager, config=config)
-
-    server = TAXIIServer(DOMAIN, manager=manager)
+    create_services_from_config(config, server.persistence)
+    server.reload_services()
 
     return server
 
