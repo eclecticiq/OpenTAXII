@@ -1,23 +1,45 @@
-.. opentaxii documentation master file, created by
-   sphinx-quickstart on Tue Mar 10 13:37:13 2015.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+=========
+OpenTAXII
+=========
 
-Welcome to opentaxii's documentation!
-=====================================
+OpenTAXII is Python TAXII server implementation from Intelworks.
 
-Contents:
+OpenTAXII's key features are:
+
+* **Rich feature set**
+
+  OpenTAXII implements key TAXII services according to TAXII specification. On
+  top of these services, it also delivered additional ones such as customizable APIs,
+  authorization and authentication and flexible logging.
+
+* **Friendly Pythonic API**
+
+  OpenTAXII has a friendly and well-designed API that uses Python idioms like iterators and context managers (``with`` blocks).
+
+* **Well designed from ground up**
+
+  OpenTAXII is designed from ground up to be modular and flexible through micro-services
+  patterns. It is higly configurable and adoptable to any environment through easy
+  integrations on top of API.
+
+* **Well documented**
+
+  OpenTAXII has extensive documentation, including a user guide and API and reference material.
+
+.. rubric:: Documentation contents
 
 .. toctree::
    :maxdepth: 2
 
-   modules
+   installation
+   user
+   api
+   news
+   developer
+   license
 
+.. rubric:: External links
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+* `Online documentation <https://opentaxii.readthedocs.org/>`_ (Read the docs)
+* `Project page <https://github.com/Intelworks/OpenTAXII/>`_ with source code and issue tracker (Github)
+* `Python Package Index (PyPI) page <http://pypi.python.org/pypi/opentaxii/>`_ with released tarballs
