@@ -8,7 +8,7 @@ Intelworks Python TAXII server implementation.
 :Information: http://www.intelworks.com
 :Download: https://pypi.python.org/pypi/opentaxii/
 
-|travis badge| |landscape.io badge| |version badge| |docs badge| |downloads badge|
+|travis badge| |landscape.io badge| |coveralls.io badge| |version badge| |docs badge| |downloads badge|
 
 .. |travis badge| image:: https://travis-ci.org/Intelworks/OpenTAXII.svg?branch=master
    :target: https://travis-ci.org/Intelworks/OpenTAXII
@@ -16,6 +16,9 @@ Intelworks Python TAXII server implementation.
 .. |landscape.io badge| image:: https://landscape.io/github/Intelworks/OpenTAXII/master/landscape.svg?style=flat
    :target: https://landscape.io/github/Intelworks/OpenTAXII/master
    :alt: Code Health
+.. |coveralls.io badge| image:: https://coveralls.io/repos/Intelworks/OpenTAXII/badge.svg
+   :target: https://coveralls.io/r/Intelworks/OpenTAXII
+   :alt: Coverage Status
 .. |version badge| image:: https://pypip.in/v/opentaxii/badge.png
    :target: https://pypi.python.org/pypi/opentaxii/
 .. |docs badge| image:: https://readthedocs.org/projects/opentaxii/badge/?version=latest
