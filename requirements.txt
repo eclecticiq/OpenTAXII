@@ -1,6 +1,4 @@
-#libtaxii
-#git+https://github.com/TAXIIProject/libtaxii.git#egg=libtaxii
-libtaxii==1.1.105-SNAPSHOT
+git+https://github.com/TAXIIProject/libtaxii.git#egg=libtaxii
 pytz==2014.10
 pyyaml
 flask
@@ -9,5 +7,4 @@ redis
 gunicorn
 structlog
 blinker
-intelworks-common
 anyconfig
