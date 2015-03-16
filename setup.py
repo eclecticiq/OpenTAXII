@@ -21,6 +21,7 @@ setup(
     package_data = {
         'opentaxii' : ['*.yml']
     },
+
     dependency_links = [
         'git+https://github.com/TAXIIProject/libtaxii.git#egg=libtaxii-1.1.106'
     ],
