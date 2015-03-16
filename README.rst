@@ -8,7 +8,7 @@ Intelworks Python TAXII server implementation.
 :Information: http://www.intelworks.com
 :Download: https://pypi.python.org/pypi/opentaxii/
 
-|travis badge| |landscape.io badge| |coveralls.io badge| |version badge| |docs badge| |downloads badge|
+|travis badge| |landscape.io badge| |coveralls.io badge| |version badge| |py.version badge| |downloads badge| |license badge| |docs badge|
 
 .. |travis badge| image:: https://travis-ci.org/Intelworks/OpenTAXII.svg?branch=master
    :target: https://travis-ci.org/Intelworks/OpenTAXII
@@ -19,15 +19,18 @@ Intelworks Python TAXII server implementation.
 .. |coveralls.io badge| image:: https://coveralls.io/repos/Intelworks/OpenTAXII/badge.svg
    :target: https://coveralls.io/r/Intelworks/OpenTAXII
    :alt: Coverage Status
-.. |version badge| image:: https://pypip.in/v/opentaxii/badge.png
+.. |version badge| image:: https://pypip.in/version/blackhole/badge.svg?style=flat
+   :target: https://pypi.python.org/pypi/opentaxii/ 
+.. |py.version badge| image:: https://pypip.in/py_versions/blackhole/badge.svg?style=flat
+   :target: https://pypi.python.org/pypi/opentaxii/ 
+.. |downloads badge| image:: https://pypip.in/download/blackhole/badge.svg?style=flat
+   :target: https://pypi.python.org/pypi/opentaxii/
+.. |license badge| image:: https://pypip.in/license/blackhole/badge.svg?style=flat
    :target: https://pypi.python.org/pypi/opentaxii/
 .. |docs badge| image:: https://readthedocs.org/projects/opentaxii/badge/?version=latest
     :alt: Documentation Status
     :scale: 100%
-    :target: https://readthedocs.org/projects/opentaxii/ 
-.. |downloads badge| image:: https://pypip.in/d/opentaxii/badge.png
-   :target: https://pypi.python.org/pypi/opentaxii/
-
+    :target: https://readthedocs.org/projects/opentaxii/
 
 OpenTAXII is a robust Python implementation of TAXII Services that 
 delivers rich feature set and friendly pythonic API built on top of 
