@@ -18,8 +18,10 @@ Intelworks Python TAXII server implementation.
    :alt: Code Health
 .. |version badge| image:: https://pypip.in/v/opentaxii/badge.png
    :target: https://pypi.python.org/pypi/opentaxii/
-.. |docs badge| image:: https://readthedocs.org/projects/opentaxii/?badge=latest
-   :target: https://readthedocs.org/projects/opentaxii/  
+.. |docs badge| image:: https://readthedocs.org/projects/opentaxii/badge/?version=latest
+    :alt: Documentation Status
+    :scale: 100%
+    :target: https://readthedocs.org/projects/opentaxii/ 
 .. |downloads badge| image:: https://pypip.in/d/opentaxii/badge.png
    :target: https://pypi.python.org/pypi/opentaxii/
 
