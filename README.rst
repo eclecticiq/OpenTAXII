@@ -13,8 +13,8 @@ Intelworks Python TAXII server implementation.
 .. |travis badge| image:: https://api.travis-ci.org/OpenTAXII/opentaxii.png?branch=master
    :target: https://travis-ci.org/OpenTAXII/opentaxii
    :alt: Build Status
-.. |landscape.io badge| image:: https://landscape.io/github/OpenTAXII/opentaxii/master/landscape.png
-   :target: https://landscape.io/github/OpenTAXII/opentaxii/master
+.. |landscape.io badge| image:: https://landscape.io/github/Intelworks/OpenTAXII/master/landscape.svg?style=flat
+   :target: https://landscape.io/github/Intelworks/OpenTAXII/master
    :alt: Code Health
 .. |version badge| image:: https://pypip.in/v/opentaxii/badge.png
    :target: https://pypi.python.org/pypi/opentaxii/
