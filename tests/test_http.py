@@ -1,13 +1,11 @@
 import pytest
 
-from libtaxii import messages_10 as tm10
-from libtaxii import messages_11 as tm11
-from libtaxii.constants import ST_SUCCESS, ST_NOT_FOUND, ST_FAILURE
-
 from opentaxii.middleware import create_app
 from opentaxii.server import create_server
 from opentaxii.taxii.http import *
 from opentaxii.utils import create_services_from_config, get_config_for_tests
+
+from utils import prepare_headers, is_headers_valid, as_tm
 
 INBOX = dict(
     type = 'inbox',
@@ -40,7 +38,7 @@ def client(tmpdir):
 
     db = 'sqlite:///%s' % tmpdir.join('db.sqlite3')
 
-    config = get_config_for_tests('some.com', SERVICES, db_connection=db)
+    config = get_config_for_tests('some.com', SERVICES, persistence_db=db)
 
     server = create_server(config)
 
@@ -53,52 +51,9 @@ def client(tmpdir):
     return app.test_client()
 
 
-def prepare_headers(version, https=False):
-    headers = dict()
-    if version == 10:
-        if https:
-            headers.update(TAXII_10_HTTPS_Headers)
-        else:
-            headers.update(TAXII_10_HTTP_Headers)
-    elif version == 11:
-        if https:
-            headers.update(TAXII_11_HTTPS_Headers)
-        else:
-            headers.update(TAXII_11_HTTP_Headers)
-    else:
-        raise ValueError('Unknown TAXII message version: %s' % version)
+### Utils
 
-    headers[HTTP_ACCEPT] = HTTP_CONTENT_XML
-
-    return headers
-
-
-def includes(superset, subset):
-    return all(item in superset.items() for item in subset.items())
-
-
-def is_headers_valid(headers, version, https):
-    if version == 10:
-        if https:
-            return includes(headers, TAXII_10_HTTPS_Headers)
-        else:
-            return includes(headers, TAXII_10_HTTP_Headers)
-    elif version == 11:
-        if https:
-            return includes(headers, TAXII_11_HTTPS_Headers)
-        else:
-            return includes(headers, TAXII_11_HTTP_Headers)
-    else:
-        raise ValueError('Unknown TAXII message version: %s' % version)
-
-
-def as_tm(version):
-    if version == 10:
-        return tm10
-    elif version == 11:
-        return tm11
-    else:
-        raise ValueError('Unknown TAXII message version: %s' % version)
+##### Tests
 
 def test_root_get(client):
     assert client.get('/').status_code == 404

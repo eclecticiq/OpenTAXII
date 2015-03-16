@@ -6,7 +6,6 @@ from opentaxii.taxii.utils import get_utc_now
 
 from fixtures import *
 
-
 def as_tm(version):
     if version == 10:
         return tm10
@@ -81,3 +80,23 @@ def prepare_subscription_request(collection, action, version, subscription_id=No
         data['feed_name'] = collection
 
     return cls(**data)
+
+
+def includes(superset, subset):
+    return all(item in superset.items() for item in subset.items())
+
+
+def is_headers_valid(headers, version, https):
+    if version == 10:
+        if https:
+            return includes(headers, TAXII_10_HTTPS_Headers)
+        else:
+            return includes(headers, TAXII_10_HTTP_Headers)
+    elif version == 11:
+        if https:
+            return includes(headers, TAXII_11_HTTPS_Headers)
+        else:
+            return includes(headers, TAXII_11_HTTP_Headers)
+    else:
+        raise ValueError('Unknown TAXII message version: %s' % version)
+
