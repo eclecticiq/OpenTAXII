@@ -1,7 +1,9 @@
 
 import sys
 
-from libtaxii.constants import ST_BAD_MESSAGE, ST_FAILURE, ST_UNSUPPORTED_QUERY
+from libtaxii.constants import (
+    ST_BAD_MESSAGE, ST_FAILURE, ST_UNAUTHORIZED
+)
 
 
 class StatusMessageException(Exception):
@@ -18,29 +20,27 @@ class StatusMessageException(Exception):
         self.extended_headers = extended_headers
 
 
+class BadMessageStatus(StatusMessageException):
 
-class StatusBadMessage(StatusMessageException):
-
-    def __init__(self, message, status_details=None, extended_headers=None, e=None, **kwargs):
-        super(StatusBadMessage, self).__init__(ST_BAD_MESSAGE, message=message,
-                status_details=status_details, extended_headers=extended_headers, e=e, **kwargs)
-
-
-class StatusFailureMessage(StatusMessageException):
-
-    def __init__(self, message, status_details=None, extended_headers=None, e=None, **kwargs):
-        super(StatusFailureMessage, self).__init__(ST_FAILURE, message=message,
-                status_details=status_details, extended_headers=extended_headers, e=e, **kwargs)
+    def __init__(self, message, **kwargs):
+        super(BadMessageStatus, self).__init__(ST_BAD_MESSAGE, message=message,
+                **kwargs)
 
 
-class StatusUnsupportedQuery(StatusMessageException):
+class FailureStatus(StatusMessageException):
 
-    def __init__(self, message, status_details=None, extended_headers=None, e=None, **kwargs):
-        super(StatusUnsupportedQuery, self).__init__(ST_UNSUPPORTED_QUERY, message=message,
-                status_details=status_details, extended_headers=extended_headers, e=e, **kwargs)
+    def __init__(self, message, **kwargs):
+        super(FailureStatus, self).__init__(ST_FAILURE, message=message,
+                **kwargs)
+
+
+class UnauthorizedStatus(StatusMessageException):
+
+    def __init__(self, **kwargs):
+        super(UnauthorizedStatus, self).__init__(ST_UNAUTHORIZED, **kwargs)
 
 
 def raise_failure(message, in_response_to='0'):
     et, ei, tb = sys.exc_info()
-    raise StatusFailureMessage(message, in_response_to=in_response_to, e=ei), None, tb
+    raise FailureStatus(message, in_response_to=in_response_to, e=ei), None, tb
 

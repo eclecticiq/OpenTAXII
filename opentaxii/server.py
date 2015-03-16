@@ -38,7 +38,7 @@ class TAXIIServer(object):
         self.path_to_service = dict()
         self._create_services(self.persistence.get_services())
 
-        log.info('%d services configured' % len(self.services))
+        log.info('services configured', services_count=len(self.services))
 
 
     def _create_services(self, services):
@@ -70,6 +70,7 @@ class TAXIIServer(object):
 
         for service, advertised in discovery_services:
             service.set_advertised_services([s for s in self.services if s.id in advertised])
+
 
     def get_services(self, ids):
         return filter(lambda s: s.id in ids, self.services)

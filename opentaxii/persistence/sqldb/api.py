@@ -9,6 +9,8 @@ from opentaxii.persistence import OpenTAXIIPersistenceAPI
 from . import models
 from . import converters as conv
 
+__all__ = ['SQLDatabaseAPI']
+
 log = structlog.getLogger(__name__)
 
 
@@ -22,7 +24,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
                           connection arguments that will be passed directly
                           to :func:`~sqlalchemy.engine.create_engine` method.
 
-    :param create_tables=False: if True, tables will be created in the DB
+    :param create_tables=False: if True, tables will be created in the DB.
     """
 
     def __init__(self, db_connection, create_tables=False):
@@ -32,7 +34,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         self.Session = orm.scoped_session(orm.sessionmaker(autocommit=False,
             autoflush=True, bind=self.engine))
 
-        include_all(self, models)
+        attach_all(self, models)
 
         self.Base.query = self.Session.query_property()
 
@@ -345,7 +347,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         return self.update_subscription(entity, service_id=service_id)
 
 
-def include_all(obj, module):
+def attach_all(obj, module):
     for key in module.__all__:
         if not hasattr(obj, key):
             setattr(obj, key, getattr(module, key))

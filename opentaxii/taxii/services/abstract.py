@@ -5,8 +5,8 @@ from libtaxii.common import generate_message_id
 from libtaxii.constants import VID_TAXII_XML_10, VID_TAXII_XML_11
 
 from ..exceptions import StatusMessageException, raise_failure
-from ..transform import service_to_instances
 from ..bindings import PROTOCOL_TO_SCHEME
+from ..converters import service_to_service_instances
 
 
 class TaxiiService(object):
@@ -17,11 +17,13 @@ class TaxiiService(object):
 
     server = None
 
+    authentication_required = False
+
     supported_message_bindings = [VID_TAXII_XML_10, VID_TAXII_XML_11]
     supported_protocol_bindings = []
 
     def __init__(self, id, server, address, description=None,
-            protocol_bindings=[], enabled=True):
+            protocol_bindings=[], enabled=True, authentication_required=False):
 
         self.id = id
         self.server = server
@@ -30,6 +32,7 @@ class TaxiiService(object):
         self.supported_protocol_bindings = protocol_bindings
 
         self.enabled = enabled
+        self.authentication_required = authentication_required
 
         self.log = structlog.getLogger("%s.%s" % (self.__module__,
             self.__class__.__name__), service_id=id)
@@ -75,7 +78,7 @@ class TaxiiService(object):
 
 
     def to_service_instances(self, version):
-        return service_to_instances(self, version)
+        return service_to_service_instances(self, version)
 
 
     @property

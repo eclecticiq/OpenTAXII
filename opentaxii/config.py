@@ -1,8 +1,8 @@
 import os
 import sys
 import anyconfig
-
 import structlog
+
 log = structlog.get_logger(__name__)
 
 current_dir = os.path.dirname(os.path.realpath(__file__))

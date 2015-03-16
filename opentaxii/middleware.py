@@ -1,18 +1,22 @@
+import logging
+import structlog
 from functools import wraps
 from flask import Flask, request, jsonify, make_response
 
-from .taxii.exceptions import raise_failure
-from .taxii.http import *
-from .taxii.transform import parse_message
-from .taxii.exceptions import StatusMessageException, StatusFailureMessage
+from .taxii.exceptions import raise_failure, StatusMessageException, FailureStatus, UnauthorizedStatus
+from .taxii.utils import parse_message
 from .taxii.status import process_status_exception
+from .taxii.http import *
+from .taxii.bindings import MESSAGE_BINDINGS, SERVICE_BINDINGS, ALL_PROTOCOL_BINDINGS
 
-import structlog
+from .utils import extract_token
+
+from .management import management
+
 log = structlog.get_logger(__name__)
 
 
 def create_app(server):
-
     app = Flask(__name__)
     app = attach_taxii_server(app, server)
 
@@ -20,6 +24,8 @@ def create_app(server):
 
     app.register_error_handler(500, handle_internal_error)
     app.register_error_handler(StatusMessageException, handle_status_exception)
+
+    app.register_blueprint(management, url_prefix='/management')
 
     return app
 
@@ -39,6 +45,14 @@ def service_wrapper(service):
 
     @wraps(service.process)
     def wrapper(*args, **kwargs):
+
+        if service.authentication_required:
+            token = extract_token(request.headers)
+            if not token:
+                raise UnauthorizedStatus()
+            account = service.server.auth.get_account(token)
+            if not account:
+                raise UnauthorizedStatus()
 
         if 'application/xml' not in request.accept_mimetypes:
             raise_failure("The specified values of Accept is not supported: %s" % (request.accept_mimetypes or []))
@@ -140,7 +154,7 @@ def handle_internal_error(error):
     if 'application/xml' not in request.accept_mimetypes:
         return 'Unacceptable', 406
 
-    new_error = StatusFailureMessage("Error occured", e=error)
+    new_error = FailureStatus("Error occured", e=error)
 
     xml, headers = process_status_exception(new_error, request.headers, request.is_secure)
     return make_taxii_response(xml, headers)

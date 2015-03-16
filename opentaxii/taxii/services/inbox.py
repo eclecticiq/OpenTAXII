@@ -7,10 +7,9 @@ from libtaxii import messages_11 as tm11
 
 from ..utils import is_content_supported
 from ..entities import ContentBindingEntity
-from ..transform import service_to_instances
 from ..exceptions import StatusMessageException
 
-from ..converters import content_binding_entities_to_content_bindings
+from ..converters import content_binding_entities_to_content_bindings, service_to_service_instances
 
 from .abstract import TaxiiService
 from .handlers import InboxMessageHandler
@@ -86,7 +85,7 @@ class InboxService(TaxiiService):
 
     def to_service_instances(self, version):
 
-        service_instances = service_to_instances(self, version)
+        service_instances = service_to_service_instances(self, version)
 
         if self.accept_all_content:
             return service_instances

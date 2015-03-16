@@ -1,10 +1,12 @@
 import pytz
 from datetime import datetime
 
+from lxml.etree import XMLSyntaxError
+
 from libtaxii.constants import *
 from libtaxii import messages_11 as tm11
 
-from .exceptions import StatusMessageException
+from .exceptions import BadMessageStatus
 from .bindings import MESSAGE_VALIDATOR_PARSER
 
 import structlog
@@ -41,19 +43,12 @@ def parse_message(content_type, body, do_validate=True):
             result = validator_parser.validator.validate_string(body)
             if not result.valid:
                 errors = '; '.join([str(err) for err in result.error_log])
-                raise StatusBadMessage('Request was not schema valid: %s' % errors)
+                raise BadMessageStatus('Request was not schema valid: %s' % errors)
         except XMLSyntaxError as e:
-            log.error("Not well-formed XML. Body: '%s'" % body, exc_info=True)
-            raise StatusBadMessage('Request was not well-formed XML', e=e)
+            log.error("Invalid XML received", exc_info=True)
+            raise BadMessageStatus('Request was invalid XML', e=e)
 
-    try:
-        taxii_message = validator_parser.parser(body)
-    except tm11.UnsupportedQueryException as e:
-        # TODO: Is it possible to give the real message id?
-        # TODO: Is it possible to indicate which query aspects are supported?
-        # This might require a change in how libtaxii works
-        log.error("Unsupported query", exc_info=True)
-        raise StatusUnsupportedQuery()
+    taxii_message = validator_parser.parser(body)
 
     return taxii_message
 
