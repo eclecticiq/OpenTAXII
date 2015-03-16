@@ -19,13 +19,13 @@ Intelworks Python TAXII server implementation.
 .. |coveralls.io badge| image:: https://coveralls.io/repos/Intelworks/OpenTAXII/badge.svg
    :target: https://coveralls.io/r/Intelworks/OpenTAXII
    :alt: Coverage Status
-.. |version badge| image:: https://pypip.in/version/blackhole/badge.svg?style=flat
+.. |version badge| image:: https://pypip.in/version/opentaxii/badge.svg?style=flat
    :target: https://pypi.python.org/pypi/opentaxii/ 
-.. |py.version badge| image:: https://pypip.in/py_versions/blackhole/badge.svg?style=flat
+.. |py.version badge| image:: https://pypip.in/py_versions/opentaxii/badge.svg?style=flat
    :target: https://pypi.python.org/pypi/opentaxii/ 
-.. |downloads badge| image:: https://pypip.in/download/blackhole/badge.svg?style=flat
+.. |downloads badge| image:: https://pypip.in/download/opentaxii/badge.svg?style=flat
    :target: https://pypi.python.org/pypi/opentaxii/
-.. |license badge| image:: https://pypip.in/license/blackhole/badge.svg?style=flat
+.. |license badge| image:: https://pypip.in/license/opentaxii/badge.svg?style=flat
    :target: https://pypi.python.org/pypi/opentaxii/
 .. |docs badge| image:: https://readthedocs.org/projects/opentaxii/badge/?version=latest
     :alt: Documentation Status
