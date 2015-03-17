@@ -1,15 +1,16 @@
+import structlog
 
 import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10
-from libtaxii.constants import *
+from libtaxii.constants import ST_SUCCESS
 
-from ...exceptions import StatusMessageException, raise_failure
-from ...entities import InboxMessageEntity, ContentBlockEntity, ContentBindingEntity
 from .base_handlers import BaseMessageHandler
+from ...exceptions import raise_failure
+from ...converters import (
+    inbox_message_to_inbox_message_entity,
+    content_block_to_content_block_entity
+)
 
-from ...converters import inbox_message_to_inbox_message_entity, content_block_to_content_block_entity
-
-import structlog
 log = structlog.getLogger(__name__)
 
 class InboxMessage11Handler(BaseMessageHandler):

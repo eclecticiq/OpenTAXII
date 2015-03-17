@@ -1,18 +1,12 @@
-import os
 import sys
-import pytz
 import logging
 import structlog
 import urlparse
 import importlib
 
-from datetime import datetime
-
 from .config import ServerConfig
-from .persistence import PersistenceManager
 from .taxii.entities import ServiceEntity
 from .taxii.http import HTTP_AUTHORIZATION
-from .taxii.exceptions import UnauthorizedStatus
 
 AUTH_HEADER_TOKEN_PREFIX = 'Bearer'.lower()
 
@@ -46,10 +40,15 @@ def load_api(api_config):
     return instance
 
 
-def create_services_from_config(config, persistence_manager):
-    for _type, id, props in config.services:
-        service = persistence_manager.create_service(ServiceEntity(
-            id=id, type=_type, properties=props))
+def create_services_from_object(services_config, persistence_manager):
+
+    for _id, props in services_config.items():
+
+        properties = dict(props)
+        _type = properties.pop('type')
+
+        persistence_manager.create_service(ServiceEntity(
+            id=_id, type=_type, properties=properties))
 
 
 def extract_token(headers):
@@ -69,9 +68,7 @@ def extract_token(headers):
 class PlainRenderer(object):
 
     def __call__(self, logger, name, event_dict):
-
         pairs = ', '.join(['%s=%s' % (k, v) for k, v in event_dict.items()])
-
         return '%(timestamp)s [%(logger)s] %(level)s: %(event)s {%(pairs)s}' \
                 % dict(pairs=pairs, **event_dict)
 
@@ -116,30 +113,32 @@ def _remove_all_existing_log_handlers():
     del root_logger.handlers[:]
 
 
-def get_config_for_tests(domain, services, persistence_db=None, auth_db=None):
+def get_config_for_tests(domain, persistence_db=None, auth_db=None):
 
     config = ServerConfig()
-    config['server']['persistence_api'].update({
-        'class' : 'opentaxii.persistence.sqldb.SQLDatabaseAPI',
-        'parameters' : {
-            'db_connection' : persistence_db or 'sqlite://',
-            'create_tables' : True
+    config.update({
+        'persistence_api' : {
+            'class' : 'opentaxii.persistence.sqldb.SQLDatabaseAPI',
+            'parameters' : {
+                'db_connection' : persistence_db or 'sqlite://',
+                'create_tables' : True
+            }
+        },
+        'auth_api' : {
+            'class' : 'opentaxii.auth.sqldb.SQLDatabaseAPI',
+            'parameters' : {
+                'db_connection' : auth_db or 'sqlite://',
+                'create_tables' : True,
+                'secret' : 'dummy-secret-string-for-tests'
+            }
         }
     })
-    config['server']['auth_api'].update({
-        'class' : 'opentaxii.auth.sqldb.SQLDatabaseAPI',
-        'parameters' : {
-            'db_connection' : auth_db or 'sqlite://',
-            'create_tables' : True
-        }
-    })
-    config['server']['domain'] = domain
-    config['services'].update(services)
+    config['domain'] = domain
     return config
 
 
 def attach_signal_hooks(config):
-    signal_hooks = config['server']['hooks']
+    signal_hooks = config['hooks']
     if signal_hooks:
         import_module(signal_hooks)
 

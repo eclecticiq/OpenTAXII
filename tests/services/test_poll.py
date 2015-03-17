@@ -8,7 +8,7 @@ from libtaxii import messages_11 as tm11
 from libtaxii import constants
 
 from opentaxii.taxii import exceptions, entities
-from opentaxii.utils import create_services_from_config, get_config_for_tests
+from opentaxii.utils import create_services_from_object, get_config_for_tests
 from opentaxii.server import create_server
 
 from utils import get_service, prepare_headers, as_tm, persist_content, prepare_subscription_request
@@ -18,10 +18,10 @@ from fixtures import *
 @pytest.fixture()
 def server():
 
-    config = get_config_for_tests(DOMAIN, SERVICES)
+    config = get_config_for_tests(DOMAIN)
     server = create_server(config)
 
-    create_services_from_config(config, server.persistence)
+    create_services_from_object(SERVICES, server.persistence)
     server.reload_services()
 
     services = ['poll-A', 'collection-management-A']

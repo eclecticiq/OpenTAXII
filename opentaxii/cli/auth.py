@@ -1,11 +1,15 @@
+
 import argparse
 import structlog
 
-from .config import ServerConfig
-from .server import create_server
-from .utils import configure_logging
+from opentaxii.config import ServerConfig
+from opentaxii.server import create_server
+from opentaxii.utils import configure_logging
 
-log = structlog.getLogger('opentaxii.cli')
+config = ServerConfig()
+configure_logging(config.get('logging'), plain=True)
+
+log = structlog.getLogger(__name__)
 
 
 def get_parser():
@@ -22,17 +26,10 @@ def create_account():
     parser.add_argument("-u", "--username", help="Username for the new account", required=True)
     parser.add_argument("-p", "--password", help="Password for the new account", required=True)
 
-    parser.parse_args()
+    args = parser.parse_args()
 
-    config = ServerConfig()
-    configure_logging(config)
     server = create_server(config)
-
     token = server.auth.create_account(args.username, args.password)
 
     log.info("Account created", token=token)
 
-
-
-if __name__ == '__main__':
-    create_account()

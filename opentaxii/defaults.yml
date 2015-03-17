@@ -1,60 +1,23 @@
 ---
-server:
-  domain: example.com
-  persistence_api:
-    class: opentaxii.persistence.sqldb.SQLDatabaseAPI
-    parameters:
-      db_connection: sqlite:////tmp/data.db
-      create_tables: yes
-  auth_api:
-    class: opentaxii.auth.sqldb.SQLDatabaseAPI
-    parameters:
-      db_connection: sqlite:////tmp/auth.db
-      create_tables: yes
-  logging:
-    opentaxii: debug
-    "": info
-  hooks: 
 
-services: {}
+domain: example.com
 
-services_defaults:
-  inbox:
-    address: /services/inbox
-    description: Default Inbox Service description
-    destination_collection_required: no
-    accept_all_content: no
-    supported_content: []
-    protocol_bindings:
-      - urn:taxii.mitre.org:protocol:http:1.0
-      - urn:taxii.mitre.org:protocol:https:1.0
+persistence_api:
+  class: opentaxii.persistence.sqldb.SQLDatabaseAPI
+  parameters:
+    db_connection: sqlite:////tmp/data.db
+    create_tables: yes
 
-  discovery:
-    address: /services/discovery
-    description: Default Discovery Service description
-    advertised_services: []
-    protocol_bindings:
-      - urn:taxii.mitre.org:protocol:http:1.0
-      - urn:taxii.mitre.org:protocol:https:1.0
+auth_api:
+  class: opentaxii.auth.sqldb.SQLDatabaseAPI
+  parameters:
+    db_connection: sqlite:////tmp/auth.db
+    create_tables: yes
+    secret: SECRET-STRING-NEEDS-TO-BE-CHANGED
 
-  collection_management:
-    address: /services/collection-management
-    description: Default Collection Management Service description
-    subscriptions_supported: yes
-    subscription_message: Default subscription message
-    protocol_bindings:
-      - urn:taxii.mitre.org:protocol:http:1.0
-      - urn:taxii.mitre.org:protocol:https:1.0
+logging:
+  opentaxii: debug
+  "": info
 
-  poll:
-    address: /services/poll
-    description: Default Poll Service description
-    subscription_required: no
-    max_result_count: -1
-    max_result_size: -1
-    protocol_bindings:
-      - urn:taxii.mitre.org:protocol:http:1.0
-      - urn:taxii.mitre.org:protocol:https:1.0
-
-
+hooks: 
 

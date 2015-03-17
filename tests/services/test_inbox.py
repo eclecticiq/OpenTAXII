@@ -4,7 +4,7 @@ from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
 
 from opentaxii.taxii import exceptions
-from opentaxii.utils import create_services_from_config, get_config_for_tests
+from opentaxii.utils import create_services_from_object, get_config_for_tests
 from opentaxii.server import create_server
 
 from utils import get_service, prepare_headers, as_tm
@@ -43,10 +43,10 @@ def make_inbox_message(version, blocks=None, dest_collection=None):
 @pytest.fixture
 def server():
 
-    config = get_config_for_tests(DOMAIN, SERVICES)
+    config = get_config_for_tests(DOMAIN)
     server = create_server(config)
 
-    create_services_from_config(config, server.persistence)
+    create_services_from_object(SERVICES, server.persistence)
     server.reload_services()
 
     coll_mapping = {

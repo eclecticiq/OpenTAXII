@@ -1,6 +1,6 @@
 import bcrypt
 
-from sqlalchemy.schema import Table, Column, ForeignKey
+from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 

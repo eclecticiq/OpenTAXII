@@ -51,6 +51,6 @@ class OpenTAXIIPersistenceAPI(object):
     def get_subscriptions(self, service_id):
         raise NotImplementedError()
 
-    def update_subscription(self, subscription_entity):
+    def update_subscription(self, subscription_entity, service_id=None):
         raise NotImplementedError()
 

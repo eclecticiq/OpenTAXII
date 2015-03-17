@@ -1,3 +1,4 @@
+# flake8: noqa
 
 from .inbox import InboxService
 from .discovery import DiscoveryService

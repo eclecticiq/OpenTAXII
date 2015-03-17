@@ -1,5 +1,4 @@
 
-import logging
 from .middleware import create_app
 from .config import ServerConfig
 from .server import create_server

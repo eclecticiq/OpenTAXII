@@ -1,7 +1,8 @@
 from libtaxii.constants import (
         SVC_COLLECTION_MANAGEMENT,
         MSG_COLLECTION_INFORMATION_REQUEST, MSG_FEED_INFORMATION_REQUEST,
-        MSG_MANAGE_COLLECTION_SUBSCRIPTION_REQUEST, MSG_MANAGE_FEED_SUBSCRIPTION_REQUEST,
+        MSG_MANAGE_COLLECTION_SUBSCRIPTION_REQUEST,
+        MSG_MANAGE_FEED_SUBSCRIPTION_REQUEST,
 )
 
 from .abstract import TaxiiService
@@ -26,7 +27,7 @@ class CollectionManagementService(TaxiiService):
             
     service_type = SVC_COLLECTION_MANAGEMENT
 
-    subscription_message = None
+    subscription_message = "Default subscription message"
     subscriptions_supported = True
 
     def __init__(self, subscriptions_supported=True, subscription_message=None, **kwargs):

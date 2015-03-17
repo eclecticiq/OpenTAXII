@@ -1,7 +1,7 @@
 import pytest
 import tempfile
 
-from opentaxii.utils import create_services_from_config, get_config_for_tests
+from opentaxii.utils import create_services_from_object, get_config_for_tests
 from opentaxii.server import create_server
 from opentaxii.taxii import entities
 
@@ -17,10 +17,10 @@ ASSIGNED_SUBSCTRIPTION_INSTANCES = sum(len(v['protocol_bindings']) \
 @pytest.fixture()
 def server():
 
-    config = get_config_for_tests(DOMAIN, SERVICES)
+    config = get_config_for_tests(DOMAIN)
     server = create_server(config)
 
-    create_services_from_config(config, server.persistence)
+    create_services_from_object(SERVICES, server.persistence)
     server.reload_services()
 
     for coll in COLLECTIONS_B:

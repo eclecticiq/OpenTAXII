@@ -19,3 +19,4 @@ def auth():
         abort(401)
     
     return jsonify(token=token)
+

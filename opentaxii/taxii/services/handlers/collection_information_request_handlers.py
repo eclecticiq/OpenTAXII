@@ -4,8 +4,9 @@ from .base_handlers import BaseMessageHandler
 import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10
 
+from opentaxii.taxii.exceptions import raise_failure
+
 from ...converters import (
-    poll_service_to_polling_service_instance, inbox_to_receiving_inbox_instance,
     collection_to_feedcollection_information
 )
 
@@ -56,6 +57,6 @@ class CollectionInformationRequestHandler(BaseMessageHandler):
         elif isinstance(request, tm11.CollectionInformationRequest):
             return CollectionInformationRequest11Handler.handle_message(service, request)
         else:
-            raise_failure("TAXII Message not supported by message handler", discovery_request.message_id)
+            raise_failure("TAXII Message not supported by message handler", request.message_id)
 
 

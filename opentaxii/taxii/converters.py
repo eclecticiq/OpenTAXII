@@ -1,7 +1,15 @@
 import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10
 
-from .entities import *
+from libtaxii.constants import (
+    SVC_COLLECTION_MANAGEMENT, SVC_FEED_MANAGEMENT,
+    VID_TAXII_SERVICES_10, VID_TAXII_SERVICES_11
+)
+
+from .entities import (
+    ContentBindingEntity, InboxMessageEntity, ContentBlockEntity
+)
+
 
 
 def parse_content_binding(raw_content_binding, version):

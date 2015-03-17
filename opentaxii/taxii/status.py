@@ -2,7 +2,15 @@ import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10
 from libtaxii.common import generate_message_id
 
-from .http import *
+from libtaxii.constants import (
+    VID_TAXII_XML_11, VID_TAXII_XML_10,
+    VID_TAXII_SERVICES_10, VID_TAXII_SERVICES_11
+)
+
+from .http import (
+    HTTP_X_TAXII_ACCEPT, HTTP_X_TAXII_CONTENT_TYPE,
+    get_http_headers
+)
 
 
 def process_status_exception(exception, headers, is_secure):

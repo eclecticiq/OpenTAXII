@@ -1,7 +1,10 @@
-from libtaxii.constants import *
+from libtaxii.constants import (
+    VID_TAXII_XML_10, VID_TAXII_XML_11,
+    VID_TAXII_SERVICES_10, VID_TAXII_SERVICES_11
+)
 from libtaxii.common import generate_message_id
 
-from ...exceptions import StatusMessageException, raise_failure
+from ...exceptions import raise_failure
 from ...http import HTTP_X_TAXII_CONTENT_TYPE, HTTP_X_TAXII_SERVICES, HTTP_X_TAXII_ACCEPT
 
 
@@ -62,6 +65,6 @@ class BaseMessageHandler(object):
 
 
     @classmethod
-    def handle_message(cls, service, taxii_message):
+    def handle_message(cls, service, request):
         raise NotImplementedError()
 

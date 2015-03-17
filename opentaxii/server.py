@@ -1,5 +1,5 @@
 import structlog
-from collections import namedtuple
+
 from .taxii.services import (
         DiscoveryService, InboxService, CollectionManagementService,
         PollService
@@ -78,7 +78,7 @@ class TAXIIServer(object):
 
     def get_services_for_collection(self, collection, service_type):
 
-        if not service_type in TYPE_TO_SERVICE:
+        if service_type not in TYPE_TO_SERVICE:
             raise ValueError('Wrong service type')
 
         service_entities = self.persistence.get_services_for_collection(collection,
@@ -93,13 +93,13 @@ def create_server(config=None):
     config = config or ServerConfig()
     attach_signal_hooks(config)
 
-    persistence_api = load_api(config['server']['persistence_api'])
+    persistence_api = load_api(config['persistence_api'])
     persistence_manager = PersistenceManager(api=persistence_api)
 
-    auth_api = load_api(config['server']['auth_api'])
+    auth_api = load_api(config['auth_api'])
     auth_manager = AuthManager(api=auth_api)
 
-    domain = config['server']['domain']
+    domain = config['domain']
     server = TAXIIServer(domain, persistence_manager=persistence_manager,
             auth_manager=auth_manager)
 

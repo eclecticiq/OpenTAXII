@@ -2,7 +2,6 @@ import json
 import structlog
 from sqlalchemy import orm, engine
 from sqlalchemy import and_, or_
-from sqlalchemy.orm import exc
 
 from opentaxii.persistence import OpenTAXIIPersistenceAPI
 
@@ -46,9 +45,9 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         self.Base.metadata.create_all(bind=self.engine)
 
 
-    def _merge(self, object):
+    def _merge(self, obj):
         s = self.Session()
-        updated = s.merge(object)
+        updated = s.merge(obj)
         s.commit()
         return updated
 
@@ -92,8 +91,8 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         return map(conv.to_service_entity, query.all())
  
 
-    def get_service(self, id):
-        s = self.Service.get(id)
+    def get_service(self, sid):
+        s = self.Service.get(sid)
         return conv.to_service_entity(s)
 
 
@@ -174,7 +173,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
                 start_time=start_time, end_time=end_time,
                 bindings=bindings)
         
-        blocks = query[offset : offset+limit]
+        blocks = query[offset : offset + limit]
 
         return map(conv.to_block_entity, blocks)
 

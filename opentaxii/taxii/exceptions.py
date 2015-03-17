@@ -41,6 +41,6 @@ class UnauthorizedStatus(StatusMessageException):
 
 
 def raise_failure(message, in_response_to='0'):
-    et, ei, tb = sys.exc_info()
+    _, ei, tb = sys.exc_info()
     raise FailureStatus(message, in_response_to=in_response_to, e=ei), None, tb
 

@@ -2,14 +2,20 @@ import structlog
 
 import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10
-from libtaxii.constants import *
-from libtaxii.common import generate_message_id
-
-from .base_handlers import BaseMessageHandler
+from libtaxii.constants import (
+    SD_SUPPORTED_CONTENT, ST_UNSUPPORTED_CONTENT_BINDING,
+    SD_ITEM, ST_NOT_FOUND, ST_BAD_MESSAGE,
+    ACT_SUBSCRIBE, ACT_UNSUBSCRIBE, ACT_PAUSE,
+    ACT_RESUME, ACT_STATUS, ACT_TYPES_11,
+    ACT_TYPES_10
+)
 
 from ...exceptions import StatusMessageException, raise_failure
 from ...converters import subscription_to_subscription_instance, parse_content_bindings
 from ...entities import PollRequestParametersEntity, SubscriptionEntity
+
+from .base_handlers import BaseMessageHandler
+
 
 log = structlog.getLogger(__name__)
 
@@ -34,11 +40,8 @@ def action_subscribe(request, service, collection, version, **kwargs):
         response_type = params.response_type
 
         if len(params.content_bindings) == 0:
-            accept_all_content = True
             supported_contents = []
         else:
-            accept_all_content = False
-
             requested_bindings = parse_content_bindings(params.content_bindings, version=version)
             supported_contents = collection.get_matching_bindings(requested_bindings)
 
@@ -48,7 +51,6 @@ def action_subscribe(request, service, collection, version, **kwargs):
                         in_response_to=request.message_id, status_details=details)
 
     else:
-        accept_all_content = True
         supported_contents = []
         response_type = None
 
@@ -123,10 +125,10 @@ class SubscriptionRequest11Handler(BaseMessageHandler):
             error_message = None
 
         if error_message:
-            raise StatusMessageException(ST_BAD_MESSAGE, message=message,
+            raise StatusMessageException(ST_BAD_MESSAGE, message=error_message,
                     in_response_to=request.message_id)
 
-        if not subscription and (action in (ACT_PAUSE, ACT_RESUME) or \
+        if not subscription and (action in (ACT_PAUSE, ACT_RESUME) or 
                 (action == ACT_STATUS and request.subscription_id)):
 
             details = {SD_ITEM: request.subscription_id}
@@ -198,7 +200,7 @@ class SubscriptionRequest10Handler(BaseMessageHandler):
             error_message = None
 
         if error_message:
-            raise StatusMessageException(ST_BAD_MESSAGE, message=message,
+            raise StatusMessageException(ST_BAD_MESSAGE, message=error_message,
                     in_response_to=request.message_id)
 
 
@@ -250,8 +252,8 @@ class SubscriptionRequestHandler(BaseMessageHandler):
 
     supported_request_messages = [tm11.ManageCollectionSubscriptionRequest, tm10.ManageFeedSubscriptionRequest]
 
-    @staticmethod
-    def handle_message(service, request):
+    @classmethod
+    def handle_message(cls, service, request):
 
         if isinstance(request, tm10.ManageFeedSubscriptionRequest):
             return SubscriptionRequest10Handler.handle_message(service, request)

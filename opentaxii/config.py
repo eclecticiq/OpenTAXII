@@ -1,5 +1,4 @@
 import os
-import sys
 import anyconfig
 import structlog
 
@@ -13,8 +12,7 @@ DEFAULT_CONFIG = os.path.join(current_dir, 'defaults.yml')
 
 class ServerConfig(dict):
 
-    def __init__(self, server_properties=None, services_properties=None,
-            default_config_file=DEFAULT_CONFIG, optional_env_var=CONFIG_ENV_VAR):
+    def __init__(self, default_config_file=DEFAULT_CONFIG, optional_env_var=CONFIG_ENV_VAR):
 
         config_paths = [default_config_file]
 
@@ -26,29 +24,5 @@ class ServerConfig(dict):
 
         self.update(options)
 
-        if server_properties:
-            self['server'].update(server_properties)
-        if services_properties:
-            self['services'].update(services_properties)
-
-
-    @property
-    def services(self):
-
-        defaults = self['services_defaults']
-
-        services = []
-
-        for _id, props in self['services'].items():
-
-            _props = dict(props)
-            _type = _props.pop('type')
-
-            options = dict(defaults[_type])
-            options.update(_props)
-            
-            services.append((_type, _id, options))
-
-        return services
 
 

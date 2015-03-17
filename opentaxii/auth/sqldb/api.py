@@ -1,4 +1,3 @@
-import bcrypt
 import jwt
 import structlog
 
@@ -14,7 +13,6 @@ from . import models
 __all__ = ['SQLDatabaseAPI']
 
 
-SECRET = '-LONG-SECRET-STRING-'
 TOKEN_TTL = 60 # min
 
 log = structlog.getLogger(__name__)
@@ -22,7 +20,7 @@ log = structlog.getLogger(__name__)
 
 class SQLDatabaseAPI(OpenTAXIIAuthAPI):
 
-    def __init__(self, db_connection, create_tables=False):
+    def __init__(self, db_connection, create_tables=False, secret=None):
 
         self.engine = engine.create_engine(db_connection, convert_unicode=True)
 
@@ -35,6 +33,12 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
 
         if create_tables:
             self.create_tables()
+
+        if not secret:
+            raise ValueError('Secret is not defined for %s.%s' % (
+                self.__module__, self.__class__.__name__))
+
+        self.secret = secret
 
 
     def create_tables(self):
@@ -51,12 +55,12 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
         if not account.is_password_valid(password):
             return
 
-        return generate_token(account.id, ttl=TOKEN_TTL)
+        return self._generate_token(account.id, ttl=TOKEN_TTL)
 
 
     def get_account(self, token):
 
-        account_id = get_account_id(token)
+        account_id = self._get_account_id(token)
 
         if not account_id:
             return
@@ -77,6 +81,23 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
         session.add(account)
         session.commit()
 
+    def _generate_token(self, account_id, ttl=60):
+
+        exp = datetime.utcnow() + timedelta(minutes=ttl)
+
+        return jwt.encode({'account_id' : account_id, 'exp' : exp}, self.secret)
+
+
+    def _get_account_id(self, token):
+        try:
+            payload = jwt.decode(token, self.secret)
+        except jwt.ExpiredSignatureError:
+            log.warning('Invalid token used', token=token)
+            return
+
+        return payload.get('account_id')
+
+
 
 def attach_all(obj, module):
     for key in module.__all__:
@@ -84,23 +105,4 @@ def attach_all(obj, module):
             setattr(obj, key, getattr(module, key))
     return obj
 
-
-def generate_token(account_id, ttl=60):
-
-    exp = datetime.utcnow() + timedelta(minutes=ttl)
-
-    return jwt.encode({'account_id' : account_id, 'exp' : exp}, SECRET)
-
-
-def get_account_id(token):
-    try:
-        payload = jwt.decode(token, SECRET)
-    except jwt.InvalidTokenError:
-        log.warning('Invalid token used')
-        return
-    except jwt.ExpiredSignatureError:
-        log.warning('Expired token used')
-        return
-
-    return payload.get('account_id')
 

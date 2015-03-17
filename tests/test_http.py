@@ -2,8 +2,15 @@ import pytest
 
 from opentaxii.middleware import create_app
 from opentaxii.server import create_server
-from opentaxii.taxii.http import *
-from opentaxii.utils import create_services_from_config, get_config_for_tests
+from opentaxii.utils import create_services_from_object, get_config_for_tests
+
+from libtaxii.constants import (
+    ST_FAILURE, ST_BAD_MESSAGE
+)
+
+from opentaxii.taxii.http import (
+    HTTP_X_TAXII_SERVICES
+)
 
 from utils import prepare_headers, is_headers_valid, as_tm
 
@@ -36,13 +43,10 @@ MESSAGE_ID = '123'
 @pytest.fixture()
 def client(tmpdir):
 
-    db = 'sqlite:///%s' % tmpdir.join('db.sqlite3')
-
-    config = get_config_for_tests('some.com', SERVICES, persistence_db=db)
+    config = get_config_for_tests('some.com')
 
     server = create_server(config)
-
-    create_services_from_config(config, server.persistence)
+    create_services_from_object(SERVICES, server.persistence)
     server.reload_services()
 
     app = create_app(server)
@@ -50,10 +54,6 @@ def client(tmpdir):
 
     return app.test_client()
 
-
-### Utils
-
-##### Tests
 
 def test_root_get(client):
     assert client.get('/').status_code == 404

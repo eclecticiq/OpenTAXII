@@ -9,7 +9,7 @@ class PersistenceManager(object):
     def __init__(self, api):
         self.api = api
 
-    ### These methods only used in the scripts provided with OpenTAXII
+    # These methods only used in the CLI scripts provided with OpenTAXII
 
     def create_service(self, entity):
         return self.api.create_service(entity)
@@ -17,7 +17,7 @@ class PersistenceManager(object):
     def attach_collection_to_services(self, collection_id, services_ids):
         return self.api.attach_collection_to_services(collection_id, services_ids)
 
-    ####
+    # ====
 
     def get_services(self):
         return self.api.get_services()

@@ -2,7 +2,10 @@ import structlog
 import hashlib
 
 from libtaxii.common import generate_message_id
-from libtaxii.constants import VID_TAXII_XML_10, VID_TAXII_XML_11
+from libtaxii.constants import (
+    VID_TAXII_XML_10, VID_TAXII_XML_11,
+    VID_TAXII_HTTPS_10
+)
 
 from ..exceptions import StatusMessageException, raise_failure
 from ..bindings import PROTOCOL_TO_SCHEME
@@ -12,7 +15,7 @@ from ..converters import service_to_service_instances
 class TaxiiService(object):
 
     id = None
-    description = None
+    description = 'Default TAXII service description'
     enabled = True
 
     server = None
@@ -20,7 +23,7 @@ class TaxiiService(object):
     authentication_required = False
 
     supported_message_bindings = [VID_TAXII_XML_10, VID_TAXII_XML_11]
-    supported_protocol_bindings = []
+    supported_protocol_bindings = [VID_TAXII_HTTPS_10]
 
     def __init__(self, id, server, address, description=None,
             protocol_bindings=[], enabled=True, authentication_required=False):
@@ -56,7 +59,7 @@ class TaxiiService(object):
             response_message = handler.handle_message(self, message)
         except StatusMessageException:
             raise
-        except Exception as e:
+        except Exception:
             raise_failure("There was a failure while executing the message handler",
                     in_response_to=message.message_id)
 

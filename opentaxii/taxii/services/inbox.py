@@ -3,7 +3,6 @@ from libtaxii.constants import (
     SVC_INBOX, MSG_INBOX_MESSAGE, SD_ACCEPTABLE_DESTINATION,
     ST_DESTINATION_COLLECTION_ERROR, ST_NOT_FOUND, SD_ITEM
 )
-from libtaxii import messages_11 as tm11
 
 from ..utils import is_content_supported
 from ..entities import ContentBindingEntity

@@ -1,15 +1,14 @@
 import sys
+import structlog
 
 from libtaxii.constants import (
         MSG_POLL_REQUEST, MSG_POLL_FULFILLMENT_REQUEST, SVC_POLL
 )
-from .abstract import TaxiiService
-from .handlers import PollRequestHandler, PollFulfilmentRequestHandler
-from ..exceptions import StatusMessageException
 
 from ..entities import ResultSetEntity
+from .abstract import TaxiiService
+from .handlers import PollRequestHandler, PollFulfilmentRequestHandler
 
-import structlog
 log = structlog.getLogger(__name__)
 
 
@@ -23,10 +22,11 @@ class PollService(TaxiiService):
     service_type = SVC_POLL
 
     subscription_required = False
-
     wait_time = 300
-
     can_push = False
+
+    max_result_size = sys.maxint
+    mac_result_count = sys.maxint
 
     def __init__(self, subscription_required=False, max_result_size=-1,
             max_result_count=-1, **kwargs):
@@ -51,7 +51,7 @@ class PollService(TaxiiService):
 
 
     def get_content_blocks_count(self, collection, timeframe=None,
-            content_bindings=[], part_number=1):
+            content_bindings=[]):
 
         start_time, end_time = timeframe or (None, None)
 

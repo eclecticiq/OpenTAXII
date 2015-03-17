@@ -1,14 +1,10 @@
-from collections import namedtuple
-
-from .bindings import *
-from .utils import is_content_supported, content_bindings_intersection
-
 from libtaxii.constants import (
     CT_DATA_FEED, CT_DATA_SET, 
-    SS_ACTIVE, SS_PAUSED, SS_UNSUBSCRIBED
+    SS_ACTIVE, SS_PAUSED, SS_UNSUBSCRIBED,
+    RT_FULL
 )
 
-#SS_TYPES_11 = (SS_ACTIVE, SS_PAUSED, SS_UNSUBSCRIBED)
+from .utils import is_content_supported
 
 class Entity(object):
 
@@ -25,7 +21,6 @@ class ServiceEntity(Entity):
     def __init__(self, type, properties, id=None):
 
         self.id = id
-
         self.type = type
         self.properties = properties
 
@@ -83,10 +78,42 @@ class CollectionEntity(Entity):
         if self.accept_all_content:
             return requested_bindings
 
-        return content_bindings_intersection(self.supported_content, requested_bindings)
+        supported_bindings = self.supported_content
+
+        if not supported_bindings:
+            return requested_bindings
+
+        if not requested_bindings:
+            return supported_bindings
+
+        overlap = []
+
+        for requested in requested_bindings:
+            for supported in supported_bindings:
+
+                if requested.binding != supported.binding:
+                    continue
+
+                if not supported.subtypes:
+                    overlap.append(requested)
+                    continue
+
+                if not requested.subtypes:
+                    overlap.append(supported)
+                    continue
+
+                subtypes_overlap = set(supported.subtypes).intersection(requested.subtypes)
+
+                overlap.append(ContentBindingEntity(
+                    binding = requested.binding, 
+                    subtypes = subtypes_overlap
+                ))
+
+        return overlap
 
     def __repr__(self):
-        return "CollectionEntity(name=%s, type=%s, supported_content=%s)" % (self.name, self.type, self.supported_content)
+        return "CollectionEntity(name=%s, type=%s, supported_content=%s)" % (
+                self.name, self.type, self.supported_content)
 
 
 class ContentBlockEntity(Entity):

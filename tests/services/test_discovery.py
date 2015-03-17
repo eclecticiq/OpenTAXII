@@ -2,7 +2,7 @@ import pytest
 import tempfile
 
 from opentaxii.server import create_server
-from opentaxii.utils import create_services_from_config, get_config_for_tests
+from opentaxii.utils import create_services_from_object, get_config_for_tests
 
 from utils import get_service, prepare_headers, as_tm
 from fixtures import *
@@ -11,10 +11,10 @@ from fixtures import *
 @pytest.fixture(scope='module')
 def server():
 
-    config = get_config_for_tests(DOMAIN, SERVICES)
+    config = get_config_for_tests(DOMAIN)
 
     server = create_server(config)
-    create_services_from_config(config, server.persistence)
+    create_services_from_object(SERVICES, server.persistence)
     server.reload_services()
 
     return server

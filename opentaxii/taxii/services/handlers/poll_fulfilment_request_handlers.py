@@ -1,15 +1,11 @@
 import libtaxii.messages_11 as tm11
-import libtaxii.messages_10 as tm10
-from libtaxii.constants import *
-from libtaxii.common import generate_message_id
+from libtaxii.constants import (
+    ST_NOT_FOUND, SD_ITEM
+)
+
+from ...exceptions import StatusMessageException, raise_failure
 
 from .base_handlers import BaseMessageHandler
-from ...exceptions import StatusMessageException, raise_failure
-from ....persistence.exceptions import ResultsNotReady
-
-from ...entities import CollectionEntity
-from ...utils import get_utc_now
-
 from .poll_request_handlers import PollRequest11Handler, retrieve_collection
 
 
@@ -17,8 +13,8 @@ class PollFulfilmentRequest11Handler(BaseMessageHandler):
 
     supported_request_messages = [tm11.PollFulfillmentRequest]
 
-    @staticmethod
-    def handle_message(service, request):
+    @classmethod
+    def handle_message(cls, service, request):
 
         result_id = request.result_id
         part_number = request.result_part_number
@@ -53,8 +49,8 @@ class PollFulfilmentRequestHandler(BaseMessageHandler):
 
     supported_request_messages = [tm11.PollFulfillmentRequest]
 
-    @staticmethod
-    def handle_message(service, request):
+    @classmethod
+    def handle_message(cls, service, request):
         if isinstance(request, tm11.PollFulfillmentRequest):
             return PollFulfilmentRequest11Handler.handle_message(service, request)
         else:

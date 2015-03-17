@@ -1,19 +1,24 @@
+import structlog
 
 import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10
-from libtaxii.constants import *
+from libtaxii.constants import (
+    SD_ITEM, ST_NOT_FOUND, ST_DENIED,
+    SD_SUPPORTED_CONTENT, ST_UNSUPPORTED_CONTENT_BINDING,
+    RT_FULL,
+    ST_PENDING, SD_ESTIMATED_WAIT, SD_RESULT_ID, SD_WILL_PUSH
+)
 from libtaxii.common import generate_message_id
 
 from .base_handlers import BaseMessageHandler
 from ...exceptions import StatusMessageException, raise_failure
 from ....persistence.exceptions import ResultsNotReady
-
-from ...entities import CollectionEntity
-from ...converters import content_block_entity_to_content_block, parse_content_bindings, content_binding_entities_to_content_bindings
+from ...converters import (
+    content_block_entity_to_content_block, parse_content_bindings,
+    content_binding_entities_to_content_bindings
+)
 from ...utils import get_utc_now
 
-
-import structlog
 log = structlog.getLogger(__name__)
 
 
@@ -25,7 +30,7 @@ def retrieve_subscription(service, subscription_id, in_response_to):
         message = "The subscription requested was not found"
         details = {SD_ITEM: subscription_id}
         raise StatusMessageException(ST_NOT_FOUND, message=message,
-                in_response_to=request.message_id, status_details=details)
+                in_response_to=in_response_to, status_details=details)
 
     return subscription
 
@@ -38,7 +43,7 @@ def retrieve_collection(service, collection_name, in_response_to):
         message = "The collection requested was not found"
         details = {SD_ITEM: collection_name}
         raise StatusMessageException(ST_NOT_FOUND, message=message,
-                in_response_to=request.message_id, status_details=details)
+                in_response_to=in_response_to, status_details=details)
 
     return collection
 
@@ -119,7 +124,7 @@ class PollRequest11Handler(BaseMessageHandler):
             total_count = service.get_content_blocks_count(collection,
                     timeframe=timeframe, content_bindings=content_bindings)
         except ResultsNotReady:
-            if not allow_sync:
+            if not allow_async:
                 message = "The content is not available now and "\
                         "the request has allow_asynch set to false"
 
@@ -205,7 +210,7 @@ class PollRequest10Handler(BaseMessageHandler):
                 raise StatusMessageException(ST_UNSUPPORTED_CONTENT_BINDING,
                         in_response_to=request.message_id, status_details=details)
 
-         # Only Data Feeds existed in TAXII 1.0
+        # Only Data Feeds existed in TAXII 1.0
         if collection.type != collection.TYPE_FEED:
             message = "The Named Data Collection is not a Data Feed, it is a Data Set. " + \
                       "Only Data Feeds can be polled in TAXII 1.0"
@@ -239,8 +244,8 @@ class PollRequestHandler(BaseMessageHandler):
 
     supported_request_messages = [tm10.PollRequest, tm11.PollRequest]
 
-    @staticmethod
-    def handle_message(service, request):
+    @classmethod
+    def handle_message(cls, service, request):
         if isinstance(request, tm10.PollRequest):
             return PollRequest10Handler.handle_message(service, request)
         elif isinstance(request, tm11.PollRequest):
