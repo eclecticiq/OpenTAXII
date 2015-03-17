@@ -104,8 +104,8 @@ class InboxMessageHandler(BaseMessageHandler):
 
     supported_request_messages = [tm10.InboxMessage, tm11.InboxMessage]
 
-    @staticmethod
-    def handle_message(service, request):
+    @classmethod
+    def handle_message(cls, service, request):
         if isinstance(request, tm10.InboxMessage):
             return InboxMessage10Handler.handle_message(service, request)
         elif isinstance(request, tm11.InboxMessage):
