@@ -21,6 +21,12 @@ setup(
     package_data = {
         'opentaxii' : ['*.yml']
     },
+    entry_points = {
+        'console_scripts' : [
+            'opentaxii-run-dev = opentaxii.cli.run:run_in_dev_mode',
+            'opentaxii-create-account = opentaxii.cli.auth:create_account',
+        ]
+    },
 
     dependency_links = [
         'git+https://github.com/TAXIIProject/libtaxii.git#egg=libtaxii-1.1.106'
