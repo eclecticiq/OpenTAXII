@@ -4,11 +4,14 @@ from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
+from werkzeug.security import safe_str_cmp
+
 __all__ = ['Base', 'Account']
 
 Base = declarative_base()
 
 MAX_STR_LEN = 256
+
 
 class Account(Base):
 
@@ -19,7 +22,6 @@ class Account(Base):
     username = Column(String(MAX_STR_LEN), unique=True)
     password_hash = Column(String(MAX_STR_LEN))
 
-
     def set_password(self, password):
         if isinstance(password, unicode):
             password = password.encode('utf-8')
@@ -29,6 +31,4 @@ class Account(Base):
         if isinstance(password, unicode):
             password = password.encode('utf-8')
         hashed = self.password_hash.encode('utf-8')
-        return bcrypt.hashpw(password, hashed) == hashed
-
-
+        return safe_str_cmp(bcrypt.hashpw(password, hashed), hashed)
