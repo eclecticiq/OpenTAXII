@@ -1,3 +1,5 @@
+import hmac
+
 import bcrypt
 
 from sqlalchemy.schema import Column
@@ -10,6 +12,7 @@ Base = declarative_base()
 
 MAX_STR_LEN = 256
 
+
 class Account(Base):
 
     __tablename__ = 'accounts'
@@ -18,7 +21,6 @@ class Account(Base):
 
     username = Column(String(MAX_STR_LEN), unique=True)
     password_hash = Column(String(MAX_STR_LEN))
-
 
     def set_password(self, password):
         if isinstance(password, unicode):
@@ -29,6 +31,4 @@ class Account(Base):
         if isinstance(password, unicode):
             password = password.encode('utf-8')
         hashed = self.password_hash.encode('utf-8')
-        return bcrypt.hashpw(password, hashed) == hashed
-
-
+        return hmac.compare_digest(bcrypt.hashpw(password, hashed), hashed)
