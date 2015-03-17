@@ -39,7 +39,7 @@ class PollService(TaxiiService):
 
 
     def get_collection(self, name):
-        return self.server.manager.get_collection(name, self.id)
+        return self.server.persistence.get_collection(name, self.id)
 
 
     def get_offset_limit(self, part_number):
@@ -55,7 +55,7 @@ class PollService(TaxiiService):
 
         start_time, end_time = timeframe or (None, None)
 
-        return self.server.manager.get_content_blocks_count(
+        return self.server.persistence.get_content_blocks_count(
             collection_id = collection.id,
             start_time = start_time,
             end_time = end_time,
@@ -70,7 +70,7 @@ class PollService(TaxiiService):
 
         offset, limit = self.get_offset_limit(part_number)
 
-        return self.server.manager.get_content_blocks(
+        return self.server.persistence.get_content_blocks(
             collection_id = collection.id,
             start_time = start_time,
             end_time = end_time,
@@ -91,12 +91,12 @@ class PollService(TaxiiService):
             timeframe = timeframe
         )
 
-        return self.server.manager.create_result_set(entity)
+        return self.server.persistence.create_result_set(entity)
 
 
     def get_result_set(self, result_set_id):
-        return self.server.manager.get_result_set(result_set_id)
+        return self.server.persistence.get_result_set(result_set_id)
 
     def get_subscription(self, subscription_id):
-        return self.server.manager.get_subscription(subscription_id)
+        return self.server.persistence.get_subscription(subscription_id)
 

@@ -1,10 +1,10 @@
-git+https://github.com/TAXIIProject/libtaxii.git#egg=libtaxii
 pytz==2014.10
+git+https://github.com/TAXIIProject/libtaxii.git#egg=libtaxii-1.1.106
 pyyaml
 flask
 sqlalchemy
-redis
-gunicorn
 structlog
 blinker
 anyconfig
+bcrypt
+pyjwt

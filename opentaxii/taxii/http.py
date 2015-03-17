@@ -1,13 +1,12 @@
 
 from libtaxii.constants import *
 
-from .bindings import *
-from .exceptions import raise_failure
-from .transform import parse_message
-
-#: HTTP Headers
+# HTTP Headers
 HTTP_CONTENT_TYPE = 'Content-Type'
 HTTP_ACCEPT = 'Accept'
+HTTP_AUTHORIZATION = 'Authorization'
+
+# TAXII-specific headers
 HTTP_X_TAXII_CONTENT_TYPE = 'X-TAXII-Content-Type'
 HTTP_X_TAXII_PROTOCOL = 'X-TAXII-Protocol'
 HTTP_X_TAXII_ACCEPT = 'X-TAXII-Accept'
@@ -69,6 +68,7 @@ def get_http_headers(version, is_secure):
         else:
             return TAXII_10_HTTP_Headers
 
+    # FIXME: should raise a custom error
     raise ValueError("Unknown combination: version=%s, is_secure=%s" % (version, is_secure))
 
 

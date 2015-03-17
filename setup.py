@@ -21,18 +21,21 @@ setup(
     package_data = {
         'opentaxii' : ['*.yml']
     },
+
+    dependency_links = [
+        'git+https://github.com/TAXIIProject/libtaxii.git#egg=libtaxii-1.1.106'
+    ],
+
     install_requires = [
-        'libtaxii==1.1.105-SNAPSHOT',
         'pytz==2014.10',
-        'intelworks-common',
         'pyyaml',
         'anyconfig',
         'structlog',
         'Flask',
         'sqlalchemy',
         'blinker',
-        'gunicorn',
-        'redis'
+        'bcrypt',
+        'pyjwt'
     ],
     classifiers = [
         "Development Status :: 4 - Beta",

@@ -4,9 +4,8 @@ from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
 
 from opentaxii.taxii import exceptions
-from opentaxii.server import TAXIIServer
-from opentaxii.config import ServerConfig
-from opentaxii.utils import create_manager, create_services_from_config
+from opentaxii.utils import create_services_from_config, get_config_for_tests
+from opentaxii.server import create_server
 
 from utils import get_service, prepare_headers, as_tm
 from fixtures import *
@@ -41,20 +40,14 @@ def make_inbox_message(version, blocks=None, dest_collection=None):
 
     return inbox_message
 
-
 @pytest.fixture
-def manager():
-    config = ServerConfig()
-    config.update_persistence_api_config(
-        'opentaxii.persistence.sqldb.SQLDatabaseAPI', {
-            'db_connection' : 'sqlite://', # in-memory DB
-            'create_tables' : True
-        }
-    )
-    config['services'].update(SERVICES)
+def server():
 
-    manager = create_manager(config)
-    create_services_from_config(manager=manager, config=config)
+    config = get_config_for_tests(DOMAIN, SERVICES)
+    server = create_server(config)
+
+    create_services_from_config(config, server.persistence)
+    server.reload_services()
 
     coll_mapping = {
         'inbox-A' : COLLECTIONS_A,
@@ -62,22 +55,17 @@ def manager():
     }
     for service, collections in coll_mapping.items():
         for coll in collections:
-            coll = manager.create_collection(coll)
-            manager.attach_collection_to_services(coll.id, services_ids=[service])
-
-    return manager
-
-
-@pytest.fixture
-def server(manager):
+            coll = server.persistence.create_collection(coll)
+            server.persistence.attach_collection_to_services(coll.id,
+                    services_ids=[service])
     
-    return TAXIIServer(DOMAIN, manager=manager)
+    return server
 
 
 
 @pytest.mark.parametrize("https", [True, False])
 @pytest.mark.parametrize("version", [11, 10])
-def test_inbox_request_all_content(server, version, manager, https):
+def test_inbox_request_all_content(server, version, https):
 
     inbox_a = get_service(server, 'inbox-A')
 
@@ -97,7 +85,7 @@ def test_inbox_request_all_content(server, version, manager, https):
     assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
-    blocks = manager.get_content_blocks(None)
+    blocks = server.persistence.get_content_blocks(None)
     assert len(blocks) == len(blocks)
 
 
@@ -123,7 +111,7 @@ def test_inbox_request_destination_collection(server, https):
 
 @pytest.mark.parametrize("https", [True, False])
 @pytest.mark.parametrize("version", [11, 10])
-def test_inbox_request_inbox_valid_content_binding(server, manager, version, https):
+def test_inbox_request_inbox_valid_content_binding(server, version, https):
 
     inbox = get_service(server, 'inbox-B')
 
@@ -141,13 +129,13 @@ def test_inbox_request_inbox_valid_content_binding(server, manager, version, htt
     assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
-    blocks = manager.get_content_blocks(None)
+    blocks = server.persistence.get_content_blocks(collection_id=None) # all blocks
     assert len(blocks) == len(blocks)
 
 
 @pytest.mark.parametrize("https", [True, False])
 @pytest.mark.parametrize("version", [11, 10])
-def test_inbox_request_inbox_invalid_inbox_content_binding(server, manager, version, https):
+def test_inbox_request_inbox_invalid_inbox_content_binding(server, version, https):
 
     inbox = get_service(server, 'inbox-B')
 
@@ -162,7 +150,7 @@ def test_inbox_request_inbox_invalid_inbox_content_binding(server, manager, vers
     assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
-    blocks = manager.get_content_blocks(None)
+    blocks = server.persistence.get_content_blocks(None)
 
     # Content blocks with invalid content should be ignored
     assert len(blocks) == 0
@@ -170,7 +158,7 @@ def test_inbox_request_inbox_invalid_inbox_content_binding(server, manager, vers
 
 @pytest.mark.parametrize("https", [True, False])
 @pytest.mark.parametrize("version", [11, 10])
-def test_inbox_request_collection_content_bindings_filtering(server, manager, version, https):
+def test_inbox_request_collection_content_bindings_filtering(server, version, https):
 
     inbox = get_service(server, 'inbox-B')
     headers = prepare_headers(version, https)
@@ -188,7 +176,7 @@ def test_inbox_request_collection_content_bindings_filtering(server, manager, ve
     assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
-    blocks = manager.get_content_blocks(None)
+    blocks = server.persistence.get_content_blocks(None)
 
     # Content blocks with invalid content should be ignored
     assert len(blocks) == 1

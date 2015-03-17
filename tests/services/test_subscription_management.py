@@ -1,10 +1,9 @@
 import pytest
 import tempfile
 
-from opentaxii.server import TAXIIServer
-from opentaxii.config import ServerConfig
 from opentaxii.taxii import exceptions, entities
-from opentaxii.utils import create_manager, create_services_from_config
+from opentaxii.utils import create_services_from_config, get_config_for_tests
+from opentaxii.server import create_server
 
 from utils import get_service, prepare_headers, as_tm, persist_content
 from utils import prepare_subscription_request as prepare_request
@@ -13,29 +12,19 @@ from fixtures import *
 
 ASSIGNED_SERVICES = ['collection-management-A', 'poll-A']
 
-@pytest.fixture
-def manager():
-    config = ServerConfig()
-    config.update_persistence_api_config(
-        'opentaxii.persistence.sqldb.SQLDatabaseAPI', {
-            'db_connection' : 'sqlite://', # in-memory DB
-            'create_tables' : True
-    })
-    config['services'].update(SERVICES)
-
-    manager = create_manager(config)
-    create_services_from_config(config, manager=manager)
-    return manager
-
 
 @pytest.fixture()
-def server(manager):
+def server():
 
-    server = TAXIIServer(DOMAIN, manager=manager)
+    config = get_config_for_tests(DOMAIN, SERVICES)
+    server = create_server(config)
+
+    create_services_from_config(config, server.persistence)
+    server.reload_services()
 
     for coll in COLLECTIONS_B:
-        coll = manager.create_collection(coll)
-        manager.attach_collection_to_services(coll.id, services_ids=ASSIGNED_SERVICES)
+        coll = server.persistence.create_collection(coll)
+        server.persistence.attach_collection_to_services(coll.id, services_ids=ASSIGNED_SERVICES)
 
     return server
 
@@ -86,7 +75,7 @@ def test_subscribe(server, version, https):
 
 
 @pytest.mark.parametrize("https", [True, False])
-def test_subscribe_pause_resume(server, manager, https):
+def test_subscribe_pause_resume(server, https):
 
     version = 11
 
@@ -114,7 +103,7 @@ def test_subscribe_pause_resume(server, manager, https):
     subs = response.subscription_instances[0]
 
     assert subs.status == SS_ACTIVE
-    assert manager.get_subscription(subs.subscription_id).status == SS_ACTIVE
+    assert server.persistence.get_subscription(subs.subscription_id).status == SS_ACTIVE
 
     # Pausing
     request = prepare_request(collection=COLLECTION_OPEN, action=ACT_PAUSE,
@@ -131,7 +120,7 @@ def test_subscribe_pause_resume(server, manager, https):
 
     assert subs.subscription_id
     assert subs.status == SS_PAUSED
-    assert manager.get_subscription(subs.subscription_id).status == SS_PAUSED
+    assert server.persistence.get_subscription(subs.subscription_id).status == SS_PAUSED
 
     # Resume
     request = prepare_request(collection=COLLECTION_OPEN, action=ACT_RESUME,
@@ -148,7 +137,7 @@ def test_subscribe_pause_resume(server, manager, https):
 
     assert subs.subscription_id
     assert subs.status == SS_ACTIVE
-    assert manager.get_subscription(subs.subscription_id).status == SS_ACTIVE
+    assert server.persistence.get_subscription(subs.subscription_id).status == SS_ACTIVE
 
 
 @pytest.mark.parametrize("https", [True, False])
@@ -191,7 +180,7 @@ def test_pause_resume_wrong_id(server, https):
 
 @pytest.mark.parametrize("https", [True, False])
 @pytest.mark.parametrize("version", [11, 10])
-def test_unsubscribe(server, manager, version, https):
+def test_unsubscribe(server, version, https):
 
     service = get_service(server, 'collection-management-A')
     poll_service = get_service(server, 'poll-A')
@@ -239,7 +228,7 @@ def test_unsubscribe(server, manager, version, https):
     if version == 11:
         assert subs.status == SS_UNSUBSCRIBED
 
-    assert manager.get_subscription(subscription_id).status == SS_UNSUBSCRIBED
+    assert server.persistence.get_subscription(subscription_id).status == SS_UNSUBSCRIBED
 
 
 # FIXME: add content_binding requested vs available tests

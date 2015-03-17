@@ -1,9 +1,8 @@
 import pytest
 import tempfile
 
-from opentaxii.server import TAXIIServer
-from opentaxii.config import ServerConfig
-from opentaxii.utils import create_manager, create_services_from_config
+from opentaxii.utils import create_services_from_config, get_config_for_tests
+from opentaxii.server import create_server
 from opentaxii.taxii import entities
 
 from utils import get_service, prepare_headers, as_tm, persist_content
@@ -15,30 +14,18 @@ ASSIGNED_INBOX_INSTANCES = sum(len(v['protocol_bindings']) \
 ASSIGNED_SUBSCTRIPTION_INSTANCES = sum(len(v['protocol_bindings']) \
         for k, v in SERVICES.items() if k in ASSIGNED_SERVICES and k.startswith('collection-'))
 
-@pytest.fixture
-def manager():
-    config = ServerConfig()
-    config.update_persistence_api_config(
-        'opentaxii.persistence.sqldb.SQLDatabaseAPI', {
-            'db_connection' : 'sqlite://', # in-memory DB
-            'create_tables' : True
-    })
-    config['services'].update(SERVICES)
-
-    manager = create_manager(config)
-    create_services_from_config(config, manager=manager)
-
-    return manager
-
-
 @pytest.fixture()
-def server(manager):
+def server():
 
-    server = TAXIIServer(DOMAIN, manager=manager)
+    config = get_config_for_tests(DOMAIN, SERVICES)
+    server = create_server(config)
+
+    create_services_from_config(config, server.persistence)
+    server.reload_services()
 
     for coll in COLLECTIONS_B:
-        coll = manager.create_collection(coll)
-        manager.attach_collection_to_services(coll.id, services_ids=ASSIGNED_SERVICES)
+        coll = server.persistence.create_collection(coll)
+        server.persistence.attach_collection_to_services(coll.id, services_ids=ASSIGNED_SERVICES)
 
     return server
 
@@ -144,7 +131,7 @@ def test_collections_supported_content(server, version, https):
 
 
 @pytest.mark.parametrize("https", [True, False])
-def test_collections_volume(server, manager, https):
+def test_collections_volume(server, https):
 
     version = 11
 
@@ -164,7 +151,7 @@ def test_collections_volume(server, manager, https):
     blocks_amount = 10
 
     for i in range(blocks_amount):
-        persist_content(manager, COLLECTION_OPEN, service.id)
+        persist_content(server.persistence, COLLECTION_OPEN, service.id)
 
     # querying filled collection
     response = service.process(headers, request)

@@ -7,41 +7,28 @@ from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
 from libtaxii import constants
 
-from opentaxii.server import TAXIIServer
-from opentaxii.config import ServerConfig
-from opentaxii.utils import create_manager, create_services_from_config
 from opentaxii.taxii import exceptions, entities
+from opentaxii.utils import create_services_from_config, get_config_for_tests
+from opentaxii.server import create_server
 
 from utils import get_service, prepare_headers, as_tm, persist_content, prepare_subscription_request
 from fixtures import *
 
 
-@pytest.fixture
-def manager():
-    config = ServerConfig()
-    config.update_persistence_api_config(
-        'opentaxii.persistence.sqldb.SQLDatabaseAPI', {
-            'db_connection' : 'sqlite://', # in-memory DB
-            'create_tables' : True
-    })
-    config['services'].update(SERVICES)
-
-    manager = create_manager(config)
-    create_services_from_config(config, manager=manager)
-
-    return manager
-
-
 @pytest.fixture()
-def server(manager):
+def server():
 
-    server = TAXIIServer(DOMAIN, manager=manager)
+    config = get_config_for_tests(DOMAIN, SERVICES)
+    server = create_server(config)
+
+    create_services_from_config(config, server.persistence)
+    server.reload_services()
 
     services = ['poll-A', 'collection-management-A']
 
     for coll in COLLECTIONS_B:
-        coll = manager.create_collection(coll)
-        manager.attach_collection_to_services(coll.id, services_ids=services)
+        coll = server.persistence.create_collection(coll)
+        server.persistence.attach_collection_to_services(coll.id, services_ids=services)
 
     return server
 
@@ -109,10 +96,11 @@ def test_poll_empty_response(server, version, https):
 
 @pytest.mark.parametrize("https", [True, False])
 @pytest.mark.parametrize("version", [11, 10])
-def test_poll_get_content(server, version, manager, https):
+def test_poll_get_content(server, version, https):
 
     service = get_service(server, 'poll-A')
-    original = persist_content(manager, COLLECTION_ONLY_STIX, service.id, binding=CB_STIX_XML_111)
+    original = persist_content(server.persistence, COLLECTION_ONLY_STIX,
+            service.id, binding=CB_STIX_XML_111)
 
     # wrong collection
     headers = prepare_headers(version, https)
@@ -149,7 +137,7 @@ def test_poll_get_content(server, version, manager, https):
 
 
 @pytest.mark.parametrize("https", [True, False])
-def test_poll_get_content_count(server, manager, https):
+def test_poll_get_content_count(server, https):
 
     version = 11
 
@@ -158,7 +146,7 @@ def test_poll_get_content_count(server, manager, https):
     blocks_amount = 10
 
     for i in range(blocks_amount):
-        persist_content(manager, COLLECTION_OPEN, service.id)
+        persist_content(server.persistence, COLLECTION_OPEN, service.id)
 
     headers = prepare_headers(version, https)
 
@@ -176,7 +164,7 @@ def test_poll_get_content_count(server, manager, https):
 
 
 @pytest.mark.parametrize("https", [True, False])
-def test_poll_max_count_max_size(server, manager, https):
+def test_poll_max_count_max_size(server, https):
 
     version = 11
 
@@ -185,7 +173,7 @@ def test_poll_max_count_max_size(server, manager, https):
     blocks_amount = 30
 
     for i in range(blocks_amount):
-        persist_content(manager, COLLECTION_OPEN, service.id)
+        persist_content(server.persistence, COLLECTION_OPEN, service.id)
 
     headers = prepare_headers(version, https)
 
@@ -214,7 +202,7 @@ def test_poll_max_count_max_size(server, manager, https):
 
 
 @pytest.mark.parametrize("https", [True, False])
-def test_poll_fulfilment_request(server, manager, https):
+def test_poll_fulfilment_request(server, https):
 
     version = 11
 
@@ -223,7 +211,7 @@ def test_poll_fulfilment_request(server, manager, https):
     blocks_amount = 30
 
     for i in range(blocks_amount):
-        persist_content(manager, COLLECTION_OPEN, service.id)
+        persist_content(server.persistence, COLLECTION_OPEN, service.id)
 
     headers = prepare_headers(version, https)
 
@@ -274,7 +262,7 @@ def test_poll_fulfilment_request(server, manager, https):
 
 @pytest.mark.parametrize("https", [True, False])
 @pytest.mark.parametrize("version", [11, 10])
-def test_subscribe_and_poll(server, version, manager, https):
+def test_subscribe_and_poll(server, version, https):
 
     subs_service = get_service(server, 'collection-management-A')
     poll_service = get_service(server, 'poll-A')
@@ -283,7 +271,7 @@ def test_subscribe_and_poll(server, version, manager, https):
 
     blocks_amount = 10
     for i in range(blocks_amount):
-        persist_content(manager, collection, poll_service.id)
+        persist_content(server.persistence, collection, poll_service.id)
 
     headers = prepare_headers(version, https)
 

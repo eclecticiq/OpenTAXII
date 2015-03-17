@@ -24,22 +24,9 @@ def content_binding_entity_to_content_binding(content_binding, version):
 
 
 def content_binding_entities_to_content_bindings(content_bindings, version):
-    return_list = []
 
-    if version == 10:
-        for cb in content_bindings:
-            return_list.append(cb.binding)
-
-    elif version == 11:
-        bindings = {}
-
-        for cb in content_bindings:
-            if cb.binding not in bindings:
-                bindings[cb.binding] = tm11.ContentBinding(binding_id=cb.binding, subtype_ids=cb.subtypes)
-
-        return_list = bindings.values()
-
-    return return_list
+    return map(lambda c: content_binding_entity_to_content_binding(c, version),
+            content_bindings)
 
 
 def service_to_service_instances(service, version):
@@ -202,9 +189,12 @@ def subscription_to_subscription_instance(subscription, polling_services,
         ))
 
         if subscription_parameters:
+            bindings = content_binding_entities_to_content_bindings(
+                    subscription_parameters.content_bindings, version=version)
+
             params['subscription_parameters'] = tm11.SubscriptionParameters(
                 response_type = subscription_parameters.response_type,
-                content_bindings = subscription_parameters.content_bindings
+                content_bindings = bindings
             )
 
         return tm11.SubscriptionInstance(**params)

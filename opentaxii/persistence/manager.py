@@ -4,7 +4,7 @@ from blinker import signal
 from ..signals import POST_SAVE_CONTENT_BLOCK
 
 
-class DataManager(object):
+class PersistenceManager(object):
 
     def __init__(self, api):
         self.api = api

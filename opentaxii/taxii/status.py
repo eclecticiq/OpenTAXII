@@ -1,9 +1,6 @@
-from libtaxii.constants import *
 import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10
 from libtaxii.common import generate_message_id
-
-from copy import deepcopy
 
 from .http import *
 
