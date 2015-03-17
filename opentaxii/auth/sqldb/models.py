@@ -1,10 +1,10 @@
-import hmac
-
 import bcrypt
 
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String
 from sqlalchemy.ext.declarative import declarative_base
+
+from werkzeug.security import safe_str_cmp
 
 __all__ = ['Base', 'Account']
 
@@ -31,4 +31,4 @@ class Account(Base):
         if isinstance(password, unicode):
             password = password.encode('utf-8')
         hashed = self.password_hash.encode('utf-8')
-        return hmac.compare_digest(bcrypt.hashpw(password, hashed), hashed)
+        return safe_str_cmp(bcrypt.hashpw(password, hashed), hashed)
