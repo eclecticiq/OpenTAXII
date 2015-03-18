@@ -27,9 +27,9 @@ class ServiceEntity(Entity):
 
 class ContentBindingEntity(Entity):
 
-    def __init__(self, binding, subtypes=[]):
+    def __init__(self, binding, subtypes=None):
         self.binding = binding
-        self.subtypes = subtypes
+        self.subtypes = subtypes or []
 
 
 class CollectionEntity(Entity):
@@ -38,7 +38,7 @@ class CollectionEntity(Entity):
     TYPE_SET = CT_DATA_SET
 
     def __init__(self, name, id=None, description=None, type=TYPE_FEED,
-            accept_all_content=False, supported_content=[], available=True):
+            accept_all_content=False, supported_content=None, available=True):
 
         self.id = id
         self.name = name
@@ -53,7 +53,7 @@ class CollectionEntity(Entity):
         self.accept_all_content = accept_all_content
 
         self.supported_content = []
-        for content in supported_content:
+        for content in (supported_content or []):
             if isinstance(content, basestring):
                 binding = ContentBindingEntity(content)
             elif isinstance(content, tuple):
@@ -133,7 +133,7 @@ class ContentBlockEntity(Entity):
 class InboxMessageEntity(Entity):
 
     def __init__(self, message_id, original_message, content_block_count,
-            service_id, id=None, result_id=None, destination_collections=[],
+            service_id, id=None, result_id=None, destination_collections=None,
             record_count=None, partial_count=False, subscription_collection_name=None,
             subscription_id=None, exclusive_begin_timestamp_label=None,
             inclusive_end_timestamp_label=None):
@@ -146,7 +146,7 @@ class InboxMessageEntity(Entity):
 
         self.service_id = service_id
 
-        self.destination_collections = destination_collections
+        self.destination_collections = destination_collections or []
 
         self.result_id = result_id
         self.record_count = record_count
@@ -162,12 +162,12 @@ class InboxMessageEntity(Entity):
 
 class ResultSetEntity(Entity):
 
-    def __init__(self, result_id, collection_id, content_bindings=[], timeframe=None):
+    def __init__(self, result_id, collection_id, content_bindings=None, timeframe=None):
 
         self.result_id = result_id
 
         self.collection_id = collection_id
-        self.content_bindings = content_bindings
+        self.content_bindings = content_bindings or []
         self.timeframe = timeframe
 
 
@@ -175,10 +175,10 @@ class SubscriptionParameters(Entity):
 
     # Not supported: query
 
-    def __init__(self, response_type=RT_FULL, content_bindings=[]):
+    def __init__(self, response_type=RT_FULL, content_bindings=None):
 
         self.response_type = response_type
-        self.content_bindings = content_bindings
+        self.content_bindings = content_bindings or []
 
 
 class PollRequestParametersEntity(SubscriptionParameters):
@@ -187,7 +187,7 @@ class PollRequestParametersEntity(SubscriptionParameters):
     # allow_asynch
     # delivery_parameters
 
-    def __init__(self, response_type=RT_FULL, content_bindings=[]):
+    def __init__(self, response_type=RT_FULL, content_bindings=None):
 
         super(PollRequestParametersEntity, self).__init__(
                 response_type=response_type, content_bindings=content_bindings)

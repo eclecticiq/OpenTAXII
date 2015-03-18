@@ -26,13 +26,13 @@ class TaxiiService(object):
     supported_protocol_bindings = [VID_TAXII_HTTPS_10]
 
     def __init__(self, id, server, address, description=None,
-            protocol_bindings=[], enabled=True, authentication_required=False):
+            protocol_bindings=None, enabled=True, authentication_required=False):
 
         self.id = id
         self.server = server
         self.address = address
         self.description = description
-        self.supported_protocol_bindings = protocol_bindings
+        self.supported_protocol_bindings = protocol_bindings or self.supported_protocol_bindings
 
         self.enabled = enabled
         self.authentication_required = authentication_required

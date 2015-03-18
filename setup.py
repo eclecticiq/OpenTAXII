@@ -15,7 +15,7 @@ setup(
     author = "Intelworks",
     author_email = "opentaxii@intelworks.com",
     version = "0.0.2",
-    license="BSD License",
+    license = "BSD License",
     packages = find_packages(),
     include_package_data = True,
     package_data = {
@@ -25,6 +25,8 @@ setup(
         'console_scripts' : [
             'opentaxii-run-dev = opentaxii.cli.run:run_in_dev_mode',
             'opentaxii-create-account = opentaxii.cli.auth:create_account',
+            'opentaxii-create-services = opentaxii.cli.persistence:create_services',
+            'opentaxii-create-collections = opentaxii.cli.persistence:create_collections',
         ]
     },
 

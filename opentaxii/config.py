@@ -20,7 +20,8 @@ class ServerConfig(dict):
         if env_var_path:
             config_paths.append(env_var_path)
 
-        options = anyconfig.load(config_paths, forced_type="yaml", ignore_missing=False)
+        options = anyconfig.load(config_paths, forced_type="yaml",
+                ignore_missing=False, merge=anyconfig.MS_REPLACE)
 
         self.update(options)
 

@@ -10,6 +10,8 @@ from .taxii.http import HTTP_AUTHORIZATION
 
 AUTH_HEADER_TOKEN_PREFIX = 'Bearer'.lower()
 
+log = structlog.getLogger(__name__)
+
 
 def get_path_and_address(domain, address):
     parsed = urlparse.urlparse(address)
@@ -33,22 +35,15 @@ def import_module(module_name):
 def load_api(api_config):
     cls = import_class(api_config['class'])
     params = api_config['parameters']
+
+    print api_config['class'], params
+
     if params:
         instance = cls(**params)
     else:
         instance = cls()
+    log.info("API loaded", api_class=api_config['class'])
     return instance
-
-
-def create_services_from_object(services_config, persistence_manager):
-
-    for _id, props in services_config.items():
-
-        properties = dict(props)
-        _type = properties.pop('type')
-
-        persistence_manager.create_service(ServiceEntity(
-            id=_id, type=_type, properties=properties))
 
 
 def extract_token(headers):

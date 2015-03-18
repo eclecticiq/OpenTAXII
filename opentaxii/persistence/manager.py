@@ -1,7 +1,9 @@
 
-from blinker import signal
-
-from ..signals import POST_SAVE_CONTENT_BLOCK
+from ..signals import (
+    CONTENT_BLOCK_CREATED, INBOX_MESSAGE_CREATED,
+    SUBSCRIPTION_CREATED
+)
+from ..taxii.entities import ServiceEntity
 
 
 class PersistenceManager(object):
@@ -36,7 +38,11 @@ class PersistenceManager(object):
         return self.api.create_collection(entity)
 
     def create_inbox_message(self, entity):
-        return self.api.create_inbox_message(entity)
+        created = self.api.create_inbox_message(entity)
+
+        INBOX_MESSAGE_CREATED.send(self, inbox_message=created)
+
+        return created
 
     def create_content(self, content, service_id=None, inbox_message=None,
             collections=[]):
@@ -53,8 +59,8 @@ class PersistenceManager(object):
         if collection_ids:
             self.api.attach_content_to_collections(content, collection_ids)
 
-        signal(POST_SAVE_CONTENT_BLOCK).send(self, content_block=content,
-                collection_ids=collection_ids)
+        CONTENT_BLOCK_CREATED.send(self, content_block=content,
+                collection_ids=collection_ids, service_id=service_id)
 
         return content
 
@@ -88,7 +94,12 @@ class PersistenceManager(object):
         return self.api.get_result_set(result_set_id)
 
     def create_subscription(self, subscription, service_id=None):
-        return self.api.create_subscription(subscription, service_id=service_id)
+        created = self.api.create_subscription(subscription,
+                service_id=service_id)
+
+        SUBSCRIPTION_CREATED.send(self, subscription=created, service_id=service_id)
+        return created
+
 
     def get_subscription(self, subscription_id):
         return self.api.get_subscription(subscription_id)
@@ -99,4 +110,14 @@ class PersistenceManager(object):
     def update_subscription(self, subscription, new_status):
         subscription.status = new_status
         return self.api.update_subscription(subscription)
+
+    def create_services_from_object(self, services_config):
+
+        for _id, props in services_config.items():
+
+            properties = dict(props)
+            _type = properties.pop('type')
+
+            self.create_service(ServiceEntity(id=_id, type=_type,
+                properties=properties))
 
