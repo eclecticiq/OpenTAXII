@@ -1,6 +1,4 @@
 
-import signal
-
 from opentaxii.signals import (
     CONTENT_BLOCK_CREATED, INBOX_MESSAGE_CREATED, SUBSCRIPTION_CREATED
 )
