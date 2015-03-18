@@ -2,7 +2,7 @@ import pytest
 
 from opentaxii.middleware import create_app
 from opentaxii.server import create_server
-from opentaxii.utils import create_services_from_object, get_config_for_tests
+from opentaxii.utils import get_config_for_tests
 
 from libtaxii.constants import (
     ST_FAILURE, ST_BAD_MESSAGE
@@ -46,7 +46,7 @@ def client(tmpdir):
     config = get_config_for_tests('some.com')
 
     server = create_server(config)
-    create_services_from_object(SERVICES, server.persistence)
+    server.persistence.create_services_from_object(SERVICES)
     server.reload_services()
 
     app = create_app(server)

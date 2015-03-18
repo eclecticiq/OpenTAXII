@@ -1,7 +1,7 @@
 import pytest
 
 from opentaxii.server import create_server
-from opentaxii.utils import create_services_from_object, get_config_for_tests
+from opentaxii.utils import get_config_for_tests
 
 INBOX = dict(
     type = 'inbox',
@@ -42,7 +42,7 @@ def server():
     config = get_config_for_tests(DOMAIN)
     server = create_server(config)
 
-    create_services_from_object(SERVICES, server.persistence)
+    server.persistence.create_services_from_object(SERVICES)
     server.reload_services()
 
     return server

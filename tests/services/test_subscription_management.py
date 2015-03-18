@@ -2,7 +2,7 @@ import pytest
 import tempfile
 
 from opentaxii.taxii import exceptions, entities
-from opentaxii.utils import create_services_from_object, get_config_for_tests
+from opentaxii.utils import get_config_for_tests
 from opentaxii.server import create_server
 
 from utils import get_service, prepare_headers, as_tm, persist_content
@@ -19,7 +19,7 @@ def server():
     config = get_config_for_tests(DOMAIN)
     server = create_server(config)
 
-    create_services_from_object(SERVICES, server.persistence)
+    server.persistence.create_services_from_object(SERVICES)
     server.reload_services()
 
     for coll in COLLECTIONS_B:

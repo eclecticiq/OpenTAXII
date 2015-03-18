@@ -5,7 +5,7 @@ from libtaxii.constants import ST_UNAUTHORIZED, ST_BAD_MESSAGE
 
 from opentaxii.middleware import create_app
 from opentaxii.server import create_server
-from opentaxii.utils import create_services_from_object, get_config_for_tests
+from opentaxii.utils import get_config_for_tests
 from opentaxii.taxii.http import HTTP_AUTHORIZATION
 
 from utils import prepare_headers, is_headers_valid, as_tm
@@ -45,7 +45,7 @@ def client(tmpdir):
 
     server = create_server(config)
 
-    create_services_from_object(SERVICES, server.persistence)
+    server.persistence.create_services_from_object(SERVICES)
     server.reload_services()
 
     app = create_app(server)
