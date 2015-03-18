@@ -17,5 +17,5 @@ logging:
   opentaxii: debug
   "": debug
 
-hooks: hooks
+hooks:
 
