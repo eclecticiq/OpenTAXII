@@ -1,0 +1,39 @@
+---
+
+- name: collection-A
+  available: true
+  accept_all_content: true
+  type: DATA_SET
+
+  service_ids:
+    - inbox_a
+    - collection_management_a
+    - poll_a
+
+- name: collection-B
+  available: true
+  accept_all_content: false
+  supported_content:
+    - urn:stix.mitre.org:xml:1.1.1
+  service_ids:
+    - inbox_a
+    - inbox_b
+    - collection_management_a
+    - poll_a
+
+- name: collection-C
+  available: true
+  accept_all_content: false
+  supported_content:
+    - urn:stix.mitre.org:xml:1.1.1
+    - urn:custom.bindings.com:json:10.10.10
+  service_ids:
+    - inbox_a
+    - collection_management_a
+    - poll_a
+
+- name: collection-D
+  available: false
+  service_ids:
+    - inbox_b
+    - collection_management_a
