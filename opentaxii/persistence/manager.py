@@ -113,9 +113,10 @@ class PersistenceManager(object):
 
     def create_services_from_object(self, services_config):
 
-        for _id, props in services_config.items():
+        for props in services_config:
 
             properties = dict(props)
+            _id = properties.pop('id')
             _type = properties.pop('type')
 
             self.create_service(ServiceEntity(id=_id, type=_type,

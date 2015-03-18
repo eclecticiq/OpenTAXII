@@ -4,6 +4,7 @@ from opentaxii.server import create_server
 from opentaxii.utils import get_config_for_tests
 
 INBOX = dict(
+    id = 'inbox-A',
     type = 'inbox',
     description = 'inboxA description',
     destination_collection_required = 'yes',
@@ -13,6 +14,7 @@ INBOX = dict(
 )
 
 DISCOVERY = dict(
+    id = 'discovery-A',
     type = 'discovery',
     description = 'discoveryA description',
     address = '/relative/discovery',
@@ -21,6 +23,7 @@ DISCOVERY = dict(
 )
 
 DISCOVERY_EXTERNAL = dict(
+    id = 'discovery-B',
     type = 'discovery',
     description = 'discoveryB description',
     address = 'http://example.com/a/b/c',
@@ -28,12 +31,7 @@ DISCOVERY_EXTERNAL = dict(
 )
 
 INTERNAL_SERVICES = [INBOX, DISCOVERY]
-
-SERVICES = {
-    'inboxA' : INBOX,
-    'discoveryA' : DISCOVERY,
-    'discoveryB' : DISCOVERY_EXTERNAL
-}
+SERVICES = INTERNAL_SERVICES + [DISCOVERY_EXTERNAL]
 
 DOMAIN = 'example.com'
 
@@ -52,7 +50,7 @@ def test_services_configured(server):
     assert len(server.services) == len(SERVICES)
     assert len(server.path_to_service) == len(INTERNAL_SERVICES)
 
-    assert server.path_to_service[DISCOVERY['address']].id == 'discoveryA'
+    assert server.path_to_service[DISCOVERY['address']].id == DISCOVERY['id']
 
     assert all(map(lambda x: x.address.startswith(DOMAIN), server.path_to_service.values()))
 

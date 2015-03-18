@@ -4,17 +4,13 @@ from opentaxii.middleware import create_app
 from opentaxii.server import create_server
 from opentaxii.utils import get_config_for_tests
 
-from libtaxii.constants import (
-    ST_FAILURE, ST_BAD_MESSAGE
-)
-
-from opentaxii.taxii.http import (
-    HTTP_X_TAXII_SERVICES
-)
+from libtaxii.constants import ST_FAILURE, ST_BAD_MESSAGE
+from opentaxii.taxii.http import HTTP_X_TAXII_SERVICES
 
 from utils import prepare_headers, is_headers_valid, as_tm
 
 INBOX = dict(
+    id = 'inbox-A',
     type = 'inbox',
     description = 'inboxA description',
     destination_collection_required = True,
@@ -24,19 +20,17 @@ INBOX = dict(
 )
 
 DISCOVERY = dict(
+    id = 'discovery-A',
     type = 'discovery',
     description = 'discoveryA description',
     address = '/relative/discovery',
-    advertised_services = ['inboxA', 'discoveryA'],
+    advertised_services = ['inbox-A', 'discovery-A'],
     protocol_bindings = ['urn:taxii.mitre.org:protocol:http:1.0']
 )
 
-SERVICES = {
-    'inboxA' : INBOX,
-    'discoveryA' : DISCOVERY
-}
+SERVICES = [INBOX, DISCOVERY]
 
-INSTANCES_CONFIGURED = sum(len(s['protocol_bindings']) for s in SERVICES.values())
+INSTANCES_CONFIGURED = sum(len(s['protocol_bindings']) for s in SERVICES)
 MESSAGE_ID = '123'
 
 
@@ -48,6 +42,8 @@ def client(tmpdir):
     server = create_server(config)
     server.persistence.create_services_from_object(SERVICES)
     server.reload_services()
+
+    print server.services
 
     app = create_app(server)
     app.config['TESTING'] = True

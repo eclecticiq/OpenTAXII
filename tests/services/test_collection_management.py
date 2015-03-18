@@ -9,10 +9,14 @@ from utils import get_service, prepare_headers, as_tm, persist_content
 from fixtures import *
 
 ASSIGNED_SERVICES = ['collection-management-A', 'inbox-A', 'inbox-B', 'poll-A']
-ASSIGNED_INBOX_INSTANCES = sum(len(v['protocol_bindings']) \
-        for k, v in SERVICES.items() if k in ASSIGNED_SERVICES and k.startswith('inbox'))
-ASSIGNED_SUBSCTRIPTION_INSTANCES = sum(len(v['protocol_bindings']) \
-        for k, v in SERVICES.items() if k in ASSIGNED_SERVICES and k.startswith('collection-'))
+
+ASSIGNED_INBOX_INSTANCES = sum(len(s['protocol_bindings'])
+        for s in SERVICES if s['id'] in ASSIGNED_SERVICES and s['id'].startswith('inbox'))
+
+ASSIGNED_SUBSCTRIPTION_INSTANCES = sum(len(s['protocol_bindings'])
+        for s in SERVICES if s['id'] in ASSIGNED_SERVICES and s['id'].startswith('collection-'))
+
+
 
 @pytest.fixture()
 def server():

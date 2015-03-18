@@ -11,6 +11,7 @@ from opentaxii.taxii.http import HTTP_AUTHORIZATION
 from utils import prepare_headers, is_headers_valid, as_tm
 
 INBOX = dict(
+    id = 'inbox-A',
     type = 'inbox',
     description = 'inboxA description',
     address = '/path/inbox',
@@ -18,6 +19,7 @@ INBOX = dict(
 )
 
 DISCOVERY = dict(
+    id = 'discovery-A',
     type = 'discovery',
     description = 'discoveryA description',
     address = '/path/discovery',
@@ -26,10 +28,7 @@ DISCOVERY = dict(
     authentication_required = False
 )
 
-SERVICES = {
-    'inboxA' : INBOX,
-    'discoveryA' : DISCOVERY
-}
+SERVICES = [INBOX, DISCOVERY]
 
 MESSAGE_ID = '123'
 
