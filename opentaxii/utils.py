@@ -36,8 +36,6 @@ def load_api(api_config):
     cls = import_class(api_config['class'])
     params = api_config['parameters']
 
-    print api_config['class'], params
-
     if params:
         instance = cls(**params)
     else:
