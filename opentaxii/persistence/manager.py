@@ -3,7 +3,6 @@ from ..signals import (
     CONTENT_BLOCK_CREATED, INBOX_MESSAGE_CREATED,
     SUBSCRIPTION_CREATED
 )
-from ..taxii.entities import ServiceEntity
 from ..taxii.converters import blob_to_service_entity
 
 

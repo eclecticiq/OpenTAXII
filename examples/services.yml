@@ -1,6 +1,6 @@
 ---
 
-inbox_a:
+- id: inbox_a
   type: inbox
   address: /services/inbox-a
   description: Custom Inbox Service Description A
@@ -8,7 +8,7 @@ inbox_a:
   accept_all_content: yes
   authentication_required: no
 
-inbox_b:
+- id: inbox_b
   type: inbox
   address: /services/inbox-b
   description: Custom Inbox Service Description B
@@ -20,7 +20,7 @@ inbox_b:
   protocol_bindings:
     - urn:taxii.mitre.org:protocol:http:1.0
 
-discovery_a:
+- id: discovery_a
   type: discovery
   address: /services/discovery-a
   description: Custom Discovery Service description
@@ -34,7 +34,7 @@ discovery_a:
     - urn:taxii.mitre.org:protocol:http:1.0
     - urn:taxii.mitre.org:protocol:https:1.0
 
-collection_management_a:
+- id: collection_management_a
   type: collection_management
   address: /services/collection-management-a
   description: Custom Collection Management Service description
@@ -42,7 +42,7 @@ collection_management_a:
     - urn:taxii.mitre.org:protocol:http:1.0
     - urn:taxii.mitre.org:protocol:https:1.0
 
-poll_a:
+- id: poll_a
   type: poll
   address: /services/poll-a
   description: Custom Poll Service description
