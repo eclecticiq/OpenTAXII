@@ -28,22 +28,22 @@ class CollectionManagementService(TaxiiService):
     service_type = SVC_COLLECTION_MANAGEMENT
 
     subscription_message = "Default subscription message"
-    subscriptions_supported = True
+    subscription_supported = True
 
-    def __init__(self, subscriptions_supported=True, subscription_message=None, **kwargs):
+    def __init__(self, subscription_supported=True, subscription_message=None, **kwargs):
         super(CollectionManagementService, self).__init__(**kwargs)
 
         self.subscription_message = subscription_message
-        self.subscriptions_supported = subscriptions_supported
+        self.subscription_supported = subscription_supported
 
-        if self.subscriptions_supported:
+        if self.subscription_supported:
             self.handlers = dict(CollectionManagementService.handlers)
             self.handlers.update(CollectionManagementService.subscription_handlers)
 
 
     @property
     def advertised_collections(self):
-        return self.server.persistence.get_collections(service_id=self.id)
+        return self.server.persistence.get_collections(self.id)
 
 
     def get_collection(self, name):
@@ -63,7 +63,7 @@ class CollectionManagementService(TaxiiService):
         all_services = self.server.get_services_for_collection(collection,
                 'collection_management')
         for s in all_services:
-            if s.subscriptions_supported:
+            if s.subscription_supported:
                 services.append(s)
         return services
 

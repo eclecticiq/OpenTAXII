@@ -21,7 +21,10 @@ def is_content_supported(supported_bindings, content_binding, version=None):
         subtype = None
     else:
         binding_id = content_binding.binding_id
-        subtype = content_binding.subtype_ids[0] if content_binding.subtype_ids else None #FIXME: may be not the best option
+
+        #FIXME: may be not the best option
+        subtype = content_binding.subtype_ids[0] if content_binding.subtype_ids \
+                else None
 
     matches = [
         ((supported.binding == binding_id) and (not supported.subtypes or subtype in supported.subtypes))

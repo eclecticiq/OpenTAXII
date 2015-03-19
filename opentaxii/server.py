@@ -62,6 +62,9 @@ class TAXIIServer(object):
 
             self.services.append(service)
 
+            log.debug('service initiated', id=service.id,
+                    address=service.address, type=service.service_type)
+
             if advertised:
                 discovery_services.append((service, advertised))
 

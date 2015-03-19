@@ -52,32 +52,6 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         return updated
 
 
-    def attach_content_to_collections(self, content_block, collection_ids):
-
-        if not collection_ids:
-            return
-
-        content_block_id = content_block.id
-
-        s = self.Session()
-        content_block = self.ContentBlock.query.get(content_block_id)
-
-        criteria = self.DataCollection.id.in_(collection_ids)
-        collections = self.DataCollection.query.filter(criteria).all()
-
-        if not collections:
-            raise ValueError("No collections were found with ids: %s" % collection_ids)
-
-        for collection in collections:
-            collection.content_blocks.append(content_block)
-            s.add(collection)
-
-            log.debug("Content block added to collection", content_block_id=content_block_id,
-                    collection_id=collection.id, collection_name=collection.name)
-
-        s.commit()
-
-
     def get_services(self, collection_id=None, service_type=None):
 
         query = self.Service.query
@@ -107,15 +81,9 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         return self.update_service(entity)
 
 
-    def get_collections(self, service_id=None):
-
-        if service_id:
-            service = self.Service.query.get(service_id)
-            collections = service.collections
-        else:
-            collections = self.DataCollection.query.all()
-
-        return map(conv.to_collection_entity, collections)
+    def get_collections(self, service_id):
+        service = self.Service.query.get(service_id)
+        return map(conv.to_collection_entity, service.collections)
 
 
     def get_collection(self, name, service_id):
@@ -287,8 +255,40 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         return conv.to_block_entity(updated)
 
 
-    def create_content_block(self, entity):
-        return self.update_content_block(entity)
+    def create_content_block(self, entity, collection_ids=None):
+        block = self.update_content_block(entity)
+
+        if collection_ids:
+            self._attach_content_to_collections(block, collection_ids)
+
+        return block
+
+
+    def _attach_content_to_collections(self, content_block, collection_ids):
+
+        if not collection_ids:
+            return
+
+        content_block_id = content_block.id
+
+        s = self.Session()
+        content_block = self.ContentBlock.query.get(content_block_id)
+
+        criteria = self.DataCollection.id.in_(collection_ids)
+        collections = self.DataCollection.query.filter(criteria).all()
+
+        if not collections:
+            raise ValueError("No collections were found with ids: %s" % collection_ids)
+
+        for collection in collections:
+            collection.content_blocks.append(content_block)
+            s.add(collection)
+
+            log.debug("Content block added to collection", content_block_id=content_block_id,
+                    collection_id=collection.id, collection_name=collection.name)
+
+        s.commit()
+
 
 
     def update_result_set(self, entity):

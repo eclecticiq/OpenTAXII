@@ -7,9 +7,9 @@ from libtaxii.constants import (
 )
 
 from .entities import (
-    ContentBindingEntity, InboxMessageEntity, ContentBlockEntity
+    ContentBindingEntity, InboxMessageEntity, ContentBlockEntity,
+    ServiceEntity
 )
-
 
 
 def parse_content_binding(raw_content_binding, version):
@@ -298,4 +298,13 @@ def content_block_entity_to_content_block(entity, version):
             timestamp_label = entity.timestamp_label,
             message = entity.message,
         )
+
+
+def blob_to_service_entity(blob):
+
+    properties = dict(blob)
+    _id = str(properties.pop('id'))
+    _type = properties.pop('type')
+
+    return ServiceEntity(id=_id, type=_type, properties=properties)
 

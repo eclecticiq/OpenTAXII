@@ -4,6 +4,7 @@ from ..signals import (
     SUBSCRIPTION_CREATED
 )
 from ..taxii.entities import ServiceEntity
+from ..taxii.converters import blob_to_service_entity
 
 
 class PersistenceManager(object):
@@ -28,8 +29,8 @@ class PersistenceManager(object):
         return self.api.get_services(collection_id=collection.id,
                 service_type=service_type)
 
-    def get_collections(self, service_id=None):
-        return self.api.get_collections(service_id=service_id)
+    def get_collections(self, service_id):
+        return self.api.get_collections(service_id)
 
     def get_collection(self, name, service_id):
         return self.api.get_collection(name, service_id)
@@ -52,12 +53,8 @@ class PersistenceManager(object):
                 inbox_message = self.api.create_inbox_message(inbox_message)
             content.inbox_message_id = inbox_message.id
 
-        content = self.api.create_content_block(content)
-
         collection_ids = [c.id for c in collections]
-
-        if collection_ids:
-            self.api.attach_content_to_collections(content, collection_ids)
+        content = self.api.create_content_block(content, collection_ids=collection_ids)
 
         CONTENT_BLOCK_CREATED.send(self, content_block=content,
                 collection_ids=collection_ids, service_id=service_id)
@@ -113,12 +110,6 @@ class PersistenceManager(object):
 
     def create_services_from_object(self, services_config):
 
-        for props in services_config:
-
-            properties = dict(props)
-            _id = properties.pop('id')
-            _type = properties.pop('type')
-
-            self.create_service(ServiceEntity(id=_id, type=_type,
-                properties=properties))
+        for blob in services_config:
+            self.create_service(blob_to_service_entity(blob))
 

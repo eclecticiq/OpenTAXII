@@ -7,7 +7,7 @@ class OpenTAXIIPersistenceAPI(object):
     def get_services(self, collection_id=None, service_type=None):
         raise NotImplementedError()
 
-    def get_collections(self, service_id=None):
+    def get_collections(self, service_id):
         raise NotImplementedError()
 
     def get_collection(self, collection_name, service_id):
@@ -22,10 +22,7 @@ class OpenTAXIIPersistenceAPI(object):
     def create_inbox_message(self, inbox_message_entity): 
         raise NotImplementedError()
 
-    def create_content_block(self, content_block_entity): 
-        raise NotImplementedError()
-
-    def attach_content_to_collections(self, content_block_id, collections_ids): 
+    def create_content_block(self, content_block_entity, collection_ids=None): 
         raise NotImplementedError()
 
     def get_content_blocks_count(self, collection_id, start_time=None,

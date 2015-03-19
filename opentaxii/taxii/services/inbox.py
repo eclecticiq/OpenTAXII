@@ -67,6 +67,8 @@ class InboxService(TaxiiService):
             raise StatusMessageException(ST_DESTINATION_COLLECTION_ERROR, message=message,
                     in_response_to=in_response_to, extended_headers=details)
 
+        if not name_list:
+            return []
 
         collections = []
 
