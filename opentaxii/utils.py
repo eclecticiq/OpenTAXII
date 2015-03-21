@@ -100,7 +100,8 @@ def configure_logging(logging_levels, plain=False):
 
 def _remove_all_existing_log_handlers():
     for logger in logging.Logger.manager.loggerDict.values():
-        del logger.handlers[:]
+        if hasattr(logger, 'handlers'):
+            del logger.handlers[:]
 
     root_logger = logging.getLogger()
     del root_logger.handlers[:]
