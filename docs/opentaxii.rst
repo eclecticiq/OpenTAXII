@@ -6,6 +6,8 @@ Subpackages
 
 .. toctree::
 
+    opentaxii.auth
+    opentaxii.cli
     opentaxii.persistence
     opentaxii.taxii
 
@@ -24,6 +26,14 @@ opentaxii.http module
 ---------------------
 
 .. automodule:: opentaxii.http
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+opentaxii.management module
+---------------------------
+
+.. automodule:: opentaxii.management
     :members:
     :undoc-members:
     :show-inheritance:
