@@ -1,5 +1,5 @@
 pytz==2014.10
-git+https://github.com/TAXIIProject/libtaxii.git#egg=libtaxii-1.1.106
+git+https://github.com/TAXIIProject/libtaxii.git#egg=libtaxii-1.1.106a
 pyyaml
 flask
 sqlalchemy

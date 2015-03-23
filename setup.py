@@ -31,7 +31,7 @@ setup(
     },
 
     dependency_links = [
-        'git+https://github.com/TAXIIProject/libtaxii.git#egg=libtaxii-1.1.106'
+        'git+https://github.com/TAXIIProject/libtaxii.git#egg=libtaxii-1.1.106a'
     ],
 
     install_requires = [
@@ -43,7 +43,8 @@ setup(
         'sqlalchemy',
         'blinker',
         'bcrypt',
-        'pyjwt'
+        'pyjwt',
+        'libtaxii==1.1.106a'
     ],
     classifiers = [
         "Development Status :: 4 - Beta",
