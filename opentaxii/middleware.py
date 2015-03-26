@@ -1,5 +1,4 @@
 import structlog
-#from functools import wraps
 from flask import Flask, request, make_response, abort
 
 from .taxii.exceptions import (
