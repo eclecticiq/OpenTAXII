@@ -42,7 +42,7 @@ def service_to_service_instances(service, version):
 
     for binding in service.supported_protocol_bindings:
         
-        address = service.absolute_address(binding)
+        address = service.get_absolute_address(binding)
 
         if version == 10:
 
@@ -84,7 +84,7 @@ def poll_service_to_polling_service_instance(service, version, poll_instance_cls
     cls = module.PollInstance if poll_instance_cls else module.PollingServiceInstance
 
     for binding in service.supported_protocol_bindings:
-        address = service.absolute_address(binding)
+        address = service.get_absolute_address(binding)
         instance = cls(poll_protocol=binding, poll_address=address, poll_message_bindings=service.supported_message_bindings)
         instances.append(instance)
 
@@ -97,7 +97,7 @@ def subscription_service_to_subscription_method(service, version):
     module = tm11 if version == 11 else tm10
 
     for binding in service.supported_protocol_bindings:
-        address = service.absolute_address(binding)
+        address = service.get_absolute_address(binding)
         instance = module.SubscriptionMethod(
             subscription_protocol = binding,
             subscription_address = address, 
@@ -115,7 +115,7 @@ def inbox_to_receiving_inbox_instance(inbox):
 
         inbox_instances.append(tm11.ReceivingInboxService(
             inbox_protocol = protocol_binding,
-            inbox_address = inbox.absolute_address(protocol_binding),
+            inbox_address = inbox.get_absolute_address(protocol_binding),
             inbox_message_bindings = inbox.supported_message_bindings,
             supported_contents = inbox.get_supported_content(version=11)
         ))

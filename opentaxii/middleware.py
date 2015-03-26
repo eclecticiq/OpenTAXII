@@ -1,6 +1,6 @@
 import structlog
-from functools import wraps
-from flask import Flask, request, make_response
+#from functools import wraps
+from flask import Flask, request, make_response, abort
 
 from .taxii.exceptions import (
     raise_failure, StatusMessageException, FailureStatus, UnauthorizedStatus
@@ -22,70 +22,72 @@ log = structlog.get_logger(__name__)
 
 def create_app(server):
     app = Flask(__name__)
-    app = attach_taxii_server(app, server)
 
     app.taxii = server
+
+    app.add_url_rule("/<path:relative_path>", "opentaxii_services_view",
+            server_wrapper(server), methods=['POST'])
+
+    app.register_blueprint(management, url_prefix='/management')
 
     app.register_error_handler(500, handle_internal_error)
     app.register_error_handler(StatusMessageException, handle_status_exception)
 
-    app.register_blueprint(management, url_prefix='/management')
-
     return app
 
 
-def attach_taxii_server(app, server):
-    for path, service in server.path_to_service.items():
-        app.add_url_rule(
-            path,
-            service.uid + "_view",
-            view_func = service_wrapper(service),
-            methods = ['POST']
-        )
-    return app
+def server_wrapper(server):
 
-
-def service_wrapper(service):
-
-    @wraps(service.process)
     def wrapper(*args, **kwargs):
 
-        if service.authentication_required:
-            token = extract_token(request.headers)
-            if not token:
-                raise UnauthorizedStatus()
-            account = service.server.auth.get_account(token)
-            if not account:
-                raise UnauthorizedStatus()
+        relative_path = '/' + kwargs['relative_path']
 
-        if 'application/xml' not in request.accept_mimetypes:
-            raise_failure("The specified values of Accept is not supported: %s" % (request.accept_mimetypes or []))
+        for service in server.get_services():
+            print "checking service", service.path, service
+            if service.path and service.path == relative_path:
+                return process_with_service(service)
 
-        validate_request_headers(request.headers, MESSAGE_BINDINGS)
-
-        body = request.data
-
-        taxii_message = parse_message(get_content_type(request.headers), body)
-        try:
-            validate_request_headers_post_parse(request.headers,
-                    supported_message_bindings=MESSAGE_BINDINGS,
-                    service_bindings=SERVICE_BINDINGS,
-                    protocol_bindings=ALL_PROTOCOL_BINDINGS)
-        except StatusMessageException, e:
-            e.in_response_to = taxii_message.message_id
-            raise e
-
-        response_message = service.process(request.headers, taxii_message)
-
-        response_headers = get_http_headers(response_message.version, request.is_secure)
-        validate_response_headers(response_headers)
-
-        # FIXME: pretty-printing should be configurable
-        taxii_xml = response_message.to_xml(pretty_print=True)
-
-        return make_taxii_response(taxii_xml, response_headers)
+        abort(404)
 
     return wrapper
+
+
+def process_with_service(service):
+    
+    if service.authentication_required:
+        token = extract_token(request.headers)
+        if not token:
+            raise UnauthorizedStatus()
+        account = service.server.auth.get_account(token)
+        if not account:
+            raise UnauthorizedStatus()
+
+    if 'application/xml' not in request.accept_mimetypes:
+        raise_failure("The specified values of Accept is not supported: %s" % (request.accept_mimetypes or []))
+
+    validate_request_headers(request.headers, MESSAGE_BINDINGS)
+
+    body = request.data
+
+    taxii_message = parse_message(get_content_type(request.headers), body)
+    try:
+        validate_request_headers_post_parse(request.headers,
+                supported_message_bindings=MESSAGE_BINDINGS,
+                service_bindings=SERVICE_BINDINGS,
+                protocol_bindings=ALL_PROTOCOL_BINDINGS)
+    except StatusMessageException, e:
+        e.in_response_to = taxii_message.message_id
+        raise e
+
+    response_message = service.process(request.headers, taxii_message)
+
+    response_headers = get_http_headers(response_message.version, request.is_secure)
+    validate_response_headers(response_headers)
+
+    # FIXME: pretty-printing should be configurable
+    taxii_xml = response_message.to_xml(pretty_print=True)
+
+    return make_taxii_response(taxii_xml, response_headers)
 
 
 def make_taxii_response(taxii_xml, taxii_headers):
