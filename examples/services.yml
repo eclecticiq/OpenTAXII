@@ -7,6 +7,8 @@
   destination_collection_required: no
   accept_all_content: yes
   authentication_required: no
+  protocol_bindings:
+    - urn:taxii.mitre.org:protocol:http:1.0
 
 - id: inbox_b
   type: inbox
@@ -50,4 +52,6 @@
   max_result_count: 100
   max_result_size: 10
   authentication_required: yes
+  protocol_bindings:
+    - urn:taxii.mitre.org:protocol:http:1.0
 
