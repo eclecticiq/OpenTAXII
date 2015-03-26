@@ -59,6 +59,10 @@ class TAXIIServer(object):
         return services
 
     def get_services(self, ids=None):
+
+        if ids is not None and len(ids) == 0:
+            return []
+
         service_entities = self.persistence.get_services()
         # Services needs to be created all at once to ensure that
         # discovery services list all active advertised services
@@ -79,11 +83,15 @@ class TAXIIServer(object):
         if service_type not in TYPE_TO_SERVICE:
             raise ValueError('Wrong service type: %s' % service_type)
 
-        service_entities = self.persistence.get_services_for_collection(
-                collection, service_type=service_type)
+        entities = self.persistence.get_services_for_collection(collection)
+
+        requested_entities = [e.id for e in entities if e.type == service_type]
+
+        if not requested_entities:
+            return []
 
         # Sync services for collection with registered services for this server
-        services = self.get_services([e.id for e in service_entities])
+        services = self.get_services(requested_entities)
 
         return services
 

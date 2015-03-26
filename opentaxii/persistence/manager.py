@@ -24,9 +24,8 @@ class PersistenceManager(object):
     def get_services(self):
         return self.api.get_services()
 
-    def get_services_for_collection(self, collection, service_type):
-        return self.api.get_services(collection_id=collection.id,
-                service_type=service_type)
+    def get_services_for_collection(self, collection):
+        return self.api.get_services(collection_id=collection.id)
 
     def get_collections(self, service_id):
         return self.api.get_collections(service_id)

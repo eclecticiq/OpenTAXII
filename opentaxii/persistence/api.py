@@ -4,7 +4,7 @@ class OpenTAXIIPersistenceAPI(object):
     def create_service(self, service_entity):
         raise NotImplementedError()
 
-    def get_services(self, collection_id=None, service_type=None):
+    def get_services(self, collection_id=None):
         raise NotImplementedError()
 
     def get_collections(self, service_id):
