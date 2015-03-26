@@ -34,7 +34,6 @@ def create_services():
 
     services_config = anyconfig.load(args.config, forced_type="yaml")
     server.persistence.create_services_from_object(services_config)
-    server.reload_services()
 
     log.info("Services created", count=len(services_config))
 

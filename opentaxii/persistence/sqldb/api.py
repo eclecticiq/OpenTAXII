@@ -176,8 +176,6 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         
         collection = self.DataCollection.query.get(collection_id)
 
-        print self.DataCollection.query.all()
-
         if not collection:
             raise ValueError("Can't find collection with id=%s" % collection_id)
 

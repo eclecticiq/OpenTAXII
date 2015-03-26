@@ -42,7 +42,6 @@ def server_wrapper(server):
         relative_path = '/' + kwargs['relative_path']
 
         for service in server.get_services():
-            print "checking service", service.path, service
             if service.path and service.path == relative_path:
                 return process_with_service(service)
 
