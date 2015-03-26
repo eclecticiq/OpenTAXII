@@ -5,8 +5,10 @@ from opentaxii.taxii import exceptions, entities
 from opentaxii.utils import get_config_for_tests
 from opentaxii.server import create_server
 
-from utils import get_service, prepare_headers, as_tm, persist_content
-from utils import prepare_subscription_request as prepare_request
+from utils import (
+    prepare_headers, as_tm, persist_content,
+    prepare_subscription_request as prepare_request
+)
 
 from fixtures import *
 
@@ -20,7 +22,6 @@ def server():
     server = create_server(config)
 
     server.persistence.create_services_from_object(SERVICES)
-    server.reload_services()
 
     for coll in COLLECTIONS_B:
         coll = server.persistence.create_collection(coll)
@@ -33,8 +34,8 @@ def server():
 @pytest.mark.parametrize("version", [11, 10])
 def test_subscribe(server, version, https):
 
-    service = get_service(server, 'collection-management-A')
-    poll_service = get_service(server, 'poll-A')
+    service = server.get_service('collection-management-A')
+    poll_service = server.get_service('poll-A')
 
     headers = prepare_headers(version, https)
 
@@ -63,7 +64,7 @@ def test_subscribe(server, version, https):
     assert subs.subscription_id
     assert len(subs.poll_instances) == 2    # 1 poll service * 2 protocol bindings
     assert subs.poll_instances[0].poll_address == \
-            poll_service.absolute_address(subs.poll_instances[0].poll_protocol)
+            poll_service.get_absolute_address(subs.poll_instances[0].poll_protocol)
 
     if version == 11:
         assert subs.status == SS_ACTIVE
@@ -79,8 +80,8 @@ def test_subscribe_pause_resume(server, https):
 
     version = 11
 
-    service = get_service(server, 'collection-management-A')
-    poll_service = get_service(server, 'poll-A')
+    service = server.get_service('collection-management-A')
+    poll_service = server.get_service('poll-A')
 
     headers = prepare_headers(version, https)
 
@@ -145,8 +146,8 @@ def test_pause_resume_wrong_id(server, https):
 
     version = 11
 
-    service = get_service(server, 'collection-management-A')
-    poll_service = get_service(server, 'poll-A')
+    service = server.get_service('collection-management-A')
+    poll_service = server.get_service('poll-A')
 
     headers = prepare_headers(version, https)
 
@@ -182,8 +183,8 @@ def test_pause_resume_wrong_id(server, https):
 @pytest.mark.parametrize("version", [11, 10])
 def test_unsubscribe(server, version, https):
 
-    service = get_service(server, 'collection-management-A')
-    poll_service = get_service(server, 'poll-A')
+    service = server.get_service('collection-management-A')
+    poll_service = server.get_service('poll-A')
 
     headers = prepare_headers(version, https)
 

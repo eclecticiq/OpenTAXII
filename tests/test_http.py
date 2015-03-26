@@ -41,9 +41,6 @@ def client(tmpdir):
 
     server = create_server(config)
     server.persistence.create_services_from_object(SERVICES)
-    server.reload_services()
-
-    print server.services
 
     app = create_app(server)
     app.config['TESTING'] = True

@@ -15,12 +15,6 @@ def as_tm(version):
         raise ValueError('Unknown TAXII message version: %s' % version)
 
 
-def get_service(server, service_id):
-    for service in server.services:
-        if service.id == service_id:
-            return service
-
-
 def prepare_headers(version, https):
     headers = dict()
     if version == 10:
