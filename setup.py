@@ -30,10 +30,6 @@ setup(
         ]
     },
 
-    dependency_links = [
-        'git+https://github.com/TAXIIProject/libtaxii.git#egg=libtaxii-1.1.106a'
-    ],
-
     install_requires = [
         'pytz==2014.10',
         'pyyaml',
@@ -44,7 +40,7 @@ setup(
         'blinker',
         'bcrypt',
         'pyjwt',
-        'libtaxii==1.1.106a'
+        'libtaxii>=1.1.106'
     ],
     classifiers = [
         "Development Status :: 4 - Beta",

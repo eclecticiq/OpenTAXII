@@ -41,17 +41,16 @@ def server():
     server = create_server(config)
 
     server.persistence.create_services_from_object(SERVICES)
-    server.reload_services()
 
     return server
 
 
 def test_services_configured(server):
-    assert len(server.services) == len(SERVICES)
-    assert len(server.path_to_service) == len(INTERNAL_SERVICES)
+    assert len(server.get_services()) == len(SERVICES)
 
-    assert server.path_to_service[DISCOVERY['address']].id == DISCOVERY['id']
+    with_paths = filter(lambda x: x.path, server.get_services())
 
-    assert all(map(lambda x: x.address.startswith(DOMAIN), server.path_to_service.values()))
+    assert len(with_paths) == len(INTERNAL_SERVICES)
+    assert all(map(lambda x: x.address.startswith(DOMAIN), with_paths))
 
 

@@ -11,7 +11,7 @@ from opentaxii.taxii import exceptions, entities
 from opentaxii.utils import get_config_for_tests
 from opentaxii.server import create_server
 
-from utils import get_service, prepare_headers, as_tm, persist_content, prepare_subscription_request
+from utils import prepare_headers, as_tm, persist_content, prepare_subscription_request
 from fixtures import *
 
 
@@ -22,7 +22,6 @@ def server():
     server = create_server(config)
 
     server.persistence.create_services_from_object(SERVICES)
-    server.reload_services()
 
     services = ['poll-A', 'collection-management-A']
 
@@ -76,7 +75,7 @@ def prepare_fulfilment_request(collection_name, result_id, part_number):
 ])
 def test_poll_empty_response(server, version, https):
 
-    service = get_service(server, 'poll-A')
+    service = server.get_service('poll-A')
 
     headers = prepare_headers(version, https)
     request = prepare_request(collection_name=COLLECTION_OPEN, version=version)
@@ -98,7 +97,7 @@ def test_poll_empty_response(server, version, https):
 @pytest.mark.parametrize("version", [11, 10])
 def test_poll_get_content(server, version, https):
 
-    service = get_service(server, 'poll-A')
+    service = server.get_service('poll-A')
     original = persist_content(server.persistence, COLLECTION_ONLY_STIX,
             service.id, binding=CB_STIX_XML_111)
 
@@ -141,7 +140,7 @@ def test_poll_get_content_count(server, https):
 
     version = 11
 
-    service = get_service(server, 'poll-A')
+    service = server.get_service('poll-A')
 
     blocks_amount = 10
 
@@ -168,7 +167,7 @@ def test_poll_max_count_max_size(server, https):
 
     version = 11
 
-    service = get_service(server, 'poll-A')
+    service = server.get_service('poll-A')
 
     blocks_amount = 30
 
@@ -206,7 +205,7 @@ def test_poll_fulfilment_request(server, https):
 
     version = 11
 
-    service = get_service(server, 'poll-A')
+    service = server.get_service('poll-A')
 
     blocks_amount = 30
 
@@ -264,8 +263,8 @@ def test_poll_fulfilment_request(server, https):
 @pytest.mark.parametrize("version", [11, 10])
 def test_subscribe_and_poll(server, version, https):
 
-    subs_service = get_service(server, 'collection-management-A')
-    poll_service = get_service(server, 'poll-A')
+    subs_service = server.get_service('collection-management-A')
+    poll_service = server.get_service('poll-A')
 
     collection = COLLECTION_ONLY_STIX
 

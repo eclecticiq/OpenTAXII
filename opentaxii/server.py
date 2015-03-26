@@ -27,65 +27,62 @@ class TAXIIServer(object):
         self.persistence = persistence_manager
         self.auth = auth_manager
 
-        self.services = []
-        self.path_to_service = dict()
 
-        self.reload_services()
-
-
-    def reload_services(self):
-        self.services = []
-        self.path_to_service = dict()
-        self._create_services(self.persistence.get_services())
-
-        log.info('services configured', services_count=len(self.services))
-
-
-    def _create_services(self, services):
+    def _create_services(self, service_entities):
 
         discovery_services = []
+        services = []
 
-        for service in services:
+        for entity in service_entities:
 
-            _props = dict(service.properties)
+            _props = dict(entity.properties)
             _props['server'] = self
 
-            raw_address = _props['address']
+            _props['path'], _props['address'] = get_path_and_address(
+                    self.domain, _props['address'])
+
             advertised = _props.pop('advertised_services', None)
 
-            path, _props['address'] = get_path_and_address(self.domain, raw_address)
+            if entity.type not in TYPE_TO_SERVICE:
+                raise ValueError('Unknown service type "%s"' % entity.type)
 
-            if service.type not in TYPE_TO_SERVICE:
-                raise RuntimeError('Unknown service type "%s"' % service.type)
+            service = TYPE_TO_SERVICE[entity.type](id=entity.id, **_props)
 
-            service = TYPE_TO_SERVICE[service.type](id=service.id, **_props)
-
-            self.services.append(service)
-
-            log.debug('service initiated', id=service.id,
-                    address=service.address, type=service.service_type)
+            services.append(service)
 
             if advertised:
                 discovery_services.append((service, advertised))
 
-            if path:
-                self.path_to_service[path] = service
-
         for service, advertised in discovery_services:
-            service.set_advertised_services([s for s in self.services if s.id in advertised])
+            service.set_advertised_services([s for s in services if s.id in advertised])
 
+        return services
 
-    def get_services(self, ids):
-        return filter(lambda s: s.id in ids, self.services)
+    def get_services(self, ids=None):
+        service_entities = self.persistence.get_services()
+        # Services needs to be created all at once to ensure that
+        # discovery services list all active advertised services
+        services = self._create_services(service_entities)
 
+        if ids:
+            services = filter(lambda s: s.id in ids, services)
+
+        return services
+
+    def get_service(self, id):
+        services = self.get_services([id])
+        if services:
+            return services[0]
 
     def get_services_for_collection(self, collection, service_type):
 
         if service_type not in TYPE_TO_SERVICE:
-            raise ValueError('Wrong service type')
+            raise ValueError('Wrong service type: %s' % service_type)
 
-        service_entities = self.persistence.get_services_for_collection(collection,
-                service_type=service_type)
+        service_entities = self.persistence.get_services_for_collection(
+                collection, service_type=service_type)
+
+        # Sync services for collection with registered services for this server
         services = self.get_services([e.id for e in service_entities])
 
         return services

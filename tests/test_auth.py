@@ -43,9 +43,7 @@ def client(tmpdir):
     config = get_config_for_tests('some.com')
 
     server = create_server(config)
-
     server.persistence.create_services_from_object(SERVICES)
-    server.reload_services()
 
     app = create_app(server)
     app.config['TESTING'] = True
@@ -97,11 +95,24 @@ def test_get_token(client, version, https):
     )
     assert response.status_code == 400
 
-    # Valid credentials
+    # Valid credentials as form data
     response = client.post(
         AUTH_PATH,
         data = {'username' : USERNAME, 'password' : PASSWORD},
         base_url = base_url
+    )
+
+    assert response.status_code == 200
+
+    data = json.loads(response.data)
+    assert data.get('token')
+
+    # Valid credentials as JSON blob
+    response = client.post(
+        AUTH_PATH,
+        data = json.dumps({'username' : USERNAME, 'password' : PASSWORD}),
+        base_url = base_url,
+        content_type='application/json'
     )
 
     assert response.status_code == 200

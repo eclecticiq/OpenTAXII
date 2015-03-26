@@ -4,7 +4,7 @@ import tempfile
 from opentaxii.server import create_server
 from opentaxii.utils import get_config_for_tests
 
-from utils import get_service, prepare_headers, as_tm
+from utils import prepare_headers, as_tm
 from fixtures import *
 
 
@@ -15,7 +15,6 @@ def server():
 
     server = create_server(config)
     server.persistence.create_services_from_object(SERVICES)
-    server.reload_services()
 
     return server
 
@@ -25,7 +24,7 @@ def server():
 def test_discovery_request(server, version, https):
 
     request = as_tm(version).DiscoveryRequest(message_id=MESSAGE_ID)
-    service = get_service(server, 'discovery-A')
+    service = server.get_service('discovery-A')
 
     headers = prepare_headers(version, https)
     response = service.process(headers, request)
@@ -41,7 +40,7 @@ def test_discovery_request(server, version, https):
 def test_content_bindings_present(server, version, https):
 
     request = as_tm(version).DiscoveryRequest(message_id=MESSAGE_ID)
-    service = get_service(server, 'discovery-A')
+    service = server.get_service('discovery-A')
 
     headers = prepare_headers(version, https)
     response = service.process(headers, request)

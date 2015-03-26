@@ -5,7 +5,7 @@ from opentaxii.utils import get_config_for_tests
 from opentaxii.server import create_server
 from opentaxii.taxii import entities
 
-from utils import get_service, prepare_headers, as_tm, persist_content
+from utils import prepare_headers, as_tm, persist_content
 from fixtures import *
 
 ASSIGNED_SERVICES = ['collection-management-A', 'inbox-A', 'inbox-B', 'poll-A']
@@ -25,7 +25,6 @@ def server():
     server = create_server(config)
 
     server.persistence.create_services_from_object(SERVICES)
-    server.reload_services()
 
     for coll in COLLECTIONS_B:
         coll = server.persistence.create_collection(coll)
@@ -45,7 +44,7 @@ def prepare_request(version):
 @pytest.mark.parametrize("version", [11, 10])
 def test_collections(server, version, https):
 
-    service = get_service(server, 'collection-management-A')
+    service = server.get_service('collection-management-A')
 
     headers = prepare_headers(version, https)
     request = prepare_request(version)
@@ -72,7 +71,7 @@ def test_collections(server, version, https):
 def test_collections_inboxes(server, https):
 
     version = 11
-    service = get_service(server, 'collection-management-A')
+    service = server.get_service('collection-management-A')
 
     headers = prepare_headers(version, https)
     request = prepare_request(version)
@@ -88,7 +87,7 @@ def test_collections_inboxes(server, https):
 @pytest.mark.parametrize("version", [11, 10])
 def test_collections_subscribe_instances(server, version, https):
 
-    service = get_service(server, 'collection-management-A')
+    service = server.get_service('collection-management-A')
 
     headers = prepare_headers(version, https)
     request = prepare_request(version)
@@ -107,7 +106,7 @@ def test_collections_subscribe_instances(server, version, https):
 @pytest.mark.parametrize("version", [11, 10])
 def test_collections_supported_content(server, version, https):
 
-    service = get_service(server, 'collection-management-A')
+    service = server.get_service('collection-management-A')
 
     headers = prepare_headers(version, https)
     request = prepare_request(version)
@@ -139,7 +138,7 @@ def test_collections_volume(server, https):
 
     version = 11
 
-    service = get_service(server, 'collection-management-A')
+    service = server.get_service('collection-management-A')
 
     headers = prepare_headers(version, https)
     request = prepare_request(version)
@@ -170,7 +169,7 @@ def test_collections_volume(server, https):
 @pytest.mark.parametrize("version", [11, 10])
 def test_collections_supported_content(server, version, https):
 
-    service = get_service(server, 'collection-management-A')
+    service = server.get_service('collection-management-A')
 
     headers = prepare_headers(version, https)
     request = prepare_request(version)

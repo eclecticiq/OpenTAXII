@@ -4,7 +4,6 @@ management = Blueprint('some', __name__)
 
 @management.route('/auth', methods=['POST'])
 def auth():
-
     data = request.get_json() or request.form
 
     username = data.get('username')

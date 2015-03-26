@@ -1,5 +1,4 @@
 import structlog
-import hashlib
 
 from libtaxii.common import generate_message_id
 from libtaxii.constants import (
@@ -23,14 +22,17 @@ class TaxiiService(object):
     authentication_required = False
 
     supported_message_bindings = [VID_TAXII_XML_10, VID_TAXII_XML_11]
-    supported_protocol_bindings = [VID_TAXII_HTTPS_10]
+    supported_protocol_bindings = ()
 
-    def __init__(self, id, server, address, description=None,
+    def __init__(self, id, server, address, description=None, path=None,
             protocol_bindings=None, enabled=True, authentication_required=False):
 
         self.id = id
         self.server = server
+
         self.address = address
+        self.path = path
+
         self.description = description
         self.supported_protocol_bindings = protocol_bindings or self.supported_protocol_bindings
 
@@ -40,10 +42,12 @@ class TaxiiService(object):
         self.log = structlog.getLogger("%s.%s" % (self.__module__,
             self.__class__.__name__), service_id=id)
 
+        if not self.supported_protocol_bindings:
+            self.log.warning("No protocol bindings specified, "
+                    "service will be invisible", service_id=self.id)
 
     def generate_id(self):
         return generate_message_id()
-
 
     def process(self, headers, message):
 
@@ -69,7 +73,6 @@ class TaxiiService(object):
 
         return response_message
 
-
     def get_message_handler(self, message):
         try:
             return self.handlers[message.message_type]
@@ -79,17 +82,10 @@ class TaxiiService(object):
             raise_failure("Message not supported by this service",
                     in_response_to=message.message_id)
 
-
     def to_service_instances(self, version):
         return service_to_service_instances(self, version)
 
-
-    @property
-    def uid(self):
-        return hashlib.md5(self.id + self.address).hexdigest() 
-
-
-    def absolute_address(self, binding):
+    def get_absolute_address(self, binding):
         address = self.address
 
         if binding in PROTOCOL_TO_SCHEME:
@@ -98,7 +94,6 @@ class TaxiiService(object):
                 address = scheme + address
 
         return address
-
 
     def __repr__(self):
         return "%s(id=%s, address=%s)" % (self.__class__.__name__, self.id, self.address)
