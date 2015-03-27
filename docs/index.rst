@@ -11,6 +11,7 @@ OpenTAXII's key features are:
   OpenTAXII implements key TAXII services according to TAXII specification. On
   top of these services, it also delivered additional ones such as customizable APIs,
   authorization and authentication and flexible logging.
+  
 
 * **Friendly Pythonic API**
 
