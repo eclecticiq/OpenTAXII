@@ -8,19 +8,21 @@ TAXII (Trusted Automated eXchange of Indicator Information) is a collection of s
 
 OpenTAXII's key features are:
 
-* **Rich feature set**
+- **Rich feature set**
 
   OpenTAXII implements all TAXII services according to TAXII specification (version 1.0 and 1.1). On
   top of these services, it also delivers additional functionality such as customizable APIs,
   authentication and flexible logging.
 
 
-* **Designed to be extendable**
+- **Designed to be extendable**
 
-  OpenTAXII architecture follows TAXII specification in its idea of TTA (TAXII transport agent) and TMH (TAXII message handler) components, separating implementations of:
-      * Transport layer (`Flask <flask.pocoo.org>`_ web app with extendable authentication via Authentication API)
-      * TAXII logic layer (TAXII server/services/message handlers)
-      * Persistence layer (extendable via Persistence API)
+  OpenTAXII architecture follows TAXII specification in its idea of TTA (TAXII transport agent)
+  and TMH (TAXII message handler) components, separating implementations of:
+
+      - Transport layer (`Flask <flask.pocoo.org>`_ web app with extendable authentication via Authentication API)
+      - TAXII logic layer (TAXII server/services/message handlers)
+      - Persistence layer (extendable via Persistence API)
 
 
 .. rubric:: Documentation contents
