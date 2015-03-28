@@ -4,27 +4,23 @@ OpenTAXII
 
 OpenTAXII is Python TAXII server implementation from Intelworks.
 
+TAXII (Trusted Automated eXchange of Indicator Information) is a collection of specifications defining a set of services and message exchanges used for sharing cyber threat intelligence information between parties. Check `TAXII homepage <http://taxii.mitre.org/>`_ to get more information.
+
 OpenTAXII's key features are:
 
 * **Rich feature set**
 
-  OpenTAXII implements key TAXII services according to TAXII specification. On
-  top of these services, it also delivered additional ones such as customizable APIs,
-  authorization and authentication and flexible logging.
+  OpenTAXII implements all TAXII services according to TAXII specification (version 1.0 and 1.1). On
+  top of these services, it also delivers additional functionality such as customizable APIs,
+  authentication and flexible logging.
 
-* **Friendly Pythonic API**
+* **Designed to be extendable**
 
-  OpenTAXII has a friendly and well-designed API that uses Python idioms like iterators and context managers (``with`` blocks).
+  OpenTAXII architecture follows TAXII specification in its idea of TTA (TAXII transport agent) and TMH (TAXII message handler) components, separating implementations of:
+      * Transport layer (`Flask <flask.pocoo.org>`_ web app with extendable authentication via Authentication API)
+      * TAXII logic layer (TAXII server/services/message handlers)
+      * Persistence layer (extendable via Persistence API)
 
-* **Well designed from ground up**
-
-  OpenTAXII is designed from ground up to be modular and flexible through micro-services
-  patterns. It is higly configurable and adoptable to any environment through easy
-  integrations on top of API.
-
-* **Well documented**
-
-  OpenTAXII has extensive documentation, including a user guide and API and reference material.
 
 .. rubric:: Documentation contents
 
@@ -32,10 +28,12 @@ OpenTAXII's key features are:
    :maxdepth: 2
 
    installation
-   user
-   api
-   news
+   configuration
+   running
+   public-apis
+   opentaxii-apis
    developer
+   news
    license
 
 .. rubric:: External links
