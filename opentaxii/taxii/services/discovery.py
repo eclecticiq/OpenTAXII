@@ -13,10 +13,10 @@ class DiscoveryService(TAXIIService):
 
     advertised_services = []
 
-    def __init__(self, services=[], **kwargs):
+    def __init__(self, services=None, **kwargs):
         super(DiscoveryService, self).__init__(**kwargs)
 
-        self.advertised_services = services
+        self.advertised_services = services or []
 
 
     def set_advertised_services(self, services):

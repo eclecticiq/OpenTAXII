@@ -45,9 +45,9 @@ def create_app(server):
 
 def _server_wrapper(server):
 
-    def wrapper(*args, **kwargs):
+    def wrapper(relative_path=""):
 
-        relative_path = '/' + kwargs['relative_path']
+        relative_path = '/' + relative_path
 
         for service in server.get_services():
             if service.path and service.path == relative_path:

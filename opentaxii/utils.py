@@ -5,7 +5,6 @@ import urlparse
 import importlib
 
 from .config import ServerConfig
-from .taxii.entities import ServiceEntity
 from .taxii.http import HTTP_AUTHORIZATION
 
 AUTH_HEADER_TOKEN_PREFIX = 'Bearer'.lower()

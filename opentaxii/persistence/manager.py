@@ -124,7 +124,7 @@ class PersistenceManager(object):
         return created
 
     def create_content(self, content, service_id=None, inbox_message=None,
-            collections=[]):
+            collections=None):
         '''Create a content block.
 
         Methods emits :py:const:`opentaxii.signals.CONTENT_BLOCK_CREATED` signal.
@@ -146,6 +146,7 @@ class PersistenceManager(object):
                 inbox_message = self.api.create_inbox_message(inbox_message)
             content.inbox_message_id = inbox_message.id
 
+        collections = collections or []
         collection_ids = [c.id for c in collections]
         content = self.api.create_content_block(content,
                 collection_ids=collection_ids, service_id=service_id)
@@ -156,7 +157,7 @@ class PersistenceManager(object):
         return content
 
     def get_content_blocks_count(self, collection_id, start_time=None, end_time=None,
-            bindings=[]):
+            bindings=None):
         '''Get a count of the content blocks associated with a collection.
 
         :param str collection_id: ID fo a collection in question
@@ -173,11 +174,11 @@ class PersistenceManager(object):
             collection_id = collection_id,
             start_time = start_time,
             end_time = end_time,
-            bindings = bindings,
+            bindings = bindings or [],
         )
 
     def get_content_blocks(self, collection_id, start_time=None, end_time=None,
-            bindings=[], offset=0, limit=10):
+            bindings=None, offset=0, limit=10):
         '''Get the content blocks associated with a collection.
 
         :param str collection_id: ID fo a collection in question
@@ -196,7 +197,7 @@ class PersistenceManager(object):
             collection_id = collection_id,
             start_time = start_time,
             end_time = end_time,
-            bindings = bindings,
+            bindings = bindings or [],
             offset = offset,
             limit = limit,
         )

@@ -51,15 +51,12 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         return updated
 
 
-    def get_services(self, collection_id=None, service_type=None):
+    def get_services(self, collection_id=None):
 
         query = self.Service.query
 
         if collection_id:
             query = query.filter(self.Service.collections.any(id=collection_id))
-
-        if service_type:
-            query = query.filter_by(type=service_type)
 
         return map(conv.to_service_entity, query.all())
  
@@ -95,7 +92,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
 
     def _get_content_query(self, collection_id=None, start_time=None,
-            end_time=None, bindings=[]):
+            end_time=None, bindings=None):
 
         query = self.ContentBlock.query
 
@@ -126,7 +123,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
 
     def get_content_blocks_count(self, collection_id=None, start_time=None,
-            end_time=None, bindings=[]):
+            end_time=None, bindings=None):
 
         query = self._get_content_query(collection_id=collection_id,
                 start_time=start_time, end_time=end_time,
@@ -136,7 +133,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
 
     def get_content_blocks(self, collection_id=None, start_time=None,
-            end_time=None, bindings=[], offset=0, limit=10):
+            end_time=None, bindings=None, offset=0, limit=10):
 
         query = self._get_content_query(collection_id=collection_id,
                 start_time=start_time, end_time=end_time,

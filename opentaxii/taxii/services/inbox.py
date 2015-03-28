@@ -28,12 +28,12 @@ class InboxService(TAXIIService):
 
 
     def __init__(self, accept_all_content=False, destination_collection_required=False,
-            supported_content=[], **kwargs):
+            supported_content=None, **kwargs):
 
         super(InboxService, self).__init__(**kwargs)
 
         self.accept_all_content = accept_all_content
-        self.supported_content = map(ContentBindingEntity, supported_content)
+        self.supported_content = map(ContentBindingEntity, supported_content or [])
 
         self.destination_collection_required = destination_collection_required
 

@@ -2,8 +2,7 @@ import structlog
 
 from libtaxii.common import generate_message_id
 from libtaxii.constants import (
-    VID_TAXII_XML_10, VID_TAXII_XML_11,
-    VID_TAXII_HTTPS_10
+    VID_TAXII_XML_10, VID_TAXII_XML_11
 )
 
 from ..exceptions import StatusMessageException, raise_failure

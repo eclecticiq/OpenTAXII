@@ -51,7 +51,7 @@ class PollService(TAXIIService):
 
 
     def get_content_blocks_count(self, collection, timeframe=None,
-            content_bindings=[]):
+            content_bindings=None):
 
         start_time, end_time = timeframe or (None, None)
 

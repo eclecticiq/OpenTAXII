@@ -107,7 +107,7 @@ class OpenTAXIIPersistenceAPI(object):
         raise NotImplementedError()
 
     def get_content_blocks_count(self, collection_id, start_time=None,
-            end_time=None, bindings=[]):
+            end_time=None, bindings=None):
         '''Get a count of the content blocks associated with a collection.
 
         :param str collection_id: ID fo a collection in question
@@ -122,7 +122,7 @@ class OpenTAXIIPersistenceAPI(object):
         raise NotImplementedError()
 
     def get_content_blocks(self, collection_id, start_time=None, end_time=None,
-            bindings=[], offset=0, limit=10):
+            bindings=None, offset=0, limit=10):
         '''Get the content blocks associated with a collection.
 
         :param str collection_id: ID fo a collection in question
@@ -159,14 +159,12 @@ class OpenTAXIIPersistenceAPI(object):
         '''
         raise NotImplementedError()
 
-    def create_subscription(self, subscription_entity, service_id=None):
+    def create_subscription(self, subscription_entity):
         '''Create a subscription.
 
         :param `opentaxii.taxii.entities.SubscriptionEntity` subscription_entity:
             subscription entity in question.
-        :param str service_id: an ID of a service via which
-            the subscription was created
-            
+
         :return: updated subscription entity
         :rtype: :py:class:`opentaxii.taxii.entities.SubscriptionEntity`
         '''
