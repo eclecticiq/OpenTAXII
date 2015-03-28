@@ -25,7 +25,7 @@ def server():
 
     for coll in COLLECTIONS_B:
         coll = server.persistence.create_collection(coll)
-        server.persistence.attach_collection_to_services(coll.id, services_ids=ASSIGNED_SERVICES)
+        server.persistence.attach_collection_to_services(coll.id, service_ids=ASSIGNED_SERVICES)
 
     return server
 

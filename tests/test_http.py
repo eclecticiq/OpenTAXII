@@ -24,11 +24,22 @@ DISCOVERY = dict(
     type = 'discovery',
     description = 'discoveryA description',
     address = '/relative/discovery',
-    advertised_services = ['inbox-A', 'discovery-A'],
+    advertised_services = ['inbox-A', 'discovery-A', 'discovery-B'],
     protocol_bindings = ['urn:taxii.mitre.org:protocol:http:1.0']
 )
 
-SERVICES = [INBOX, DISCOVERY]
+DISCOVERY_NOT_AVAILABLE = dict(
+    id = 'discovery-B',
+    type = 'discovery',
+    description = 'discoveryA description',
+    address = '/relative/discovery-b',
+    advertised_services = ['inbox-A', 'discovery-A'],
+    protocol_bindings = ['urn:taxii.mitre.org:protocol:http:1.0'],
+    
+    available = False
+)
+
+SERVICES = [INBOX, DISCOVERY, DISCOVERY_NOT_AVAILABLE]
 
 INSTANCES_CONFIGURED = sum(len(s['protocol_bindings']) for s in SERVICES)
 MESSAGE_ID = '123'
@@ -133,5 +144,25 @@ def test_post_parse_verification(client, version, https):
     assert message.in_response_to == MESSAGE_ID
 
 
+@pytest.mark.parametrize("https", [True, False])
+@pytest.mark.parametrize("version", [11, 10])
+def test_services_available(client, version, https):
 
+    headers = prepare_headers(version, https)
 
+    request = as_tm(version).DiscoveryRequest(message_id=MESSAGE_ID)
+    base_url = '%s://localhost' % ('https' if https else 'http')
+
+    response = client.post(
+        DISCOVERY_NOT_AVAILABLE['address'],
+        data = request.to_xml(),
+        headers = headers,
+        base_url = base_url
+    )
+
+    assert response.status_code == 200
+
+    message = as_tm(version).get_message_from_xml(response.data)
+
+    assert isinstance(message, as_tm(version).StatusMessage)
+    assert message.status_type == ST_FAILURE

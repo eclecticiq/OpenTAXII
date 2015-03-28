@@ -10,7 +10,7 @@ INBOX = dict(
     destination_collection_required = 'yes',
     address = '/relative/path',
     accept_all_content = 'yes',
-    protocol_bindings = ['urn:taxii.mitre.org:protocol:http:1.0', 'urn:taxii.mitre.org:protocol:https:1.0']
+    protocol_bindings = ['urn:taxii.mitre.org:protocol:http:1.0', 'urn:taxii.mitre.org:protocol:https:1.0'],
 )
 
 DISCOVERY = dict(
@@ -23,7 +23,7 @@ DISCOVERY = dict(
 )
 
 DISCOVERY_EXTERNAL = dict(
-    id = 'discovery-B',
+    id = 'discovery-C',
     type = 'discovery',
     description = 'discoveryB description',
     address = 'http://example.com/a/b/c',
@@ -52,5 +52,4 @@ def test_services_configured(server):
 
     assert len(with_paths) == len(INTERNAL_SERVICES)
     assert all(map(lambda x: x.address.startswith(DOMAIN), with_paths))
-
 
