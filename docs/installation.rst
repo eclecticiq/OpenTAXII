@@ -15,6 +15,7 @@ virtual environment (*virtualenv*)::
 
    $ virtualenv venv
    $ source venv/bin/activate
+   (venv) $
 
 Now you can automatically install the latest OpenTAXII release from the `Python
 Package Index <http://pypi.python.org/>`_ (PyPI) using ``pip``::
