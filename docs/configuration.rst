@@ -58,7 +58,7 @@ Using CLI tools
 First, YAML files with services and collections configurations needs to be created. You can create your own file
 or use examples from OpenTAXII `git repo <https://github.com/Intelworks/OpenTAXII>`_:
 
-* `services.yml <https://raw.githubusercontent.com/Intelworks/OpenTAXII/master/examples/services.yml>`_
+* `examples/services.yml <https://raw.githubusercontent.com/Intelworks/OpenTAXII/master/examples/services.yml>`_
 
   Describes 2 Inbox Services (``inbox_a`` and ``inbox_b``), Discovery Service (``discovery_a``),
   Collection Management Service (``collection_management_a``), and Poll Service (``poll_a``).
@@ -66,7 +66,7 @@ or use examples from OpenTAXII `git repo <https://github.com/Intelworks/OpenTAXI
   Services have relative path in the address field, which means OpenTAXII will prepend it with
   domain configured in server configuration file (``example.com`` in `default configuration`_).
 
-* `collections.yml <https://raw.githubusercontent.com/Intelworks/OpenTAXII/master/examples/collections.yml>`_
+* `examples/collections.yml <https://raw.githubusercontent.com/Intelworks/OpenTAXII/master/examples/collections.yml>`_
 
   Lists 4 collections: 
     * ``collection-A`` that accepts all content, with type ``DATA_SET`` and attached to services
