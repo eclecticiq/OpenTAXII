@@ -63,7 +63,7 @@ class PollService(TAXIIService):
         )
 
 
-    def get_content_blocks(self, collection, timeframe=None, content_bindings=[],
+    def get_content_blocks(self, collection, timeframe=None, content_bindings=None,
             part_number=1):
 
         start_time, end_time = timeframe or (None, None)
@@ -80,7 +80,7 @@ class PollService(TAXIIService):
         )
 
 
-    def create_result_set(self, collection, content_bindings=[], timeframe=(None, None)):
+    def create_result_set(self, collection, content_bindings=None, timeframe=(None, None)):
 
         result_id = self.generate_id()
 
