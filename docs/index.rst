@@ -14,6 +14,7 @@ OpenTAXII's key features are:
   top of these services, it also delivers additional functionality such as customizable APIs,
   authentication and flexible logging.
 
+
 * **Designed to be extendable**
 
   OpenTAXII architecture follows TAXII specification in its idea of TTA (TAXII transport agent) and TMH (TAXII message handler) components, separating implementations of:
