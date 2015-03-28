@@ -156,7 +156,7 @@ Users can attach custom listeners for the events OpenTAXII emits. See :ref:`Sign
 a list of supported signals.
 
 To attach custom signals, specify full module name as a value for ``hooks`` field in OpenTAXII configuration file.
-Note that the module needs to be OpenTAXII's ``PYTHONPATH``.
+Note that the module needs to be in OpenTAXII's ``PYTHONPATH``.
 
 Example of the implementation is provided in OpenTAXII repository - `examples/hooks.py <https://raw.githubusercontent.com/Intelworks/OpenTAXII/master/examples/hooks.py>`_.
 
