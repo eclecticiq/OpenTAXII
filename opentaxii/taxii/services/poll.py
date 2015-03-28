@@ -6,13 +6,13 @@ from libtaxii.constants import (
 )
 
 from ..entities import ResultSetEntity
-from .abstract import TaxiiService
+from .abstract import TAXIIService
 from .handlers import PollRequestHandler, PollFulfilmentRequestHandler
 
 log = structlog.getLogger(__name__)
 
 
-class PollService(TaxiiService):
+class PollService(TAXIIService):
 
     handlers = {
         MSG_POLL_REQUEST : PollRequestHandler,
@@ -26,7 +26,7 @@ class PollService(TaxiiService):
     can_push = False
 
     max_result_size = sys.maxint
-    mac_result_count = sys.maxint
+    max_result_count = sys.maxint
 
     def __init__(self, subscription_required=False, max_result_size=-1,
             max_result_count=-1, **kwargs):

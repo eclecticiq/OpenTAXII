@@ -16,7 +16,7 @@ auth_api:
     secret: SECRET-STRING-NEEDS-TO-BE-CHANGED
 
 logging:
-  opentaxii: debug
+  opentaxii: info
   "": info
 
 hooks: 

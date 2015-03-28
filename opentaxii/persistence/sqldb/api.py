@@ -14,16 +14,15 @@ log = structlog.getLogger(__name__)
 
 
 class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
-    """
-    SQL database implementation of OpenTAXII persistence API.
+    """SQL database implementation of OpenTAXII Persistence API.
 
     Implementation will work with any DB supported by SQLAlchemy package.
 
-    :param db_connection: a string that indicates database dialect and
+    :param str db_connection: a string that indicates database dialect and
                           connection arguments that will be passed directly
                           to :func:`~sqlalchemy.engine.create_engine` method.
 
-    :param create_tables=False: if True, tables will be created in the DB.
+    :param bool create_tables=False: if True, tables will be created in the DB.
     """
 
     def __init__(self, db_connection, create_tables=False):
@@ -113,8 +112,10 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
             criteria = []
             for binding in bindings:
                 if binding.subtypes:
-                    criterion = and_(self.ContentBlock.binding_id == binding.binding,
-                            self.ContentBinding.binding_subtype.in_(binding.subtypes))
+                    criterion = and_(
+                            self.ContentBlock.binding_id == binding.binding,
+                            self.ContentBlock.binding_subtype.in_(binding.subtypes)
+                            )
                 else:
                     criterion = self.ContentBlock.binding_id == binding.binding
                 criteria.append(criterion)
@@ -172,7 +173,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         return self.update_collection(entity)
 
 
-    def attach_collection_to_services(self, collection_id, services_ids):
+    def attach_collection_to_services(self, collection_id, service_ids):
         
         collection = self.DataCollection.query.get(collection_id)
 
@@ -181,7 +182,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
         s = self.Session()
 
-        for sid in services_ids:
+        for sid in service_ids:
             service = self.Service.query.get(sid)
             collection.services.append(service)
 
@@ -189,7 +190,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         s.commit()
 
         log.debug("Collection attached", collection_id=collection.id,
-                collection_name=collection.name, service_ids=services_ids)
+                collection_name=collection.name, service_ids=service_ids)
 
 
     def create_inbox_message(self, entity):
@@ -228,7 +229,6 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         return conv.to_inbox_message_entity(updated)
 
 
-
     def update_content_block(self, entity):
 
         if entity.content_binding:
@@ -253,7 +253,8 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         return conv.to_block_entity(updated)
 
 
-    def create_content_block(self, entity, collection_ids=None):
+    def create_content_block(self, entity, collection_ids=None,
+            service_id=None):
         block = self.update_content_block(entity)
 
         if collection_ids:
@@ -282,8 +283,10 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
             collection.content_blocks.append(content_block)
             s.add(collection)
 
-            log.debug("Content block added to collection", content_block_id=content_block_id,
-                    collection_id=collection.id, collection_name=collection.name)
+            log.debug("Content block added to collection",
+                    content_block_id=content_block_id,
+                    collection_id=collection.id,
+                    collection_name=collection.name)
 
         s.commit()
 
@@ -320,13 +323,14 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         service = self.Service.query.get(service_id)
         return map(conv.to_subscription_entity, service.subscriptions)
 
-    def update_subscription(self, entity, service_id=None):
+    def update_subscription(self, entity):
 
         if entity.params:
-            params = entity.params.as_dict()
-            if params.get('content_bindings'):
-                params['content_bindings'] = conv.serialize_content_bindings(
-                        params['content_bindings'])
+            params = dict(
+                response_type = entity.params.response_type,
+                content_bindings = conv.serialize_content_bindings(
+                        entity.params.content_bindings)
+            )
         else:
             params = {}
 
@@ -334,19 +338,19 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
             id = entity.subscription_id,
             collection_id = entity.collection_id,
             params = json.dumps(params),
-            status = entity.status
+            status = entity.status,
+            service_id = entity.service_id
         )
-        if service_id:
-            subscription.service_id = service_id
 
         updated = self._merge(subscription)
 
-        log.debug("Subscription saved", subscription_id=updated.id, collection_id=updated.collection_id, status=updated.status)
+        log.debug("Subscription updated", subscription_id=updated.id,
+                collection_id=updated.collection_id, status=updated.status)
 
         return conv.to_subscription_entity(updated)
 
-    def create_subscription(self, entity, service_id=None):
-        return self.update_subscription(entity, service_id=service_id)
+    def create_subscription(self, entity):
+        return self.update_subscription(entity)
 
 
 def attach_all(obj, module):

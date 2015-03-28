@@ -40,7 +40,7 @@ def load_api(api_config):
         instance = cls(**params)
     else:
         instance = cls()
-    log.info("API loaded", api_class=api_config['class'])
+    log.debug("API loaded", api_class=api_config['class'])
     return instance
 
 

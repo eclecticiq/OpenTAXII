@@ -11,7 +11,7 @@ from libtaxii.constants import (
 from libtaxii.common import generate_message_id
 
 from .base_handlers import BaseMessageHandler
-from ...exceptions import StatusMessageException, raise_failure
+from ...exceptions import StatusMessageException, raise_failure, FailureStatus
 from ....persistence.exceptions import ResultsNotReady
 from ...converters import (
     content_block_entity_to_content_block, parse_content_bindings,
@@ -44,6 +44,12 @@ def retrieve_collection(service, collection_name, in_response_to):
         details = {SD_ITEM: collection_name}
         raise StatusMessageException(ST_NOT_FOUND, message=message,
                 in_response_to=in_response_to, status_details=details)
+
+    if not collection.available:
+        message = "The collection is not available"
+        details = {SD_ITEM: collection_name}
+        raise FailureStatus(message=message, in_response_to=in_response_to,
+                status_details=details)
 
     return collection
 

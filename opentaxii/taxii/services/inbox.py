@@ -10,11 +10,11 @@ from ..exceptions import StatusMessageException
 
 from ..converters import content_binding_entities_to_content_bindings, service_to_service_instances
 
-from .abstract import TaxiiService
+from .abstract import TAXIIService
 from .handlers import InboxMessageHandler
 
 
-class InboxService(TaxiiService):
+class InboxService(TAXIIService):
 
     service_type = SVC_INBOX
 
@@ -62,7 +62,8 @@ class InboxService(TaxiiService):
             else:
                 message = 'Destination_Collection_Names are prohibited for this Inbox Service'
 
-            details = {SD_ACCEPTABLE_DESTINATION: [c.name for c in self.get_destination_collections() if c.enabled]}
+            details = {SD_ACCEPTABLE_DESTINATION: [c.name for c in
+                self.get_destination_collections() if c.available]}
 
             raise StatusMessageException(ST_DESTINATION_COLLECTION_ERROR, message=message,
                     in_response_to=in_response_to, extended_headers=details)

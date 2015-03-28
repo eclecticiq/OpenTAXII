@@ -11,11 +11,25 @@ from ..bindings import PROTOCOL_TO_SCHEME
 from ..converters import service_to_service_instances
 
 
-class TaxiiService(object):
+class TAXIIService(object):
+    '''Generic TAXII Service class.
+
+    This class implements common methods for all TAXII services.
+
+    :param str id: service ID
+    :param str address: service address as absolute URL
+    :param str description: service description
+
+    :param list protocol_bindings: list of supported protocol bindings
+        as a list of strings
+    :param bool available: if the service is available
+    :param bool authentication_required: if authentication required
+    :param str path: relative path if service is configured in the server
+    '''
 
     id = None
     description = 'Default TAXII service description'
-    enabled = True
+    available = True
 
     server = None
 
@@ -25,7 +39,7 @@ class TaxiiService(object):
     supported_protocol_bindings = ()
 
     def __init__(self, id, server, address, description=None, path=None,
-            protocol_bindings=None, enabled=True, authentication_required=False):
+            protocol_bindings=None, available=True, authentication_required=False):
 
         self.id = id
         self.server = server
@@ -36,7 +50,7 @@ class TaxiiService(object):
         self.description = description
         self.supported_protocol_bindings = protocol_bindings or self.supported_protocol_bindings
 
-        self.enabled = enabled
+        self.available = available
         self.authentication_required = authentication_required
 
         self.log = structlog.getLogger("%s.%s" % (self.__module__,
