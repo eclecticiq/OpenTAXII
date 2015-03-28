@@ -27,7 +27,7 @@ def server():
 
     for coll in COLLECTIONS_B:
         coll = server.persistence.create_collection(coll)
-        server.persistence.attach_collection_to_services(coll.id, services_ids=services)
+        server.persistence.attach_collection_to_services(coll.id, service_ids=services)
 
     return server
 
@@ -69,7 +69,6 @@ def prepare_fulfilment_request(collection_name, result_id, part_number):
     )
 
 
-
 @pytest.mark.parametrize(("https", "version"), [
     (True, 11), (False, 11), (True, 10), (False, 10),
 ])
@@ -91,6 +90,20 @@ def test_poll_empty_response(server, version, https):
         # COLLECTION_OPEN type (SET) is not supported in TAXII 1.0
         with pytest.raises(exceptions.StatusMessageException):
             response = service.process(headers, request)
+
+
+@pytest.mark.parametrize(("https", "version"), [
+    (True, 11), (False, 11), (True, 10), (False, 10),
+])
+def test_poll_collection_not_available(server, version, https):
+
+    service = server.get_service('poll-A')
+
+    headers = prepare_headers(version, https)
+    request = prepare_request(collection_name=COLLECTION_DISABLED, version=version)
+
+    with pytest.raises(exceptions.StatusMessageException):
+        response = service.process(headers, request)
 
 
 @pytest.mark.parametrize("https", [True, False])

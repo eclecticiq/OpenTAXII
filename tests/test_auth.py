@@ -176,3 +176,4 @@ def test_get_token_and_send_request(client, version, https):
     message = as_tm(version).get_message_from_xml(response.data)
 
     assert isinstance(message, as_tm(version).DiscoveryResponse)
+

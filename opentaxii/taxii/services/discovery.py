@@ -1,9 +1,9 @@
 from libtaxii.constants import SVC_DISCOVERY, MSG_DISCOVERY_REQUEST
 
-from .abstract import TaxiiService
+from .abstract import TAXIIService
 from .handlers import DiscoveryRequestHandler
 
-class DiscoveryService(TaxiiService):
+class DiscoveryService(TAXIIService):
 
     service_type = SVC_DISCOVERY
 

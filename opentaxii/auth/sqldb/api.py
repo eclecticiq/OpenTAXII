@@ -7,6 +7,7 @@ from sqlalchemy import orm, engine
 from sqlalchemy.orm import exc
 
 from opentaxii.auth import OpenTAXIIAuthAPI
+from opentaxii.entities import Account
 
 from . import models
 
@@ -70,7 +71,7 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
         if not account:
             return
 
-        return {'id' : account.id, 'username' : account.username }
+        return Account(id=account.id)
 
     def create_account(self, username, password):
 
@@ -80,6 +81,8 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
         session = self.Session()
         session.add(account)
         session.commit()
+
+        return Account(id=account.id)
 
     def _generate_token(self, account_id, ttl=60):
 

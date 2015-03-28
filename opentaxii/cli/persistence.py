@@ -58,6 +58,6 @@ def create_collections():
         entity = CollectionEntity(**collection)
 
         c = server.persistence.create_collection(entity)
-        server.persistence.attach_collection_to_services(c.id, services_ids=service_ids)
+        server.persistence.attach_collection_to_services(c.id, service_ids=service_ids)
 
     log.info("Collections created", count=len(collections_config))

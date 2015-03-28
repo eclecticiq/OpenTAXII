@@ -15,22 +15,9 @@ from ...converters import subscription_to_subscription_instance, parse_content_b
 from ...entities import PollRequestParametersEntity, SubscriptionEntity
 
 from .base_handlers import BaseMessageHandler
-
+from .poll_request_handlers import retrieve_collection
 
 log = structlog.getLogger(__name__)
-
-
-def retrieve_collection(service, collection_name, in_response_to):
-
-    collection = service.get_collection(collection_name)
-
-    if not collection:
-        message = "The collection you requested was not found"
-        details = {SD_ITEM: collection_name}
-        raise StatusMessageException(ST_NOT_FOUND, message=message,
-                in_response_to=in_response_to, status_details=details)
-
-    return collection
 
 
 def action_subscribe(request, service, collection, version, **kwargs):
@@ -62,9 +49,10 @@ def action_subscribe(request, service, collection, version, **kwargs):
     # we are ignoring Delivery Parameters for now
 
     subscription = SubscriptionEntity(
+        service_id = service.id,
         collection_id = collection.id,
         poll_request_params = poll_request_params,
-        status = SubscriptionEntity.ACTIVE,
+        status = SubscriptionEntity.ACTIVE
     )
 
     return service.create_subscription(subscription)
@@ -72,9 +60,11 @@ def action_subscribe(request, service, collection, version, **kwargs):
 
 def action_unsubscribe(request, service, subscription, **kwargs):
     if subscription:
-        return service.update_subscription(subscription, SubscriptionEntity.UNSUBSCRIBED)
+        subscription.status = SubscriptionEntity.UNSUBSCRIBED
+        return service.update_subscription(subscription)
     else:
-        return SubscriptionEntity(subscription_id=request.subscription_id,
+        return SubscriptionEntity(collection_id=None, service_id=service.id,
+                subscription_id=request.subscription_id,
                 status=SubscriptionEntity.UNSUBSCRIBED)
 
 
@@ -88,12 +78,14 @@ def action_status(service, subscription, **kwargs):
 def action_pause(service, subscription, **kwargs):
     if subscription.status == SubscriptionEntity.PAUSED:
         return subscription
-    return service.update_subscription(subscription, SubscriptionEntity.PAUSED)
+    subscription.status = SubscriptionEntity.PAUSED
+    return service.update_subscription(subscription)
 
 def action_resume(service, subscription, **kwargs):
     if subscription.status != SubscriptionEntity.PAUSED:
         return subscription
-    return service.update_subscription(subscription, SubscriptionEntity.ACTIVE)
+    subscription.status = SubscriptionEntity.ACTIVE
+    return service.update_subscription(subscription)
 
 
 ACTIONS = {

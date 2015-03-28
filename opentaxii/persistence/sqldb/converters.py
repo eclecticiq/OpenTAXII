@@ -89,6 +89,7 @@ def to_subscription_entity(model):
         params = None
 
     return entities.SubscriptionEntity(
+        service_id = model.service_id,
         subscription_id = model.id,
         collection_id = model.collection_id,
         poll_request_params = params,

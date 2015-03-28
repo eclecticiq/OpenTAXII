@@ -1,22 +1,28 @@
 from libtaxii.constants import (
     CT_DATA_FEED, CT_DATA_SET, 
     SS_ACTIVE, SS_PAUSED, SS_UNSUBSCRIBED,
-    RT_FULL
+    RT_FULL, RT_COUNT_ONLY
 )
 
 from .utils import is_content_supported
 
 class Entity(object):
+    '''Abstract TAXII entity class.
+    '''
 
     def __repr__(self):
-        pairs = ["%s=%s" % (k, v) for k, v in sorted(self.as_dict().items())]
+        pairs = ["%s=%s" % (k, v) for k, v in sorted(self.__dict__.items())]
         return "%s(%s)" % (self.__class__.__name__, ", ".join(pairs))
-
-    def as_dict(self):
-        return self.__dict__
 
 
 class ServiceEntity(Entity):
+    '''TAXII Service entity.
+
+    :param str type: service type, supported values are
+            listed as keys in :py:attr:`opentaxii.server.TAXIIServer.TYPE_TO_SERVICE`
+    :param dict properties: a dictionary with service-specific properties
+    :param str id: service ID
+    '''
 
     def __init__(self, type, properties, id=None):
 
@@ -26,6 +32,11 @@ class ServiceEntity(Entity):
 
 
 class ContentBindingEntity(Entity):
+    '''TAXII Content Binding entity.
+
+    :param str binding: content binding ID
+    :param list subtypes: list of subtype ids
+    '''
 
     def __init__(self, binding, subtypes=None):
         self.binding = binding
@@ -33,6 +44,18 @@ class ContentBindingEntity(Entity):
 
 
 class CollectionEntity(Entity):
+    '''TAXII Collection entity.
+
+    :param str id: collection id
+    :param str name: collection name
+    :param str description: description for the collection
+    :param type: collection type
+    :type type: :attr:`TYPE_FEED` or :attr:`TYPE_SET`
+    :param bool accept_all_content: if collection accepts all content types
+    :param list supported_content: list of the supported content bindings as
+        a list of :class:`ContentBindingEntity` instances
+    :param bool available: if collection is available
+    '''
 
     TYPE_FEED = CT_DATA_FEED
     TYPE_SET = CT_DATA_SET
@@ -117,6 +140,15 @@ class CollectionEntity(Entity):
 
 
 class ContentBlockEntity(Entity):
+    '''TAXII Content Block entity.
+
+    :param str id: content block ID
+    :param str content: payload
+    :param datetime timestamp_label: content block timestamp
+    :param `ContentBindingEntity` content_binding: content binding
+    :param str message: message attached to the content block
+    :param str inbox_message_id: internal ID of the inbox message entity
+    '''
 
     def __init__(self, content, timestamp_label, content_binding=None, id=None,
             message=None, inbox_message_id=None):
@@ -131,6 +163,26 @@ class ContentBlockEntity(Entity):
 
 
 class InboxMessageEntity(Entity):
+    '''TAXII Inbox Message Entity
+
+    :param str message_id: TAXII message ID
+    :param str original_message: XML serialized original TAXII message
+    :param int content_block_count: how many content blocks this message contains
+    :param str service_id: ID of the Inbox Service that received the message
+
+    :param str id: internal ID of the inbox message entity
+    :param str result_id: ID of the Result Set part of which this message delivers
+    :param list destination_collections: a list of destination collections, as a list of strings
+
+    :param int record_count: how many items left in the Result Set this message is part of
+    :param bool partial_count: if the record count is partial
+
+    :param str subscription_id: ID of a subscription
+    :param str subscription_collection_name: collection name of the subscription
+
+    :param datetime exclusive_begin_timestamp_label: subscription's exclusive begin timestamp label
+    :param datetime inclusive_begin_timestamp_label: subscription's inclusive begin timestamp label
+    '''
 
     def __init__(self, message_id, original_message, content_block_count,
             service_id, id=None, result_id=None, destination_collections=None,
@@ -161,6 +213,13 @@ class InboxMessageEntity(Entity):
 
 
 class ResultSetEntity(Entity):
+    '''TAXII Result Set entity.
+
+    :param str result_id: ID of a Result Set
+    :param str collection_id: ID of a collection
+    :param list content_bindings: list of :class:`ContentBindingEntity` instances
+    :param tuple timeframe: a timeframe of the Result Set in a form of ``(begin, end)``
+    '''
 
     def __init__(self, result_id, collection_id, content_bindings=None, timeframe=None):
 
@@ -172,38 +231,63 @@ class ResultSetEntity(Entity):
 
 
 class SubscriptionParameters(Entity):
+    '''TAXII Subscription Parameters entity.
 
-    # Not supported: query
+    Note: query formats specification is not supported
 
-    def __init__(self, response_type=RT_FULL, content_bindings=None):
+    :param str response_type: response type, supported values
+        are :attr:`FULL` and :attr:`COUNT_ONLY`
+    :param list content_bindings: list of :class:`ContentBindingEntity` instances
+    '''
+
+    FULL = RT_FULL
+    COUNT_ONLY = RT_COUNT_ONLY
+
+    def __init__(self, response_type=FULL, content_bindings=None):
 
         self.response_type = response_type
         self.content_bindings = content_bindings or []
 
 
 class PollRequestParametersEntity(SubscriptionParameters):
+    '''TAXII Poll Request Parameters entity.
 
-    # These fields are not supported:
-    # allow_asynch
-    # delivery_parameters
+    Note: allow_asynch and delivery_parameters fields are not supported
 
-    def __init__(self, response_type=RT_FULL, content_bindings=None):
+    :param str response_type: response type, supported values
+        are :attr:`FULL` and :attr:`COUNT_ONLY`
+    :param list content_bindings: list of :class:`ContentBindingEntity` instances
+    '''
+
+    def __init__(self, response_type=SubscriptionParameters.FULL, content_bindings=None):
 
         super(PollRequestParametersEntity, self).__init__(
                 response_type=response_type, content_bindings=content_bindings)
 
 
 class SubscriptionEntity(Entity):
+    '''TAXII Subscription entity.
+
+    :param str service_id: ID of a service
+    :param str collection_id: ID of a collection
+    :param str subscription_id: ID of a subscription
+    :param str status: subscription status, supported values are:
+        :attr:`ACTIVE`, :attr:`PAUSED`, :attr:`UNSUBSCRIBED`
+    :param `PollRequestParametersEntity` poll_request_params:
+        Poll Request Parameters entity
+    '''
 
     ACTIVE = SS_ACTIVE
     PAUSED = SS_PAUSED
     UNSUBSCRIBED = SS_UNSUBSCRIBED
 
-    def __init__(self, collection_id=None, subscription_id=None, status=ACTIVE,
+    def __init__(self, service_id, collection_id, subscription_id=None, status=ACTIVE,
             poll_request_params=None):
 
-        self.subscription_id = subscription_id
+        self.service_id = service_id
         self.collection_id = collection_id
+        self.subscription_id = subscription_id
         self.params = poll_request_params
         self.status = status
+
 

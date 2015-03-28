@@ -26,7 +26,7 @@
   accept_all_content: false
   supported_content:
     - urn:stix.mitre.org:xml:1.1.1
-    - urn:custom.bindings.com:json:10.10.10
+    - urn:custom.bindings.com:json:0.0.1
   service_ids:
     - inbox_a
     - collection_management_a

@@ -53,7 +53,7 @@ def service_to_service_instances(service, version):
             instance = tm10.ServiceInstance(
                 service_type = stype,
                 services_version = VID_TAXII_SERVICES_10,
-                available = service.enabled,
+                available = service.available,
                 protocol_binding = binding,
                 service_address = address,
                 message_bindings = service.supported_message_bindings,
@@ -63,7 +63,7 @@ def service_to_service_instances(service, version):
             instance = tm11.ServiceInstance(
                 service_type = service.service_type,
                 services_version = VID_TAXII_SERVICES_11,
-                available = service.enabled,
+                available = service.available,
                 protocol_binding = binding,
                 service_address = address,
                 message_bindings = service.supported_message_bindings,

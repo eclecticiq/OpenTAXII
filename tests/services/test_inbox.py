@@ -56,7 +56,7 @@ def server():
         for coll in collections:
             coll = server.persistence.create_collection(coll)
             server.persistence.attach_collection_to_services(coll.id,
-                    services_ids=[service])
+                    service_ids=[service])
     
     return server
 

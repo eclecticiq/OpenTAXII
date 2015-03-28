@@ -20,12 +20,20 @@ log = structlog.get_logger(__name__)
 
 
 def create_app(server):
+    '''Create Flask application and attach TAXII server
+    instance ``server`` to it.
+
+    :param `opentaxii.server.TAXIIServer` server: TAXII server instance
+
+    :return: Flask app
+    '''
+
     app = Flask(__name__)
 
     app.taxii = server
 
     app.add_url_rule("/<path:relative_path>", "opentaxii_services_view",
-            server_wrapper(server), methods=['POST'])
+            _server_wrapper(server), methods=['POST'])
 
     app.register_blueprint(management, url_prefix='/management')
 
@@ -35,7 +43,7 @@ def create_app(server):
     return app
 
 
-def server_wrapper(server):
+def _server_wrapper(server):
 
     def wrapper(*args, **kwargs):
 
@@ -43,31 +51,35 @@ def server_wrapper(server):
 
         for service in server.get_services():
             if service.path and service.path == relative_path:
-                return process_with_service(service)
+                return _process_with_service(service)
 
         abort(404)
 
     return wrapper
 
 
-def process_with_service(service):
-    
+def _process_with_service(service):
+
+    if not service.available:
+        raise_failure("The service is not available")
+
     if service.authentication_required:
         token = extract_token(request.headers)
         if not token:
             raise UnauthorizedStatus()
+
         account = service.server.auth.get_account(token)
         if not account:
             raise UnauthorizedStatus()
 
     if 'application/xml' not in request.accept_mimetypes:
-        raise_failure("The specified values of Accept is not supported: %s" % (request.accept_mimetypes or []))
+        raise_failure("The specified values of Accept is not supported: %s" %
+                ", ".join((request.accept_mimetypes or [])))
 
     validate_request_headers(request.headers, MESSAGE_BINDINGS)
 
-    body = request.data
+    taxii_message = parse_message(get_content_type(request.headers), request.data)
 
-    taxii_message = parse_message(get_content_type(request.headers), body)
     try:
         validate_request_headers_post_parse(request.headers,
                 supported_message_bindings=MESSAGE_BINDINGS,

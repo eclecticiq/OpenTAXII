@@ -5,14 +5,14 @@ from libtaxii.constants import (
         MSG_MANAGE_FEED_SUBSCRIPTION_REQUEST,
 )
 
-from .abstract import TaxiiService
+from .abstract import TAXIIService
 from .handlers import (
         CollectionInformationRequestHandler,
         SubscriptionRequestHandler
 )
 
 
-class CollectionManagementService(TaxiiService):
+class CollectionManagementService(TAXIIService):
 
     handlers = {
         MSG_COLLECTION_INFORMATION_REQUEST : CollectionInformationRequestHandler,
@@ -69,8 +69,7 @@ class CollectionManagementService(TaxiiService):
 
     def create_subscription(self, subscription):
         subscription.subscription_id = self.generate_id()
-        return self.server.persistence.create_subscription(subscription,
-                service_id=self.id)
+        return self.server.persistence.create_subscription(subscription)
 
     def get_subscription(self, subscription_id):
         return self.server.persistence.get_subscription(subscription_id)
@@ -78,8 +77,8 @@ class CollectionManagementService(TaxiiService):
     def get_subscriptions(self):
         return self.server.persistence.get_subscriptions(service_id=self.id)
 
-    def update_subscription(self, subscription, new_status):
-        return self.server.persistence.update_subscription(subscription, new_status)
+    def update_subscription(self, subscription):
+        return self.server.persistence.update_subscription(subscription)
 
     def get_receiving_inbox_services(self, collection):
         return self.server.get_services_for_collection(collection, 'inbox')

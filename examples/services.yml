@@ -19,6 +19,7 @@
   authentication_required: yes
   supported_content:
     - urn:stix.mitre.org:xml:1.1.1
+    - urn:custom.example.com:json:0.0.1
   protocol_bindings:
     - urn:taxii.mitre.org:protocol:http:1.0
 
