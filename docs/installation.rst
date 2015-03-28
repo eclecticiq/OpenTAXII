@@ -38,6 +38,6 @@ Releases of OpenTAXII are given major.minor.revision version numbers, where majo
 
 .. rubric:: Next steps
 
-Continue with the :doc:`Configuration <configuration>` page to see how to configure OpenTAXII.
+Continue to :doc:`Configuration <configuration>` page to learn how to configure OpenTAXII.
 
 .. vim: set spell spelllang=en:

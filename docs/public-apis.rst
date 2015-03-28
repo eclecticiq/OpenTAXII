@@ -44,13 +44,15 @@ custom implementation of Authentication API.
     :show-inheritance:
 
 
+.. _opentaxii-signals:
+
 Signals
 =======
 
 Signals provide the ability for the user's code to receive asynchronous notification
 for predefined signals. 
 
-See :doc:`Configuration <configuration>` page for the details about how to attach
+See :ref:`Custom signal listeners <custom-signals>` chapter for the details about how to attach
 listeners for the signals.
 
 .. automodule:: opentaxii.signals

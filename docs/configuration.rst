@@ -147,6 +147,20 @@ OpenTAXII will load the class from the ``PYTHONPATH`` and create API instance du
 See :doc:`Public code-level APIs <public-apis>` documentation for the details about OpenTAXII APIs.
 
 
+.. _custom-signals:
+
+Custom signal listeners
+=======================
+
+Users can attach custom listeners for the events OpenTAXII emits. See :ref:`Signals <opentaxii-signals>` to find
+a list of supported signals.
+
+To attach custom signals, specify full module name as a value for ``hooks`` field in OpenTAXII configuration file.
+Note that the module needs to be OpenTAXII's ``PYTHONPATH``.
+
+Example of the implementation is provided in OpenTAXII repository - `examples/hooks.py <https://raw.githubusercontent.com/Intelworks/OpenTAXII/master/examples/hooks.py>`_.
+
+
 .. rubric:: Next steps
 
 Continue to the :doc:`Running OpenTAXII <running>` page to see how to run OpenTAXII.
