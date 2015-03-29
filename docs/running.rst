@@ -73,7 +73,7 @@ See `Cabby documentation <http://cabby.readthedocs.org>`_ to get more examples o
 
 .. rubric:: Next steps
 
-Continue to :doc:`Public code-level APIs <public-apis>` page for the details about OpenTAXII APIs.
+Continue to :doc:`Authentication <auth>` page to learn how OpenTAXII authentication process works.
 
 .. vim: set spell spelllang=en:
 

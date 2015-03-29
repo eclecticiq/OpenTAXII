@@ -33,6 +33,7 @@ OpenTAXII's key features are:
    installation
    configuration
    running
+   auth
    public-apis
    opentaxii-apis
    developer
