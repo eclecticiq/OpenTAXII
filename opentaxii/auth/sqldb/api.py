@@ -84,7 +84,7 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
 
         return Account(id=account.id)
 
-    def _generate_token(self, account_id, ttl=60):
+    def _generate_token(self, account_id, ttl=TOKEN_TTL):
 
         exp = datetime.utcnow() + timedelta(minutes=ttl)
 
