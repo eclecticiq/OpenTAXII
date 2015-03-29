@@ -21,7 +21,7 @@ To obtain a token, client sends a ``POST`` request with username and password to
 authentication service running by default on ``/management/auth``.
 
 Request data can be a form-encoded string or a JSON dictionary with ``username`` and
-``passoword`` fields::
+``password`` fields::
 
     $ curl -d 'username=test&password=test' http://localhost:9000/management/auth
 
