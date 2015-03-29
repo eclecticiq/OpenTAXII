@@ -21,7 +21,7 @@ To obtain a token, client sends a ``POST`` request with username and password to
 authentication service running by default on ``/management/auth``.
 
 Request data can be a form-encoded string or a JSON dictionary with ``username`` and
-``passowrod`` fields::
+``passoword`` fields::
 
     $ curl -d 'username=test&password=test' http://localhost:9000/management/auth
 
@@ -29,14 +29,14 @@ or::
 
     $ curl -H "Content-Type: application/json" -d '{"username":"test","password":"test"}' http://localhost:9000/management/auth
 
-OpenTAXII will reply with a JSON dictionary with a token::
+A server will reply with a JSON dictionary that contains a token::
 
     {
       "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50X2lkIjoxLCJleHAiOjE0Mjc2MzgyMjN9.oKd43j4KR1Ovu8zOtwFdeaKILys_kpl3fAiECclP7_4"
     }
 
 To query a service with enabled authentication, pass the token in a value of ``Authorization`` HTTP header.
-Example request using `Cabby library <http://github.com/Intelworks/cabby>`_ poll command::
+Example request using `Cabby library <http://github.com/Intelworks/cabby>`_ CLI command::
 
     (venv) $ taxii-poll \
                 --path http://localhost:9000/services/poll-a \
