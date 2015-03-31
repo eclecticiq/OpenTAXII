@@ -2,9 +2,9 @@
 Version history
 ===============
 
-OpenTAXII 0.0.2
+OpenTAXII 0.1.0
 ===============
 
-Release date: 2015-03-18
+Release date: 2015-03-31
 
 * Initial release
