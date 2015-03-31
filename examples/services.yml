@@ -4,7 +4,7 @@
   type: inbox
   address: /services/inbox-a
   description: Custom Inbox Service Description A
-  destination_collection_required: no
+  destination_collection_required: yes
   accept_all_content: yes
   authentication_required: no
   protocol_bindings:
