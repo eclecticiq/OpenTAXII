@@ -24,7 +24,7 @@ Default configuration file looks like this:
 .. code-block:: yaml
 
     ---
-    domain: example.com
+    domain: localhost:9000
 
     persistence_api:
       class: opentaxii.persistence.sqldb.SQLDatabaseAPI
