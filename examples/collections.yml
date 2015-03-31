@@ -6,7 +6,6 @@
   type: DATA_SET
 
   service_ids:
-    - inbox_a
     - collection_management_a
     - poll_a
 
