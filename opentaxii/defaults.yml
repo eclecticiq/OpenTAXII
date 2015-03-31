@@ -1,6 +1,6 @@
 ---
 
-domain: example.com
+domain: "localhost:9000"
 
 persistence_api:
   class: opentaxii.persistence.sqldb.SQLDatabaseAPI
