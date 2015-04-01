@@ -25,7 +25,7 @@ DISCOVERY = dict(
     address = '/path/discovery',
     advertised_services = ['inboxA', 'discoveryA'],
     protocol_bindings = ['urn:taxii.mitre.org:protocol:http:1.0'],
-    authentication_required = False
+    authentication_required = True,
 )
 
 SERVICES = [INBOX, DISCOVERY]
@@ -71,6 +71,9 @@ def test_unauthorized_request(client, version, https):
 
     message = as_tm(version).get_message_from_xml(response.data)
     assert message.status_type == ST_UNAUTHORIZED
+
+    from opentaxii import context
+    assert not hasattr(context, 'account')
 
 
 @pytest.mark.parametrize("https", [True, False])
@@ -176,4 +179,7 @@ def test_get_token_and_send_request(client, version, https):
     message = as_tm(version).get_message_from_xml(response.data)
 
     assert isinstance(message, as_tm(version).DiscoveryResponse)
+
+    from opentaxii import context
+    assert not hasattr(context, 'account')
 
