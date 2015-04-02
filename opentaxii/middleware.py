@@ -56,6 +56,7 @@ def _server_wrapper(server):
 
         if token:
             context.auth_token = token
+            context.account = server.auth.get_account(token)
 
         for service in server.get_services():
             if service.path and service.path == relative_path:
@@ -75,17 +76,8 @@ def _process_with_service(service):
         raise_failure("The service is not available")
 
     if service.authentication_required:
-
-        token = getattr(context, 'auth_token', None)
-
-        if not token:
+        if not getattr(context, 'account', None):
             raise UnauthorizedStatus()
-
-        account = service.server.auth.get_account(token)
-        if not account:
-            raise UnauthorizedStatus()
-
-        context.account = account
 
     if 'application/xml' not in request.accept_mimetypes:
         raise_failure("The specified values of Accept is not supported: %s" %
