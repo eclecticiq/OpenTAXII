@@ -44,6 +44,12 @@ Example request using `Cabby library <http://github.com/Intelworks/cabby>`_ CLI 
                 --header Authorization:'Bearer eyJleHAiOjE0MjY3OTMwOTYsImFsZyI6IkhTMjU2IiwiaWF0IjoxNDI2Nzg1ODk2fQ.eyJ1c2VyX2lkIjoxfQ.YsZIdbrU92dL8j5G8ydVAsdWHXtx371vC0POmXrS3W8'
 
 
+.. important::
+
+    On request, OpenTAXII populates ``context`` object (``from opentaxii import context``) with account information returned by Authentication API.
+    It is up to Persistence API implementation to control access to the entities. Built-in API implementation **does not** support any
+    access control.
+
 Built-in implementation
 =======================
 
