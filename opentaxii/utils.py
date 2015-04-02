@@ -45,15 +45,22 @@ def load_api(api_config):
 
 def extract_token(headers):
     header = headers.get(HTTP_AUTHORIZATION)
+
     if not header:
         return
 
-    parts = header.split()
+    parts = header.split(' ', 1)
 
-    if len(parts) != 2 or parts[0].lower() != AUTH_HEADER_TOKEN_PREFIX:
+    if parts[0].lower() != AUTH_HEADER_TOKEN_PREFIX:
         return
 
     return parts[1]
+
+
+def attach_signal_hooks(config):
+    signal_hooks = config['hooks']
+    if signal_hooks:
+        import_module(signal_hooks)
 
 
 class PlainRenderer(object):
@@ -131,11 +138,5 @@ def get_config_for_tests(domain, persistence_db=None, auth_db=None):
     })
     config['domain'] = domain
     return config
-
-
-def attach_signal_hooks(config):
-    signal_hooks = config['hooks']
-    if signal_hooks:
-        import_module(signal_hooks)
 
 
