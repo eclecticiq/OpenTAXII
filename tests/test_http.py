@@ -46,7 +46,7 @@ MESSAGE_ID = '123'
 
 
 @pytest.fixture()
-def client(tmpdir):
+def client():
 
     config = get_config_for_tests('some.com')
 

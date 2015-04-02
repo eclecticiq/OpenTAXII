@@ -12,7 +12,8 @@ from .taxii.bindings import (
 )
 from .taxii.http import (
     get_http_headers, get_content_type, validate_request_headers_post_parse,
-    validate_request_headers, validate_response_headers
+    validate_request_headers, validate_response_headers,
+    HTTP_X_TAXII_CONTENT_TYPES
 )
 from .utils import extract_token
 from .management import management
@@ -35,7 +36,7 @@ def create_app(server):
     app.taxii = server
 
     app.add_url_rule("/<path:relative_path>", "opentaxii_services_view",
-            _server_wrapper(server), methods=['POST'])
+            _server_wrapper(server), methods=['POST', 'OPTIONS'])
 
     app.register_blueprint(management, url_prefix='/management')
 
@@ -59,9 +60,21 @@ def _server_wrapper(server):
             context.account = server.auth.get_account(token)
 
         for service in server.get_services():
+
             if service.path and service.path == relative_path:
+
+                if not service.available:
+                    raise_failure("The service is not available")
+
+                if service.authentication_required:
+                    if not getattr(context, 'account', None):
+                        raise UnauthorizedStatus()
+
                 try:
-                    return _process_with_service(service)
+                    if request.method == 'POST':
+                        return _process_with_service(service)
+                    elif request.method == 'OPTIONS':
+                        return _process_options_request(service)
                 finally:
                     release_context()
 
@@ -71,13 +84,6 @@ def _server_wrapper(server):
 
 
 def _process_with_service(service):
-
-    if not service.available:
-        raise_failure("The service is not available")
-
-    if service.authentication_required:
-        if not getattr(context, 'account', None):
-            raise UnauthorizedStatus()
 
     if 'application/xml' not in request.accept_mimetypes:
         raise_failure("The specified values of Accept is not supported: %s" %
@@ -105,6 +111,16 @@ def _process_with_service(service):
     taxii_xml = response_message.to_xml(pretty_print=True)
 
     return make_taxii_response(taxii_xml, response_headers)
+
+
+def _process_options_request(service):
+
+    message_bindings = ','.join(service.supported_message_bindings or [])
+
+    return "", 200, {
+        'Allow' : 'POST, OPTIONS',
+        HTTP_X_TAXII_CONTENT_TYPES : message_bindings
+    }
 
 
 def make_taxii_response(taxii_xml, taxii_headers):
