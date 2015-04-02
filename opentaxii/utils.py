@@ -93,6 +93,10 @@ def configure_logging(logging_levels, plain=False):
     root_logger.addHandler(handler)
 
     for logger, level in logging_levels.items():
+
+        if logger.lower() == 'root':
+            logger = ''
+
         logging.getLogger(logger).setLevel(level.upper())
 
 
