@@ -3,7 +3,7 @@ from functools import wraps
 from flask import Flask, request, make_response, abort
 
 from .taxii.exceptions import (
-    raise_failure, StatusMessageException, FailureStatus, UnauthorizedStatus
+    raise_failure, StatusMessageException, FailureStatus
 )
 from .taxii.utils import parse_message
 from .taxii.status import process_status_exception
@@ -15,6 +15,7 @@ from .taxii.http import (
     validate_request_headers, validate_response_headers,
     HTTP_X_TAXII_CONTENT_TYPES
 )
+from .exceptions import UnauthorizedException
 from .utils import extract_token
 from .management import management
 from .local import release_context, context
@@ -55,28 +56,27 @@ def _server_wrapper(server):
 
         token = extract_token(request.headers)
 
-        if token:
-            context.auth_token = token
-            context.account = server.auth.get_account(token)
+        try:
+            if token:
+                context.auth_token = token
+                context.account = server.auth.get_account(token)
 
-        for service in server.get_services():
+            for service in server.get_services():
+                if service.path == relative_path:
 
-            if service.path and service.path == relative_path:
+                    if not service.available:
+                        raise_failure("The service is not available")
 
-                if not service.available:
-                    raise_failure("The service is not available")
+                    if service.authentication_required:
+                        if not getattr(context, 'account', None):
+                            raise UnauthorizedException()
 
-                if service.authentication_required:
-                    if not getattr(context, 'account', None):
-                        raise UnauthorizedStatus()
-
-                try:
                     if request.method == 'POST':
                         return _process_with_service(service)
                     elif request.method == 'OPTIONS':
                         return _process_options_request(service)
-                finally:
-                    release_context()
+        finally:
+            release_context()
 
         abort(404)
 
