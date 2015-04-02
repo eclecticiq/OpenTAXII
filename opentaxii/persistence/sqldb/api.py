@@ -18,6 +18,9 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
     Implementation will work with any DB supported by SQLAlchemy package.
 
+    Note: this implementation ignores ``context.account`` and does not have
+    any access rules.
+
     :param str db_connection: a string that indicates database dialect and
                           connection arguments that will be passed directly
                           to :func:`~sqlalchemy.engine.create_engine` method.
@@ -45,6 +48,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
 
     def _merge(self, obj):
+
         s = self.Session()
         updated = s.merge(obj)
         s.commit()

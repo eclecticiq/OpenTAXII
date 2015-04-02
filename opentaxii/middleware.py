@@ -1,4 +1,5 @@
 import structlog
+from functools import wraps
 from flask import Flask, request, make_response, abort
 
 from .taxii.exceptions import (
@@ -15,6 +16,7 @@ from .taxii.http import (
 )
 from .utils import extract_token
 from .management import management
+from .local import release_context, context
 
 log = structlog.get_logger(__name__)
 
@@ -45,13 +47,23 @@ def create_app(server):
 
 def _server_wrapper(server):
 
+    @wraps(_process_with_service)
     def wrapper(relative_path=""):
 
         relative_path = '/' + relative_path
 
+        token = extract_token(request.headers)
+
+        if token:
+            context.auth_token = token
+            context.account = server.auth.get_account(token)
+
         for service in server.get_services():
             if service.path and service.path == relative_path:
-                return _process_with_service(service)
+                try:
+                    return _process_with_service(service)
+                finally:
+                    release_context()
 
         abort(404)
 
@@ -64,12 +76,7 @@ def _process_with_service(service):
         raise_failure("The service is not available")
 
     if service.authentication_required:
-        token = extract_token(request.headers)
-        if not token:
-            raise UnauthorizedStatus()
-
-        account = service.server.auth.get_account(token)
-        if not account:
+        if not getattr(context, 'account', None):
             raise UnauthorizedStatus()
 
     if 'application/xml' not in request.accept_mimetypes:

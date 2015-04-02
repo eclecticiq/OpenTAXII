@@ -50,8 +50,7 @@ def extract_token(headers):
 
     parts = header.split()
 
-    if parts[0].lower() != AUTH_HEADER_TOKEN_PREFIX or len(parts) == 1 \
-            or len(parts) > 2:
+    if len(parts) != 2 or parts[0].lower() != AUTH_HEADER_TOKEN_PREFIX:
         return
 
     return parts[1]
@@ -94,6 +93,10 @@ def configure_logging(logging_levels, plain=False):
     root_logger.addHandler(handler)
 
     for logger, level in logging_levels.items():
+
+        if logger.lower() == 'root':
+            logger = ''
+
         logging.getLogger(logger).setLevel(level.upper())
 
 
