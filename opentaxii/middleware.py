@@ -13,7 +13,7 @@ from .taxii.bindings import (
 from .taxii.http import (
     get_http_headers, get_content_type, validate_request_headers_post_parse,
     validate_request_headers, validate_response_headers,
-    HTTP_X_TAXII_CONTENT_TYPES
+    HTTP_X_TAXII_CONTENT_TYPES, HTTP_ALLOW
 )
 from .exceptions import UnauthorizedException
 from .utils import extract_token
@@ -118,7 +118,7 @@ def _process_options_request(service):
     message_bindings = ','.join(service.supported_message_bindings or [])
 
     return "", 200, {
-        'Allow' : 'POST, OPTIONS',
+        HTTP_ALLOW : 'POST, OPTIONS',
         HTTP_X_TAXII_CONTENT_TYPES : message_bindings
     }
 
