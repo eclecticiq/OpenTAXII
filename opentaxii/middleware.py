@@ -60,6 +60,8 @@ def _server_wrapper(server):
             if token:
                 context.auth_token = token
                 context.account = server.auth.get_account(token)
+                if not context.account:
+                    raise UnauthorizedException()
 
             for service in server.get_services():
                 if service.path == relative_path:

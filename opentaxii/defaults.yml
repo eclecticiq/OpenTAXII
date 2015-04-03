@@ -17,7 +17,7 @@ auth_api:
 
 logging:
   opentaxii: info
-  "": info
+  root: info
 
 hooks: 
 
