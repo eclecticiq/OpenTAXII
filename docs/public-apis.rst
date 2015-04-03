@@ -2,7 +2,7 @@
 Public code-level APIs
 ======================
 
-This page describes OpenTAXII's code-level APIs.
+This page describes OpenTAXII's public code-level APIs.
 
 Overview
 ========
