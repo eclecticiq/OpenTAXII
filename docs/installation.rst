@@ -7,7 +7,7 @@ Installation
 Install Python
 --------------
 
-Get the latest version of Python at http://www.python.org/download/ or with your operating system’s package manager. OpenTAXII works with Python 2.7, this version of Python includes a lightweight database called SQLite so you don't have to setup a database.
+Get Python version 2.7 at http://www.python.org/download/ or with your operating system’s package manager. OpenTAXII works with Python 2.7, this version of Python includes a lightweight database called SQLite so you don't have to setup a database.
 
 You can verify that Python is installed by typing ``python`` from your shell; you should see something like::
 
@@ -21,21 +21,21 @@ Install OpenTAXII
 -----------------
 To sandbox the project and protect system-wide python it is recommended to install OpenTAXII into a `virtual environment <https://virtualenv.pypa.io/en/latest/installation.html>`_ (*virtualenv*)::
 
-Create a virtual environment named OpenTAXII::
+Create a virtual environment named vENV::
 
-   $ virtualenv OpenTAXII
+   $ virtualenv vENV
 
-Where ``OpenTAXII`` is a directory to place the new environment
+Where ``vENV`` is a directory to place the new environment
 
 Activate this environment::
 
-   $ source OpenTAXII/bin/activate
-   (OpenTAXII) $
+   $ source vENV/bin/activate
+   (vENV) $
    
 Now install the latest OpenTAXII release from the `Python
 Package Index <http://pypi.python.org/>`_ (PyPI) using ``pip``::  
  
-   (OpenTAXII) $ pip install opentaxii
+   (vENV) $ pip install opentaxii
 
 Without the virtual environment it's just::
 

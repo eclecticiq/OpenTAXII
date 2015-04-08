@@ -4,7 +4,7 @@ Configuration
 
 .. highlight:: sh
 
-OpenTAXII can be configured using YAML configuration files, it ships with the following default configuration:
+OpenTAXII can be configured using YAML configuration files, it ships with the following `default configuration <https://github.com/Intelworks/OpenTAXII/blob/master/opentaxii/defaults.yml>`_:
 
 * Persistence API and Authentication API use SQL DB as a backend.
 * The sqlite3 databases and corresponding tables will automatically be created in ``/tmp/data.db`` and ``/tmp/auth.db``.
@@ -16,7 +16,7 @@ Default configuration looks like this:
 .. code-block:: yaml
 
     ---
-    domain: example.com
+    domain: "localhost:9000"
 
     persistence_api:
       class: opentaxii.persistence.sqldb.SQLDatabaseAPI
@@ -33,7 +33,7 @@ Default configuration looks like this:
 
     logging:
       opentaxii: info
-      "": info
+      root: info
 
     hooks: 
 
@@ -71,7 +71,7 @@ Example custom configuration:
 
     hooks: mypackage.opentaxii.hooks
 
-Persistence and Authentication APIs support SQLite, PostgreSQL, MySQL, and other databases. Check `SQLAlchemy website <http://www.sqlalchemy.org/>`_
+The built-in implementation of the Persistence and Authentication APIs support SQLite, PostgreSQL, MySQL, and other databases. Check `SQLAlchemy website <http://www.sqlalchemy.org/>`_
 to get the full list.
 
 OpenTAXII CLI tools are implemented to call corresponding API methods and support any API implementation.
@@ -95,7 +95,7 @@ We will need to create YAML files with services and collections configurations. 
     * Collection Management Service (``collection_management_a``),
     * and Poll Service (``poll_a``).
 
-  Services have relative path in the address field, which means OpenTAXII will prepend it with domain configured in server configuration file (``example.com`` in `default configuration`_).
+  Services have relative path in the address field, which means OpenTAXII will prepend it with domain configured in server configuration file (``localhost:9000`` in `default configuration`_).
 
 * `examples/collections.yml <https://raw.githubusercontent.com/Intelworks/OpenTAXII/master/examples/collections.yml>`_
 
@@ -112,15 +112,15 @@ We create the actual services and collections with the CLI tools.
 
 To create the services run::
 
-  (OpenTAXII) $ opentaxii-create-services -c services.yml
+  (vENV) $ opentaxii-create-services -c services.yml
 
 Next we create the collections (services should already exist!)::
 
-  (OpenTAXII) $ opentaxii-create-collections -c collections.yml
+  (vENV) $ opentaxii-create-collections -c collections.yml
 
 To create an account run::
 
-  (OpenTAXII) $ opentaxii-create-account -u username -p password
+  (vENV) $ opentaxii-create-account -u username -p password
   
 .. note::
 	Without an account you can't access services with `authentication_required: yes`  
@@ -129,7 +129,7 @@ Now OpenTAXII has services and collections configured and can function as a TAXI
 Check :doc:`Running OpenTAXII <running>` to see how to run it.
 
 .. note::
-	To drop the database, just delete sqlite3 database files ``/tmp/data.db`` and restart OpenTAXII server.
+	To drop the database, just delete sqlite3 database files ``/tmp/data.db``, ``/tmp/auth.db`` and restart OpenTAXII server.
 
 
 .. rubric:: Next steps
