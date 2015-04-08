@@ -1,37 +1,58 @@
-==================
-Installation guide
-==================
+============
+Installation
+============
 
 .. highlight:: sh
 
-This guide provides installation instructions for OpenTAXII.
+Install Python
+--------------
 
+OpenTAXII works with Python version 2.7, which you can download `here <http://www.python.org/download/>`_ or with your operating system’s package manager. 
 
-Build and install OpenTAXII
-===========================
+You can verify that Python is installed by typing ``python`` from your shell; you should see something like::
 
-The recommended (and easiest) way to install OpenTAXII is to install it into a
-virtual environment (*virtualenv*)::
+	$ python
+	Python 2.7.6 (default, Sep  9 2014, 15:04:36) 
+	[GCC 4.2.1 Compatible Apple LLVM 6.0 (clang-600.0.39)] on darwin
+	Type "help", "copyright", "credits" or "license" for more information.
+	>>> 
 
-   $ virtualenv venv
-   $ source venv/bin/activate
-   (venv) $
+Install OpenTAXII
+-----------------
+To sandbox the project and protect system-wide python it is recommended to install OpenTAXII into a `virtual environment <https://virtualenv.pypa.io/en/latest/installation.html>`_ (*virtualenv*)::
 
-Now you can automatically install the latest OpenTAXII release from the `Python
-Package Index <http://pypi.python.org/>`_ (PyPI) using ``pip``::
+Create a virtual environment named vENV::
 
-   (venv) $ pip install opentaxii
+   $ virtualenv vENV
+
+Where ``vENV`` is a directory to place the new environment
+
+Activate this environment::
+
+   $ source vENV/bin/activate
+   (vENV) $
+   
+Now install the latest OpenTAXII release from the `Python
+Package Index <http://pypi.python.org/>`_ (PyPI) using ``pip``::  
+ 
+   (vENV) $ pip install opentaxii
+
+Without the virtual environment it's just::
+
+   $ pip install opentaxii
 
 .. note::
     Since OpenTAXII has `libtaxii <https://github.com/TAXIIProject/libtaxii>`_ as a dependency, the system libraries
-    `libtaxii` requires needs to be installed. Check
+    `libtaxii` will be installed. Check
     `libtaxii documentation <http://libtaxii.readthedocs.org/en/latest/installation.html#dependencies>`_ for the details.
 
-To install OpenTAXII from source files: download a tarball, unpack it and install it manually with ``python setup.py install``.
+To install OpenTAXII from source files: download tarball, unpack it and install it manually with::
+
+   $ python setup.py install
 
 
 Versioning
-==========
+----------
 
 Releases of OpenTAXII are given major.minor.revision version numbers, where major and minor correspond to the roadmap Intelworks has. The revision number is used to indicate a bug fix only release.
 

@@ -2,7 +2,7 @@
 Public code-level APIs
 ======================
 
-This page describes OpenTAXII's code-level APIs.
+This page describes OpenTAXII's public code-level APIs.
 
 Overview
 ========
@@ -13,8 +13,37 @@ use SQL database as a backend (everything that `SQLAlchemy <http://www.sqlalchem
 Additionaly, OpenTAXII supports anychronous notifications and users can attach custom
 listeners to the specific events.
 
-:ref:`Custom API implementations <custom-api-implementations>` chapter describes how API implementations
-can be attached to OpenTAXII.
+.. _custom-api-implementations:
+
+Custom API implementations
+==========================
+
+It is possible to attach custom API implementations to OpenTAXII.
+
+Custom API class should inherit base class
+(:py:class:`opentaxii.persistence.api.OpenTAXIIPersistenceAPI` for Persistence API and 
+:py:class:`opentaxii.auth.api.OpenTAXIIAuthAPI` for Authentication API) and implement all defined methods.
+
+Class constructor can accept any parameters. These parameters (as well as API class full name)
+have to be set in OpenTAXII configuration file. See :ref:`example above <configuration-example>` for exact syntax.
+OpenTAXII will load the class from the ``PYTHONPATH`` and create API instance during server's start up procedure.
+
+See :doc:`Public code-level APIs <public-apis>` documentation for the details about OpenTAXII APIs.
+
+
+.. _custom-signals:
+
+Custom signal listeners
+=======================
+
+Users can attach custom listeners for the events OpenTAXII emits. See :ref:`Signals <opentaxii-signals>` to find
+a list of supported signals.
+
+To attach custom signals, specify full module name as a value for ``hooks`` field in OpenTAXII configuration file.
+Note that the module needs to be in OpenTAXII's ``PYTHONPATH``.
+
+Example of the implementation is provided in OpenTAXII repository - `examples/hooks.py <https://raw.githubusercontent.com/Intelworks/OpenTAXII/master/examples/hooks.py>`_.
+
 
 Persistence API
 ===============
