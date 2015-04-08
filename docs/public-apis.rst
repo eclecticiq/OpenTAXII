@@ -25,10 +25,10 @@ Custom API class should inherit base class
 :py:class:`opentaxii.auth.api.OpenTAXIIAuthAPI` for Authentication API) and implement all defined methods.
 
 Class constructor can accept any parameters. These parameters (as well as API class full name)
-have to be set in OpenTAXII configuration file. See :ref:`example above <configuration-example>` for exact syntax.
+have to be set in OpenTAXII configuration file. See :ref:`example configuration <configuration-example>` for exact syntax.
 OpenTAXII will load the class from the ``PYTHONPATH`` and create API instance during server's start up procedure.
 
-See :doc:`Public code-level APIs <public-apis>` documentation for the details about OpenTAXII APIs.
+OpenTAXII APIs are documented below.
 
 
 .. _custom-signals:
