@@ -7,7 +7,7 @@ Installation
 Install Python
 --------------
 
-OpenTAXII works with Python version 2.7, which you can download `here <http://www.python.org/download/>`_ or with your operating system’s package manager. It also includes a SQLite Database wich is intended only when running OpenTAXII in a development environment. 
+OpenTAXII works with Python version 2.7, which you can download `here <http://www.python.org/download/>`_ or with your operating system’s package manager. 
 
 You can verify that Python is installed by typing ``python`` from your shell; you should see something like::
 

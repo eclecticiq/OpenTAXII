@@ -36,6 +36,9 @@ Default configuration looks like this:
       root: info
 
     hooks: 
+    
+.. note::
+	 OpenTAXII uses a SQLite Database by default wich is intended only when running OpenTAXII in a development environment. Please change when running in a production environment.
 
 Custom configuration
 ====================
