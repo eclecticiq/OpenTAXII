@@ -115,18 +115,22 @@ We create the actual services and collections with the CLI tools.
 
 To create the services run::
 
-  (vENV) $ opentaxii-create-services -c services.yml
+  (venv) $ opentaxii-create-services -c services.yml
 
 Next we create the collections (services should already exist!)::
 
-  (vENV) $ opentaxii-create-collections -c collections.yml
+  (venv) $ opentaxii-create-collections -c collections.yml
 
 To create an account run::
 
-  (vENV) $ opentaxii-create-account -u username -p password
+  (venv) $ opentaxii-create-account -u username -p password
   
 .. note::
 	Without an account you can't access services with `authentication_required: yes`  
+
+.. important::
+    It is up to Persistence API implementation to control access to the entities. Built-in API implementation **does not** support any
+    access control.
 
 Now OpenTAXII has services and collections configured and can function as a TAXII server.
 Check :doc:`Running OpenTAXII <running>` to see how to run it.

@@ -21,21 +21,21 @@ Install OpenTAXII
 -----------------
 To sandbox the project and protect system-wide python it is recommended to install OpenTAXII into a `virtual environment <https://virtualenv.pypa.io/en/latest/installation.html>`_ (*virtualenv*)::
 
-Create a virtual environment named vENV::
+Create a virtual environment named venv::
 
-   $ virtualenv vENV
+   $ virtualenv venv
 
-Where ``vENV`` is a directory to place the new environment
+Where ``venv`` is a directory to place the new environment
 
 Activate this environment::
 
-   $ source vENV/bin/activate
-   (vENV) $
+   $ source venv/bin/activate
+   (venv) $
    
 Now install the latest OpenTAXII release from the `Python
 Package Index <http://pypi.python.org/>`_ (PyPI) using ``pip``::  
  
-   (vENV) $ pip install opentaxii
+   (venv) $ pip install opentaxii
 
 Without the virtual environment it's just::
 
