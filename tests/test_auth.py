@@ -115,7 +115,7 @@ def test_get_token(client, version, https):
         AUTH_PATH,
         data = json.dumps({'username' : USERNAME, 'password' : PASSWORD}),
         base_url = base_url,
-        content_type='application/json'
+        content_type = 'application/json'
     )
 
     assert response.status_code == 200
