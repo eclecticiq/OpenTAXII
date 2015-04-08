@@ -11,7 +11,7 @@ Development mode
 
 To run the server in development mode use the CLI command shipped with OpenTAXII package::
 
-   (OpenTAXII) $ opentaxii-run-dev
+   (venv) $ opentaxii-run-dev
 
 This will start OpenTAXII in a development mode and bind it to ``localhost:9000``.
 
@@ -27,7 +27,7 @@ containers <http://flask.pocoo.org/docs/0.10/deploying/wsgi-standalone/>`_ that 
 
 To run OpenTAXII with Gunicorn execute::
     
-    (OpenTAXII) $ gunicorn opentaxii.http:app --bind localhost:9000
+    (venv) $ gunicorn opentaxii.http:app --bind localhost:9000
 
 Common practice is to wrap gunicorn execution into `supervisord <http://supervisord.org>`_, to be able to monitor, start, and stop it easily.
 
@@ -58,14 +58,14 @@ Sending requests to services
 
 The easiest way to send requests to TAXII services is to use `Cabby library <http://github.com/Intelworks/cabby>`_ CLI tools::
 
-    (OpenTAXII) $ pip install cabby
+    (venv) $ pip install cabby
 
 If you are running OpenTAXII in default configuration and you created services using :doc:`provided examples <configuration>`, you should
 be able to communicate with the services.
 
 Assuming OpenTAXII is running on ``http://localhost:9000``, to get the list of advertised services, run::
 
-    (OpenTAXII) $ taxii-discovery --path http://localhost:9000/services/discovery-a
+    (venv) $ taxii-discovery --path http://localhost:9000/services/discovery-a
     
 You should see the following output:
 
@@ -109,7 +109,7 @@ You should see the following output:
 
 One of the configured services is a Collection Management Service. To get the collections list, run::
 
-    (OpenTAXII) $ taxii-collections --path http://localhost:9000/services/collection-management-a
+    (venv) $ taxii-collections --path http://localhost:9000/services/collection-management-a
     
 You should see the following output:
 

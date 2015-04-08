@@ -23,11 +23,11 @@ authentication service running by default on ``/management/auth``.
 Request data can be a form-encoded string or a JSON dictionary with ``username`` and
 ``password`` fields::
 
-    (OpenTAXII) $ curl -d 'username=test&password=test' http://localhost:9000/management/auth
+    (venv) $ curl -d 'username=test&password=test' http://localhost:9000/management/auth
 
 or::
 
-    (OpenTAXII) $ curl -H "Content-Type: application/json" -d '{"username":"test","password":"test"}' http://localhost:9000/management/auth
+    (venv) $ curl -H "Content-Type: application/json" -d '{"username":"test","password":"test"}' http://localhost:9000/management/auth
 
 A server will reply with a JSON dictionary that contains a token::
 
@@ -38,7 +38,7 @@ A server will reply with a JSON dictionary that contains a token::
 To query a service with authentication enabled, pass the token in a value of ``Authorization`` HTTP header.
 Example request using `Cabby library <http://github.com/Intelworks/cabby>`_ CLI command::
 
-    (OpenTAXII) $ taxii-poll \
+    (venv) $ taxii-poll \
                 --path http://localhost:9000/services/poll-a \
                 --collection collection-A \
                 --header Authorization:'Bearer eyJleHAiOjE0MjY3OTMwOTYsImFsZyI6IkhTMjU2IiwiaWF0IjoxNDI2Nzg1ODk2fQ.eyJ1c2VyX2lkIjoxfQ.YsZIdbrU92dL8j5G8ydVAsdWHXtx371vC0POmXrS3W8'
