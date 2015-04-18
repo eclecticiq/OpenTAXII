@@ -67,7 +67,7 @@ Assuming OpenTAXII is running on ``http://localhost:9000``, to get the list of a
 
     (venv) $ taxii-discovery --path http://localhost:9000/services/discovery-a
     
-You should see the following output:
+You should see the following output::
 
 	2015-04-03 13:51:35,726 INFO: Sending Discovery_Request to http://localhost:9000/services/discovery-a
 	{"level": "info", "timestamp": "2015-04-03T11:51:35.788228Z", "event": "Processing message", "message_version": "urn:taxii.mitre.org:message:xml:1.1", "service_id": "discovery_a", "logger": "opentaxii.taxii.services.discovery.DiscoveryService", "message_type": "Discovery_Request", "message_id": "8b7d6fb8-7c74-46d5-a74f-71a9662f3cd9"}
@@ -104,14 +104,13 @@ You should see the following output:
 	  Message Binding: urn:taxii.mitre.org:message:xml:1.1
 	  Available: True
 	  Message: Custom Discovery Service description
-  
 	..... snip .....
 
 One of the configured services is a Collection Management Service. To get the collections list, run::
 
     (venv) $ taxii-collections --path http://localhost:9000/services/collection-management-a
     
-You should see the following output:
+You should see the following output::
 
 	2015-04-03 13:53:50,516 INFO: Sending Collection_Information_Request to http://localhost:9000/services/collection-management-a
 	{"level": "info", "timestamp": "2015-04-03T11:53:50.526007Z", "event": "Processing message", "message_version": "urn:taxii.mitre.org:message:xml:1.1", "service_id": "collection_management_a", "logger": "opentaxii.taxii.services.collection_management.CollectionManagementService", "message_type": "Collection_Information_Request", "message_id": "cf1fed62-51bb-470c-a4f1-52b512df7f10"}
