@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, abort, current_app
 
-management = Blueprint('some', __name__)
+management = Blueprint('management', __name__)
 
 @management.route('/auth', methods=['POST'])
 def auth():
