@@ -97,6 +97,9 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
         except jwt.ExpiredSignatureError:
             log.warning('Invalid token used', token=token)
             return
+        except jwt.DecodeError:
+            log.warning('Can not decode a token', token=token)
+            return
 
         return payload.get('account_id')
 
