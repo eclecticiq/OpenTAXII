@@ -32,6 +32,7 @@ OpenTAXII architecture follows TAXII specification in its idea of TTA (TAXII tra
    installation
    configuration
    running
+   docker
    auth
    public-apis
    opentaxii-apis
