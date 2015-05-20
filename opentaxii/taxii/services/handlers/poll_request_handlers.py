@@ -88,7 +88,7 @@ class PollRequest11Handler(BaseMessageHandler):
 
         else:
             params = request.poll_parameters
-            raw_bindings = params.content_bindings 
+            raw_bindings = params.content_bindings
 
             requested_bindings = parse_content_bindings(raw_bindings, version=11)
             content_bindings = collection.get_matching_bindings(requested_bindings)
@@ -170,7 +170,9 @@ class PollRequest11Handler(BaseMessageHandler):
 
             exclusive_begin_timestamp_label = timeframe[0] if timeframe else None,
             inclusive_end_timestamp_label = timeframe[1] if timeframe else None,
-            record_count = tm11.RecordCount(capped_count, is_partial),
+            # Temporararily make capped_count an int, pending:
+            #       https://github.com/TAXIIProject/libtaxii/issues/191
+            record_count = tm11.RecordCount(int(capped_count), is_partial),
             subscription_id = subscription_id
         )
 
