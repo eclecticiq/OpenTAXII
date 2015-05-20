@@ -82,12 +82,12 @@ cat /opentaxii.yml
 [ "$DATABASE_HOST" ] && wait_for_port $DATABASE_HOST ${DATABASE_PORT-3306}
 
 # Create services if file is present
-[ -f /input/services.yml ] && opentaxii-create-services -c /input/services.yml 2>/dev/null
+[ -f /input/services.yml ] && OPENTAXII_CONFIG=$OPENTAXII_CONFIG opentaxii-create-services -c /input/services.yml 2>/dev/null
 
 # Create collections if file is present.
-[ -f /input/collections.yml ] &&  opentaxii-create-collections -c /input/collections.yml 2>/dev/null
+[ -f /input/collections.yml ] &&  OPENTAXII_CONFIG=$OPENTAXII_CONFIG  opentaxii-create-collections -c /input/collections.yml 2>/dev/null
 
 ## Create initial user if credentials are set.
-[ "$OPENTAXII_USER" -a "$OPENTAXII_PASS" ]  && opentaxii-create-account -u "$OPENTAXII_USER" -p "$OPENTAXII_PASS" 2>/dev/null
+[ "$OPENTAXII_USER" -a "$OPENTAXII_PASS" ]  && OPENTAXII_CONFIG=$OPENTAXII_CONFIG  opentaxii-create-account -u "$OPENTAXII_USER" -p "$OPENTAXII_PASS" 2>/dev/null
 
 exec "$@"
