@@ -17,7 +17,8 @@ class PollFulfilmentRequest11Handler(BaseMessageHandler):
     def handle_message(cls, service, request):
 
         result_id = request.result_id
-        part_number = request.result_part_number
+        # TODO: Forcing int pending: https://github.com/TAXIIProject/libtaxii/issues/191
+        part_number = int(request.result_part_number)
         collection_name = request.collection_name
 
         result_set = service.get_result_set(result_id)
