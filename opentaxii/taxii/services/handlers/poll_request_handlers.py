@@ -150,6 +150,9 @@ class PollRequest11Handler(BaseMessageHandler):
                 }
             )
 
+        # TODO: temporary fix, pending: https://github.com/TAXIIProject/libtaxii/issues/191
+        result_part = int(result_part)
+
         has_more = total_count > (result_part * service.max_result_size)
         capped_count = min(service.max_result_count, total_count)
         is_partial = (capped_count < total_count)
@@ -170,7 +173,7 @@ class PollRequest11Handler(BaseMessageHandler):
 
             exclusive_begin_timestamp_label = timeframe[0] if timeframe else None,
             inclusive_end_timestamp_label = timeframe[1] if timeframe else None,
-            # Temporararily make capped_count an int, pending:
+            # TODO: Temporararily make capped_count an int, pending:
             #       https://github.com/TAXIIProject/libtaxii/issues/191
             record_count = tm11.RecordCount(int(capped_count), is_partial),
             subscription_id = subscription_id

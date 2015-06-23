@@ -156,7 +156,8 @@ def collection_to_feedcollection_information(service, collection, version):
             polling_service_instances = polling_instances,
             subscription_methods = subscription_methods,
 
-            collection_volume = service.get_volume(collection),
+            # TODO: Explicit integer, pending: https://github.com/TAXIIProject/libtaxii/issues/191
+            collection_volume = int(service.get_volume(collection)),
             collection_type = collection.type,
             receiving_inbox_services = inbox_instances
         )
