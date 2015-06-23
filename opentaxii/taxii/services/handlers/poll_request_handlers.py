@@ -150,6 +150,9 @@ class PollRequest11Handler(BaseMessageHandler):
                 }
             )
 
+        # TODO: temporary fix, pending: https://github.com/TAXIIProject/libtaxii/issues/191
+        result_part = int(result_part)
+
         has_more = total_count > (result_part * service.max_result_size)
         capped_count = min(service.max_result_count, total_count)
         is_partial = (capped_count < total_count)
