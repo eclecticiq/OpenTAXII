@@ -1,7 +1,7 @@
 import pytest
 import tempfile
 
-from opentaxii.server import create_server
+from opentaxii.server import TAXIIServer
 from opentaxii.utils import get_config_for_tests
 
 from utils import prepare_headers, as_tm
@@ -13,7 +13,7 @@ def server():
 
     config = get_config_for_tests(DOMAIN)
 
-    server = create_server(config)
+    server = TAXIIServer(config)
     server.persistence.create_services_from_object(SERVICES)
 
     return server

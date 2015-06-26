@@ -2,7 +2,7 @@ import json
 import pytest
 
 from opentaxii.middleware import create_app
-from opentaxii.server import create_server
+from opentaxii.server import TAXIIServer
 from opentaxii.utils import get_config_for_tests
 from opentaxii.taxii.http import HTTP_X_TAXII_CONTENT_TYPES
 
@@ -25,7 +25,7 @@ SERVICES = [DISCOVERY]
 def server():
     config = get_config_for_tests('some.com')
 
-    server = create_server(config)
+    server = TAXIIServer(config)
     server.persistence.create_services_from_object(SERVICES)
 
     return server
