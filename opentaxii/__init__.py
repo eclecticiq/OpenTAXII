@@ -4,7 +4,7 @@
 # flake8: noqa
 
 from ._version import __version__
-from .server import create_server
+from .server import TAXIIServer
 from .config import ServerConfig
 from .entities import Account
 

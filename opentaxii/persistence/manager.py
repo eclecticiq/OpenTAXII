@@ -272,3 +272,9 @@ class PersistenceManager(object):
         '''
         return self.api.update_subscription(subscription)
 
+    def get_domain(self, service_id):
+        '''Get configured domain name needed to create absolute URLs.
+
+        :param str service_id: ID of a service
+        '''
+        return self.api.get_domain(service_id)
