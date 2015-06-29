@@ -43,6 +43,7 @@ Example request using `Cabby library <http://github.com/Intelworks/cabby>`_ CLI 
                 --collection collection-A \
                 --header Authorization:'Bearer eyJleHAiOjE0MjY3OTMwOTYsImFsZyI6IkhTMjU2IiwiaWF0IjoxNDI2Nzg1ODk2fQ.eyJ1c2VyX2lkIjoxfQ.YsZIdbrU92dL8j5G8ydVAsdWHXtx371vC0POmXrS3W8'
 
+An alternative to that is to use Basic Authentication header: client sends username/password formatted as Basic Authentication header with every TAXII request, OpenTAXII decodes it and passes username/password pair to Auth API for authentication.
 
 Authentication Implementation
 =============================
