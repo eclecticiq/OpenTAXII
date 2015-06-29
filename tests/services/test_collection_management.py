@@ -2,7 +2,7 @@ import pytest
 import tempfile
 
 from opentaxii.utils import get_config_for_tests
-from opentaxii.server import create_server
+from opentaxii.server import TAXIIServer
 from opentaxii.taxii import entities
 
 from utils import prepare_headers, as_tm, persist_content
@@ -22,7 +22,7 @@ ASSIGNED_SUBSCTRIPTION_INSTANCES = sum(len(s['protocol_bindings'])
 def server():
 
     config = get_config_for_tests(DOMAIN)
-    server = create_server(config)
+    server = TAXIIServer(config)
 
     server.persistence.create_services_from_object(SERVICES)
 

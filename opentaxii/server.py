@@ -11,6 +11,7 @@ from .utils import get_path_and_address, attach_signal_hooks, load_api
 
 log = structlog.get_logger(__name__)
 
+
 class TAXIIServer(object):
     '''TAXII Server class.
     
@@ -20,8 +21,6 @@ class TAXIIServer(object):
     This class can be initiated directly but should be created via
     :py:func:`create_server`.
 
-    :param str domain: domain name that will be used in
-                       services absolute address values
     :param `opentaxii.persistence.manager.PersistenceManager` persistence_manager:
                        persistence manager instance
     :param `opentaxii.auth.manager.AuthManager` auth_manager:
@@ -35,13 +34,23 @@ class TAXIIServer(object):
         poll = PollService
     )
 
-    def __init__(self, domain, persistence_manager, auth_manager):
+    def __init__(self, config):
 
-        self.domain = domain
+        persistence_api = load_api(config['persistence_api'])
+        self.persistence = PersistenceManager(api=persistence_api)
 
-        self.persistence = persistence_manager
-        self.auth = auth_manager
+        auth_api = load_api(config['auth_api'])
+        self.auth = AuthManager(api=auth_api)
 
+        self.config = config
+
+        attach_signal_hooks(config)
+
+        log.info("server.configured")
+
+    def get_domain(self, service_id):
+        dynamic = self.persistence.get_domain(service_id)
+        return dynamic or self.config.get('domain')
 
     def _create_services(self, service_entities):
 
@@ -54,7 +63,7 @@ class TAXIIServer(object):
             _props['server'] = self
 
             _props['path'], _props['address'] = get_path_and_address(
-                    self.domain, _props['address'])
+                    self.get_domain(entity.id), _props['address'])
 
             advertised = _props.pop('advertised_services', None)
 
@@ -73,25 +82,26 @@ class TAXIIServer(object):
 
         return services
 
-    def get_services(self, ids=None):
+    def get_services(self, service_ids=None):
         '''Get services registered with this TAXII server instance.
 
-        :param list ids: list of service IDs (as strings) to use as a filter
+        :param list service_ids: list of service IDs (as strings)
 
         :return: list of services
         :rtype: list of :py:class:`opentaxii.taxii.services.abstract.TAXIIService`
         '''
 
-        if ids is not None and len(ids) == 0:
+        if service_ids is not None and len(service_ids) == 0:
             return []
 
         service_entities = self.persistence.get_services()
+
         # Services needs to be created all at once to ensure that
         # discovery services list all active advertised services
         services = self._create_services(service_entities)
 
-        if ids:
-            services = filter(lambda s: s.id in ids, services)
+        if service_ids:
+            services = filter(lambda s: s.id in service_ids, services)
 
         return services
 
@@ -104,9 +114,7 @@ class TAXIIServer(object):
         :rtype: :py:class:`opentaxii.taxii.services.abstract.TAXIIService`
         '''
         
-        services = self.get_services([id])
-        if services:
-            return services[0]
+        return next(iter(self.get_services([id])), None)
 
     def get_services_for_collection(self, collection, service_type):
         '''Get list of services with type ``service_type``, attached
@@ -124,44 +132,10 @@ class TAXIIServer(object):
         if service_type not in self.TYPE_TO_SERVICE:
             raise ValueError('Wrong service type: %s' % service_type)
 
-        entities = self.persistence.get_services_for_collection(collection)
+        for_collection = (self.persistence
+                              .get_services_for_collection(collection))
 
-        requested_entities = [e.id for e in entities if e.type == service_type]
-
-        if not requested_entities:
-            return []
+        ids_for_type = [e.id for e in for_collection if e.type == service_type]
 
         # Sync services for collection with registered services for this server
-        services = self.get_services(requested_entities)
-
-        return services
-
-
-def create_server(config=None):
-    '''Create TAXII server instance.
-
-    Function gets required parameters from the config (domain name,
-    API class names, hooks module name), creates API instances and configures
-    new TAXII server instance.
-
-    :param `opentaxii.config.ServerConfig` config: config instance
-
-    :return: TAXII server instance
-    :rtype: :py:class:`opentaxii.server.TAXIIServer`
-    '''
-
-    config = config or ServerConfig()
-    attach_signal_hooks(config)
-
-    persistence_api = load_api(config['persistence_api'])
-    persistence_manager = PersistenceManager(api=persistence_api)
-
-    auth_api = load_api(config['auth_api'])
-    auth_manager = AuthManager(api=auth_api)
-
-    domain = config['domain']
-    server = TAXIIServer(domain, persistence_manager=persistence_manager,
-            auth_manager=auth_manager)
-
-    return server
-
+        return self.get_services(ids_for_type)

@@ -3,7 +3,7 @@ import tempfile
 
 from opentaxii.taxii import exceptions, entities
 from opentaxii.utils import get_config_for_tests
-from opentaxii.server import create_server
+from opentaxii.server import TAXIIServer
 
 from utils import (
     prepare_headers, as_tm, persist_content,
@@ -19,7 +19,7 @@ ASSIGNED_SERVICES = ['collection-management-A', 'poll-A']
 def server():
 
     config = get_config_for_tests(DOMAIN)
-    server = create_server(config)
+    server = TAXIIServer(config)
 
     server.persistence.create_services_from_object(SERVICES)
 

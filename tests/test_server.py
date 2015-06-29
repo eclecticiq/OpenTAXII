@@ -1,6 +1,6 @@
 import pytest
 
-from opentaxii.server import create_server
+from opentaxii.server import TAXIIServer
 from opentaxii.utils import get_config_for_tests
 
 INBOX = dict(
@@ -38,7 +38,7 @@ DOMAIN = 'example.com'
 @pytest.fixture(scope='module')
 def server():
     config = get_config_for_tests(DOMAIN)
-    server = create_server(config)
+    server = TAXIIServer(config)
 
     server.persistence.create_services_from_object(SERVICES)
 

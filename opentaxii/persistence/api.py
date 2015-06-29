@@ -201,3 +201,11 @@ class OpenTAXIIPersistenceAPI(object):
         '''
         raise NotImplementedError()
 
+    def get_domain(self, service_id):
+        '''Get configured domain name needed to create absolute URLs.
+
+        Returns `None` by default.
+
+        :param str service_id: ID of a service
+        '''
+        return None

@@ -9,7 +9,7 @@ from libtaxii import constants
 
 from opentaxii.taxii import exceptions, entities
 from opentaxii.utils import get_config_for_tests
-from opentaxii.server import create_server
+from opentaxii.server import TAXIIServer
 
 from utils import prepare_headers, as_tm, persist_content, prepare_subscription_request
 from fixtures import *
@@ -19,7 +19,7 @@ from fixtures import *
 def server():
 
     config = get_config_for_tests(DOMAIN)
-    server = create_server(config)
+    server = TAXIIServer(config)
 
     server.persistence.create_services_from_object(SERVICES)
 

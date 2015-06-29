@@ -5,7 +5,7 @@ from libtaxii import messages_11 as tm11
 
 from opentaxii.taxii import exceptions
 from opentaxii.utils import get_config_for_tests
-from opentaxii.server import create_server
+from opentaxii.server import TAXIIServer
 
 from utils import prepare_headers, as_tm
 from fixtures import *
@@ -44,7 +44,7 @@ def make_inbox_message(version, blocks=None, dest_collection=None):
 def server():
 
     config = get_config_for_tests(DOMAIN)
-    server = create_server(config)
+    server = TAXIIServer(config)
 
     server.persistence.create_services_from_object(SERVICES)
 
