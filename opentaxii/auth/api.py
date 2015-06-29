@@ -7,10 +7,10 @@ class OpenTAXIIAuthAPI(object):
     '''
 
     def authenticate(self, username, password):
-        '''Authenticate user.
+        '''Authenticate a user.
 
         :param str username: username
-        :param str password: user's password
+        :param str password: password
 
         :return: auth token
         :rtype: string
@@ -18,7 +18,7 @@ class OpenTAXIIAuthAPI(object):
         raise NotImplementedError()
 
     def get_account(self, token):
-        '''Get an account by token.
+        '''Get account for auth token.
 
         :param str token: auth token
 
@@ -30,10 +30,7 @@ class OpenTAXIIAuthAPI(object):
     def create_account(self, username, password):
         '''Create an account.
 
-        :param str username: username
-        :param str password: user's password
-
-        :return: an account entity
-        :rtype: `opentaxii.entities.Account`
+        NOTE: Additional method that is only used in the helper scripts
+        shipped with OpenTAXII.
         '''
         raise NotImplementedError()

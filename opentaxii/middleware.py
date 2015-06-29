@@ -13,10 +13,10 @@ from .taxii.bindings import (
 from .taxii.http import (
     get_http_headers, get_content_type, validate_request_headers_post_parse,
     validate_request_headers, validate_response_headers,
-    HTTP_X_TAXII_CONTENT_TYPES, HTTP_ALLOW
+    HTTP_X_TAXII_CONTENT_TYPES, HTTP_ALLOW, HTTP_AUTHORIZATION
 )
-from .exceptions import UnauthorizedException
-from .utils import extract_token
+from .exceptions import UnauthorizedException, InvalidAuthHeader
+from .utils import parse_basic_auth_token
 from .management import management
 from .local import release_context, context
 
@@ -54,24 +54,19 @@ def _server_wrapper(server):
 
         relative_path = '/' + relative_path
 
-        token = extract_token(request.headers)
+        auth_header = request.headers.get(HTTP_AUTHORIZATION)
 
         try:
-            if token:
-                context.auth_token = token
-                context.account = server.auth.get_account(token)
-                if not context.account:
-                    raise UnauthorizedException()
+            context.account = _authenticate(server.auth, auth_header)
 
             for service in server.get_services():
                 if service.path == relative_path:
 
+                    if service.authentication_required and context.account is None:
+                        raise UnauthorizedException()
+
                     if not service.available:
                         raise_failure("The service is not available")
-
-                    if service.authentication_required:
-                        if not getattr(context, 'account', None):
-                            raise UnauthorizedException()
 
                     if request.method == 'POST':
                         return _process_with_service(service)
@@ -83,6 +78,35 @@ def _server_wrapper(server):
         abort(404)
 
     return wrapper
+
+
+def _authenticate(auth_manager, auth_header):
+    if not auth_header:
+        return None
+
+    parts = auth_header.split(' ', 1)
+
+    if len(parts) != 2:
+        log.warning('token.header.invalid', value=auth_header)
+        return None
+
+    auth_type, token = parts
+    auth_type = auth_type.lower()
+
+    if auth_type == 'basic':
+        try:
+            username, password = parse_basic_auth_token(token)
+        except InvalidAuthHeader:
+            log.error("token.header.basic_auth.invalid", token=token,
+                      exc_info=True)
+            return None
+        token = auth_manager.authenticate(username, password)
+
+    account = auth_manager.get_account(token)
+    if not account:
+        raise UnauthorizedException()
+
+    return account
 
 
 def _process_with_service(service):

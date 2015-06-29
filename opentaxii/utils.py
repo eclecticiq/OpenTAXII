@@ -3,11 +3,10 @@ import logging
 import structlog
 import urlparse
 import importlib
+import base64
 
 from .config import ServerConfig
-from .taxii.http import HTTP_AUTHORIZATION
-
-AUTH_HEADER_TOKEN_PREFIX = 'Bearer'.lower()
+from .exceptions import InvalidAuthHeader
 
 log = structlog.getLogger(__name__)
 
@@ -27,10 +26,6 @@ def import_class(module_class_name):
     return getattr(module, class_name)
 
 
-def import_module(module_name):
-    importlib.import_module(module_name)
-
-
 def load_api(api_config):
     cls = import_class(api_config['class'])
     params = api_config['parameters']
@@ -39,28 +34,20 @@ def load_api(api_config):
         instance = cls(**params)
     else:
         instance = cls()
-    log.debug("API loaded", api_class=api_config['class'])
     return instance
 
 
-def extract_token(headers):
-    header = headers.get(HTTP_AUTHORIZATION)
+def parse_basic_auth_token(token):
+    try:
+        value = base64.b64decode(token)
+    except TypeError:
+        raise InvalidAuthHeader("Can't decode Basic Auth header value")
 
-    if not header:
-        return
-
-    parts = header.split(' ', 1)
-
-    if parts[0].lower() != AUTH_HEADER_TOKEN_PREFIX:
-        return
-
-    return parts[1]
-
-
-def attach_signal_hooks(config):
-    signal_hooks = config['hooks']
-    if signal_hooks:
-        import_module(signal_hooks)
+    try:
+        username, password = value.split(':', 1)
+        return (username, password)
+    except ValueError:
+        raise InvalidAuthHeader("Invalid Basic Auth header value")
 
 
 class PlainRenderer(object):

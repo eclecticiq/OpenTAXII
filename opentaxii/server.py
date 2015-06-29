@@ -1,13 +1,13 @@
 import structlog
+import importlib
 
 from .taxii.services import (
         DiscoveryService, InboxService, CollectionManagementService,
         PollService
 )
-from .config import ServerConfig
 from .persistence import PersistenceManager
 from .auth import AuthManager
-from .utils import get_path_and_address, attach_signal_hooks, load_api
+from .utils import get_path_and_address, load_api
 
 log = structlog.get_logger(__name__)
 
@@ -37,16 +37,22 @@ class TAXIIServer(object):
     def __init__(self, config):
 
         persistence_api = load_api(config['persistence_api'])
+        log.info("api.persistence.loaded",
+                 api_class=persistence_api.__class__.__name__)
         self.persistence = PersistenceManager(api=persistence_api)
 
         auth_api = load_api(config['auth_api'])
+        log.info("api.auth.loaded", api_class=auth_api.__class__.__name__)
         self.auth = AuthManager(api=auth_api)
 
         self.config = config
 
-        attach_signal_hooks(config)
+        signal_hooks = config['hooks']
+        if signal_hooks:
+            importlib.import_module(signal_hooks)
+            log.info("signal_hooks.imported", hooks=signal_hooks)
 
-        log.info("server.configured")
+        log.info("taxiiserver.configured")
 
     def get_domain(self, service_id):
         dynamic = self.persistence.get_domain(service_id)
