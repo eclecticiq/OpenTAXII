@@ -27,7 +27,7 @@ To get a default (development) instance using docker
 $ docker run -d -p 9000:9000 intelworks/opentaxii
 ```
 
-> **NOTE: **
+> **NOTE:**
 > OpenTAXII is now accessible through port 9000, with data stored
 > locally in a SQLite database, and no authentication, using services defined
 > in [services.yml](https://raw.githubusercontent.com/Intelworks/OpenTAXII/master/examples/services.yml) 
