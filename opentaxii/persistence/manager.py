@@ -24,32 +24,32 @@ class PersistenceManager(object):
     def create_service(self, entity):
         '''Create a service.
 
-        NOTE: Additional data management method that is not used
-        in TAXII server logic but only in helper scripts.
+        NOTE: Additional method that is only used in the helper scripts
+        shipped with OpenTAXII.
         '''
         return self.api.create_service(entity)
 
     def attach_collection_to_services(self, collection_id, service_ids):
         '''Attach collection to the services.
 
-        NOTE: Additional data management method that is not used
-        in TAXII server logic but only in helper scripts.
+        NOTE: Additional method that is only used in the helper scripts
+        shipped with OpenTAXII.
         '''
         return self.api.attach_collection_to_services(collection_id, service_ids)
 
     def create_collection(self, entity):
         '''Create a collection.
 
-        NOTE: Additional data management method that is not used
-        in TAXII server logic but only in helper scripts.
+        NOTE: Additional method that is only used in the helper scripts
+        shipped with OpenTAXII.
         '''
         return self.api.create_collection(entity)
 
     def create_services_from_object(self, services_config):
         '''Create services from configuration object and persis them.
 
-        NOTE: Additional data management method that is not used
-        in TAXII server logic.
+        NOTE: Additional method that is only used in the helper scripts
+        shipped with OpenTAXII.
         '''
 
         for blob in services_config:
