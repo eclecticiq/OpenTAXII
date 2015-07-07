@@ -42,33 +42,25 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         if create_tables:
             self.create_tables()
 
-
     def create_tables(self):
         self.Base.metadata.create_all(bind=self.engine)
 
-
     def _merge(self, obj):
-
         s = self.Session()
         updated = s.merge(obj)
         s.commit()
         return updated
 
-
     def get_services(self, collection_id=None):
-
-        query = self.Service.query
-
         if collection_id:
-            query = query.filter(self.Service.collections.any(id=collection_id))
+            collection = self.DataCollection.query.get(collection_id)
+            services = collection.services
+        else:
+            services = self.Service.query.all()
+        return map(conv.to_service_entity, services)
 
-        return map(conv.to_service_entity, query.all())
- 
-
-    def get_service(self, sid):
-        s = self.Service.get(sid)
-        return conv.to_service_entity(s)
-
+    def get_service(self, service_id):
+        return conv.to_service_entity(self.Service.get(service_id))
 
     def update_service(self, entity):
         service = self.Service(id=entity.id, type=entity.type,
@@ -76,24 +68,21 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         updated = self._merge(service)
         return conv.to_service_entity(updated)
 
-
     def create_service(self, entity):
         return self.update_service(entity)
-
 
     def get_collections(self, service_id):
         service = self.Service.query.get(service_id)
         return map(conv.to_collection_entity, service.collections)
 
-
     def get_collection(self, name, service_id):
 
-        service = self.Service.query.get(service_id)
-
-        for c in service.collections:
-            if c.name == name:
-                return conv.to_collection_entity(c)
-
+        collection = (self.DataCollection.query
+                                         .join(self.Service.collections)
+                                         .filter(self.Service.id == service_id)
+                                         .filter_by(name=name)).first()
+        if collection:
+            return conv.to_collection_entity(collection)
 
     def _get_content_query(self, collection_id=None, start_time=None,
             end_time=None, bindings=None):
@@ -114,9 +103,9 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
             for binding in bindings:
                 if binding.subtypes:
                     criterion = and_(
-                            self.ContentBlock.binding_id == binding.binding,
-                            self.ContentBlock.binding_subtype.in_(binding.subtypes)
-                            )
+                       self.ContentBlock.binding_id == binding.binding,
+                       self.ContentBlock.binding_subtype.in_(binding.subtypes)
+                    )
                 else:
                     criterion = self.ContentBlock.binding_id == binding.binding
                 criteria.append(criterion)
@@ -124,7 +113,6 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
             query = query.filter(or_(*criteria))
 
         return query
-
 
     def get_content_blocks_count(self, collection_id=None, start_time=None,
             end_time=None, bindings=None):
@@ -134,7 +122,6 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
                 bindings=bindings)
 
         return query.count()
-
 
     def get_content_blocks(self, collection_id=None, start_time=None,
             end_time=None, bindings=None, offset=0, limit=10):
@@ -146,7 +133,6 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         blocks = query[offset : offset + limit]
 
         return map(conv.to_block_entity, blocks)
-
 
     def update_collection(self, entity):
 
@@ -169,10 +155,8 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
         return conv.to_collection_entity(updated)
 
-
     def create_collection(self, entity):
         return self.update_collection(entity)
-
 
     def attach_collection_to_services(self, collection_id, service_ids):
         
@@ -183,9 +167,8 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
         s = self.Session()
 
-        for sid in service_ids:
-            service = self.Service.query.get(sid)
-            collection.services.append(service)
+        collection.services.extend(self.Service.query.filter(
+            self.Service.id.in_(service_ids)))
 
         s.add(collection)
         s.commit()
@@ -193,10 +176,8 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         log.debug("Collection attached", collection_id=collection.id,
                 collection_name=collection.name, service_ids=service_ids)
 
-
     def create_inbox_message(self, entity):
         return self.update_inbox_message(entity)
-
 
     def update_inbox_message(self, entity):
 
@@ -226,9 +207,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         )
 
         updated = self._merge(message)
-
         return conv.to_inbox_message_entity(updated)
-
 
     def update_content_block(self, entity):
 
@@ -250,48 +229,34 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         )
 
         updated = self._merge(content)
-
         return conv.to_block_entity(updated)
-
 
     def create_content_block(self, entity, collection_ids=None,
             service_id=None):
-        block = self.update_content_block(entity)
 
+        block = self.update_content_block(entity)
         if collection_ids:
             self._attach_content_to_collections(block, collection_ids)
 
         return block
-
 
     def _attach_content_to_collections(self, content_block, collection_ids):
 
         if not collection_ids:
             return
 
-        content_block_id = content_block.id
-
-        s = self.Session()
-        content_block = self.ContentBlock.query.get(content_block_id)
-
+        session = self.Session()
         criteria = self.DataCollection.id.in_(collection_ids)
-        collections = self.DataCollection.query.filter(criteria).all()
+        new_collections = self.DataCollection.query.filter(criteria)
 
-        if not collections:
-            raise ValueError("No collections were found with ids: %s" % collection_ids)
+        content_block = self.ContentBlock.query.get(content_block.id)
+        content_block.collections.extend(new_collections)
+        session.add(content_block)
 
-        for collection in collections:
-            collection.content_blocks.append(content_block)
-            s.add(collection)
-
-            log.debug("Content block added to collection",
-                    content_block_id=content_block_id,
-                    collection_id=collection.id,
-                    collection_name=collection.name)
-
-        s.commit()
-
-
+        log.debug("Content block added to collections",
+                  content_block_id=content_block.id,
+                  collections=new_collections.count())
+        session.commit()
 
     def update_result_set(self, entity):
 
@@ -306,7 +271,6 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         )
 
         updated = self._merge(result_set)
-
         return conv.to_result_set_entity(updated)
 
     def create_result_set(self, entity):
@@ -344,7 +308,6 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         )
 
         updated = self._merge(subscription)
-
         log.debug("Subscription updated", subscription_id=updated.id,
                 collection_id=updated.collection_id, status=updated.status)
 
@@ -359,5 +322,3 @@ def attach_all(obj, module):
         if not hasattr(obj, key):
             setattr(obj, key, getattr(module, key))
     return obj
-
-

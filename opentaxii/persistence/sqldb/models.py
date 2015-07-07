@@ -60,7 +60,8 @@ class Service(Timestamped):
 
     _properties = Column(Text, nullable=False)
 
-    collections = relationship('DataCollection', secondary=service_to_collection, backref="services")
+    collections = relationship('DataCollection',
+        secondary=service_to_collection, backref="services")
 
     @property
     def properties(self):
@@ -69,7 +70,6 @@ class Service(Timestamped):
     @properties.setter
     def properties(self, properties):
         self._properties = json.dumps(properties)
-
 
 
 collection_to_content_block = Table('collection_to_content_block', Base.metadata,
@@ -90,7 +90,8 @@ class DataCollection(Timestamped):
     available = Column(Boolean, default=True)
     accept_all_content = Column(Boolean, default=False)
 
-    content_blocks = relationship('ContentBlock', secondary=collection_to_content_block, backref="collections")
+    content_blocks = relationship('ContentBlock',
+        secondary=collection_to_content_block, backref="collections")
 
     bindings = Column(String(MAX_STR_LEN))
 
