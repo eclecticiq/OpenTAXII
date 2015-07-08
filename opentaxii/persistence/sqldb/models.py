@@ -22,6 +22,12 @@ class Timestamped(Base):
             onupdate=datetime.utcnow)
 
 
+collection_to_content_block = Table('collection_to_content_block', Base.metadata,
+    Column('collection_id', Integer, ForeignKey('data_collections.id')),
+    Column('content_block_id', Integer, ForeignKey('content_blocks.id'))
+)
+
+
 class ContentBlock(Timestamped):
 
     __tablename__ = 'content_blocks'
@@ -39,6 +45,10 @@ class ContentBlock(Timestamped):
 
     binding_id = Column(String(MAX_STR_LEN))
     binding_subtype = Column(String(MAX_STR_LEN))
+
+    collections = relationship('DataCollection',
+        secondary=collection_to_content_block, backref='content_blocks',
+        lazy='dynamic')
 
     def __repr__(self):
         return 'ContentBlock(id=%s, inbox_message=%s, binding=[%s, %s])' % (
@@ -60,7 +70,8 @@ class Service(Timestamped):
 
     _properties = Column(Text, nullable=False)
 
-    collections = relationship('DataCollection', secondary=service_to_collection, backref="services")
+    collections = relationship('DataCollection',
+        secondary=service_to_collection, backref="services")
 
     @property
     def properties(self):
@@ -70,12 +81,6 @@ class Service(Timestamped):
     def properties(self, properties):
         self._properties = json.dumps(properties)
 
-
-
-collection_to_content_block = Table('collection_to_content_block', Base.metadata,
-    Column('collection_id', Integer, ForeignKey('data_collections.id')),
-    Column('content_block_id', Integer, ForeignKey('content_blocks.id'))
-)
 
 class DataCollection(Timestamped):
 
@@ -89,8 +94,6 @@ class DataCollection(Timestamped):
 
     available = Column(Boolean, default=True)
     accept_all_content = Column(Boolean, default=False)
-
-    content_blocks = relationship('ContentBlock', secondary=collection_to_content_block, backref="collections")
 
     bindings = Column(String(MAX_STR_LEN))
 
