@@ -58,7 +58,6 @@ class PollRequest11Handler(BaseMessageHandler):
 
     supported_request_messages = [tm11.PollRequest]
 
-
     @classmethod
     def handle_message(cls, service, request):
 

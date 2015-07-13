@@ -1,7 +1,6 @@
 import json
 import structlog
-from sqlalchemy import orm, engine
-from sqlalchemy import and_, or_
+from sqlalchemy import orm, engine, func, and_, or_
 
 from opentaxii.persistence import OpenTAXIIPersistenceAPI
 
@@ -11,6 +10,8 @@ from . import converters as conv
 __all__ = ['SQLDatabaseAPI']
 
 log = structlog.getLogger(__name__)
+
+YIELD_PER_SIZE = 100
 
 
 class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
@@ -85,12 +86,16 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
             return conv.to_collection_entity(collection)
 
     def _get_content_query(self, collection_id=None, start_time=None,
-            end_time=None, bindings=None):
+            end_time=None, bindings=None, count=False):
 
-        query = self.ContentBlock.query
+        if count:
+            query = self.Session().query(func.count(self.ContentBlock.id))
+        else:
+            query = self.ContentBlock.query
 
         if collection_id:
-            query = query.filter(self.ContentBlock.collections.any(id=collection_id))
+            query = (query.join(self.ContentBlock.collections)
+                          .filter(self.DataCollection.id == collection_id))
 
         if start_time:
             query = query.filter(self.ContentBlock.date_created > start_time)
@@ -119,20 +124,24 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
         query = self._get_content_query(collection_id=collection_id,
                 start_time=start_time, end_time=end_time,
-                bindings=bindings)
+                bindings=bindings, count=True)
 
-        return query.count()
+        return query.scalar()
 
     def get_content_blocks(self, collection_id=None, start_time=None,
-            end_time=None, bindings=None, offset=0, limit=10):
+            end_time=None, bindings=None, offset=0, limit=None):
 
         query = self._get_content_query(collection_id=collection_id,
                 start_time=start_time, end_time=end_time,
                 bindings=bindings)
-        
-        blocks = query[offset : offset + limit]
 
-        return map(conv.to_block_entity, blocks)
+        query = query.offset(offset)
+        if limit:
+            query = query.limit(limit)
+
+        blocks = query.yield_per(YIELD_PER_SIZE)
+
+        return map(conv.to_block_entity, query.all())
 
     def update_collection(self, entity):
 
