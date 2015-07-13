@@ -178,7 +178,7 @@ class PersistenceManager(object):
         )
 
     def get_content_blocks(self, collection_id, start_time=None, end_time=None,
-            bindings=None, offset=0, limit=10):
+            bindings=None, offset=0, limit=None):
         '''Get the content blocks associated with a collection.
 
         :param str collection_id: ID fo a collection in question
