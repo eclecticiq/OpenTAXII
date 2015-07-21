@@ -46,18 +46,31 @@ def create_collections():
             help="YAML file with collections configuration", required=True)
 
     args = parser.parse_args()
-
     server = TAXIIServer(config)
-
     collections_config = anyconfig.load(args.config, forced_type="yaml")
 
+    created = 0
     for collection in collections_config:
 
         service_ids = collection.pop('service_ids')
+
+        existing = None
+        # To keep things simple we assume here that collection name
+        # is unique globally so we first check if it already exists.
+        for service_id in service_ids:
+            existing = server.persistence.get_collection(
+                collection['name'],
+                service_id)
+            if existing:
+                break
+
+        if existing:
+            continue
 
         entity = CollectionEntity(**collection)
 
         c = server.persistence.create_collection(entity)
         server.persistence.attach_collection_to_services(c.id, service_ids=service_ids)
+        created += 1
 
-    log.info("Collections created", count=len(collections_config))
+    log.info("Collections created", count=created)
