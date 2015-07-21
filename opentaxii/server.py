@@ -52,8 +52,10 @@ class TAXIIServer(object):
         log.info("taxiiserver.configured")
 
     def get_domain(self, service_id):
-        dynamic = self.persistence.get_domain(service_id)
-        return dynamic or self.config.get('domain')
+        dynamic_domain = self.persistence.get_domain(service_id)
+        domain = dynamic_domain or self.config.get('domain')
+
+        return domain
 
     def _create_services(self, service_entities):
 

@@ -105,6 +105,9 @@ class TAXIIService(object):
             scheme = PROTOCOL_TO_SCHEME[binding]
             if scheme and not address.startswith(scheme):
                 address = scheme + address
+        else:
+            self.log.warning("binding.not_recognized",
+                             binding=binding, address=address)
 
         return address
 

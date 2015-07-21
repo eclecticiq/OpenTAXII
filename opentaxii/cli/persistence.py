@@ -65,6 +65,9 @@ def create_collections():
                 break
 
         if existing:
+            log.warning("collection.skipped.already_exists",
+                     collection_name=collection['name'],
+                     existing_id=existing.id)
             continue
 
         entity = CollectionEntity(**collection)
