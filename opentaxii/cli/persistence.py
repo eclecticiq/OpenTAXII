@@ -3,8 +3,8 @@ import argparse
 import structlog
 
 from opentaxii.config import ServerConfig
+from opentaxii.server import TAXIIServer
 from opentaxii.utils import configure_logging
-from opentaxii.server import create_server
 from opentaxii.taxii.entities import CollectionEntity
 
 config = ServerConfig()
@@ -30,7 +30,7 @@ def create_services():
 
     args = parser.parse_args()
 
-    server = create_server(config)
+    server = TAXIIServer(config)
 
     services_config = anyconfig.load(args.config, forced_type="yaml")
     server.persistence.create_services_from_object(services_config)
@@ -47,7 +47,7 @@ def create_collections():
 
     args = parser.parse_args()
 
-    server = create_server(config)
+    server = TAXIIServer(config)
 
     collections_config = anyconfig.load(args.config, forced_type="yaml")
 

@@ -18,9 +18,6 @@ class TAXIIServer(object):
     This class keeps Presistence API and Auth API managers instances
     and creates TAXII Service instances on request.
 
-    This class can be initiated directly but should be created via
-    :py:func:`create_server`.
-
     :param `opentaxii.persistence.manager.PersistenceManager` persistence_manager:
                        persistence manager instance
     :param `opentaxii.auth.manager.AuthManager` auth_manager:

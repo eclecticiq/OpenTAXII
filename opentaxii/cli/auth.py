@@ -2,8 +2,8 @@
 import argparse
 import structlog
 
+from opentaxii.server import TAXIIServer
 from opentaxii.config import ServerConfig
-from opentaxii.server import create_server
 from opentaxii.utils import configure_logging
 
 config = ServerConfig()
@@ -28,7 +28,7 @@ def create_account():
 
     args = parser.parse_args()
 
-    server = create_server(config)
+    server = TAXIIServer(config)
     token = server.auth.create_account(args.username, args.password)
 
     log.info("Account created", token=token)
