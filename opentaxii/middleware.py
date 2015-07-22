@@ -91,17 +91,27 @@ def _authenticate(server, auth_header):
         log.warning('auth.header_invalid', value=auth_header)
         return None
 
-    auth_type, token = parts
+    auth_type, raw_token = parts
     auth_type = auth_type.lower()
 
-    if auth_type == 'basic' and server.is_basic_auth_supported():
+    if auth_type == 'basic':
+
+        if not server.is_basic_auth_supported():
+            raise UnauthorizedException()
+
         try:
-            username, password = parse_basic_auth_token(token)
+            username, password = parse_basic_auth_token(raw_token)
         except InvalidAuthHeader:
-            log.error("auth.basic_auth.header_invalid", token=token,
-                      exc_info=True)
+            log.error("auth.basic_auth.header_invalid",
+                      raw_token=raw_token, exc_info=True)
             return None
+
         token = server.auth.authenticate(username, password)
+
+    elif auth_type == 'bearer':
+        token = raw_token
+    else:
+        raise UnauthorizedException()
 
     account = server.auth.get_account(token)
     if not account:
