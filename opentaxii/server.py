@@ -54,8 +54,10 @@ class TAXIIServer(object):
     def get_domain(self, service_id):
         dynamic_domain = self.persistence.get_domain(service_id)
         domain = dynamic_domain or self.config.get('domain')
-
         return domain
+
+    def is_basic_auth_supported(self):
+        return self.config.get('support_basic_auth', False)
 
     def _create_services(self, service_entities):
 
@@ -118,8 +120,10 @@ class TAXIIServer(object):
         :return: service with specified ID or None
         :rtype: :py:class:`opentaxii.taxii.services.abstract.TAXIIService`
         '''
-        
-        return next(iter(self.get_services([id])), None)
+
+        services = self.get_services([id])
+        if services:
+            return services[0]
 
     def get_services_for_collection(self, collection, service_type):
         '''Get list of services with type ``service_type``, attached

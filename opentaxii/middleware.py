@@ -56,7 +56,7 @@ def _server_wrapper(server):
 
         try:
             context.account = _authenticate(
-                server.auth,
+                server,
                 request.headers.get(HTTP_AUTHORIZATION)
             )
 
@@ -81,29 +81,29 @@ def _server_wrapper(server):
     return wrapper
 
 
-def _authenticate(auth_manager, auth_header):
+def _authenticate(server, auth_header):
     if not auth_header:
         return None
 
     parts = auth_header.split(' ', 1)
 
     if len(parts) != 2:
-        log.warning('token.header.invalid', value=auth_header)
+        log.warning('auth.header_invalid', value=auth_header)
         return None
 
     auth_type, token = parts
     auth_type = auth_type.lower()
 
-    if auth_type == 'basic':
+    if auth_type == 'basic' and server.is_basic_auth_supported():
         try:
             username, password = parse_basic_auth_token(token)
         except InvalidAuthHeader:
-            log.error("token.header.basic_auth.invalid", token=token,
+            log.error("auth.basic_auth.header_invalid", token=token,
                       exc_info=True)
             return None
-        token = auth_manager.authenticate(username, password)
+        token = server.auth.authenticate(username, password)
 
-    account = auth_manager.get_account(token)
+    account = server.auth.get_account(token)
     if not account:
         raise UnauthorizedException()
 

@@ -1,6 +1,7 @@
 ---
 
 domain: "localhost:9000"
+support_basic_auth: yes
 
 persistence_api:
   class: opentaxii.persistence.sqldb.SQLDatabaseAPI
