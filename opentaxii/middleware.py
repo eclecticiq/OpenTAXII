@@ -19,6 +19,7 @@ from .exceptions import UnauthorizedException, InvalidAuthHeader
 from .utils import parse_basic_auth_token
 from .management import management
 from .local import release_context, context
+from .health import health
 
 log = structlog.get_logger(__name__)
 
@@ -40,6 +41,8 @@ def create_app(server):
             _server_wrapper(server), methods=['POST', 'OPTIONS'])
 
     app.register_blueprint(management, url_prefix='/management')
+
+    app.register_blueprint(health, url_prefix='/health')
 
     app.register_error_handler(500, handle_internal_error)
     app.register_error_handler(StatusMessageException, handle_status_exception)
