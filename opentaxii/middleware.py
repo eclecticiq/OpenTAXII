@@ -54,10 +54,11 @@ def _server_wrapper(server):
 
         relative_path = '/' + relative_path
 
-        auth_header = request.headers.get(HTTP_AUTHORIZATION)
-
         try:
-            context.account = _authenticate(server.auth, auth_header)
+            context.account = _authenticate(
+                server.auth,
+                request.headers.get(HTTP_AUTHORIZATION)
+            )
 
             for service in server.get_services():
                 if service.path == relative_path:
