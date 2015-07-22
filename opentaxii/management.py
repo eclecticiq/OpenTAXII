@@ -19,3 +19,6 @@ def auth():
     
     return jsonify(token=token)
 
+@management.route('/health', methods=['GET'])
+def health():
+    return jsonify(alive=True)
