@@ -7,7 +7,7 @@ from opentaxii.server import TAXIIServer
 from opentaxii.utils import get_config_for_tests
 
 
-HEALTH_PATH = '/health'
+HEALTH_PATH = '/management/health'
 
 
 @pytest.fixture()
