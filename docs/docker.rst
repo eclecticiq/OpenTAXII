@@ -18,25 +18,24 @@ To get a default (development) instance using docker
 Configuration
 -------------
 
-
 Configuration is done through environment variables.
 
 Common configuration parameters are:
 
-OPENTAXII_DOMAIN : (optional)
-    This specifies under which domain the OpenTAXII server is available, default: localhost:9000
+``OPENTAXII_DOMAIN`` : (optional)
+    This specifies under which domain the OpenTAXII server is available, default: ``localhost:9000``
 
 --------------------
 
 Setting up  authentication is done with the following two variables:
 
-OPENTAXII_USER : (optional)
-    If the OpenTAXII user and password are not set, no authentication is required
+``OPENTAXII_USER`` : (optional)
+      If the OpenTAXII user and password are not set, no authentication is required
 
-OPENTAXII_PASS : (optional)
-    If you don't want to specify the password on the command line, it is possible to leave the definition empty, and Docker will pick up the value from the environment.
+``OPENTAXII_PASS`` : (optional)
+      If you don't want to specify the password on the command line, it is possible to leave the definition empty, and Docker will pick up the value from the environment.
 
-OPENTAXII_SECRET : (optional)
+``OPENTAXII_SECRET`` : (optional)
     This is the secret with which the generated token is encoded.
 
 .. code-block:: shell
@@ -48,20 +47,20 @@ OPENTAXII_SECRET : (optional)
 
 If you want to use a PostgreSQL database, instead of the included SQLite database, you can use the following environment variables for configuration:
 
-DATABASE_HOST : (required)
+``DATABASE_HOST`` : (required)
     This is the database host to connect to
 
-DATABASE_PORT : (optional)
-    Default is '5432'
+``DATABASE_PORT`` : (optional)
+    Default is ``5432``
 
-DATABASE_USER : (optional)
-    If not set, the default 'postgres' is used.
+``DATABASE_USER`` : (optional)
+    If not set, the default ``postgres`` is used.
 
-DATABASE_PASS : (optional)
+``DATABASE_PASS`` : (optional)
     If not set, the database can be accessed by all containers on the same host!
 
-DATABASE_NAME : (optional)
-    The database to use, by default uses 'postgres'
+``DATABASE_NAME`` : (optional)
+    The database to use, by default uses ``postgres``
 
 
 Volumes
@@ -69,10 +68,10 @@ Volumes
 
 This docker container exposes two volumes, which can be attached to a running instance:
 
-/data
+``/data``
     This volume will contain the SQLite databases used by the default instance.
 
-/input
+``/input``
     If you want to pre-load the running instance with `services.yml`, `collections.yml` or have your own `opentaxii.yml` configuration used for the running system, create a folder with these documents present.
 
 .. code-block:: shell
