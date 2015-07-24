@@ -11,8 +11,7 @@ Authentication can be configured per service instance with ``authentication_requ
 authenticated before accessing the service.
 
 .. note::
-	OpenTAXII supports session-less token-based authentication as primary method of
-    authentication with fallback to Basic authentication.
+	OpenTAXII supports session-less token-based authentication as primary method of authentication with fallback to Basic authentication.
 
 If authentication is required, OpenTAXII expects clients to obtain a token first and
 send it as ``Authorization`` HTTP header value (formatted as ``Bearer TOKENVALUE``)
