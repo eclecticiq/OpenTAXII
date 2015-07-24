@@ -2,6 +2,19 @@
 Version history
 ===============
 
+OpenTAXII 0.1.2
+===============
+
+Release date: 2015-07-24
+
+* Docker configuration added.
+* Health check endpoint added.
+* Basic authentication support added.
+* Temporary workaround for https://github.com/TAXIIProject/libtaxii/issues/191.
+* Method ``get_domain`` in Persistence API returns domain value configured for ``service_id``. If nothing returned, value set in configuration file will be used.
+* Performance optimisations.
+* Bug fixes and style improvements.
+
 OpenTAXII 0.1.1
 ===============
 
