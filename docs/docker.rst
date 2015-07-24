@@ -16,7 +16,8 @@ To get a default (development) instance using docker
 
 
 Configuration
-=============
+-------------
+
 
 Configuration is done through environment variables.
 
@@ -64,7 +65,7 @@ DATABASE_NAME : (optional)
 
 
 Volumes
-=======
+-------
 
 This docker container exposes two volumes, which can be attached to a running instance:
 
@@ -86,7 +87,7 @@ This docker container exposes two volumes, which can be attached to a running in
     Make sure your naming is correct. It will only execute actions when any of the files with names: 'services.yml', 'collections.yml', or 'opentaxii.yml' are present.
 
 Extending
-=========
+---------
 
 If you need custom configuration, and installation of extra/custom code, it is better to extend the OpenTAXII docker image. For example, adding mysql (instead of PostgreSQL), and adding custom code, which is configured in a custom opentaxii.yml. The Dockerfile used will then look something like:
 
@@ -108,7 +109,7 @@ And building the image is then done using:
 
 
 Full Example with Compose
-=========================
+-------------------------
 
 To see a full exmple of running OpenTAXII against a 'real' database, using the `docker-compose <https://docs.docker.com/compose/>`_ tool, checkout the configuration at: `examples/docker-compose.yml <https://raw.githubusercontent.com/Intelworks/OpenTAXII/master/examples/docker-compose.yml>`_
 
