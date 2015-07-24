@@ -19,8 +19,6 @@ Configuration
 TAXII server layer
 ==================
 
-.. autofunction:: opentaxii.server.create_server
-
 .. autoclass:: opentaxii.server.TAXIIServer
     :members:
     :undoc-members:
