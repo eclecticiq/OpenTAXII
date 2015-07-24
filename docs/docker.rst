@@ -83,7 +83,7 @@ This docker container exposes two volumes, which can be attached to a running in
     $ docker run -d -p 9000:9000 -v /some/path/examples:/input intelworks/opentaxii
 
 .. note::
-    Make sure your naming is correct. It will only execute actions when any of the files with names: 'services.yml', 'collections.yml', or 'opentaxii.yml' are present.
+    Make sure your naming is correct. It will only execute actions when any of the files with names: ``services.yml``, ``collections.yml``, or ``opentaxii.yml`` are present.
 
 Extending
 ---------
@@ -139,7 +139,7 @@ To see a full exmple of running OpenTAXII against a 'real' database, using the `
       links:
         - db:db
 
-This configuration starts two containers: 'opentaxii' and 'db', creates the given collections and services, and adds a user for authentication.
+This configuration starts two containers: ``opentaxii`` and ``db``, creates the given collections and services, and adds a user for authentication.
 
 
 .. rubric:: Next steps
