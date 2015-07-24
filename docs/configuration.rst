@@ -17,6 +17,7 @@ Default configuration looks like this:
 
     ---
     domain: "localhost:9000"
+    support_basic_auth: yes
 
     persistence_api:
       class: opentaxii.persistence.sqldb.SQLDatabaseAPI
@@ -59,6 +60,7 @@ Example custom configuration:
 
     ---
     domain: taxii.mydomain.com
+    support_basic_auth: no
 
     persistence_api:
       class: mypackage.opentaxii.PersistenceAPI

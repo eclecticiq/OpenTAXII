@@ -186,6 +186,15 @@ You should see the following output::
 
 See `Cabby documentation <http://cabby.readthedocs.org>`_ for more examples.
 
+Health check
+============
+
+OpenTAXII has an endpoint that can be used to check health of the service::
+
+    $ curl http://localhost:9000/management/health 
+    {
+      "alive": true
+    }
 
 .. rubric:: Next steps
 
