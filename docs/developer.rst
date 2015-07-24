@@ -21,6 +21,7 @@ Layout
 
 OpenTAXII repository has the following layout:
 
+* ``docker/`` - Docker configuration files (`Docker`_);
 * ``docs/`` - used to build the `documentation <http://opentaxii.readthedocs.org>`_;
 * ``examples/`` - configuration and code examples;
 * ``opentaxii/`` - OpenTAXII source;
