@@ -190,7 +190,8 @@ def test_poll_max_count_max_size(server, https):
     headers = prepare_headers(version, https)
 
     # count-only request
-    request = prepare_request(collection_name=COLLECTION_OPEN, count_only=True, version=version)
+    request = prepare_request(collection_name=COLLECTION_OPEN,
+                              count_only=True, version=version)
     response = service.process(headers, request)
 
     assert isinstance(response, tm11.PollResponse)
@@ -198,9 +199,9 @@ def test_poll_max_count_max_size(server, https):
     assert response.record_count.record_count == POLL_MAX_COUNT
     assert len(response.content_blocks) == 0
 
-
     # content request
-    request = prepare_request(collection_name=COLLECTION_OPEN, version=version)
+    request = prepare_request(collection_name=COLLECTION_OPEN,
+                              version=version)
     response = service.process(headers, request)
 
     assert isinstance(response, tm11.PollResponse)
