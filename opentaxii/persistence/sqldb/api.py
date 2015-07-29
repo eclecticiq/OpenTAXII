@@ -91,7 +91,8 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         if count:
             query = self.Session().query(func.count(self.ContentBlock.id))
         else:
-            query = self.ContentBlock.query
+            query = (self.ContentBlock.query
+                     .order_by(self.ContentBlock.timestamp_label.asc()))
 
         if collection_id:
             query = (query.join(self.ContentBlock.collections)
