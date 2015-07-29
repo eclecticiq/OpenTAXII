@@ -77,6 +77,9 @@ class CollectionEntity(Entity):
 
         self.supported_content = []
         for content in (supported_content or []):
+            if not content:
+                continue
+
             if isinstance(content, basestring):
                 binding = ContentBindingEntity(content)
             elif isinstance(content, tuple):
