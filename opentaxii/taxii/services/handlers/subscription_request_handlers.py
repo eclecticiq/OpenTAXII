@@ -11,7 +11,10 @@ from libtaxii.constants import (
 )
 
 from ...exceptions import StatusMessageException, raise_failure
-from ...converters import subscription_to_subscription_instance, parse_content_bindings
+from ...converters import (
+    subscription_to_subscription_instance,
+    parse_content_bindings
+)
 from ...entities import PollRequestParametersEntity, SubscriptionEntity
 
 from .base_handlers import BaseMessageHandler
@@ -29,30 +32,37 @@ def action_subscribe(request, service, collection, version, **kwargs):
         if len(params.content_bindings) == 0:
             supported_contents = []
         else:
-            requested_bindings = parse_content_bindings(params.content_bindings, version=version)
-            supported_contents = collection.get_matching_bindings(requested_bindings)
+            requested_bindings = parse_content_bindings(
+                params.content_bindings,
+                version=version)
+
+            supported_contents = \
+                collection.get_matching_bindings(requested_bindings)
 
             if requested_bindings and not supported_contents:
-                details = {SD_SUPPORTED_CONTENT: collection.get_supported_content(version=version)}
-                raise StatusMessageException(ST_UNSUPPORTED_CONTENT_BINDING,
-                        in_response_to=request.message_id, status_details=details)
+                supported = collection.get_supported_content(version=version)
+                details = {SD_SUPPORTED_CONTENT: supported}
+                raise StatusMessageException(
+                    ST_UNSUPPORTED_CONTENT_BINDING,
+                    in_response_to=request.message_id,
+                    status_details=details)
 
     else:
         supported_contents = []
         response_type = None
 
     poll_request_params = PollRequestParametersEntity(
-        response_type = response_type,
-        content_bindings = supported_contents,
+        response_type=response_type,
+        content_bindings=supported_contents,
     )
 
     # we are ignoring Delivery Parameters for now
 
     subscription = SubscriptionEntity(
-        service_id = service.id,
-        collection_id = collection.id,
-        poll_request_params = poll_request_params,
-        status = SubscriptionEntity.ACTIVE
+        service_id=service.id,
+        collection_id=collection.id,
+        poll_request_params=poll_request_params,
+        status=SubscriptionEntity.ACTIVE
     )
 
     return service.create_subscription(subscription)
@@ -63,9 +73,13 @@ def action_unsubscribe(request, service, subscription, **kwargs):
         subscription.status = SubscriptionEntity.UNSUBSCRIBED
         return service.update_subscription(subscription)
     else:
-        return SubscriptionEntity(collection_id=None, service_id=service.id,
-                subscription_id=request.subscription_id,
-                status=SubscriptionEntity.UNSUBSCRIBED)
+        # Spec says that unsubscribe should be successful even
+        # if subscription doesn't exist
+        return SubscriptionEntity(
+            collection_id=None,
+            service_id=service.id,
+            subscription_id=request.subscription_id,
+            status=SubscriptionEntity.UNSUBSCRIBED)
 
 
 def action_status(service, subscription, **kwargs):
@@ -80,6 +94,7 @@ def action_pause(service, subscription, **kwargs):
         return subscription
     subscription.status = SubscriptionEntity.PAUSED
     return service.update_subscription(subscription)
+
 
 def action_resume(service, subscription, **kwargs):
     if subscription.status != SubscriptionEntity.PAUSED:
@@ -117,16 +132,20 @@ class SubscriptionRequest11Handler(BaseMessageHandler):
             error_message = None
 
         if error_message:
-            raise StatusMessageException(ST_BAD_MESSAGE, message=error_message,
-                    in_response_to=request.message_id)
+            raise StatusMessageException(
+                ST_BAD_MESSAGE,
+                message=error_message,
+                in_response_to=request.message_id)
 
-        if not subscription and (action in (ACT_PAUSE, ACT_RESUME) or 
-                (action == ACT_STATUS and request.subscription_id)):
+        if (not subscription
+            and (action in (ACT_PAUSE, ACT_RESUME) or
+                 (action == ACT_STATUS and request.subscription_id))):
 
             details = {SD_ITEM: request.subscription_id}
-            raise StatusMessageException(ST_NOT_FOUND, status_details=details,
-                    in_response_to=request.message_id)
-
+            raise StatusMessageException(
+                ST_NOT_FOUND,
+                status_details=details,
+                in_response_to=request.message_id)
 
     @classmethod
     def handle_message(cls, service, request):
@@ -138,37 +157,40 @@ class SubscriptionRequest11Handler(BaseMessageHandler):
 
         cls.validate_request(request, subscription)
 
-        collection = retrieve_collection(service, request.collection_name, request.message_id)
+        collection = retrieve_collection(service,
+                                         request.collection_name,
+                                         request.message_id)
 
         if subscription and subscription.collection_id != collection.id:
-            details = {SD_ITEM: request.collection_name}
-            raise StatusMessageException(ST_NOT_FOUND, status_details=details,
-                    in_response_to=request.message_id)
-
+            raise StatusMessageException(
+                ST_NOT_FOUND,
+                status_details={SD_ITEM: request.collection_name},
+                in_response_to=request.message_id)
 
         response = tm11.ManageCollectionSubscriptionResponse(
-            message_id = cls.generate_id(),
-            in_response_to = request.message_id,
-            collection_name = collection.name,
-            message = service.subscription_message,
+            message_id=cls.generate_id(),
+            in_response_to=request.message_id,
+            collection_name=collection.name,
+            message=service.subscription_message,
         )
 
-        result = ACTIONS[request.action](service=service, request=request,
-                collection=collection, subscription=subscription, version=11)
+        result = ACTIONS[request.action](
+            service=service, request=request, collection=collection,
+            subscription=subscription, version=11)
 
-        if isinstance(result, list):
+        if isinstance(result, (list, tuple)):
             results = result
         else:
             results = [result]
 
         polling_services = service.get_polling_services(collection)
 
-        for s in results:
+        for _result in results:
             instance = subscription_to_subscription_instance(
-                subscription = s,
-                polling_services = polling_services,
-                version = 11,
-                subscription_parameters = s.params
+                subscription=_result,
+                polling_services=polling_services,
+                version=11,
+                subscription_parameters=_result.params
             )
 
             response.subscription_instances.append(instance)
@@ -192,16 +214,19 @@ class SubscriptionRequest10Handler(BaseMessageHandler):
             error_message = None
 
         if error_message:
-            raise StatusMessageException(ST_BAD_MESSAGE, message=error_message,
-                    in_response_to=request.message_id)
-
+            raise StatusMessageException(
+                ST_BAD_MESSAGE,
+                message=error_message,
+                in_response_to=request.message_id)
 
     @classmethod
     def handle_message(cls, service, request):
 
         cls.validate_request(request)
 
-        collection = retrieve_collection(service, request.feed_name, request.message_id)
+        collection = retrieve_collection(service,
+                                         request.feed_name,
+                                         request.message_id)
 
         if request.subscription_id:
             subscription = service.get_subscription(request.subscription_id)
@@ -209,30 +234,35 @@ class SubscriptionRequest10Handler(BaseMessageHandler):
             subscription = None
 
         if subscription and subscription.collection_id != collection.id:
-            details = {SD_ITEM: request.feed_name}
-            raise StatusMessageException(ST_NOT_FOUND, status_details=details,
-                    in_response_to=request.message_id)
+            raise StatusMessageException(
+                ST_NOT_FOUND,
+                status_details={SD_ITEM: request.feed_name},
+                in_response_to=request.message_id)
 
         response = tm10.ManageFeedSubscriptionResponse(
-            message_id = cls.generate_id(),
-            in_response_to = request.message_id,
-            feed_name = collection.name,
-            message = service.subscription_message,
+            message_id=cls.generate_id(),
+            in_response_to=request.message_id,
+            feed_name=collection.name,
+            message=service.subscription_message,
         )
 
-        results = ACTIONS[request.action](service=service, request=request,
-                collection=collection, subscription=subscription, version=10)
+        results = ACTIONS[request.action](
+            service=service,
+            request=request,
+            collection=collection,
+            subscription=subscription,
+            version=10)
 
-        if not isinstance(results, list):
+        if not isinstance(results, (list, tuple)):
             results = [results]
 
         polling_services = service.get_polling_services(collection)
 
-        for s in results:
+        for _result in results:
             instance = subscription_to_subscription_instance(
-                subscription = s,
-                polling_services = polling_services,
-                version = 10
+                subscription=_result,
+                polling_services=polling_services,
+                version=10
             )
 
             response.subscription_instances.append(instance)
@@ -242,16 +272,22 @@ class SubscriptionRequest10Handler(BaseMessageHandler):
 
 class SubscriptionRequestHandler(BaseMessageHandler):
 
-    supported_request_messages = [tm11.ManageCollectionSubscriptionRequest, tm10.ManageFeedSubscriptionRequest]
+    supported_request_messages = [tm11.ManageCollectionSubscriptionRequest,
+                                  tm10.ManageFeedSubscriptionRequest]
 
     @classmethod
     def handle_message(cls, service, request):
 
         if isinstance(request, tm10.ManageFeedSubscriptionRequest):
-            return SubscriptionRequest10Handler.handle_message(service, request)
+
+            return SubscriptionRequest10Handler.handle_message(
+                service, request)
+
         elif isinstance(request, tm11.ManageCollectionSubscriptionRequest):
-            return SubscriptionRequest11Handler.handle_message(service, request)
+
+            return SubscriptionRequest11Handler.handle_message(
+                service, request)
+
         else:
-            raise_failure("TAXII Message not supported by message handler", request.message_id)
-
-
+            raise_failure("TAXII Message not supported by message handler",
+                          request.message_id)

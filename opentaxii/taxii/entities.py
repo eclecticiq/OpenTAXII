@@ -61,19 +61,20 @@ class CollectionEntity(Entity):
     TYPE_SET = CT_DATA_SET
 
     def __init__(self, name, id=None, description=None, type=TYPE_FEED,
-            accept_all_content=False, supported_content=None, available=True):
+                 volume=None, accept_all_content=False,
+                 supported_content=None, available=True):
 
         self.id = id
         self.name = name
         self.available = available
+        self.volume = volume
+        self.description = description
+        self.accept_all_content = accept_all_content
 
         if type not in [self.TYPE_FEED, self.TYPE_SET]:
             raise ValueError('Unknown collection type "%s"' % type)
 
         self.type = type
-
-        self.description = description
-        self.accept_all_content = accept_all_content
 
         self.supported_content = []
         for content in (supported_content or []):
@@ -230,7 +231,7 @@ class ResultSetEntity(Entity):
 
         self.collection_id = collection_id
         self.content_bindings = content_bindings or []
-        self.timeframe = timeframe
+        self.timeframe = timeframe or (None, None)
 
 
 class SubscriptionParameters(Entity):
