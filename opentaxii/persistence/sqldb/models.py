@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, validates
 from sqlalchemy.schema import Table, Column, ForeignKey
 from sqlalchemy.types import Integer, String, DateTime, Boolean, Text
 from sqlalchemy.ext.declarative import declarative_base
@@ -50,6 +50,14 @@ class ContentBlock(Timestamped):
         secondary=collection_to_content_block, backref='content_blocks',
         lazy='dynamic')
 
+    @validates('collections', include_removes=True, include_backrefs=True)
+    def _update_volume(self, key, collection, is_remove):
+        if is_remove:
+            collection.volume -= 1
+        else:
+            collection.volume += 1
+        return collection
+
     def __repr__(self):
         return 'ContentBlock(id=%s, inbox_message=%s, binding=[%s, %s])' % (
                 self.id, self.inbox_message_id, self.binding_id, self.binding_subtype)
@@ -92,10 +100,11 @@ class DataCollection(Timestamped):
     type = Column(String(MAX_STR_LEN))
     description = Column(Text, nullable=True)
 
-    available = Column(Boolean, default=True)
     accept_all_content = Column(Boolean, default=False)
-
     bindings = Column(String(MAX_STR_LEN))
+
+    available = Column(Boolean, default=True)
+    volume = Column(Integer, default=0)
 
     def __repr__(self):
         return u'DataCollection(%s, %s)' % (self.name, self.type)

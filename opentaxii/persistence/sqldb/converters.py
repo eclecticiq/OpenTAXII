@@ -7,13 +7,15 @@ def to_collection_entity(model):
     if not model:
         return
     return entities.CollectionEntity(
-        id = model.id,
-        name = model.name,
-        available = model.available,
-        type = model.type,
-        description = model.description,
-        accept_all_content = model.accept_all_content,
-        supported_content = deserialize_content_bindings(model.bindings)
+        id=model.id,
+        name=model.name,
+        available=model.available,
+        type=model.type,
+        description=model.description,
+        accept_all_content=model.accept_all_content,
+        supported_content=deserialize_content_bindings(model.bindings),
+        # TODO: Explicit integer, pending: https://github.com/TAXIIProject/libtaxii/issues/191
+        volume=int(model.volume)
     )
 
 
