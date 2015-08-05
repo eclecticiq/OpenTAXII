@@ -219,15 +219,15 @@ class InboxMessageEntity(Entity):
 class ResultSetEntity(Entity):
     '''TAXII Result Set entity.
 
-    :param str result_id: ID of a Result Set
+    :param str id: ID of a Result Set
     :param str collection_id: ID of a collection
     :param list content_bindings: list of :class:`ContentBindingEntity` instances
     :param tuple timeframe: a timeframe of the Result Set in a form of ``(begin, end)``
     '''
 
-    def __init__(self, result_id, collection_id, content_bindings=None, timeframe=None):
+    def __init__(self, id, collection_id, content_bindings=None, timeframe=None):
 
-        self.result_id = result_id
+        self.id = id
 
         self.collection_id = collection_id
         self.content_bindings = content_bindings or []

@@ -170,7 +170,7 @@ class PollRequest11Handler(BaseMessageHandler):
                     status_type=ST_PENDING,
                     status_details={
                         SD_ESTIMATED_WAIT: service.wait_time,
-                        SD_RESULT_ID: result_set.result_id,
+                        SD_RESULT_ID: result_set.id,
                         SD_WILL_PUSH: service.can_push
                     }
                 )
@@ -190,7 +190,7 @@ class PollRequest11Handler(BaseMessageHandler):
                 collection,
                 timeframe=timeframe,
                 content_bindings=content_bindings)
-            result_id = result_set.result_id
+            result_id = result_set.id
 
         response = tm11.PollResponse(
             message_id=generate_message_id(),

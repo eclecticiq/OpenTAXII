@@ -2,11 +2,14 @@ import json
 from datetime import datetime
 
 from sqlalchemy.orm import relationship, validates
-from sqlalchemy.schema import Table, Column, ForeignKey
+from sqlalchemy.schema import (
+    Table, Column, ForeignKey, PrimaryKeyConstraint
+)
 from sqlalchemy.types import Integer, String, DateTime, Boolean, Text
 from sqlalchemy.ext.declarative import declarative_base
 
-__all__ = ['Base', 'ContentBlock', 'DataCollection', 'Service', 'InboxMessage', 'ResultSet', 'Subscription']
+__all__ = ['Base', 'ContentBlock', 'DataCollection', 'Service',
+           'InboxMessage', 'ResultSet', 'Subscription']
 
 Base = declarative_base()
 
@@ -18,13 +21,13 @@ class Timestamped(Base):
 
     date_created = Column(DateTime(timezone=True), default=datetime.utcnow)
 
-    date_updated = Column(DateTime(timezone=True), default=datetime.utcnow,
-            onupdate=datetime.utcnow)
 
-
-collection_to_content_block = Table('collection_to_content_block', Base.metadata,
+collection_to_content_block = Table(
+    'collection_to_content_block',
+    Base.metadata,
     Column('collection_id', Integer, ForeignKey('data_collections.id')),
-    Column('content_block_id', Integer, ForeignKey('content_blocks.id'))
+    Column('content_block_id', Integer, ForeignKey('content_blocks.id')),
+    PrimaryKeyConstraint('collection_id', 'content_block_id')
 )
 
 
@@ -35,37 +38,49 @@ class ContentBlock(Timestamped):
     id = Column(Integer, primary_key=True)
     message = Column(Text, nullable=True)
 
-    timestamp_label = Column(DateTime(timezone=True), default=datetime.utcnow)
+    timestamp_label = Column(DateTime(timezone=True),
+                             default=datetime.utcnow,
+                             index=True)
 
-    inbox_message_id = Column(Integer, ForeignKey('inbox_messages.id',
-        onupdate="CASCADE", ondelete="CASCADE"), nullable=True)
+    inbox_message_id = Column(Integer,
+                              ForeignKey('inbox_messages.id',
+                                         onupdate='CASCADE',
+                                         ondelete='CASCADE'),
+                              nullable=True)
+
     inbox_message = relationship('InboxMessage', backref='content_blocks')
 
     content = Column(Text)
 
-    binding_id = Column(String(MAX_STR_LEN))
-    binding_subtype = Column(String(MAX_STR_LEN))
+    binding_id = Column(String(MAX_STR_LEN), index=True)
+    binding_subtype = Column(String(MAX_STR_LEN), index=True)
 
-    collections = relationship('DataCollection',
-        secondary=collection_to_content_block, backref='content_blocks',
+    collections = relationship(
+        'DataCollection',
+        secondary=collection_to_content_block,
+        backref='content_blocks',
         lazy='dynamic')
 
     @validates('collections', include_removes=True, include_backrefs=True)
     def _update_volume(self, key, collection, is_remove):
         if is_remove:
-            collection.volume -= 1
+            collection.volume = collection.__class__.volume - 1
         else:
-            collection.volume += 1
+            collection.volume = collection.__class__.volume + 1
         return collection
 
     def __repr__(self):
-        return 'ContentBlock(id=%s, inbox_message=%s, binding=[%s, %s])' % (
-                self.id, self.inbox_message_id, self.binding_id, self.binding_subtype)
+        return ('ContentBlock(id={self.id}, '
+                'inbox_message={self.inbox_message_id}, '
+                'binding={self.binding_subtype})').format(self=self)
 
 
-service_to_collection = Table('service_to_collection', Base.metadata,
+service_to_collection = Table(
+    'service_to_collection',
+    Base.metadata,
     Column('service_id', String(MAX_STR_LEN), ForeignKey('services.id')),
-    Column('collection_id', Integer, ForeignKey('data_collections.id'))
+    Column('collection_id', Integer, ForeignKey('data_collections.id')),
+    PrimaryKeyConstraint('service_id', 'collection_id')
 )
 
 
@@ -78,8 +93,12 @@ class Service(Timestamped):
 
     _properties = Column(Text, nullable=False)
 
-    collections = relationship('DataCollection',
-        secondary=service_to_collection, backref="services")
+    collections = relationship(
+        'DataCollection',
+        secondary=service_to_collection,
+        backref='services')
+
+    date_updated = Column(DateTime(timezone=True), default=datetime.utcnow)
 
     @property
     def properties(self):
@@ -95,7 +114,7 @@ class DataCollection(Timestamped):
     __tablename__ = 'data_collections'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(MAX_STR_LEN))
+    name = Column(String(MAX_STR_LEN), index=True)
 
     type = Column(String(MAX_STR_LEN))
     description = Column(Text, nullable=True)
@@ -107,7 +126,7 @@ class DataCollection(Timestamped):
     volume = Column(Integer, default=0)
 
     def __repr__(self):
-        return u'DataCollection(%s, %s)' % (self.name, self.type)
+        return 'DataCollection({self.name}, {self.type})'.format(self=self)
 
 
 class InboxMessage(Timestamped):
@@ -125,8 +144,10 @@ class InboxMessage(Timestamped):
     subscription_collection_name = Column(String(MAX_STR_LEN), nullable=True)
     subscription_id = Column(String(MAX_STR_LEN), nullable=True)
 
-    exclusive_begin_timestamp_label = Column(DateTime(timezone=True), nullable=True)
-    inclusive_end_timestamp_label = Column(DateTime(timezone=True), nullable=True)
+    exclusive_begin_timestamp_label = Column(DateTime(timezone=True),
+                                             nullable=True)
+    inclusive_end_timestamp_label = Column(DateTime(timezone=True),
+                                           nullable=True)
 
     original_message = Column(Text, nullable=False)
     content_block_count = Column(Integer)
@@ -134,7 +155,10 @@ class InboxMessage(Timestamped):
     # FIXME: should be a proper reference ID
     destination_collections = Column(Text, nullable=True)
 
-    service_id = Column(String(MAX_STR_LEN), ForeignKey('services.id', onupdate="CASCADE", ondelete="CASCADE"))
+    service_id = Column(
+        String(MAX_STR_LEN),
+        ForeignKey('services.id', onupdate="CASCADE", ondelete="CASCADE"))
+
     service = relationship('Service', backref='inbox_messages')
 
     def __repr__(self):
@@ -147,7 +171,11 @@ class ResultSet(Timestamped):
 
     id = Column(String(MAX_STR_LEN), primary_key=True)
 
-    collection_id = Column(Integer, ForeignKey('data_collections.id', onupdate="CASCADE", ondelete="CASCADE"))
+    collection_id = Column(Integer,
+                           ForeignKey('data_collections.id',
+                                      onupdate='CASCADE',
+                                      ondelete='CASCADE'))
+
     collection = relationship('DataCollection', backref='result_sets')
 
     bindings = Column(String(MAX_STR_LEN))
@@ -162,7 +190,10 @@ class Subscription(Timestamped):
 
     id = Column(String(MAX_STR_LEN), primary_key=True)
 
-    collection_id = Column(Integer, ForeignKey('data_collections.id', onupdate="CASCADE", ondelete="CASCADE"))
+    collection_id = Column(
+        Integer,
+        ForeignKey('data_collections.id', onupdate='CASCADE',
+                   ondelete='CASCADE'))
     collection = relationship('DataCollection', backref='subscriptions')
 
     params = Column(Text, nullable=True)
@@ -170,6 +201,7 @@ class Subscription(Timestamped):
     # FIXME: proper enum type
     status = Column(String(MAX_STR_LEN))
 
-    service_id = Column(String(MAX_STR_LEN), ForeignKey('services.id', onupdate="CASCADE", ondelete="CASCADE"))
+    service_id = Column(
+        String(MAX_STR_LEN),
+        ForeignKey('services.id', onupdate="CASCADE", ondelete="CASCADE"))
     service = relationship('Service', backref='subscriptions')
-
