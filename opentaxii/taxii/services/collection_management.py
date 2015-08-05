@@ -82,8 +82,3 @@ class CollectionManagementService(TAXIIService):
 
     def get_receiving_inbox_services(self, collection):
         return self.server.get_services_for_collection(collection, 'inbox')
-
-    def get_volume(self, collection):
-        return self.server.persistence.get_content_blocks_count(collection.id)
-
-

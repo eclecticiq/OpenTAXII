@@ -43,18 +43,17 @@ def retrieve_collection(service, collection_name, in_response_to):
     collection = service.get_collection(collection_name)
 
     if not collection:
-        message = "The collection requested was not found"
-        details = {SD_ITEM: collection_name}
         raise StatusMessageException(
-            ST_NOT_FOUND, message=message,
-            in_response_to=in_response_to, status_details=details)
+            ST_NOT_FOUND,
+            message="The collection requested was not found",
+            in_response_to=in_response_to,
+            status_details={SD_ITEM: collection_name})
 
     if not collection.available:
-        message = "The collection is not available"
-        details = {SD_ITEM: collection_name}
         raise FailureStatus(
-            message=message, in_response_to=in_response_to,
-            status_details=details)
+            message=="The collection is not available",
+            in_response_to=in_response_to,
+            status_details={SD_ITEM: collection_name})
 
     return collection
 
@@ -67,9 +66,9 @@ class PollRequest11Handler(BaseMessageHandler):
     def handle_message(cls, service, request):
 
         if service.subscription_required and not request.subscription_id:
-            message = "Subscription required"
             raise StatusMessageException(
-                ST_DENIED, message=message,
+                ST_DENIED,
+                message="Subscription required",
                 in_response_to=request.message_id)
 
         if request.subscription_id and request.poll_parameters:
@@ -78,17 +77,16 @@ class PollRequest11Handler(BaseMessageHandler):
                         subscription_id=request.subscription_id)
 
         collection = retrieve_collection(
-            service, request.collection_name,
-            request.message_id)
+            service, request.collection_name, request.message_id)
 
         if request.subscription_id:
             subscription = retrieve_subscription(
                 service, request.subscription_id, request.message_id)
 
             if collection.id != subscription.collection_id:
-                details = {SD_ITEM: request.collection_name}
                 raise StatusMessageException(
-                    ST_NOT_FOUND, status_details=details,
+                    ST_NOT_FOUND,
+                    status_details={SD_ITEM: request.collection_name},
                     in_response_to=request.message_id)
 
             content_bindings = subscription.params.content_bindings
@@ -106,18 +104,20 @@ class PollRequest11Handler(BaseMessageHandler):
                 requested_bindings)
 
             if requested_bindings and not content_bindings:
+
                 supported = content_binding_entities_to_content_bindings(
-                        collection.supported_content, version=11)
-                details = {SD_SUPPORTED_CONTENT: supported}
+                    collection.supported_content, version=11)
+
                 raise StatusMessageException(
                     ST_UNSUPPORTED_CONTENT_BINDING,
-                    in_response_to=request.message_id, status_details=details)
+                    in_response_to=request.message_id,
+                    status_details={SD_SUPPORTED_CONTENT: supported})
 
             response_type = params.response_type
             allow_async = params.allow_asynch
 
-        start, end = (request.exclusive_begin_timestamp_label,
-                      request.inclusive_end_timestamp_label)
+        start = request.exclusive_begin_timestamp_label
+        end = request.inclusive_end_timestamp_label
 
         if (start and end) and (start > end):
             message = ("Exclusive begin timestamp label is later "
@@ -138,49 +138,59 @@ class PollRequest11Handler(BaseMessageHandler):
 
     @classmethod
     def prepare_poll_response(cls, service, collection, in_response_to,
-                              timeframe=(None, None), content_bindings=None,
+                              timeframe=None, content_bindings=None,
                               result_part=1, allow_async=False,
                               return_content=True, result_id=None,
                               subscription_id=None):
-        try:
-            total_count = service.get_content_blocks_count(
-                collection, timeframe=timeframe,
-                content_bindings=content_bindings)
-        except ResultsNotReady:
-            if not allow_async:
-                message = ("The content is not available now and "
-                           "the request has allow_asynch set to false")
 
-                raise_failure(message=message, in_response_to=in_response_to)
+        timeframe = timeframe or (None, None)
 
-            result_set = service.create_result_set(
-                collection, timeframe=timeframe,
-                content_bindings=content_bindings)
+        if not any(timeframe) and not content_bindings:
+            total_count = collection.volume
+        else:
+            try:
+                total_count = service.get_content_blocks_count(
+                    collection, timeframe=timeframe,
+                    content_bindings=content_bindings)
+            except ResultsNotReady:
+                if not allow_async:
+                    message = ("The content is not available now and "
+                               "the request has allow_asynch set to false")
 
-            return tm11.StatusMessage(
-                message_id=generate_message_id(),
-                in_response_to=in_response_to,
-                status_type=ST_PENDING,
-                status_details={
-                    SD_ESTIMATED_WAIT: service.wait_time,
-                    SD_RESULT_ID: result_set.result_id,
-                    SD_WILL_PUSH: service.can_push
-                }
-            )
+                    raise_failure(message=message,
+                                  in_response_to=in_response_to)
+
+                result_set = service.create_result_set(
+                    collection, timeframe=timeframe,
+                    content_bindings=content_bindings)
+
+                return tm11.StatusMessage(
+                    message_id=generate_message_id(),
+                    in_response_to=in_response_to,
+                    status_type=ST_PENDING,
+                    status_details={
+                        SD_ESTIMATED_WAIT: service.wait_time,
+                        SD_RESULT_ID: result_set.id,
+                        SD_WILL_PUSH: service.can_push
+                    }
+                )
 
         # TODO: temporary fix, pending:
         # https://github.com/TAXIIProject/libtaxii/issues/191
         result_part = int(result_part)
 
+        # dividing instead of multiplying to be safe from overflow
         has_more = (float(total_count) / service.max_result_size) > result_part
+
         capped_count = min(service.max_result_count, total_count)
         is_partial = (capped_count < total_count)
 
         if has_more and not result_id:
             result_set = service.create_result_set(
-                collection, timeframe=timeframe,
+                collection,
+                timeframe=timeframe,
                 content_bindings=content_bindings)
-            result_id = result_set.result_id
+            result_id = result_set.id
 
         response = tm11.PollResponse(
             message_id=generate_message_id(),
@@ -189,12 +199,10 @@ class PollRequest11Handler(BaseMessageHandler):
             more=has_more,
             result_id=result_id,
             result_part_number=result_part,
-            exclusive_begin_timestamp_label=(
-                timeframe[0] if timeframe else None),
-            inclusive_end_timestamp_label=(
-                timeframe[1] if timeframe else None),
+            exclusive_begin_timestamp_label=timeframe[0],
+            inclusive_end_timestamp_label=timeframe[1],
             # TODO: Temporararily make capped_count an int, pending:
-            #       https://github.com/TAXIIProject/libtaxii/issues/191
+            # https://github.com/TAXIIProject/libtaxii/issues/191
             record_count=tm11.RecordCount(int(capped_count), is_partial),
             subscription_id=subscription_id
         )
@@ -202,7 +210,8 @@ class PollRequest11Handler(BaseMessageHandler):
         if return_content:
 
             content_blocks = service.get_content_blocks(
-                collection, timeframe=timeframe,
+                collection,
+                timeframe=timeframe,
                 content_bindings=content_bindings,
                 part_number=result_part)
 
@@ -211,7 +220,6 @@ class PollRequest11Handler(BaseMessageHandler):
                     content_block_entity_to_content_block(block, version=11))
 
         return response
-
 
 
 class PollRequest10Handler(BaseMessageHandler):
@@ -259,11 +267,10 @@ class PollRequest10Handler(BaseMessageHandler):
             message = ("The Named Data Collection is not a Data Feed, "
                        "it is a Data Set. Only Data Feeds can be polled "
                        "in TAXII 1.0")
-            details = {SD_ITEM: request.feed_name}
             raise StatusMessageException(
                 ST_NOT_FOUND,
                 message=message,
-                status_details=details,
+                status_details={SD_ITEM: request.feed_name},
                 in_response_to=request.message_id)
 
         start, end = (request.exclusive_begin_timestamp_label,
@@ -282,7 +289,8 @@ class PollRequest10Handler(BaseMessageHandler):
         )
 
         content_blocks = service.get_content_blocks(
-            collection, timeframe=(start, end),
+            collection,
+            timeframe=(start, end),
             content_bindings=content_bindings)
 
         for block in content_blocks:

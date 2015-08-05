@@ -33,8 +33,9 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
         self.engine = engine.create_engine(db_connection, convert_unicode=True)
 
-        self.Session = orm.scoped_session(orm.sessionmaker(autocommit=False,
-            autoflush=True, bind=self.engine))
+        self.Session = orm.scoped_session(
+            orm.sessionmaker(autocommit=False, autoflush=True,
+                             bind=self.engine))
 
         attach_all(self, models)
 
@@ -45,12 +46,6 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
     def create_tables(self):
         self.Base.metadata.create_all(bind=self.engine)
-
-    def _merge(self, obj):
-        s = self.Session()
-        updated = s.merge(obj)
-        s.commit()
-        return updated
 
     def get_services(self, collection_id=None):
         if collection_id:
@@ -65,9 +60,11 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
     def update_service(self, entity):
         service = self.Service(id=entity.id, type=entity.type,
-                properties=entity.properties)
-        updated = self._merge(service)
-        return conv.to_service_entity(updated)
+                               properties=entity.properties)
+        session = self.Session()
+        service = session.merge(service)
+        session.commit()
+        return conv.to_service_entity(service)
 
     def create_service(self, entity):
         return self.update_service(entity)
@@ -86,13 +83,12 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
             return conv.to_collection_entity(collection)
 
     def _get_content_query(self, collection_id=None, start_time=None,
-            end_time=None, bindings=None, count=False):
-
+                           end_time=None, bindings=None, count=False):
         if count:
             query = self.Session().query(func.count(self.ContentBlock.id))
         else:
-            query = (self.ContentBlock.query
-                     .order_by(self.ContentBlock.timestamp_label.asc()))
+            query = (self.ContentBlock
+                     .query.order_by(self.ContentBlock.timestamp_label.asc()))
 
         if collection_id:
             query = (query.join(self.ContentBlock.collections)
@@ -109,8 +105,8 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
             for binding in bindings:
                 if binding.subtypes:
                     criterion = and_(
-                       self.ContentBlock.binding_id == binding.binding,
-                       self.ContentBlock.binding_subtype.in_(binding.subtypes)
+                        self.ContentBlock.binding_id == binding.binding,
+                        self.ContentBlock.binding_subtype.in_(binding.subtypes)
                     )
                 else:
                     criterion = self.ContentBlock.binding_id == binding.binding
@@ -121,146 +117,147 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         return query
 
     def get_content_blocks_count(self, collection_id=None, start_time=None,
-            end_time=None, bindings=None):
+                                 end_time=None, bindings=None):
 
-        query = self._get_content_query(collection_id=collection_id,
-                start_time=start_time, end_time=end_time,
-                bindings=bindings, count=True)
+        query = self._get_content_query(
+            collection_id=collection_id,
+            start_time=start_time,
+            end_time=end_time,
+            bindings=bindings,
+            count=True)
 
         return query.scalar()
 
     def get_content_blocks(self, collection_id=None, start_time=None,
-            end_time=None, bindings=None, offset=0, limit=None):
+                           end_time=None, bindings=None, offset=0, limit=None):
 
-        query = self._get_content_query(collection_id=collection_id,
-                start_time=start_time, end_time=end_time,
-                bindings=bindings)
+        query = self._get_content_query(
+            collection_id=collection_id,
+            start_time=start_time,
+            end_time=end_time,
+            bindings=bindings)
 
         query = query.offset(offset)
         if limit:
             query = query.limit(limit)
 
         blocks = query.yield_per(YIELD_PER_SIZE)
+        return map(conv.to_block_entity, blocks.all())
 
-        return map(conv.to_block_entity, query.all())
-
-    def update_collection(self, entity):
+    def create_collection(self, entity):
 
         _bindings = conv.serialize_content_bindings(entity.supported_content)
 
         collection = self.DataCollection(
-            id = entity.id,
-            name = entity.name,
-            type = entity.type,
-            description = entity.description,
-            available = entity.available,
-            accept_all_content = entity.accept_all_content,
-            bindings = _bindings
+            name=entity.name,
+            type=entity.type,
+            description=entity.description,
+            available=entity.available,
+            accept_all_content=entity.accept_all_content,
+            bindings=_bindings
         )
 
-        updated = self._merge(collection)
+        session = self.Session()
+        session.add(collection)
+        session.commit()
 
-        log.debug("Collection updated", collection_id=updated.id,
-                collection_name=updated.name)
+        log.debug("collection.created", collection_id=collection.id,
+                  collection_name=collection.name)
 
-        return conv.to_collection_entity(updated)
-
-    def create_collection(self, entity):
-        return self.update_collection(entity)
+        return conv.to_collection_entity(collection)
 
     def attach_collection_to_services(self, collection_id, service_ids):
-        
+
         collection = self.DataCollection.query.get(collection_id)
 
         if not collection:
-            raise ValueError("Can't find collection with id=%s" % collection_id)
+            raise ValueError("Can't find collection with id={}"
+                             .format(collection_id))
 
-        s = self.Session()
+        session = self.Session()
 
-        collection.services.extend(self.Service.query.filter(
-            self.Service.id.in_(service_ids)))
+        services = self.Service.query.filter(self.Service.id.in_(service_ids))
+        collection.services.extend(services)
 
-        s.add(collection)
-        s.commit()
+        session.add(collection)
+        session.commit()
 
         log.debug("Collection attached", collection_id=collection.id,
-                collection_name=collection.name, service_ids=service_ids)
+                  collection_name=collection.name, service_ids=service_ids)
 
     def create_inbox_message(self, entity):
-        return self.update_inbox_message(entity)
-
-    def update_inbox_message(self, entity):
 
         if entity.destination_collections:
-            names = json.dumps(entity.destination_collections) 
+            names = json.dumps(entity.destination_collections)
         else:
             names = None
 
+        begin = entity.exclusive_begin_timestamp_label
+        end = entity.inclusive_end_timestamp_label
+
         message = self.InboxMessage(
-            id = entity.id,
-            message_id = entity.message_id,
-            original_message = entity.original_message,
-            content_block_count = entity.content_block_count,
-            destination_collections = names,
+            original_message=entity.original_message,
+            content_block_count=entity.content_block_count,
+            destination_collections=names,
 
-            service_id = entity.service_id,
+            service_id=entity.service_id,
 
-            result_id = entity.result_id,
-            record_count = entity.record_count,
-            partial_count = entity.partial_count,
+            result_id=entity.result_id,
+            record_count=entity.record_count,
+            partial_count=entity.partial_count,
 
-            subscription_collection_name = entity.subscription_collection_name,
-            subscription_id = entity.subscription_id,
+            subscription_collection_name=entity.subscription_collection_name,
+            subscription_id=entity.subscription_id,
 
-            exclusive_begin_timestamp_label = entity.exclusive_begin_timestamp_label,
-            inclusive_end_timestamp_label = entity.inclusive_end_timestamp_label,
+            exclusive_begin_timestamp_label=begin,
+            inclusive_end_timestamp_label=end
         )
 
-        updated = self._merge(message)
-        return conv.to_inbox_message_entity(updated)
+        session = self.Session()
+        session.add(message)
+        session.commit()
 
-    def update_content_block(self, entity):
+        return conv.to_inbox_message_entity(message)
+
+    def create_content_block(self, entity, collection_ids=None,
+                             service_id=None):
 
         if entity.content_binding:
             binding = entity.content_binding.binding
-            subtype = entity.content_binding.subtypes[0] \
-                    if entity.content_binding.subtypes else None
+            subtype = (entity.content_binding.subtypes[0]
+                       if entity.content_binding.subtypes else None)
         else:
             binding = None
             subtype = None
 
         content = self.ContentBlock(
-            id = entity.id,
-            timestamp_label = entity.timestamp_label,
-            inbox_message_id = entity.inbox_message_id,
-            content = entity.content,
-            binding_id = binding,
-            binding_subtype = subtype
+            timestamp_label=entity.timestamp_label,
+            inbox_message_id=entity.inbox_message_id,
+            content=entity.content,
+            binding_id=binding,
+            binding_subtype=subtype
         )
 
-        updated = self._merge(content)
-        return conv.to_block_entity(updated)
+        session = self.Session()
+        session.add(content)
+        session.commit()
 
-    def create_content_block(self, entity, collection_ids=None,
-            service_id=None):
-
-        block = self.update_content_block(entity)
         if collection_ids:
-            self._attach_content_to_collections(block, collection_ids)
+            self._attach_content_to_collections(content, collection_ids)
 
-        return block
+        return conv.to_block_entity(content)
 
     def _attach_content_to_collections(self, content_block, collection_ids):
 
         if not collection_ids:
             return
 
-        session = self.Session()
         criteria = self.DataCollection.id.in_(collection_ids)
         new_collections = self.DataCollection.query.filter(criteria)
 
-        content_block = self.ContentBlock.query.get(content_block.id)
         content_block.collections.extend(new_collections)
+
+        session = self.Session()
         session.add(content_block)
 
         log.debug("Content block added to collections",
@@ -268,23 +265,22 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
                   collections=new_collections.count())
         session.commit()
 
-    def update_result_set(self, entity):
+    def create_result_set(self, entity):
 
         _bindings = conv.serialize_content_bindings(entity.content_bindings)
 
         result_set = self.ResultSet(
-            id = entity.result_id,
-            collection_id = entity.collection_id,
-            bindings = _bindings,
-            begin_time = entity.timeframe[0],
-            end_time = entity.timeframe[1]
+            id=entity.id,
+            collection_id=entity.collection_id,
+            bindings=_bindings,
+            begin_time=entity.timeframe[0],
+            end_time=entity.timeframe[1]
         )
+        session = self.Session()
+        session.add(result_set)
+        session.commit()
 
-        updated = self._merge(result_set)
-        return conv.to_result_set_entity(updated)
-
-    def create_result_set(self, entity):
-        return self.update_result_set(entity)
+        return conv.to_result_set_entity(result_set)
 
     def get_result_set(self, result_set_id):
         result_set = self.ResultSet.query.get(result_set_id)
@@ -302,26 +298,31 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
         if entity.params:
             params = dict(
-                response_type = entity.params.response_type,
-                content_bindings = conv.serialize_content_bindings(
-                        entity.params.content_bindings)
+                response_type=entity.params.response_type,
+                content_bindings=conv.serialize_content_bindings(
+                    entity.params.content_bindings)
             )
         else:
             params = {}
 
         subscription = self.Subscription(
-            id = entity.subscription_id,
-            collection_id = entity.collection_id,
-            params = json.dumps(params),
-            status = entity.status,
-            service_id = entity.service_id
+            id=entity.subscription_id,
+            collection_id=entity.collection_id,
+            params=json.dumps(params),
+            status=entity.status,
+            service_id=entity.service_id
         )
 
-        updated = self._merge(subscription)
-        log.debug("Subscription updated", subscription_id=updated.id,
-                collection_id=updated.collection_id, status=updated.status)
+        session = self.Session()
+        subscription = session.merge(subscription)
+        session.commit()
 
-        return conv.to_subscription_entity(updated)
+        log.debug("subscription.updated",
+                  subscription=subscription.id,
+                  collection=subscription.collection_id,
+                  status=subscription.status)
+
+        return conv.to_subscription_entity(subscription)
 
     def create_subscription(self, entity):
         return self.update_subscription(entity)

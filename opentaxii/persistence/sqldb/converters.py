@@ -7,13 +7,15 @@ def to_collection_entity(model):
     if not model:
         return
     return entities.CollectionEntity(
-        id = model.id,
-        name = model.name,
-        available = model.available,
-        type = model.type,
-        description = model.description,
-        accept_all_content = model.accept_all_content,
-        supported_content = deserialize_content_bindings(model.bindings)
+        id=model.id,
+        name=model.name,
+        available=model.available,
+        type=model.type,
+        description=model.description,
+        accept_all_content=model.accept_all_content,
+        supported_content=deserialize_content_bindings(model.bindings),
+        # TODO: Explicit integer, pending: https://github.com/TAXIIProject/libtaxii/issues/191
+        volume=int(model.volume)
     )
 
 
@@ -69,10 +71,10 @@ def to_result_set_entity(model):
     if not model:
         return
     return entities.ResultSetEntity(
-        result_id = model.id,
-        collection_id = model.collection_id,
-        content_bindings = deserialize_content_bindings(model.bindings),
-        timeframe = map(enforce_timezone, (model.begin_time, model.end_time))
+        id=model.id,
+        collection_id=model.collection_id,
+        content_bindings=deserialize_content_bindings(model.bindings),
+        timeframe=map(enforce_timezone, (model.begin_time, model.end_time))
     )
 
 
@@ -89,19 +91,21 @@ def to_subscription_entity(model):
         params = None
 
     return entities.SubscriptionEntity(
-        service_id = model.service_id,
-        subscription_id = model.id,
-        collection_id = model.collection_id,
-        poll_request_params = params,
-        status = model.status
+        service_id=model.service_id,
+        subscription_id=model.id,
+        collection_id=model.collection_id,
+        poll_request_params=params,
+        status=model.status
     )
 
 
 def to_service_entity(model):
     if not model:
         return
-    return entities.ServiceEntity(id=model.id, type=model.type,
-            properties=model.properties)
+    return entities.ServiceEntity(
+        id=model.id,
+        type=model.type,
+        properties=model.properties)
 
 
 def serialize_content_bindings(content_bindings):
