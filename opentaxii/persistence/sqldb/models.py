@@ -70,9 +70,9 @@ class ContentBlock(Timestamped):
         return collection
 
     def __repr__(self):
-        return ('ContentBlock(id={self.id}, '
-                'inbox_message={self.inbox_message_id}, '
-                'binding={self.binding_subtype})').format(self=self)
+        return ('ContentBlock(id={obj.id}, '
+                'inbox_message={obj.inbox_message_id}, '
+                'binding={obj.binding_subtype})').format(obj=self)
 
 
 service_to_collection = Table(
@@ -126,7 +126,8 @@ class DataCollection(Timestamped):
     volume = Column(Integer, default=0)
 
     def __repr__(self):
-        return 'DataCollection({self.name}, {self.type})'.format(self=self)
+        return ('DataCollection(name={obj.name}, type={obj.type})'
+                .format(obj=self))
 
 
 class InboxMessage(Timestamped):
@@ -162,7 +163,8 @@ class InboxMessage(Timestamped):
     service = relationship('Service', backref='inbox_messages')
 
     def __repr__(self):
-        return 'InboxMessage(%s, %s)' % (self.message_id, self.date_created)
+        return ('InboxMessage(id={obj.message_id}, created={obj.date_created})'
+                .format(obj=self))
 
 
 class ResultSet(Timestamped):

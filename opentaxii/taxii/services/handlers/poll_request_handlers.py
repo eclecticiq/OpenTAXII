@@ -51,7 +51,7 @@ def retrieve_collection(service, collection_name, in_response_to):
 
     if not collection.available:
         raise FailureStatus(
-            message=="The collection is not available",
+            message="The collection is not available",
             in_response_to=in_response_to,
             status_details={SD_ITEM: collection_name})
 
