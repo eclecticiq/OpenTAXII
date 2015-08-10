@@ -29,7 +29,7 @@ Where ``venv`` is a directory to place the new environment
 
 Activate this environment::
 
-   $ source venv/bin/activate
+   $ . venv/bin/activate
    (venv) $
    
 Now install the latest OpenTAXII release from the `Python
