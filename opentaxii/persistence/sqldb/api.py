@@ -231,8 +231,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
             subtype = None
 
         content = self.ContentBlock(
-            timestamp_label=entity.timestamentries without URL?
-        p_label,
+            timestamp_label=entity.timestamp_label,
             inbox_message_id=entity.inbox_message_id,
             content=entity.content,
             binding_id=binding,
