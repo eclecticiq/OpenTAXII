@@ -95,10 +95,10 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
                           .filter(self.DataCollection.id == collection_id))
 
         if start_time:
-            query = query.filter(self.ContentBlock.date_created > start_time)
+            query = query.filter(self.ContentBlock.timestamp_label > start_time)
 
         if end_time:
-            query = query.filter(self.ContentBlock.date_created <= end_time)
+            query = query.filter(self.ContentBlock.timestamp_label <= end_time)
 
         if bindings:
             criteria = []
@@ -231,7 +231,8 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
             subtype = None
 
         content = self.ContentBlock(
-            timestamp_label=entity.timestamp_label,
+            timestamp_label=entity.timestamentries without URL?
+        p_label,
             inbox_message_id=entity.inbox_message_id,
             content=entity.content,
             binding_id=binding,
