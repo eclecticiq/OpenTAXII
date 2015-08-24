@@ -95,10 +95,10 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
                           .filter(self.DataCollection.id == collection_id))
 
         if start_time:
-            query = query.filter(self.ContentBlock.date_created > start_time)
+            query = query.filter(self.ContentBlock.timestamp_label > start_time)
 
         if end_time:
-            query = query.filter(self.ContentBlock.date_created <= end_time)
+            query = query.filter(self.ContentBlock.timestamp_label <= end_time)
 
         if bindings:
             criteria = []
