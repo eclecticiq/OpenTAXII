@@ -2,6 +2,7 @@
 
 domain: "localhost:9000"
 support_basic_auth: yes
+save_raw_inbox_messages: yes
 
 persistence_api:
   class: opentaxii.persistence.sqldb.SQLDatabaseAPI
