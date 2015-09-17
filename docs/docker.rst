@@ -62,6 +62,23 @@ If you want to use a PostgreSQL database, instead of the included SQLite databas
 ``DATABASE_NAME`` : (optional)
     The database to use, by default uses ``postgres``
 
+If you would like to use a different Database for authentication, you can also set the following variables (any variable not set, will use it's regular DB counterpart):
+
+``AUTH_DATABASE_HOST`` : (required)
+    This is the database host to connect to
+
+``AUTH_DATABASE_PORT`` : (optional)
+    Default is ``5432``
+
+``AUTH_DATABASE_USER`` : (optional)
+    If not set, the default ``postgres`` is used.
+
+``AUTH_DATABASE_PASS`` : (optional)
+    If not set, the database can be accessed by all containers on the same host!
+
+``AUTH_DATABASE_NAME`` : (optional)
+    The database to use, by default uses ``postgres``
+
 
 Volumes
 -------
