@@ -13,8 +13,6 @@ __all__ = ['Base', 'ContentBlock', 'DataCollection', 'Service',
 
 Base = declarative_base()
 
-MAX_STR_LEN = 256
-
 
 class Timestamped(Base):
     __abstract__ = True
@@ -25,8 +23,12 @@ class Timestamped(Base):
 collection_to_content_block = Table(
     'collection_to_content_block',
     Base.metadata,
-    Column('collection_id', Integer, ForeignKey('data_collections.id')),
-    Column('content_block_id', Integer, ForeignKey('content_blocks.id')),
+    Column(
+        'collection_id', Integer,
+        ForeignKey('data_collections.id')),
+    Column(
+        'content_block_id', Integer,
+        ForeignKey('content_blocks.id'), index=True),
     PrimaryKeyConstraint('collection_id', 'content_block_id')
 )
 
@@ -38,22 +40,19 @@ class ContentBlock(Timestamped):
     id = Column(Integer, primary_key=True)
     message = Column(Text, nullable=True)
 
-    timestamp_label = Column(DateTime(timezone=True),
-                             default=datetime.utcnow,
-                             index=True)
+    timestamp_label = Column(
+        DateTime(timezone=True), default=datetime.utcnow, index=True)
 
-    inbox_message_id = Column(Integer,
-                              ForeignKey('inbox_messages.id',
-                                         onupdate='CASCADE',
-                                         ondelete='CASCADE'),
-                              nullable=True)
-
-    inbox_message = relationship('InboxMessage', backref='content_blocks')
+    inbox_message_id = Column(
+        Integer,
+        ForeignKey(
+            'inbox_messages.id', onupdate='CASCADE', ondelete='CASCADE'),
+        nullable=True)
 
     content = Column(Text)
 
-    binding_id = Column(String(MAX_STR_LEN), index=True)
-    binding_subtype = Column(String(MAX_STR_LEN), index=True)
+    binding_id = Column(Text, index=True)
+    binding_subtype = Column(Text, index=True)
 
     collections = relationship(
         'DataCollection',
@@ -78,7 +77,7 @@ class ContentBlock(Timestamped):
 service_to_collection = Table(
     'service_to_collection',
     Base.metadata,
-    Column('service_id', String(MAX_STR_LEN), ForeignKey('services.id')),
+    Column('service_id', String, ForeignKey('services.id')),
     Column('collection_id', Integer, ForeignKey('data_collections.id')),
     PrimaryKeyConstraint('service_id', 'collection_id')
 )
@@ -88,8 +87,8 @@ class Service(Timestamped):
 
     __tablename__ = 'services'
 
-    id = Column(String(MAX_STR_LEN), primary_key=True)
-    type = Column(String(MAX_STR_LEN))
+    id = Column(String, primary_key=True)
+    type = Column(String)
 
     _properties = Column(Text, nullable=False)
 
@@ -114,13 +113,13 @@ class DataCollection(Timestamped):
     __tablename__ = 'data_collections'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(MAX_STR_LEN), index=True)
+    name = Column(Text, index=True)
 
-    type = Column(String(MAX_STR_LEN))
+    type = Column(String)
     description = Column(Text, nullable=True)
 
     accept_all_content = Column(Boolean, default=False)
-    bindings = Column(String(MAX_STR_LEN))
+    bindings = Column(Text)
 
     available = Column(Boolean, default=True)
     volume = Column(Integer, default=0)
@@ -136,19 +135,19 @@ class InboxMessage(Timestamped):
 
     id = Column(Integer, primary_key=True)
 
-    message_id = Column(String(MAX_STR_LEN))
-    result_id = Column(String(MAX_STR_LEN), nullable=True)
+    message_id = Column(Text)
+    result_id = Column(Text, nullable=True)
 
     record_count = Column(Integer, nullable=True)
     partial_count = Column(Boolean, default=False)
 
-    subscription_collection_name = Column(String(MAX_STR_LEN), nullable=True)
-    subscription_id = Column(String(MAX_STR_LEN), nullable=True)
+    subscription_collection_name = Column(Text, nullable=True)
+    subscription_id = Column(Text, nullable=True)
 
-    exclusive_begin_timestamp_label = Column(DateTime(timezone=True),
-                                             nullable=True)
-    inclusive_end_timestamp_label = Column(DateTime(timezone=True),
-                                           nullable=True)
+    exclusive_begin_timestamp_label = Column(
+        DateTime(timezone=True), nullable=True)
+    inclusive_end_timestamp_label = Column(
+        DateTime(timezone=True), nullable=True)
 
     original_message = Column(Text, nullable=False)
     content_block_count = Column(Integer)
@@ -157,7 +156,7 @@ class InboxMessage(Timestamped):
     destination_collections = Column(Text, nullable=True)
 
     service_id = Column(
-        String(MAX_STR_LEN),
+        Text,
         ForeignKey('services.id', onupdate="CASCADE", ondelete="CASCADE"))
 
     service = relationship('Service', backref='inbox_messages')
@@ -171,16 +170,16 @@ class ResultSet(Timestamped):
 
     __tablename__ = 'result_sets'
 
-    id = Column(String(MAX_STR_LEN), primary_key=True)
+    id = Column(String, primary_key=True)
 
-    collection_id = Column(Integer,
-                           ForeignKey('data_collections.id',
-                                      onupdate='CASCADE',
-                                      ondelete='CASCADE'))
+    collection_id = Column(
+        Integer,
+        ForeignKey(
+            'data_collections.id', onupdate='CASCADE', ondelete='CASCADE'))
 
     collection = relationship('DataCollection', backref='result_sets')
 
-    bindings = Column(String(MAX_STR_LEN))
+    bindings = Column(Text)
 
     begin_time = Column(DateTime(timezone=True), nullable=True)
     end_time = Column(DateTime(timezone=True), nullable=True)
@@ -190,20 +189,20 @@ class Subscription(Timestamped):
 
     __tablename__ = 'subscriptions'
 
-    id = Column(String(MAX_STR_LEN), primary_key=True)
+    id = Column(String, primary_key=True)
 
     collection_id = Column(
         Integer,
-        ForeignKey('data_collections.id', onupdate='CASCADE',
-                   ondelete='CASCADE'))
+        ForeignKey(
+            'data_collections.id', onupdate='CASCADE', ondelete='CASCADE'))
     collection = relationship('DataCollection', backref='subscriptions')
 
     params = Column(Text, nullable=True)
 
     # FIXME: proper enum type
-    status = Column(String(MAX_STR_LEN))
+    status = Column(String)
 
     service_id = Column(
-        String(MAX_STR_LEN),
+        String,
         ForeignKey('services.id', onupdate="CASCADE", ondelete="CASCADE"))
     service = relationship('Service', backref='subscriptions')
