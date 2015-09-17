@@ -33,16 +33,21 @@ class TAXIIServer(object):
 
     def __init__(self, config):
 
+        self.config = config
+
         persistence_api = load_api(config['persistence_api'])
+
+        self.persistence = PersistenceManager(
+            server=self, api=persistence_api)
+
         log.info("api.persistence.loaded",
                  api_class=persistence_api.__class__.__name__)
-        self.persistence = PersistenceManager(api=persistence_api)
 
         auth_api = load_api(config['auth_api'])
-        log.info("api.auth.loaded", api_class=auth_api.__class__.__name__)
         self.auth = AuthManager(api=auth_api)
 
-        self.config = config
+        log.info("api.auth.loaded",
+                api_class=auth_api.__class__.__name__)
 
         signal_hooks = config['hooks']
         if signal_hooks:

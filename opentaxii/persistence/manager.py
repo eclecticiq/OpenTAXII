@@ -1,9 +1,8 @@
-
-from ..signals import (
+from opentaxii.signals import (
     CONTENT_BLOCK_CREATED, INBOX_MESSAGE_CREATED,
     SUBSCRIPTION_CREATED
 )
-from ..taxii.converters import blob_to_service_entity
+from opentaxii.taxii.converters import blob_to_service_entity
 
 
 class PersistenceManager(object):
@@ -16,7 +15,8 @@ class PersistenceManager(object):
         instance of persistence API class
     '''
 
-    def __init__(self, api):
+    def __init__(self, server, api):
+        self.server = server
         self.api = api
 
     # Methods only used in the CLI scripts provided with OpenTAXII.
@@ -117,13 +117,13 @@ class PersistenceManager(object):
         :rtype: :py:class:`opentaxii.taxii.entities.InboxMessageEntity`
         '''
 
-        created = self.api.create_inbox_message(entity)
+        if self.server.config['save_raw_inbox_messages']:
+            entity = self.api.create_inbox_message(entity)
+            INBOX_MESSAGE_CREATED.send(self, inbox_message=entity)
 
-        INBOX_MESSAGE_CREATED.send(self, inbox_message=created)
+        return entity
 
-        return created
-
-    def create_content(self, content, service_id=None, inbox_message=None,
+    def create_content(self, content, service_id=None, inbox_message_id=None,
             collections=None):
         '''Create a content block.
 
@@ -141,10 +141,8 @@ class PersistenceManager(object):
         :rtype: :py:class:`opentaxii.taxii.entities.ContentBlockEntity`
         '''
 
-        if inbox_message:
-            if not inbox_message.id:
-                inbox_message = self.api.create_inbox_message(inbox_message)
-            content.inbox_message_id = inbox_message.id
+        if inbox_message_id:
+            content.inbox_message_id = inbox_message_id
 
         collections = collections or []
         collection_ids = [c.id for c in collections]
