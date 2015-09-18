@@ -26,7 +26,7 @@ RUN cd  /opentaxii \
     && rm -rf /opentaxii
 
 # Setup default config
-COPY opentaxii/defaults.yml /opentaxi.yml
+COPY opentaxii/defaults.yml /opentaxii.yml
 
 # Volume for exposing data and possible input
 VOLUME [ "/data", "/input" ]
