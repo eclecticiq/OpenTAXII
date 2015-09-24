@@ -24,9 +24,10 @@ OpenTAXII implements all TAXII services according to TAXII specification (versio
 
 OpenTAXII architecture follows TAXII specification in its idea of TTA (TAXII transport agent) and TMH (TAXII message handler) components, separating implementations of:
 
-      - Transport layer (`Flask <flask.pocoo.org>`_ web app with extendable authentication via Authentication API)
+      - Transport layer (`Flask <flask.pocoo.org>`_ based web app)
       - TAXII logic layer (TAXII server/services/message handlers)
-      - Persistence layer (extendable via Persistence API)
+      - Persistence layer (extendable Persistence API)
+      - Authentication layer (extendable Authentication API)
 
 
 .. rubric:: Documentation contents
