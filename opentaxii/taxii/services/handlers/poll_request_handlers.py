@@ -146,7 +146,7 @@ class PollRequest11Handler(BaseMessageHandler):
         timeframe = timeframe or (None, None)
 
         if not any(timeframe) and not content_bindings:
-            total_count = collection.volume
+            total_count = collection.volume or 0
         else:
             try:
                 total_count = service.get_content_blocks_count(
