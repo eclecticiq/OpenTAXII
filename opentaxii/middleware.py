@@ -113,7 +113,11 @@ def _authenticate(server, auth_header):
     else:
         raise UnauthorizedException()
 
+    if not token:
+        raise UnauthorizedException()
+
     account = server.auth.get_account(token)
+
     if not account:
         raise UnauthorizedException()
 
