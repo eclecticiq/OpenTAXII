@@ -1,6 +1,6 @@
 # Set the base image to Python
 FROM python:2.7.9
-MAINTAINER Intelworks <opentaxii@intelworks.com>
+MAINTAINER EclecticIQ <opentaxii@eclecticiq.com>
 
 # Create the working dir and set the working directory
 WORKDIR /
