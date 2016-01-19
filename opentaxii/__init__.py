@@ -1,5 +1,5 @@
 '''
-    OpenTAXII, Python TAXII server implementation from Intelworks.
+    OpenTAXII, TAXII server implementation from EclecticIQ.
 '''
 # flake8: noqa
 
