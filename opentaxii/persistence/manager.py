@@ -124,7 +124,7 @@ class PersistenceManager(object):
         return entity
 
     def create_content(self, content, service_id=None, inbox_message_id=None,
-            collections=None):
+                       collections=None):
         '''Create a content block.
 
         Methods emits :py:const:`opentaxii.signals.CONTENT_BLOCK_CREATED` signal.
@@ -155,7 +155,7 @@ class PersistenceManager(object):
         return content
 
     def get_content_blocks_count(self, collection_id, start_time=None, end_time=None,
-            bindings=None):
+                                 bindings=None):
         '''Get a count of the content blocks associated with a collection.
 
         :param str collection_id: ID fo a collection in question
@@ -176,7 +176,7 @@ class PersistenceManager(object):
         )
 
     def get_content_blocks(self, collection_id, start_time=None, end_time=None,
-            bindings=None, offset=0, limit=None):
+                           bindings=None, offset=0, limit=None):
         '''Get the content blocks associated with a collection.
 
         :param str collection_id: ID fo a collection in question
