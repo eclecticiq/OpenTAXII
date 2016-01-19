@@ -54,7 +54,7 @@ To install OpenTAXII from source files: download tarball, unpack it and install 
 Versioning
 ----------
 
-Releases of OpenTAXII are given major.minor.revision version numbers, where major and minor correspond to the roadmap Intelworks has. The revision number is used to indicate a bug fix only release.
+Releases of OpenTAXII are given major.minor.revision version numbers, where major and minor correspond to the roadmap EclecticIQ has. The revision number is used to indicate a bug fix only release.
 
 
 .. rubric:: Next steps

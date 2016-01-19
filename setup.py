@@ -12,11 +12,11 @@ def get_file_contents(filename):
 
 setup(
     name = 'opentaxii',
-    description = 'Intelworks TAXII server implementation',
+    description = 'TAXII server implementation in Python from EclecticIQ',
     long_description = get_file_contents('README.rst'),
     url = 'https://github.com/Intelworks/OpenTAXII',
-    author = 'Intelworks',
-    author_email = 'opentaxii@intelworks.com',
+    author = 'EclecticIQ',
+    author_email = 'opentaxii@eclecticiq.com',
     version = __version__,
     license = 'BSD License',
     packages = find_packages(exclude=['tests']),

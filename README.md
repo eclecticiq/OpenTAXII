@@ -1,9 +1,9 @@
 # OpenTAXII
 
-Intelworks Python TAXII server implementation.
+TAXII server implementation in Python from [EclecticIQ](https://www.eclecticiq.com).
 
 
-[Source] (https://github.com/Intelworks/OpenTAXII) | [Documentation](http://opentaxii.readthedocs.org) | [Information](http://www.intelworks.com) | [Download ] (https://pypi.python.org/pypi/opentaxii/)
+[Source] (https://github.com/Intelworks/OpenTAXII) | [Documentation](http://opentaxii.readthedocs.org) | [Information](http://www.eclecticiq.com) | [Download] (https://pypi.python.org/pypi/opentaxii/)
 
 
 [![Build Status](https://travis-ci.org/Intelworks/OpenTAXII.svg?branch=move_docs)](https://travis-ci.org/Intelworks/OpenTAXII)
@@ -38,5 +38,5 @@ More documentation on running OpenTAXII in a container is found in the [OpenTAXI
 ## Feedback
 
 You are encouraged to provide feedback by commenting on open issues or
-sending us email at <opentaxii@intelworks.com>
+sending us email at <opentaxii@eclecticiq.com>
 

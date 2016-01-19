@@ -1,11 +1,11 @@
 OpenTAXII
 ============
 
-Intelworks Python TAXII server implementation.
+TAXII server implementation in Python from EclecticIQ
 
 :Source: https://github.com/Intelworks/OpenTAXII
 :Documentation: http://opentaxii.readthedocs.org
-:Information: http://www.intelworks.com
+:Information: https://www.eclecticiq.com
 :Download: https://pypi.python.org/pypi/opentaxii/
 
 |travis badge| |landscape.io badge| |coveralls.io badge| |version badge| |py.version badge| |downloads badge| |license badge| |docs badge|
@@ -41,4 +41,4 @@ Feedback
 --------
 
 You are encouraged to provide feedback by commenting on open issues or sending us 
-email at opentaxii@intelworks.com 
+email at opentaxii@eclecticiq.com
