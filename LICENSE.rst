@@ -1,7 +1,7 @@
 License
 =======
 
-Copyright © 2015, Intelworks
+Copyright © 2016, EclecticIQ
 
 All rights reserved.
 
