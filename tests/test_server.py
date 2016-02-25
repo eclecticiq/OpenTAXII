@@ -1,7 +1,8 @@
 import pytest
 
 from opentaxii.server import TAXIIServer
-from opentaxii.utils import get_config_for_tests
+
+from conftest import get_config_for_tests
 
 INBOX = dict(
     id = 'inbox-A',

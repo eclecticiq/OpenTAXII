@@ -2,11 +2,10 @@ import pytest
 import tempfile
 
 from opentaxii.server import TAXIIServer
-from opentaxii.utils import get_config_for_tests
 
 from utils import prepare_headers, as_tm
+from conftest import get_config_for_tests
 from fixtures import *
-
 
 @pytest.fixture(scope='module')
 def server():

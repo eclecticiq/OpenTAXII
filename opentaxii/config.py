@@ -19,20 +19,21 @@ class ServerConfig(dict):
     a custom configuration file.
 
     :param str optional_env_var: name of the enviromental variable
+    :param list extra_configs: list of additional config filenames
     '''
 
-    def __init__(self, optional_env_var=CONFIG_ENV_VAR):
+    def __init__(self, optional_env_var=CONFIG_ENV_VAR, extra_configs=None):
 
         config_paths = [DEFAULT_CONFIG]
+
+        if extra_configs:
+            config_paths.extend(extra_configs)
 
         env_var_path = os.environ.get(optional_env_var)
         if env_var_path:
             config_paths.append(env_var_path)
 
-        options = anyconfig.load(config_paths, forced_type='yaml',
-                ignore_missing=False, merge=anyconfig.MS_REPLACE)
+        options = anyconfig.load(config_paths, ac_parser='yaml',
+                ignore_missing=False, ac_merge=anyconfig.MS_REPLACE)
 
         self.update(options)
-
-
-

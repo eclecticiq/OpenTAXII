@@ -2,7 +2,6 @@ import pytest
 import tempfile
 
 from opentaxii.taxii import exceptions, entities
-from opentaxii.utils import get_config_for_tests
 from opentaxii.server import TAXIIServer
 
 from utils import (
@@ -11,6 +10,7 @@ from utils import (
 )
 
 from fixtures import *
+from conftest import get_config_for_tests
 
 ASSIGNED_SERVICES = ['collection-management-A', 'poll-A']
 

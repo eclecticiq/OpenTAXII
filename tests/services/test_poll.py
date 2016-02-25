@@ -8,11 +8,11 @@ from libtaxii import messages_11 as tm11
 from libtaxii import constants
 
 from opentaxii.taxii import exceptions, entities
-from opentaxii.utils import get_config_for_tests
 from opentaxii.server import TAXIIServer
 
 from utils import prepare_headers, as_tm, persist_content, prepare_subscription_request
 from fixtures import *
+from conftest import get_config_for_tests
 
 
 @pytest.fixture()

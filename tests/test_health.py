@@ -4,8 +4,8 @@ import pytest
 
 from opentaxii.middleware import create_app
 from opentaxii.server import TAXIIServer
-from opentaxii.utils import get_config_for_tests
 
+from conftest import get_config_for_tests
 
 HEALTH_PATH = '/management/health'
 

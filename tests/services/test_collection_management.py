@@ -1,11 +1,11 @@
 import pytest
 import tempfile
 
-from opentaxii.utils import get_config_for_tests
 from opentaxii.server import TAXIIServer
 from opentaxii.taxii import entities
 
 from utils import prepare_headers, as_tm, persist_content
+from conftest import get_config_for_tests
 from fixtures import *
 
 ASSIGNED_SERVICES = ['collection-management-A', 'inbox-A', 'inbox-B', 'poll-A']

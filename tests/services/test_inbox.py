@@ -4,10 +4,10 @@ from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
 
 from opentaxii.taxii import exceptions
-from opentaxii.utils import get_config_for_tests
 from opentaxii.server import TAXIIServer
 
 from utils import prepare_headers, as_tm
+from conftest import get_config_for_tests
 from fixtures import *
 
 

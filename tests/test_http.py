@@ -2,12 +2,13 @@ import pytest
 
 from opentaxii.middleware import create_app
 from opentaxii.server import TAXIIServer
-from opentaxii.utils import get_config_for_tests
 
 from libtaxii.constants import ST_FAILURE, ST_BAD_MESSAGE
 from opentaxii.taxii.http import HTTP_X_TAXII_SERVICES
 
 from utils import prepare_headers, is_headers_valid, as_tm
+
+from conftest import get_config_for_tests
 
 INBOX = dict(
     id = 'inbox-A',
