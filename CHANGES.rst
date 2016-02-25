@@ -3,8 +3,8 @@ Changelog
 
 0.1.3 (2016-02-25)
 ------------------
-* Dependencies versions pinned.
-* Code adjusted for new version of `anyconfig <https://pypi.python.org/pypi/anyconfig>`_ API.
+* Versions of dependencies are pinned.
+* Code adjusted for a new version of `anyconfig <https://pypi.python.org/pypi/anyconfig>`_ API.
 * Test for configuration loading added.
 
 0.1.2 (2015-07-24)
