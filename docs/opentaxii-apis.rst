@@ -6,7 +6,7 @@ This document is the API reference for OpenTAXII. It describes all classes,
 methods, functions, and attributes that are part of the public API.
 
 Most of the terminology in the OpenTAXII API comes straight from the TAXII specification.
-See the `TAXII documentation <http://taxii.mitre.org>`_ for more detailed explanations.
+See the `TAXII documentation <https://taxiiproject.github.io/>`_ for more detailed explanations.
 
 
 Configuration

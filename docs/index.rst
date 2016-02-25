@@ -2,14 +2,14 @@
 OpenTAXII
 =========
 
-Release v0.1.2. (:doc:`Changelog <changes>`)
+Latest stable release is v0.1.3. (:doc:`Changelog <changes>`)
 
 ..
     Release v\ |version|. (:doc:`Changelog <changes>`)
 
 OpenTAXII is a robust Python implementation of TAXII Services that delivers rich feature set and friendly pythonic API.
 
-TAXII (Trusted Automated eXchange of Indicator Information) is a collection of specifications defining a set of services and message exchanges used for sharing cyber threat intelligence information between parties. Check `TAXII homepage <http://taxii.mitre.org/>`_ for more information.
+TAXII (Trusted Automated eXchange of Indicator Information) is a collection of specifications defining a set of services and message exchanges used for sharing cyber threat intelligence information between parties. Check `TAXII homepage <https://taxiiproject.github.io/>`_ for more information.
 
 **Rich feature set**
 
