@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.1.4 (2016-02-25)
+------------------
+* Hard-coded dependencies in ``setup.py`` removed.
+
 0.1.3 (2016-02-25)
 ------------------
 * Versions of dependencies are pinned.
