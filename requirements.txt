@@ -6,5 +6,4 @@ sqlalchemy==1.0.12
 structlog==16.0.0
 blinker==1.4
 anyconfig==0.5.0
-bcrypt==2.0.0
 pyjwt==1.4.0

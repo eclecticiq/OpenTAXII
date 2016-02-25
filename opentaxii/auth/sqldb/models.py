@@ -1,10 +1,10 @@
-import bcrypt
-
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
-from werkzeug.security import safe_str_cmp
+from werkzeug.security import (
+    safe_str_cmp, check_password_hash, generate_password_hash
+)
 
 __all__ = ['Base', 'Account']
 
@@ -25,10 +25,10 @@ class Account(Base):
     def set_password(self, password):
         if isinstance(password, unicode):
             password = password.encode('utf-8')
-        self.password_hash = bcrypt.hashpw(password, bcrypt.gensalt())
+        self.password_hash = generate_password_hash(password)
 
     def is_password_valid(self, password):
         if isinstance(password, unicode):
             password = password.encode('utf-8')
-        hashed = self.password_hash.encode('utf-8')
-        return safe_str_cmp(bcrypt.hashpw(password, hashed), hashed)
+        password_hash = self.password_hash.encode('utf-8')
+        return check_password_hash(password_hash, password)
