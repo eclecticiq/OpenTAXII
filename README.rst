@@ -1,7 +1,11 @@
 OpenTAXII
-============
+=========
 
-TAXII server implementation in Python from EclecticIQ
+TAXII server implementation in Python from EclecticIQ.
+
+OpenTAXII is a robust Python implementation of TAXII Services that 
+delivers rich feature set and friendly pythonic API built on top of 
+well designed application.
 
 :Source: https://github.com/Intelworks/OpenTAXII
 :Documentation: http://opentaxii.readthedocs.org
@@ -32,13 +36,11 @@ TAXII server implementation in Python from EclecticIQ
     :scale: 100%
     :target: https://readthedocs.org/projects/opentaxii/
 
-OpenTAXII is a robust Python implementation of TAXII Services that 
-delivers rich feature set and friendly pythonic API built on top of 
-well designed application.
-
+Getting started
+---------------
+See [the documentation](https://opentaxii.readthedocs.org/en/latest/installation.html).
 
 Feedback
 --------
-
 You are encouraged to provide feedback by commenting on open issues or sending us 
 email at opentaxii@eclecticiq.com

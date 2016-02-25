@@ -1,1 +1,7 @@
+include LICENSE.rst
+include CHANGES.rst
+include README.rst
+include requirements.txt
+recursive-include docs *
 recursive-include opentaxii *.yml
+global-exclude *.pyc

@@ -1,30 +1,37 @@
-from os.path import join, dirname
+import os
 from setuptools import setup, find_packages
 
 __version__ = None
 execfile('opentaxii/_version.py')
 
-CURRENT_DIR = dirname(__file__)
+
+def here(*path):
+    return os.path.join(os.path.dirname(__file__), *path)
+
 
 def get_file_contents(filename):
-    with open(join(CURRENT_DIR, filename)) as fp:
+    with open(here(filename)) as fp:
         return fp.read()
 
+# This is a quick and dirty way to include everything from
+# requirements.txt as package dependencies.
+install_requires = get_file_contents('requirements.txt').split()
+
 setup(
-    name = 'opentaxii',
-    description = 'TAXII server implementation in Python from EclecticIQ',
-    long_description = get_file_contents('README.rst'),
-    url = 'https://github.com/Intelworks/OpenTAXII',
-    author = 'EclecticIQ',
-    author_email = 'opentaxii@eclecticiq.com',
-    version = __version__,
-    license = 'BSD License',
-    packages = find_packages(exclude=['tests']),
-    include_package_data = True,
-    package_data = {
+    name='opentaxii',
+    description='TAXII server implementation in Python from EclecticIQ',
+    long_description=get_file_contents('README.rst'),
+    url='https://github.com/Intelworks/OpenTAXII',
+    author='EclecticIQ',
+    author_email='opentaxii@eclecticiq.com',
+    version=__version__,
+    license='BSD License',
+    packages=find_packages(exclude=['tests']),
+    include_package_data=True,
+    package_data={
         'opentaxii' : ['*.yml']
     },
-    entry_points = {
+    entry_points={
         'console_scripts' : [
             'opentaxii-run-dev = opentaxii.cli.run:run_in_dev_mode',
             'opentaxii-create-account = opentaxii.cli.auth:create_account',
@@ -32,19 +39,8 @@ setup(
             'opentaxii-create-collections = opentaxii.cli.persistence:create_collections',
         ]
     },
-    install_requires = [
-        'pytz==2014.10',
-        'pyyaml',
-        'anyconfig',
-        'structlog',
-        'Flask',
-        'sqlalchemy',
-        'blinker',
-        'bcrypt',
-        'pyjwt',
-        'libtaxii>=1.1.106'
-    ],
-    classifiers = [
+    install_requires=install_requires,
+    classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Intended Audience :: Information Technology',
