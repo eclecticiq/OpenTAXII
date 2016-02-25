@@ -5,7 +5,6 @@ import urlparse
 import importlib
 import base64
 
-from .config import ServerConfig
 from .exceptions import InvalidAuthHeader
 
 log = structlog.getLogger(__name__)

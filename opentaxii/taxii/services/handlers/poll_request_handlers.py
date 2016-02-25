@@ -168,7 +168,7 @@ class PollRequest11Handler(BaseMessageHandler):
                     message_id=generate_message_id(),
                     in_response_to=in_response_to,
                     status_type=ST_PENDING,
-                    status_details={
+                    status_detail={
                         SD_ESTIMATED_WAIT: service.wait_time,
                         SD_RESULT_ID: result_set.id,
                         SD_WILL_PUSH: service.can_push
