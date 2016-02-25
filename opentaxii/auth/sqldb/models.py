@@ -3,7 +3,7 @@ from sqlalchemy.types import Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
 from werkzeug.security import (
-    safe_str_cmp, check_password_hash, generate_password_hash
+    check_password_hash, generate_password_hash
 )
 
 __all__ = ['Base', 'Account']
