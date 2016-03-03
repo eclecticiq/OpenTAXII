@@ -6,6 +6,8 @@ OpenTAXII is a robust Python implementation of TAXII Services that
 delivers rich feature set and friendly pythonic API built on top of well
 designed application.
 
+OpenTAXII is guaranteed to be compatible with [Cabby](https://github.com/Intelworks/cabby), TAXII client library.
+
 [Source] (https://github.com/Intelworks/OpenTAXII) | [Documentation](http://opentaxii.readthedocs.org) | [Information](http://www.eclecticiq.com) | [Download] (https://pypi.python.org/pypi/opentaxii/)
 
 
