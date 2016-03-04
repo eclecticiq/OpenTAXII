@@ -62,7 +62,7 @@ class InboxMessage11Handler(BaseMessageHandler):
                 block,
                 collections=supporting_collections,
                 service_id=service.id,
-                inbox_message_id=inbox_message.id)
+                inbox_message_id=inbox_message.id if inbox_message else None)
 
         # Create and return a Status Message indicating success
         status_message = tm11.StatusMessage(
@@ -101,8 +101,9 @@ class InboxMessage10Handler(BaseMessageHandler):
                 content_block, version=10)
 
             service.server.persistence.create_content(
-                block, inbox_message_id=inbox_message.id,
-                collections=collections, service_id=service.id)
+                block, collections=collections,
+                service_id=service.id,
+                inbox_message_id=inbox_message.id if inbox_message else None)
 
         status_message = tm10.StatusMessage(
             message_id=cls.generate_id(),
