@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.1.5 (2016-03-15)
+------------------
+* Fix for the issue with persistence backend returning ``None`` instead of ``InboxMessage`` object
+
 0.1.4 (2016-02-25)
 ------------------
 * Hard-coded dependencies in ``setup.py`` removed.
