@@ -36,7 +36,7 @@ A server will reply with a JSON dictionary that contains a token. For example::
     }
 
 To query a service with authentication enabled, pass the token in a value of ``Authorization`` HTTP header.
-Example request using `Cabby library <http://github.com/Intelworks/cabby>`_ CLI command::
+Example request using `Cabby library <http://github.com/eclecticiq/cabby>`_ CLI command::
 
     # using raw HTTP header
     (venv) $ taxii-poll \

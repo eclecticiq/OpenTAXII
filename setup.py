@@ -21,7 +21,7 @@ setup(
     name='opentaxii',
     description='TAXII server implementation in Python from EclecticIQ',
     long_description=get_file_contents('README.rst'),
-    url='https://github.com/Intelworks/OpenTAXII',
+    url='https://github.com/EclecticIQ/OpenTAXII',
     author='EclecticIQ',
     author_email='opentaxii@eclecticiq.com',
     version=__version__,

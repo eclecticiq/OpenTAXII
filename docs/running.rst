@@ -38,14 +38,14 @@ Example supervisord configuration file:
     [program:opentaxii]
 
     command =
-        /opt/intelworks/opentaxii-venv/bin/gunicorn opentaxii.http:app
+        /opt/eclecticiq/opentaxii-venv/bin/gunicorn opentaxii.http:app
             --workers 2
             --log-level info
             --log-file -
             --timeout 300
             --bind localhost:9000
     environment =
-        OPENTAXII_CONFIG="/opt/intelworks/custom-opentaxii-configuration.yml"
+        OPENTAXII_CONFIG="/opt/eclecticiq/custom-opentaxii-configuration.yml"
 
     stdout_logfile = /var/log/opentaxii.log
     redirect_stderr = true
@@ -56,7 +56,7 @@ Example supervisord configuration file:
 Sending requests to services
 ============================
 
-The easiest way to send requests to TAXII services is to use `Cabby library <http://github.com/Intelworks/cabby>`_ CLI tools::
+The easiest way to send requests to TAXII services is to use `Cabby library <http://github.com/eclecticiq/cabby>`_ CLI tools::
 
     (venv) $ pip install cabby
 

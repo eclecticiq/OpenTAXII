@@ -2,7 +2,7 @@
 Contributing and developing
 ===========================
 
-.. _OpenTAXII project page: https://github.com/Intelworks/OpenTAXII
+.. _OpenTAXII project page: https://github.com/EclecticIQ/OpenTAXII
 
 
 Reporting issues

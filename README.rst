@@ -9,21 +9,21 @@ well designed application.
 
 OpenTAXII is guaranteed to be compatible with `Cabby <http://pypi.python.org/pypi/cabby>`_, TAXII client library.
 
-:Source: https://github.com/Intelworks/OpenTAXII
+:Source: https://github.com/EclecticIQ/OpenTAXII
 :Documentation: http://opentaxii.readthedocs.org
 :Information: https://www.eclecticiq.com
 :Download: https://pypi.python.org/pypi/opentaxii/
 
 |travis badge| |landscape.io badge| |coveralls.io badge| |version badge| |py.version badge| |downloads badge| |license badge| |docs badge|
 
-.. |travis badge| image:: https://travis-ci.org/Intelworks/OpenTAXII.svg?branch=master
-   :target: https://travis-ci.org/Intelworks/OpenTAXII
+.. |travis badge| image:: https://travis-ci.org/EclecticIQ/OpenTAXII.svg?branch=master
+   :target: https://travis-ci.org/EclecticIQ/OpenTAXII
    :alt: Build Status
-.. |landscape.io badge| image:: https://landscape.io/github/Intelworks/OpenTAXII/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/Intelworks/OpenTAXII/master
+.. |landscape.io badge| image:: https://landscape.io/github/EclecticIQ/OpenTAXII/master/landscape.svg?style=flat
+   :target: https://landscape.io/github/EclecticIQ/OpenTAXII/master
    :alt: Code Health
-.. |coveralls.io badge| image:: https://coveralls.io/repos/Intelworks/OpenTAXII/badge.svg
-   :target: https://coveralls.io/r/Intelworks/OpenTAXII
+.. |coveralls.io badge| image:: https://coveralls.io/repos/EclecticIQ/OpenTAXII/badge.svg
+   :target: https://coveralls.io/r/EclecticIQ/OpenTAXII
    :alt: Coverage Status
 .. |version badge| image:: https://pypip.in/version/opentaxii/badge.svg?style=flat
    :target: https://pypi.python.org/pypi/opentaxii/ 

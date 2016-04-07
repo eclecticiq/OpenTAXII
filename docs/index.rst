@@ -49,6 +49,6 @@ OpenTAXII architecture follows TAXII specification in its idea of TTA (TAXII tra
 .. rubric:: External links
 
 * `Online documentation <https://opentaxii.readthedocs.org/>`_ (Read the docs)
-* `Project page <https://github.com/Intelworks/OpenTAXII/>`_ with source code and issue tracker (Github)
+* `Project page <https://github.com/EclecticIQ/OpenTAXII/>`_ with source code and issue tracker (Github)
 * `Python Package Index (PyPI) page <http://pypi.python.org/pypi/opentaxii/>`_ with released tarballs
 * `EclecticIQ <https://www.eclecticiq.com>`_

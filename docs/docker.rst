@@ -8,7 +8,7 @@ To get a default (development) instance using docker
 
 .. code-block:: shell
 
-    $ docker run -d -p 9000:9000 intelworks/opentaxii
+    $ docker run -d -p 9000:9000 eclecticiq/opentaxii
 
 .. note::
 
@@ -41,7 +41,7 @@ Setting up  authentication is done with the following two variables:
 .. code-block:: shell
 
     $ export OPENTAXII_PASS="SomePassword"
-    $ docker -d -p 9000:9000 -e OPENTAXII_USER=myuser -e OPENTAXII_PASS intelworks/opentaxii
+    $ docker -d -p 9000:9000 -e OPENTAXII_USER=myuser -e OPENTAXII_PASS eclecticiq/opentaxii
 
 ---------------------
 
@@ -97,7 +97,7 @@ This docker container exposes two volumes, which can be attached to a running in
     /some/path/examples
     $ ls /some/path/examples
     collections.yml services.yml
-    $ docker run -d -p 9000:9000 -v /some/path/examples:/input intelworks/opentaxii
+    $ docker run -d -p 9000:9000 -v /some/path/examples:/input eclecticiq/opentaxii
 
 .. note::
     Make sure your naming is correct. It will only execute actions when any of the files with names: ``services.yml``, ``collections.yml``, or ``opentaxii.yml`` are present.
@@ -109,8 +109,8 @@ If you need custom configuration, and installation of extra/custom code, it is b
 
 .. code-block:: docker
 
-  FROM intelworks/opentaxii:latest
-  MAINTAINER Intelworks <opentaxii@intelworks.com>
+  FROM eclecticiq/opentaxii:latest
+  MAINTAINER EclecticIQ <opentaxii@eclecticiq.com>
 
   RUN pip install mysql-python \
     && pip install custom-package
@@ -121,13 +121,13 @@ And building the image is then done using:
 
 .. code-block:: shell
 
-  $ docker build -t intelworks/opentaxii-mysql .
+  $ docker build -t eclecticiq/opentaxii-mysql .
 
 
 Full Example with Compose
 -------------------------
 
-To see a full exmple of running OpenTAXII against a 'real' database, using the `docker-compose <https://docs.docker.com/compose/>`_ tool, checkout the configuration at: `examples/docker-compose.yml <https://raw.githubusercontent.com/Intelworks/OpenTAXII/master/examples/docker-compose.yml>`_
+To see a full example of running OpenTAXII against a "real" database, using the `docker-compose <https://docs.docker.com/compose/>`_ tool, checkout the configuration at: `examples/docker-compose.yml <https://raw.githubusercontent.com/EclecticIQ/OpenTAXII/master/examples/docker-compose.yml>`_
 
 .. code-block:: yaml
 
@@ -139,7 +139,7 @@ To see a full exmple of running OpenTAXII against a 'real' database, using the `
         POSTGRES_DB: opentaxii
 
     opentaxii:
-      image: intelworks/opentaxii
+      image: eclecticiq/opentaxii
       environment:
         OPENTAXII_AUTH_SECRET: secret
         OPENTAXII_DOMAIN: 192.168.59.103:9000

@@ -4,7 +4,7 @@ Configuration
 
 .. highlight:: sh
 
-OpenTAXII can be configured using YAML configuration files, it ships with the following `default configuration <https://github.com/Intelworks/OpenTAXII/blob/master/opentaxii/defaults.yml>`_:
+OpenTAXII can be configured using YAML configuration files, it ships with the following `default configuration <https://github.com/eclecticiq/OpenTAXII/blob/master/opentaxii/defaults.yml>`_:
 
 * Persistence API and Authentication API use SQL DB as a backend.
 * The sqlite3 databases and corresponding tables will automatically be created in ``/tmp/data.db`` and ``/tmp/auth.db``.
@@ -90,9 +90,9 @@ Services and collections can be created with supplied CLI tools. It is also poss
 
 Step 1
 ------ 
-We will need to create YAML files with services and collections configurations. You can create your own file or use examples from OpenTAXII `git repo <https://github.com/Intelworks/OpenTAXII>`_:
+We will need to create YAML files with services and collections configurations. You can create your own file or use examples from OpenTAXII `git repo <https://github.com/eclecticiq/OpenTAXII>`_:
 
-* `examples/services.yml <https://raw.githubusercontent.com/Intelworks/OpenTAXII/master/examples/services.yml>`_
+* `examples/services.yml <https://raw.githubusercontent.com/eclecticiq/OpenTAXII/master/examples/services.yml>`_
 
   Describes the following services:
     * 2 Inbox Services (``inbox_a`` and ``inbox_b``), 
@@ -102,7 +102,7 @@ We will need to create YAML files with services and collections configurations. 
 
   Services have relative path in the address field, which means OpenTAXII will prepend it with domain configured in server configuration file (``localhost:9000`` in `default configuration`_).
 
-* `examples/collections.yml <https://raw.githubusercontent.com/Intelworks/OpenTAXII/master/examples/collections.yml>`_
+* `examples/collections.yml <https://raw.githubusercontent.com/eclecticiq/OpenTAXII/master/examples/collections.yml>`_
 
   Lists 4 collections: 
     * ``collection-A`` that accepts all content, with type ``DATA_SET`` and attached to services
