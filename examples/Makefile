@@ -2,7 +2,7 @@
 
 .PHONY: build push 
 
-REG:="intelworks"
+REG:="eclecticiq"
 IMAGE:="opentaxii"
 
 all: build push
