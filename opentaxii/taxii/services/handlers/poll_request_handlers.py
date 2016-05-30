@@ -8,7 +8,6 @@ from libtaxii.constants import (
     RT_FULL,
     ST_PENDING, SD_ESTIMATED_WAIT, SD_RESULT_ID, SD_WILL_PUSH
 )
-from libtaxii.common import generate_message_id
 
 from .base_handlers import BaseMessageHandler
 from ...exceptions import StatusMessageException, raise_failure, FailureStatus
@@ -164,8 +163,14 @@ class PollRequest11Handler(BaseMessageHandler):
                     collection, timeframe=timeframe,
                     content_bindings=content_bindings)
 
+                if not result_set:
+                    raise StatusMessageException(
+                        ST_DENIED,
+                        message="Poll fulfilment is not supported",
+                        in_response_to=request.message_id)
+
                 return tm11.StatusMessage(
-                    message_id=generate_message_id(),
+                    message_id=service.generate_id(),
                     in_response_to=in_response_to,
                     status_type=ST_PENDING,
                     status_detail={
@@ -193,7 +198,7 @@ class PollRequest11Handler(BaseMessageHandler):
             result_id = result_set.id
 
         response = tm11.PollResponse(
-            message_id=generate_message_id(),
+            message_id=service.generate_id(),
             in_response_to=in_response_to,
             collection_name=collection.name,
             more=has_more,
@@ -279,7 +284,7 @@ class PollRequest10Handler(BaseMessageHandler):
         end_response = end or get_utc_now()
 
         response = tm10.PollResponse(
-            message_id=generate_message_id(),
+            message_id=service.generate_id(),
             in_response_to=request.message_id,
             feed_name=collection.name,
 

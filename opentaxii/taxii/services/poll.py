@@ -22,7 +22,11 @@ class PollService(TAXIIService):
     service_type = SVC_POLL
 
     subscription_required = False
+
+    # Random sane number
     wait_time = 300
+
+    # Poll Service does not support pushing for now
     can_push = False
 
     max_result_size = sys.maxint
