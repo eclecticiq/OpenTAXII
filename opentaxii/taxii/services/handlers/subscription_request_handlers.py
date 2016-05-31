@@ -137,9 +137,9 @@ class SubscriptionRequest11Handler(BaseMessageHandler):
                 message=error_message,
                 in_response_to=request.message_id)
 
-        if (not subscription
-            and (action in (ACT_PAUSE, ACT_RESUME) or
-                 (action == ACT_STATUS and request.subscription_id))):
+        if (not subscription and (
+                action in (ACT_PAUSE, ACT_RESUME) or
+                (action == ACT_STATUS and request.subscription_id))):
 
             details = {SD_ITEM: request.subscription_id}
             raise StatusMessageException(

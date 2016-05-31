@@ -33,8 +33,9 @@ def create_app(server):
     '''
 
     app = Flask(__name__)
+    app.taxii_server = server
 
-    app.taxii = server
+    server.init_app(app)
 
     app.add_url_rule("/<path:relative_path>", "opentaxii_services_view",
             _server_wrapper(server), methods=['POST', 'OPTIONS'])

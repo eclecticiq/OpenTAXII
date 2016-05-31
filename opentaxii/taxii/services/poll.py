@@ -85,7 +85,6 @@ class PollService(TAXIIService):
     def create_result_set(self, collection, content_bindings=None,
                           timeframe=None):
 
-
         entity = ResultSetEntity(
             id=self.generate_id(),
             collection_id=collection.id,

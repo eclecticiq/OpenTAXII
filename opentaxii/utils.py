@@ -25,7 +25,7 @@ def import_class(module_class_name):
     return getattr(module, class_name)
 
 
-def load_api(api_config):
+def initialize_api(api_config):
     cls = import_class(api_config['class'])
     params = api_config['parameters']
 
@@ -33,6 +33,9 @@ def load_api(api_config):
         instance = cls(**params)
     else:
         instance = cls()
+
+    log.info("api.initialized", api=cls.__name__)
+
     return instance
 
 

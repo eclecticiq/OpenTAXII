@@ -13,4 +13,3 @@ class Account(object):
 
         self.id = id
         self.details = details
-    
