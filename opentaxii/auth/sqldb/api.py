@@ -3,37 +3,42 @@ import structlog
 
 from datetime import datetime, timedelta
 
-from sqlalchemy import orm, engine
 from sqlalchemy.orm import exc
 
 from opentaxii.auth import OpenTAXIIAuthAPI
-from opentaxii.entities import Account
+from opentaxii.entities import Account as AccountEntity
+from opentaxii.sqldb_helper import SQLAlchemyDB
 
-from . import models
+from .models import Base, Account
 
 __all__ = ['SQLDatabaseAPI']
 
 
-TOKEN_TTL = 60 # min
+TOKEN_TTL = 60  # min
 
 log = structlog.getLogger(__name__)
 
 
 class SQLDatabaseAPI(OpenTAXIIAuthAPI):
+    """Naive SQL database implementation of OpenTAXII Auth API.
+
+    Implementation will work with any DB supported by SQLAlchemy package.
+
+    :param str db_connection: a string that indicates database dialect and
+                          connection arguments that will be passed directly
+                          to :func:`~sqlalchemy.engine.create_engine` method.
+
+    :param bool create_tables=False: if True, tables will be created in the DB.
+    """
 
     def __init__(self, db_connection, create_tables=False, secret=None):
 
-        self.engine = engine.create_engine(db_connection, convert_unicode=True)
-
-        self.Session = orm.scoped_session(orm.sessionmaker(autocommit=False,
-            autoflush=True, bind=self.engine))
-
-        attach_all(self, models)
-
-        self.Base.query = self.Session.query_property()
-
+        self.db = SQLAlchemyDB(
+            db_connection, Base, session_options={
+                'autocommit': False, 'autoflush': True,
+            })
         if create_tables:
-            self.create_tables()
+            self.db.create_all_tables()
 
         if not secret:
             raise ValueError('Secret is not defined for %s.%s' % (
@@ -41,15 +46,12 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
 
         self.secret = secret
 
-
-    def create_tables(self):
-        self.Base.metadata.create_all(bind=self.engine)
-
+    def init_app(self, app):
+        self.db.init_app(app)
 
     def authenticate(self, username, password):
-
         try:
-            account = self.Account.query.filter_by(username=username).one()
+            account = Account.query.filter_by(username=username).one()
         except exc.NoResultFound:
             return
 
@@ -58,7 +60,6 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
 
         return self._generate_token(account.id, ttl=TOKEN_TTL)
 
-
     def get_account(self, token):
 
         account_id = self._get_account_id(token)
@@ -66,30 +67,28 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
         if not account_id:
             return
 
-        account = self.Account.query.get(account_id)
+        account = Account.query.get(account_id)
 
         if not account:
             return
 
-        return Account(id=account.id)
+        return AccountEntity(id=account.id)
 
     def create_account(self, username, password):
 
-        account = self.Account(username=username)
+        account = Account(username=username)
         account.set_password(password)
 
-        session = self.Session()
-        session.add(account)
-        session.commit()
+        self.db.session.add(account)
+        self.db.session.commit()
 
-        return Account(id=account.id)
+        return AccountEntity(id=account.id)
 
     def _generate_token(self, account_id, ttl=TOKEN_TTL):
-
         exp = datetime.utcnow() + timedelta(minutes=ttl)
-
-        return jwt.encode({'account_id' : account_id, 'exp' : exp}, self.secret)
-
+        return jwt.encode(
+            {'account_id': account_id, 'exp': exp},
+            self.secret)
 
     def _get_account_id(self, token):
         try:
@@ -102,13 +101,3 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
             return
 
         return payload.get('account_id')
-
-
-
-def attach_all(obj, module):
-    for key in module.__all__:
-        if not hasattr(obj, key):
-            setattr(obj, key, getattr(module, key))
-    return obj
-
-
