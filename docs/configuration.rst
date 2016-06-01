@@ -90,7 +90,7 @@ Services and collections can be created with supplied CLI tools. It is also poss
 
 Step 1
 ------ 
-We will need to create YAML files with services and collections configurations. You can create your own file or use examples from OpenTAXII `git repo <https://github.com/eclecticiq/OpenTAXII>`_:
+We will need to create YAML files with services and collections configurations. You can create your own file or use examples from `OpenTAXII git repo <https://github.com/eclecticiq/OpenTAXII>`_:
 
 * `examples/services.yml <https://raw.githubusercontent.com/eclecticiq/OpenTAXII/master/examples/services.yml>`_
 

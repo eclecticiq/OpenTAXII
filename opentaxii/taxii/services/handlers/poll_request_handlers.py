@@ -134,7 +134,6 @@ class PollRequest11Handler(BaseMessageHandler):
             subscription_id=request.subscription_id
         )
 
-
     @classmethod
     def prepare_poll_response(cls, service, collection, in_response_to,
                               timeframe=None, content_bindings=None,
@@ -167,7 +166,7 @@ class PollRequest11Handler(BaseMessageHandler):
                     raise StatusMessageException(
                         ST_DENIED,
                         message="Poll fulfilment is not supported",
-                        in_response_to=request.message_id)
+                        in_response_to=in_response_to)
 
                 return tm11.StatusMessage(
                     message_id=service.generate_id(),
@@ -288,7 +287,7 @@ class PollRequest10Handler(BaseMessageHandler):
             in_response_to=request.message_id,
             feed_name=collection.name,
 
-            #FIXME: exclusive/inclusive clash
+            #  FIXME: exclusive/inclusive clash
             inclusive_begin_timestamp_label=start,
             inclusive_end_timestamp_label=end_response,
         )

@@ -33,11 +33,13 @@ def create_app(server):
     '''
 
     app = Flask(__name__)
+    app.taxii_server = server
 
-    app.taxii = server
+    server.init_app(app)
 
-    app.add_url_rule("/<path:relative_path>", "opentaxii_services_view",
-            _server_wrapper(server), methods=['POST', 'OPTIONS'])
+    app.add_url_rule(
+        "/<path:relative_path>", "opentaxii_services_view",
+        _server_wrapper(server), methods=['POST', 'OPTIONS'])
 
     app.register_blueprint(management, url_prefix='/management')
 
@@ -63,7 +65,8 @@ def _server_wrapper(server):
             for service in server.get_services():
                 if service.path == relative_path:
 
-                    if service.authentication_required and context.account is None:
+                    if (service.authentication_required and
+                            context.account is None):
                         raise UnauthorizedException()
 
                     if not service.available:
@@ -127,25 +130,29 @@ def _authenticate(server, auth_header):
 def _process_with_service(service):
 
     if 'application/xml' not in request.accept_mimetypes:
-        raise_failure("The specified values of Accept is not supported: %s" %
-                ", ".join((request.accept_mimetypes or [])))
+        raise_failure(
+            "The specified values of Accept is not supported: {}"
+            .format(", ".join((request.accept_mimetypes or []))))
 
     validate_request_headers(request.headers, MESSAGE_BINDINGS)
 
-    taxii_message = parse_message(get_content_type(request.headers), request.data)
+    taxii_message = parse_message(
+        get_content_type(request.headers), request.data)
 
     try:
-        validate_request_headers_post_parse(request.headers,
-                supported_message_bindings=MESSAGE_BINDINGS,
-                service_bindings=SERVICE_BINDINGS,
-                protocol_bindings=ALL_PROTOCOL_BINDINGS)
-    except StatusMessageException, e:
+        validate_request_headers_post_parse(
+            request.headers,
+            supported_message_bindings=MESSAGE_BINDINGS,
+            service_bindings=SERVICE_BINDINGS,
+            protocol_bindings=ALL_PROTOCOL_BINDINGS)
+    except StatusMessageException as e:
         e.in_response_to = taxii_message.message_id
         raise e
 
     response_message = service.process(request.headers, taxii_message)
 
-    response_headers = get_http_headers(response_message.version, request.is_secure)
+    response_headers = get_http_headers(
+        response_message.version, request.is_secure)
     validate_response_headers(response_headers)
 
     # FIXME: pretty-printing should be configurable
@@ -159,8 +166,8 @@ def _process_options_request(service):
     message_bindings = ','.join(service.supported_message_bindings or [])
 
     return "", 200, {
-        HTTP_ALLOW : 'POST, OPTIONS',
-        HTTP_X_TAXII_CONTENT_TYPES : message_bindings
+        HTTP_ALLOW: 'POST, OPTIONS',
+        HTTP_X_TAXII_CONTENT_TYPES: message_bindings
     }
 
 
@@ -182,7 +189,8 @@ def handle_status_exception(error):
     if 'application/xml' not in request.accept_mimetypes:
         return 'Unacceptable', 406
 
-    xml, headers = process_status_exception(error, request.headers, request.is_secure)
+    xml, headers = process_status_exception(
+        error, request.headers, request.is_secure)
     return make_taxii_response(xml, headers)
 
 
@@ -194,6 +202,6 @@ def handle_internal_error(error):
 
     new_error = FailureStatus("Error occured", e=error)
 
-    xml, headers = process_status_exception(new_error, request.headers, request.is_secure)
+    xml, headers = process_status_exception(
+        new_error, request.headers, request.is_secure)
     return make_taxii_response(xml, headers)
-

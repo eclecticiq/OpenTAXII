@@ -1,10 +1,19 @@
 from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
 
-from opentaxii.taxii.http import *
+from opentaxii.taxii import entities
+from opentaxii.taxii.http import (
+    TAXII_10_HTTPS_Headers, TAXII_10_HTTP_Headers, TAXII_11_HTTPS_Headers,
+    TAXII_11_HTTP_Headers
+)
+from opentaxii.taxii.http import (
+    HTTP_ACCEPT, HTTP_CONTENT_XML)
+
 from opentaxii.taxii.utils import get_utc_now
 
-from fixtures import *
+from fixtures import (
+    CB_STIX_XML_111, CONTENT, MESSAGE, MESSAGE_ID)
+
 
 def as_tm(version):
     if version == 10:
@@ -35,30 +44,36 @@ def prepare_headers(version, https):
 
 
 def persist_content(manager, collection_name, service_id, timestamp=None,
-        binding=CB_STIX_XML_111, subtypes=[]):
+                    binding=CB_STIX_XML_111, subtypes=[]):
 
     timestamp = timestamp or get_utc_now()
 
     content_binding = entities.ContentBindingEntity(
-        binding = binding,
-        subtypes = subtypes
+        binding=binding,
+        subtypes=subtypes
     )
 
-    content = entities.ContentBlockEntity(content=CONTENT, timestamp_label=timestamp,
-            message=MESSAGE, content_binding=content_binding)
+    content = entities.ContentBlockEntity(
+        content=CONTENT, timestamp_label=timestamp,
+        message=MESSAGE, content_binding=content_binding)
 
     collection = manager.get_collection(collection_name, service_id)
+
+    if not collection:
+        raise ValueError('No collection with name {}'.format(collection_name))
+
     content = manager.create_content(content, collections=[collection])
 
     return content
 
 
-def prepare_subscription_request(collection, action, version, subscription_id=None, params=None):
+def prepare_subscription_request(collection, action, version,
+                                 subscription_id=None, params=None):
 
     data = dict(
-        action = action,
-        message_id = MESSAGE_ID,
-        subscription_id = subscription_id,
+        action=action,
+        message_id=MESSAGE_ID,
+        subscription_id=subscription_id,
     )
 
     mod = as_tm(version)
@@ -66,8 +81,9 @@ def prepare_subscription_request(collection, action, version, subscription_id=No
     if version == 11:
         cls = mod.ManageCollectionSubscriptionRequest
         data.update(dict(
-            collection_name = collection,
-            subscription_parameters = mod.SubscriptionParameters(**params) if params else None
+            collection_name=collection,
+            subscription_parameters=(
+                mod.SubscriptionParameters(**params) if params else None)
         ))
     else:
         cls = mod.ManageFeedSubscriptionRequest
@@ -93,4 +109,3 @@ def is_headers_valid(headers, version, https):
             return includes(headers, TAXII_11_HTTP_Headers)
     else:
         raise ValueError('Unknown TAXII message version: %s' % version)
-

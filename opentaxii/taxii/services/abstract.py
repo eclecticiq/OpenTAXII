@@ -38,7 +38,8 @@ class TAXIIService(object):
     supported_protocol_bindings = ()
 
     def __init__(self, id, server, address, description=None, path=None,
-            protocol_bindings=None, available=True, authentication_required=False):
+                 protocol_bindings=None, available=True,
+                 authentication_required=False):
 
         self.id = id
         self.server = server
@@ -47,25 +48,31 @@ class TAXIIService(object):
         self.path = path
 
         self.description = description
-        self.supported_protocol_bindings = protocol_bindings or self.supported_protocol_bindings
+        self.supported_protocol_bindings = (
+            protocol_bindings or self.supported_protocol_bindings)
 
         self.available = available
         self.authentication_required = authentication_required
 
-        self.log = structlog.getLogger("%s.%s" % (self.__module__,
-            self.__class__.__name__), service_id=id)
+        self.log = structlog.getLogger(
+            "{}.{}".format(self.__module__, self.__class__.__name__),
+            service_id=id)
 
         if not self.supported_protocol_bindings:
-            self.log.warning("No protocol bindings specified, "
-                    "service will be invisible", service_id=self.id)
+            self.log.warning(
+                "No protocol bindings specified, service will be invisible",
+                service=self.id)
 
     def generate_id(self):
         return generate_message_id()
 
     def process(self, headers, message):
 
-        self.log.info("Processing message", message_id=message.message_id,
-                message_type=message.message_type, message_version=message.version)
+        self.log.debug(
+            "Processing message",
+            message_id=message.message_id,
+            message_type=message.message_type,
+            message_version=message.version)
 
         handler = self.get_message_handler(message)
 
@@ -77,12 +84,15 @@ class TAXIIService(object):
         except StatusMessageException:
             raise
         except Exception:
-            raise_failure("There was a failure while executing the message handler",
-                    in_response_to=message.message_id)
+            raise_failure(
+                "There was a failure while executing the message handler",
+                in_response_to=message.message_id)
 
         if not response_message:
-            raise_failure("The message handler %s did not return a TAXII Message" % handler,
-                    in_response_to=message.message_id)
+            raise_failure(
+                "The message handler {} did not return a TAXII Message"
+                .format(handler),
+                in_response_to=message.message_id)
 
         return response_message
 
@@ -90,10 +100,14 @@ class TAXIIService(object):
         try:
             return self.handlers[message.message_type]
         except KeyError:
-            self.log.warning("Message not supported", message_id=message.message_id,
-                    message_type=message.message_type, message_version=message.version)
-            raise_failure("Message not supported by this service",
-                    in_response_to=message.message_id)
+            self.log.warning(
+                "Message not supported",
+                message_id=message.message_id,
+                message_type=message.message_type,
+                message_version=message.version)
+            raise_failure(
+                "Message not supported by this service",
+                in_response_to=message.message_id)
 
     def to_service_instances(self, version):
         return service_to_service_instances(self, version)
@@ -112,7 +126,6 @@ class TAXIIService(object):
         return address
 
     def __repr__(self):
-        return "%s(id=%s, address=%s)" % (self.__class__.__name__, self.id, self.address)
-
-
-
+        return (
+            "{}(id={}, address={})"
+            .format(self.__class__.__name__, self.id, self.address))

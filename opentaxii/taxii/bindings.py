@@ -21,13 +21,13 @@ CONTENT_BINDINGS = [
 ]
 
 ALL_PROTOCOL_BINDINGS = [
-    VID_TAXII_HTTP_10, 
+    VID_TAXII_HTTP_10,
     VID_TAXII_HTTPS_10
 ]
 
 PROTOCOL_TO_SCHEME = {
-    VID_TAXII_HTTP_10 : 'http://',
-    VID_TAXII_HTTPS_10 : 'https://'
+    VID_TAXII_HTTP_10: 'http://',
+    VID_TAXII_HTTPS_10: 'https://'
 }
 
 MESSAGE_BINDINGS = [
@@ -41,8 +41,10 @@ SERVICE_BINDINGS = [
 ]
 
 MESSAGE_VALIDATOR_PARSER = {
-    VID_TAXII_XML_10: ValidatorAndParser(SchemaValidator(SchemaValidator.TAXII_10_SCHEMA), tm10.get_message_from_xml),
-    VID_TAXII_XML_11: ValidatorAndParser(SchemaValidator(SchemaValidator.TAXII_11_SCHEMA), tm11.get_message_from_xml)
+    VID_TAXII_XML_10: ValidatorAndParser(
+        SchemaValidator(SchemaValidator.TAXII_10_SCHEMA),
+        tm10.get_message_from_xml),
+    VID_TAXII_XML_11: ValidatorAndParser(
+        SchemaValidator(SchemaValidator.TAXII_11_SCHEMA),
+        tm11.get_message_from_xml)
 }
-
-

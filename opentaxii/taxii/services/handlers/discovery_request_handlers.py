@@ -13,7 +13,8 @@ class DiscoveryRequest11Handler(BaseMessageHandler):
     @classmethod
     def handle_message(cls, service, request):
 
-        response = tm11.DiscoveryResponse(cls.generate_id(), request.message_id)
+        response = tm11.DiscoveryResponse(
+            cls.generate_id(), request.message_id)
         for service in service.advertised_services:
             service_instances = service.to_service_instances(version=11)
             response.service_instances.extend(service_instances)
@@ -28,7 +29,8 @@ class DiscoveryRequest10Handler(BaseMessageHandler):
     @classmethod
     def handle_message(cls, service, request):
 
-        response = tm10.DiscoveryResponse(cls.generate_id(), request.message_id)
+        response = tm10.DiscoveryResponse(
+            cls.generate_id(), request.message_id)
 
         for service in service.advertised_services:
             service_instances = service.to_service_instances(version=10)

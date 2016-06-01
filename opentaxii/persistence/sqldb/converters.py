@@ -3,6 +3,7 @@ import pytz
 
 from opentaxii.taxii import entities
 
+
 def to_collection_entity(model):
     if not model:
         return
@@ -14,7 +15,8 @@ def to_collection_entity(model):
         description=model.description,
         accept_all_content=model.accept_all_content,
         supported_content=deserialize_content_bindings(model.bindings),
-        # TODO: Explicit integer, pending: https://github.com/TAXIIProject/libtaxii/issues/191
+        # TODO: Explicit integer
+        # pending: https://github.com/TAXIIProject/libtaxii/issues/191
         volume=int(model.volume)
     )
 
@@ -26,14 +28,13 @@ def to_block_entity(model):
     subtypes = [model.binding_subtype] if model.binding_subtype else None
 
     return entities.ContentBlockEntity(
-        id = model.id,
-        content = model.content,
-
-        timestamp_label = enforce_timezone(model.timestamp_label),
-        content_binding = entities.ContentBindingEntity(
+        id=model.id,
+        content=model.content,
+        timestamp_label=enforce_timezone(model.timestamp_label),
+        content_binding=entities.ContentBindingEntity(
             model.binding_id, subtypes=subtypes),
-        message = model.message,
-        inbox_message_id = model.inbox_message_id,
+        message=model.message,
+        inbox_message_id=model.inbox_message_id,
     )
 
 
@@ -42,28 +43,30 @@ def to_inbox_message_entity(model):
         return
 
     if model.destination_collections:
-        names = json.loads(model.destination_collections) 
+        names = json.loads(model.destination_collections)
     else:
         names = []
 
     return entities.InboxMessageEntity(
-        id = model.id,
-        message_id = model.message_id,
-        original_message = model.original_message,
-        content_block_count = model.content_block_count,
-        destination_collections = names,
+        id=model.id,
+        message_id=model.message_id,
+        original_message=model.original_message,
+        content_block_count=model.content_block_count,
+        destination_collections=names,
 
-        service_id = model.service_id,
+        service_id=model.service_id,
 
-        result_id = model.result_id,
-        record_count = model.record_count,
-        partial_count = model.partial_count,
+        result_id=model.result_id,
+        record_count=model.record_count,
+        partial_count=model.partial_count,
 
-        subscription_collection_name = model.subscription_collection_name,
-        subscription_id = model.subscription_id,
+        subscription_collection_name=model.subscription_collection_name,
+        subscription_id=model.subscription_id,
 
-        exclusive_begin_timestamp_label = enforce_timezone(model.exclusive_begin_timestamp_label),
-        inclusive_end_timestamp_label = enforce_timezone(model.inclusive_end_timestamp_label),
+        exclusive_begin_timestamp_label=enforce_timezone(
+            model.exclusive_begin_timestamp_label),
+        inclusive_end_timestamp_label=enforce_timezone(
+            model.inclusive_end_timestamp_label),
     )
 
 
@@ -74,7 +77,9 @@ def to_result_set_entity(model):
         id=model.id,
         collection_id=model.collection_id,
         content_bindings=deserialize_content_bindings(model.bindings),
-        timeframe=map(enforce_timezone, (model.begin_time, model.end_time))
+        timeframe=(
+            enforce_timezone(model.begin_time),
+            enforce_timezone(model.end_time))
     )
 
 
@@ -85,7 +90,8 @@ def to_subscription_entity(model):
     if model.params:
         parsed = dict(json.loads(model.params))
         if parsed['content_bindings']:
-            parsed['content_bindings'] = deserialize_content_bindings(parsed['content_bindings'])
+            parsed['content_bindings'] = deserialize_content_bindings(
+                parsed['content_bindings'])
         params = entities.PollRequestParametersEntity(**parsed)
     else:
         params = None
@@ -133,4 +139,3 @@ def enforce_timezone(date):
         return date
 
     return date.replace(tzinfo=pytz.UTC)
-

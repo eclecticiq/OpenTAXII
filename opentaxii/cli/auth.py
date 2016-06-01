@@ -14,8 +14,8 @@ log = structlog.getLogger(__name__)
 
 def get_parser():
     parser = argparse.ArgumentParser(
-        description = "Create Account via OpenTAXII Auth API",
-        formatter_class = argparse.ArgumentDefaultsHelpFormatter
+        description="Create Account via OpenTAXII Auth API",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     return parser
 
@@ -23,13 +23,17 @@ def get_parser():
 def create_account():
 
     parser = get_parser()
-    parser.add_argument("-u", "--username", dest="username", help="Username for the new account", required=True)
-    parser.add_argument("-p", "--password", dest="password", help="Password for the new account", required=True)
+    parser.add_argument(
+        "-u", "--username", dest="username",
+        help="Username for the new account", required=True)
+
+    parser.add_argument(
+        "-p", "--password", dest="password",
+        help="Password for the new account", required=True)
 
     args = parser.parse_args()
 
     server = TAXIIServer(config)
     token = server.auth.create_account(args.username, args.password)
 
-    log.info("Account created", token=token)
-
+    log.info("Account created", username=args.username, token=token)

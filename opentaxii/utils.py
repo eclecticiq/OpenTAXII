@@ -1,9 +1,11 @@
 import sys
 import logging
 import structlog
-import urlparse
 import importlib
 import base64
+import binascii
+
+from six.moves import urllib
 
 from .exceptions import InvalidAuthHeader
 
@@ -11,7 +13,7 @@ log = structlog.getLogger(__name__)
 
 
 def get_path_and_address(domain, address):
-    parsed = urlparse.urlparse(address)
+    parsed = urllib.parse.urlparse(address)
 
     if parsed.scheme:
         return None, address
@@ -25,24 +27,30 @@ def import_class(module_class_name):
     return getattr(module, class_name)
 
 
-def load_api(api_config):
-    cls = import_class(api_config['class'])
+def initialize_api(api_config):
+    class_name = api_config['class']
+    cls = import_class(class_name)
     params = api_config['parameters']
 
     if params:
         instance = cls(**params)
     else:
         instance = cls()
+
+    log.info("api.initialized", api=class_name)
+
     return instance
 
 
 def parse_basic_auth_token(token):
+    print("'{}'".format(token), len(token))
     try:
         value = base64.b64decode(token)
-    except TypeError:
+    except (TypeError, binascii.Error):
         raise InvalidAuthHeader("Can't decode Basic Auth header value")
 
     try:
+        value = value.decode('utf-8')
         username, password = value.split(':', 1)
         return (username, password)
     except ValueError:
@@ -53,19 +61,21 @@ class PlainRenderer(object):
 
     def __call__(self, logger, name, event_dict):
         pairs = ', '.join(['%s=%s' % (k, v) for k, v in event_dict.items()])
-        return '%(timestamp)s [%(logger)s] %(level)s: %(event)s {%(pairs)s}' \
-                % dict(pairs=pairs, **event_dict)
+        return (
+            '{timestamp} [{logger}] {level}: {event} {{{pairs}}}'
+            .format(pairs=pairs, **event_dict))
 
 
 def configure_logging(logging_levels, plain=False):
 
     _remove_all_existing_log_handlers()
 
-    renderer = PlainRenderer() if plain \
-            else structlog.processors.JSONRenderer()
+    renderer = (
+        PlainRenderer() if plain else
+        structlog.processors.JSONRenderer())
 
     structlog.configure(
-        processors = [
+        processors=[
             structlog.stdlib.filter_by_level,
             structlog.stdlib.add_logger_name,
             structlog.stdlib.add_log_level,
@@ -75,10 +85,10 @@ def configure_logging(logging_levels, plain=False):
             structlog.processors.format_exc_info,
             renderer
         ],
-        context_class = dict,
-        logger_factory = structlog.stdlib.LoggerFactory(),
-        wrapper_class = structlog.stdlib.BoundLogger,
-        cache_logger_on_first_use = True,
+        context_class=dict,
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        wrapper_class=structlog.stdlib.BoundLogger,
+        cache_logger_on_first_use=True,
     )
 
     handler = logging.StreamHandler(sys.stdout)

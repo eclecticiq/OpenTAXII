@@ -2,21 +2,27 @@ import pytest
 
 from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
+from libtaxii.constants import (
+    ST_SUCCESS, CB_STIX_XML_111)
 
 from opentaxii.taxii import exceptions
-from opentaxii.server import TAXIIServer
 
 from utils import prepare_headers, as_tm
-from conftest import get_config_for_tests
-from fixtures import *
+from fixtures import (
+    CUSTOM_CONTENT_BINDING, CONTENT, MESSAGE_ID,
+    SERVICES, COLLECTIONS_A, COLLECTIONS_B,
+    CONTENT_BINDING_SUBTYPE, INVALID_CONTENT_BINDING,
+    COLLECTION_OPEN, COLLECTION_ONLY_STIX)
 
 
-def make_content(version, content_binding=CUSTOM_CONTENT_BINDING, content=CONTENT, subtype=None):
+def make_content(version, content_binding=CUSTOM_CONTENT_BINDING,
+                 content=CONTENT, subtype=None):
     if version == 10:
         return tm10.ContentBlock(content_binding, content)
 
     elif version == 11:
-        content_block = tm11.ContentBlock(tm11.ContentBinding(content_binding), content)
+        content_block = tm11.ContentBlock(
+            tm11.ContentBinding(content_binding), content)
         if subtype:
             content_block.content_binding.subtype_ids.append(subtype)
 
@@ -25,14 +31,15 @@ def make_content(version, content_binding=CUSTOM_CONTENT_BINDING, content=CONTEN
         raise ValueError('Unknown TAXII message version: %s' % version)
 
 
-
 def make_inbox_message(version, blocks=None, dest_collection=None):
 
     if version == 10:
-        inbox_message = tm10.InboxMessage(message_id=MESSAGE_ID, content_blocks=blocks)
+        inbox_message = tm10.InboxMessage(
+            message_id=MESSAGE_ID, content_blocks=blocks)
 
     elif version == 11:
-        inbox_message = tm11.InboxMessage(message_id=MESSAGE_ID, content_blocks=blocks)
+        inbox_message = tm11.InboxMessage(
+            message_id=MESSAGE_ID, content_blocks=blocks)
         if dest_collection:
             inbox_message.destination_collection_names.append(dest_collection)
     else:
@@ -40,26 +47,20 @@ def make_inbox_message(version, blocks=None, dest_collection=None):
 
     return inbox_message
 
-@pytest.fixture
-def server():
 
-    config = get_config_for_tests(DOMAIN)
-    server = TAXIIServer(config)
-
+@pytest.fixture(autouse=True)
+def prepare_server(server):
     server.persistence.create_services_from_object(SERVICES)
 
     coll_mapping = {
-        'inbox-A' : COLLECTIONS_A,
-        'inbox-B' : COLLECTIONS_B
+        'inbox-A': COLLECTIONS_A,
+        'inbox-B': COLLECTIONS_B
     }
     for service, collections in coll_mapping.items():
         for coll in collections:
             coll = server.persistence.create_collection(coll)
-            server.persistence.attach_collection_to_services(coll.id,
-                    service_ids=[service])
-    
-    return server
-
+            server.persistence.attach_collection_to_services(
+                coll.id, service_ids=[service])
 
 
 @pytest.mark.parametrize("https", [True, False])
@@ -71,8 +72,13 @@ def test_inbox_request_all_content(server, version, https):
     headers = prepare_headers(version, https)
 
     blocks = [
-        make_content(version, content_binding=CUSTOM_CONTENT_BINDING, subtype=CONTENT_BINDING_SUBTYPE),
-        make_content(version, content_binding=INVALID_CONTENT_BINDING)
+        make_content(
+            version,
+            content_binding=CUSTOM_CONTENT_BINDING,
+            subtype=CONTENT_BINDING_SUBTYPE),
+        make_content(
+            version,
+            content_binding=INVALID_CONTENT_BINDING)
     ]
     inbox_message = make_inbox_message(version, blocks=blocks)
 
@@ -92,7 +98,8 @@ def test_inbox_request_all_content(server, version, https):
 def test_inbox_request_destination_collection(server, https):
     version = 11
 
-    inbox_message = make_inbox_message(version, blocks=[make_content(version)], dest_collection=None)
+    inbox_message = make_inbox_message(
+        version, blocks=[make_content(version)], dest_collection=None)
     headers = prepare_headers(version, https)
 
     inbox = server.get_service('inbox-A')
@@ -115,11 +122,17 @@ def test_inbox_request_inbox_valid_content_binding(server, version, https):
     inbox = server.get_service('inbox-B')
 
     blocks = [
-        make_content(version, content_binding=CUSTOM_CONTENT_BINDING, subtype=CONTENT_BINDING_SUBTYPE),
-        make_content(version, content_binding=CB_STIX_XML_111)
+        make_content(
+            version,
+            content_binding=CUSTOM_CONTENT_BINDING,
+            subtype=CONTENT_BINDING_SUBTYPE),
+        make_content(
+            version,
+            content_binding=CB_STIX_XML_111)
     ]
 
-    inbox_message = make_inbox_message(version, dest_collection=COLLECTION_OPEN, blocks=blocks)
+    inbox_message = make_inbox_message(
+        version, dest_collection=COLLECTION_OPEN, blocks=blocks)
     headers = prepare_headers(version, https)
 
     response = inbox.process(headers, inbox_message)
@@ -128,18 +141,20 @@ def test_inbox_request_inbox_valid_content_binding(server, version, https):
     assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
-    blocks = server.persistence.get_content_blocks(collection_id=None) # all blocks
+    # all blocks
+    blocks = server.persistence.get_content_blocks(collection_id=None)
     assert len(blocks) == len(blocks)
 
 
 @pytest.mark.parametrize("https", [True, False])
 @pytest.mark.parametrize("version", [11, 10])
-def test_inbox_request_inbox_invalid_inbox_content_binding(server, version, https):
+def test_inbox_req_inbox_invalid_inbox_content_binding(server, version, https):
 
     inbox = server.get_service('inbox-B')
 
     content = make_content(version, content_binding=INVALID_CONTENT_BINDING)
-    inbox_message = make_inbox_message(version, dest_collection=COLLECTION_OPEN, blocks=[content])
+    inbox_message = make_inbox_message(
+        version, dest_collection=COLLECTION_OPEN, blocks=[content])
 
     headers = prepare_headers(version, https)
 
@@ -157,7 +172,7 @@ def test_inbox_request_inbox_invalid_inbox_content_binding(server, version, http
 
 @pytest.mark.parametrize("https", [True, False])
 @pytest.mark.parametrize("version", [11, 10])
-def test_inbox_request_collection_content_bindings_filtering(server, version, https):
+def test_inbox_req_coll_content_bindings_filtering(server, version, https):
 
     inbox = server.get_service('inbox-B')
     headers = prepare_headers(version, https)
@@ -167,7 +182,8 @@ def test_inbox_request_collection_content_bindings_filtering(server, version, ht
         make_content(version, content_binding=INVALID_CONTENT_BINDING),
     ]
 
-    inbox_message = make_inbox_message(version, dest_collection=COLLECTION_ONLY_STIX, blocks=blocks)
+    inbox_message = make_inbox_message(
+        version, dest_collection=COLLECTION_ONLY_STIX, blocks=blocks)
 
     response = inbox.process(headers, inbox_message)
 
@@ -179,5 +195,3 @@ def test_inbox_request_collection_content_bindings_filtering(server, version, ht
 
     # Content blocks with invalid content should be ignored
     assert len(blocks) == 1
-
-

@@ -1,43 +1,39 @@
 import pytest
 
-from opentaxii.middleware import create_app
-from opentaxii.server import TAXIIServer
-
 from libtaxii.constants import ST_FAILURE, ST_BAD_MESSAGE
 from opentaxii.taxii.http import HTTP_X_TAXII_SERVICES
 
 from utils import prepare_headers, is_headers_valid, as_tm
 
-from conftest import get_config_for_tests
-
 INBOX = dict(
-    id = 'inbox-A',
-    type = 'inbox',
-    description = 'inboxA description',
-    destination_collection_required = True,
-    address = '/relative/path',
-    accept_all_content = True,
-    protocol_bindings = ['urn:taxii.mitre.org:protocol:http:1.0', 'urn:taxii.mitre.org:protocol:https:1.0']
+    id='inbox-A',
+    type='inbox',
+    description='inboxA description',
+    destination_collection_required=True,
+    address='/relative/path',
+    accept_all_content=True,
+    protocol_bindings=[
+        'urn:taxii.mitre.org:protocol:http:1.0',
+        'urn:taxii.mitre.org:protocol:https:1.0']
 )
 
 DISCOVERY = dict(
-    id = 'discovery-A',
-    type = 'discovery',
-    description = 'discoveryA description',
-    address = '/relative/discovery',
-    advertised_services = ['inbox-A', 'discovery-A', 'discovery-B'],
-    protocol_bindings = ['urn:taxii.mitre.org:protocol:http:1.0']
+    id='discovery-A',
+    type='discovery',
+    description='discoveryA description',
+    address='/relative/discovery',
+    advertised_services=['inbox-A', 'discovery-A', 'discovery-B'],
+    protocol_bindings=['urn:taxii.mitre.org:protocol:http:1.0']
 )
 
 DISCOVERY_NOT_AVAILABLE = dict(
-    id = 'discovery-B',
-    type = 'discovery',
-    description = 'discoveryA description',
-    address = '/relative/discovery-b',
-    advertised_services = ['inbox-A', 'discovery-A'],
-    protocol_bindings = ['urn:taxii.mitre.org:protocol:http:1.0'],
-    
-    available = False
+    id='discovery-B',
+    type='discovery',
+    description='discoveryA description',
+    address='/relative/discovery-b',
+    advertised_services=['inbox-A', 'discovery-A'],
+    protocol_bindings=['urn:taxii.mitre.org:protocol:http:1.0'],
+    available=False
 )
 
 SERVICES = [INBOX, DISCOVERY, DISCOVERY_NOT_AVAILABLE]
@@ -46,18 +42,9 @@ INSTANCES_CONFIGURED = sum(len(s['protocol_bindings']) for s in SERVICES)
 MESSAGE_ID = '123'
 
 
-@pytest.fixture()
-def client():
-
-    config = get_config_for_tests('some.com')
-
-    server = TAXIIServer(config)
+@pytest.fixture(autouse=True)
+def prepare_server(server):
     server.persistence.create_services_from_object(SERVICES)
-
-    app = create_app(server)
-    app.config['TESTING'] = True
-
-    return app.test_client()
 
 
 def test_root_get(client):
@@ -82,9 +69,9 @@ def test_status_message_response(client, version, https):
 
     response = client.post(
         INBOX['address'],
-        data = 'invalid-body',
-        headers = prepare_headers(version, https),
-        base_url = base_url
+        data='invalid-body',
+        headers=prepare_headers(version, https),
+        base_url=base_url
     )
 
     assert response.status_code == 200
@@ -104,9 +91,9 @@ def test_successful_response(client, version, https):
 
     response = client.post(
         DISCOVERY['address'],
-        data = request.to_xml(),
-        headers = prepare_headers(version=version, https=https),
-        base_url = base_url
+        data=request.to_xml(),
+        headers=prepare_headers(version=version, https=https),
+        base_url=base_url
     )
 
     assert response.status_code == 200
@@ -116,7 +103,6 @@ def test_successful_response(client, version, https):
 
     assert isinstance(message, as_tm(version).DiscoveryResponse)
     assert len(message.service_instances) == INSTANCES_CONFIGURED
-
 
 
 @pytest.mark.parametrize("https", [True, False])
@@ -131,9 +117,9 @@ def test_post_parse_verification(client, version, https):
 
     response = client.post(
         DISCOVERY['address'],
-        data = request.to_xml(),
-        headers = headers,
-        base_url = base_url
+        data=request.to_xml(),
+        headers=headers,
+        base_url=base_url
     )
 
     assert response.status_code == 200
@@ -156,9 +142,9 @@ def test_services_available(client, version, https):
 
     response = client.post(
         DISCOVERY_NOT_AVAILABLE['address'],
-        data = request.to_xml(),
-        headers = headers,
-        base_url = base_url
+        data=request.to_xml(),
+        headers=headers,
+        base_url=base_url
     )
 
     assert response.status_code == 200

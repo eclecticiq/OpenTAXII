@@ -33,7 +33,8 @@ class ServerConfig(dict):
         if env_var_path:
             config_paths.append(env_var_path)
 
-        options = anyconfig.load(config_paths, ac_parser='yaml',
-                ignore_missing=False, ac_merge=anyconfig.MS_REPLACE)
+        options = anyconfig.load(
+            config_paths, ac_parser='yaml',
+            ignore_missing=False, ac_merge=anyconfig.MS_REPLACE)
 
         self.update(options)

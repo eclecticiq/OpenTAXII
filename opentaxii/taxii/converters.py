@@ -24,7 +24,7 @@ def parse_content_binding(raw_content_binding, version):
 
 
 def parse_content_bindings(bindings, version):
-    return map(lambda b: parse_content_binding(b, version), bindings)
+    return [parse_content_binding(b, version) for b in bindings]
 
 
 def content_binding_entity_to_content_binding(content_binding, version):
@@ -37,10 +37,9 @@ def content_binding_entity_to_content_binding(content_binding, version):
 
 
 def content_binding_entities_to_content_bindings(content_bindings, version):
-
-    return map(
-        lambda c: content_binding_entity_to_content_binding(c, version),
-        content_bindings)
+    return [
+        content_binding_entity_to_content_binding(c, version)
+        for c in content_bindings]
 
 
 def service_to_service_instances(service, version):

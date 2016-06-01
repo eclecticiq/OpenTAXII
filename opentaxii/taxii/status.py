@@ -17,7 +17,8 @@ def process_status_exception(exception, headers, is_secure):
 
     accepted_content = headers.get(HTTP_X_TAXII_ACCEPT)
 
-    # Can respond with whatever we want. try to use the X-TAXII-Content-Type header to pick
+    # No accepted_content provided, so try to use
+    # X-TAXII-Content-Type header
     if not accepted_content:
         accepted_content = headers.get(HTTP_X_TAXII_CONTENT_TYPE)
 
@@ -31,7 +32,8 @@ def process_status_exception(exception, headers, is_secure):
     elif accepted_content == VID_TAXII_XML_11:
         version = VID_TAXII_SERVICES_11
     else:
-        #FIXME: Unknown accepted content. Pretending X-TAXII-Accept was TAXII 1.1
+        # Unknown accepted content.
+        # Pretending X-TAXII-Accept was TAXII 1.1
         version = VID_TAXII_SERVICES_11
 
     response_headers = get_http_headers(version, is_secure)

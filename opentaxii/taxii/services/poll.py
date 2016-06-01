@@ -1,4 +1,3 @@
-import sys
 import structlog
 
 from libtaxii.constants import (
@@ -10,6 +9,9 @@ from .abstract import TAXIIService
 from .handlers import PollRequestHandler, PollFulfilmentRequestHandler
 
 log = structlog.getLogger(__name__)
+
+DEFAULT_MAX_RESULT_SIZE = 1000000
+DEFAULT_MAX_RESULT_COUNT = 10 * DEFAULT_MAX_RESULT_SIZE
 
 
 class PollService(TAXIIService):
@@ -29,8 +31,8 @@ class PollService(TAXIIService):
     # Poll Service does not support pushing for now
     can_push = False
 
-    max_result_size = sys.maxint
-    max_result_count = sys.maxint
+    max_result_size = None
+    max_result_count = None
 
     def __init__(self, subscription_required=False, max_result_size=-1,
                  max_result_count=-1, **kwargs):
@@ -39,11 +41,13 @@ class PollService(TAXIIService):
 
         self.subscription_required = subscription_required
 
-        self.max_result_size = (max_result_size if max_result_size >= 0
-                                else sys.maxint)
+        self.max_result_size = (
+            max_result_size if max_result_size >= 0
+            else DEFAULT_MAX_RESULT_SIZE)
 
-        self.max_result_count = (max_result_count if max_result_count >= 0
-                                 else sys.maxint)
+        self.max_result_count = (
+            max_result_count if max_result_count >= 0
+            else DEFAULT_MAX_RESULT_COUNT)
 
     def get_collection(self, name):
         return self.server.persistence.get_collection(name, self.id)
@@ -84,7 +88,6 @@ class PollService(TAXIIService):
 
     def create_result_set(self, collection, content_bindings=None,
                           timeframe=None):
-
 
         entity = ResultSetEntity(
             id=self.generate_id(),

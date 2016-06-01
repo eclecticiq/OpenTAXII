@@ -81,25 +81,25 @@ class OpenTAXIIPersistenceAPI(object):
         '''
         raise NotImplementedError()
 
-    def create_inbox_message(self, inbox_message_entity): 
+    def create_inbox_message(self, inbox_message_entity):
         '''Create an inbox message.
 
-        :param `opentaxii.taxii.entities.InboxMessageEntity` inbox_message_entity:
-            inbox message entity in question
+        :param `opentaxii.taxii.entities.InboxMessageEntity` \
+            inbox_message_entity: inbox message entity in question
         :return: updated inbox message entity
         :rtype: :py:class:`opentaxii.taxii.entities.InboxMessageEntity`
         '''
         raise NotImplementedError()
 
     def create_content_block(self, content_block_entity, collection_ids=None,
-            service_id=None): 
+                             service_id=None):
         '''Create a content block.
 
-        :param `opentaxii.taxii.entities.ContentBlockEntity` content_block_entity:
-                content block in question
+        :param `opentaxii.taxii.entities.ContentBlockEntity` \
+            content_block_entity: content block in question
         :param list collection_ids: a list of collection IDs as strings
         :param str service_id: ID of an inbox service via which content
-                block was created
+            block was created
 
         :return: updated content block entity
         :rtype: :py:class:`opentaxii.taxii.entities.ContentBlockEntity`
@@ -107,7 +107,7 @@ class OpenTAXIIPersistenceAPI(object):
         raise NotImplementedError()
 
     def get_content_blocks_count(self, collection_id, start_time=None,
-            end_time=None, bindings=None):
+                                 end_time=None, bindings=None):
         '''Get a count of the content blocks associated with a collection.
 
         :param str collection_id: ID fo a collection in question
@@ -115,14 +115,14 @@ class OpenTAXIIPersistenceAPI(object):
         :param datetime end_time: end of a time frame
         :param list bindings: list of
             :py:class:`opentaxii.taxii.entities.ContentBindingEntity`
-            
+
         :return: content block count
         :rtype: int
         '''
         raise NotImplementedError()
 
     def get_content_blocks(self, collection_id, start_time=None, end_time=None,
-            bindings=None, offset=0, limit=10):
+                           bindings=None, offset=0, limit=10):
         '''Get the content blocks associated with a collection.
 
         :param str collection_id: ID fo a collection in question
@@ -132,7 +132,7 @@ class OpenTAXIIPersistenceAPI(object):
             :py:class:`opentaxii.taxii.entities.ContentBindingEntity`
         :param int offset: result set offset
         :param int limit: result set max size
-            
+
         :return: content blocks list
         :rtype: list of :py:class:`opentaxii.taxii.entities.ContentBlockEntity`
         '''
@@ -143,7 +143,7 @@ class OpenTAXIIPersistenceAPI(object):
 
         :param `opentaxii.taxii.entities.ResultSetEntity` result_set_entity:
             result set entity in question
-            
+
         :return: updated result set entity
         :rtype: :py:class:`opentaxii.taxii.entities.ResultSetEntity`
         '''
@@ -162,8 +162,8 @@ class OpenTAXIIPersistenceAPI(object):
     def create_subscription(self, subscription_entity):
         '''Create a subscription.
 
-        :param `opentaxii.taxii.entities.SubscriptionEntity` subscription_entity:
-            subscription entity in question.
+        :param `opentaxii.taxii.entities.SubscriptionEntity` \
+            subscription_entity: subscription entity in question.
 
         :return: updated subscription entity
         :rtype: :py:class:`opentaxii.taxii.entities.SubscriptionEntity`
@@ -193,8 +193,8 @@ class OpenTAXIIPersistenceAPI(object):
     def update_subscription(self, subscription_entity):
         '''Update a subscription status.
 
-        :param `opentaxii.taxii.entities.SubscriptionEntity` subscription_entity:
-            subscription entity in question
+        :param `opentaxii.taxii.entities.SubscriptionEntity` \
+            subscription_entity: subscription entity in question
 
         :return: updated subscription entity
         :rtype: :py:class:`opentaxii.taxii.entities.SubscriptionEntity`

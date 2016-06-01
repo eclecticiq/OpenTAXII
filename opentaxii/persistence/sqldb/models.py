@@ -11,10 +11,10 @@ from sqlalchemy.ext.declarative import declarative_base
 __all__ = ['Base', 'ContentBlock', 'DataCollection', 'Service',
            'InboxMessage', 'ResultSet', 'Subscription']
 
-Base = declarative_base()
+Base = declarative_base(name='Model')
 
 
-class Timestamped(Base):
+class AbstractModel(Base):
     __abstract__ = True
 
     date_created = Column(DateTime(timezone=True), default=datetime.utcnow)
@@ -33,7 +33,7 @@ collection_to_content_block = Table(
 )
 
 
-class ContentBlock(Timestamped):
+class ContentBlock(AbstractModel):
 
     __tablename__ = 'content_blocks'
 
@@ -83,7 +83,7 @@ service_to_collection = Table(
 )
 
 
-class Service(Timestamped):
+class Service(AbstractModel):
 
     __tablename__ = 'services'
 
@@ -108,7 +108,7 @@ class Service(Timestamped):
         self._properties = json.dumps(properties)
 
 
-class DataCollection(Timestamped):
+class DataCollection(AbstractModel):
 
     __tablename__ = 'data_collections'
 
@@ -129,7 +129,7 @@ class DataCollection(Timestamped):
                 .format(obj=self))
 
 
-class InboxMessage(Timestamped):
+class InboxMessage(AbstractModel):
 
     __tablename__ = 'inbox_messages'
 
@@ -166,7 +166,7 @@ class InboxMessage(Timestamped):
                 .format(obj=self))
 
 
-class ResultSet(Timestamped):
+class ResultSet(AbstractModel):
 
     __tablename__ = 'result_sets'
 
@@ -185,7 +185,7 @@ class ResultSet(Timestamped):
     end_time = Column(DateTime(timezone=True), nullable=True)
 
 
-class Subscription(Timestamped):
+class Subscription(AbstractModel):
 
     __tablename__ = 'subscriptions'
 

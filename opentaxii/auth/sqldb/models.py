@@ -23,12 +23,7 @@ class Account(Base):
     password_hash = Column(String(MAX_STR_LEN))
 
     def set_password(self, password):
-        if isinstance(password, unicode):
-            password = password.encode('utf-8')
         self.password_hash = generate_password_hash(password)
 
     def is_password_valid(self, password):
-        if isinstance(password, unicode):
-            password = password.encode('utf-8')
-        password_hash = self.password_hash.encode('utf-8')
-        return check_password_hash(password_hash, password)
+        return check_password_hash(self.password_hash, password)
