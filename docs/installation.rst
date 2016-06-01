@@ -7,15 +7,15 @@ Installation
 Install Python
 --------------
 
-OpenTAXII works with Python version 2.7, which you can download `here <http://www.python.org/download/>`_ or with your operating system’s package manager. 
+OpenTAXII works with Python version 2.7 and version 3.4. You can download Python `here <http://www.python.org/download/>`_ or install it with your operating system’s package manager. 
 
-You can verify that Python is installed by typing ``python`` from your shell; you should see something like::
+You can verify that Python is installed by typing ``python`` or ``python3`` in your shell. You should see something like::
 
-	$ python
-	Python 2.7.6 (default, Sep  9 2014, 15:04:36) 
-	[GCC 4.2.1 Compatible Apple LLVM 6.0 (clang-600.0.39)] on darwin
-	Type "help", "copyright", "credits" or "license" for more information.
-	>>> 
+    $ python3
+    Python 3.4.3 (default, Mar 23 2015, 04:19:36)
+    [GCC 4.2.1 Compatible Apple LLVM 6.0 (clang-600.0.57)] on darwin
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>>
 
 Install OpenTAXII
 -----------------
