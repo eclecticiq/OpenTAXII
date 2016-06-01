@@ -2,7 +2,7 @@ import os
 from setuptools import setup, find_packages
 
 __version__ = None
-execfile('opentaxii/_version.py')
+exec(open('opentaxii/_version.py').read())
 
 
 def here(*path):
@@ -29,14 +29,16 @@ setup(
     packages=find_packages(exclude=['tests']),
     include_package_data=True,
     package_data={
-        'opentaxii' : ['*.yml']
+        'opentaxii': ['*.yml']
     },
     entry_points={
-        'console_scripts' : [
+        'console_scripts': [
             'opentaxii-run-dev = opentaxii.cli.run:run_in_dev_mode',
             'opentaxii-create-account = opentaxii.cli.auth:create_account',
-            'opentaxii-create-services = opentaxii.cli.persistence:create_services',
-            'opentaxii-create-collections = opentaxii.cli.persistence:create_collections',
+            ('opentaxii-create-services = '
+             'opentaxii.cli.persistence:create_services'),
+            ('opentaxii-create-collections = '
+             'opentaxii.cli.persistence:create_collections'),
         ]
     },
     install_requires=install_requires,

@@ -4,31 +4,26 @@ import pytest
 import base64
 
 from libtaxii.constants import ST_UNAUTHORIZED, ST_BAD_MESSAGE
-
-from opentaxii.middleware import create_app
-from opentaxii.server import TAXIIServer
-from opentaxii.taxii.http import HTTP_AUTHORIZATION, HTTP_X_TAXII_CONTENT_TYPES
+from opentaxii.taxii.http import HTTP_AUTHORIZATION
 
 from utils import prepare_headers, is_headers_valid, as_tm
 
-from conftest import get_config_for_tests
-
 INBOX = dict(
-    id = 'inbox-A',
-    type = 'inbox',
-    description = 'inboxA description',
-    address = '/path/inbox',
-    authentication_required = True
+    id='inbox-A',
+    type='inbox',
+    description='inboxA description',
+    address='/path/inbox',
+    authentication_required=True
 )
 
 DISCOVERY = dict(
-    id = 'discovery-A',
-    type = 'discovery',
-    description = 'discoveryA description',
-    address = '/path/discovery',
-    advertised_services = ['inboxA', 'discoveryA'],
-    protocol_bindings = ['urn:taxii.mitre.org:protocol:http:1.0'],
-    authentication_required = True,
+    id='discovery-A',
+    type='discovery',
+    description='discoveryA description',
+    address='/path/discovery',
+    advertised_services=['inboxA', 'discoveryA'],
+    protocol_bindings=['urn:taxii.mitre.org:protocol:http:1.0'],
+    authentication_required=True,
 )
 
 SERVICES = [INBOX, DISCOVERY]
@@ -41,32 +36,23 @@ PASSWORD = 'some-password'
 AUTH_PATH = '/management/auth'
 
 
-@pytest.fixture()
-def client():
-    config = get_config_for_tests('some.com')
-
-    server = TAXIIServer(config)
+@pytest.fixture(autouse=True)
+def prepare_server(server):
     server.persistence.create_services_from_object(SERVICES)
-
-    app = create_app(server)
-    app.config['TESTING'] = True
-
     server.auth.create_account(USERNAME, PASSWORD)
-
-    return app.test_client()
 
 
 @pytest.mark.parametrize("https", [True, False])
 @pytest.mark.parametrize("version", [11, 10])
-def test_unauthorized_request(client, version, https):
+def test_unauthorized_request(server, client, version, https):
 
     base_url = '%s://localhost' % ('https' if https else 'http')
 
     response = client.post(
         INBOX['address'],
-        data = 'invalid-body',
-        headers = prepare_headers(version, https),
-        base_url = base_url
+        data='invalid-body',
+        headers=prepare_headers(version, https),
+        base_url=base_url
     )
 
     assert response.status_code == 200
@@ -88,42 +74,42 @@ def test_get_token(client, version, https):
     # Invalid credentials
     response = client.post(
         AUTH_PATH,
-        data = {'username' : 'dummy', 'password' : 'wrong'},
-        base_url = base_url
+        data={'username': 'dummy', 'password': 'wrong'},
+        base_url=base_url
     )
     assert response.status_code == 401
 
     # Invalid auth data
     response = client.post(
         AUTH_PATH,
-        data = {'other': 'somethind'},
-        base_url = base_url
+        data={'other': 'somethind'},
+        base_url=base_url
     )
     assert response.status_code == 400
 
     # Valid credentials as form data
     response = client.post(
         AUTH_PATH,
-        data = {'username' : USERNAME, 'password' : PASSWORD},
-        base_url = base_url
+        data={'username': USERNAME, 'password': PASSWORD},
+        base_url=base_url
     )
 
     assert response.status_code == 200
 
-    data = json.loads(response.data)
+    data = json.loads(response.get_data(as_text=True))
     assert data.get('token')
 
     # Valid credentials as JSON blob
     response = client.post(
         AUTH_PATH,
-        data = json.dumps({'username' : USERNAME, 'password' : PASSWORD}),
-        base_url = base_url,
-        content_type = 'application/json'
+        data=json.dumps({'username': USERNAME, 'password': PASSWORD}),
+        base_url=base_url,
+        content_type='application/json'
     )
 
     assert response.status_code == 200
 
-    data = json.loads(response.data)
+    data = json.loads(response.get_data(as_text=True))
     assert data.get('token')
 
 
@@ -136,13 +122,13 @@ def test_get_token_and_send_request(client, version, https):
     # Get valid token
     response = client.post(
         AUTH_PATH,
-        data = {'username' : USERNAME, 'password' : PASSWORD},
-        base_url = base_url
+        data={'username': USERNAME, 'password': PASSWORD},
+        base_url=base_url
     )
 
     assert response.status_code == 200
 
-    data = json.loads(response.data)
+    data = json.loads(response.get_data(as_text=True))
     token = data.get('token')
 
     assert token
@@ -153,9 +139,9 @@ def test_get_token_and_send_request(client, version, https):
     # Get correct response for invalid body
     response = client.post(
         INBOX['address'],
-        data = 'invalid-body',
-        headers = headers,
-        base_url = base_url
+        data='invalid-body',
+        headers=headers,
+        base_url=base_url
     )
 
     assert response.status_code == 200
@@ -171,9 +157,9 @@ def test_get_token_and_send_request(client, version, https):
     # Get correct response for valid request
     response = client.post(
         DISCOVERY['address'],
-        data = request.to_xml(),
-        headers = headers,
-        base_url = base_url
+        data=request.to_xml(),
+        headers=headers,
+        base_url=base_url
     )
 
     assert response.status_code == 200
@@ -188,14 +174,17 @@ def test_get_token_and_send_request(client, version, https):
 
 
 def basic_auth_token(username, password):
-    return base64.b64encode('%s:%s' % (username, password)).strip()
+    return base64.b64encode(
+        '{}:{}'.format(username, password).encode('utf-8'))
+
 
 @pytest.mark.parametrize("https", [True, False])
 @pytest.mark.parametrize("version", [11, 10])
 def test_request_with_basic_auth(client, version, https):
 
     base_url = '%s://localhost' % ('https' if https else 'http')
-    basic_auth_header = 'Basic {}'.format(basic_auth_token(USERNAME, PASSWORD))
+    basic_auth_header = 'Basic {}'.format(
+        basic_auth_token(USERNAME, PASSWORD).decode('utf-8'))
 
     headers = prepare_headers(version, https)
     headers[HTTP_AUTHORIZATION] = basic_auth_header
@@ -203,9 +192,9 @@ def test_request_with_basic_auth(client, version, https):
     # Get correct response for invalid body
     response = client.post(
         INBOX['address'],
-        data = 'invalid-body',
-        headers = headers,
-        base_url = base_url
+        data='invalid-body',
+        headers=headers,
+        base_url=base_url
     )
 
     assert response.status_code == 200
@@ -221,9 +210,9 @@ def test_request_with_basic_auth(client, version, https):
     # Get correct response for valid request
     response = client.post(
         DISCOVERY['address'],
-        data = request.to_xml(),
-        headers = headers,
-        base_url = base_url
+        data=request.to_xml(),
+        headers=headers,
+        base_url=base_url
     )
 
     assert response.status_code == 200
@@ -244,14 +233,14 @@ def test_invalid_basic_auth_request(client, version, https):
     base_url = '%s://localhost' % ('https' if https else 'http')
 
     headers = prepare_headers(version, https)
-    headers[HTTP_AUTHORIZATION] = 'Basic somevalue' 
+    headers[HTTP_AUTHORIZATION] = 'Basic somevalue'
 
     request = as_tm(version).DiscoveryRequest(message_id=MESSAGE_ID)
     response = client.post(
         DISCOVERY['address'],
-        data = request.to_xml(),
-        headers = headers,
-        base_url = base_url
+        data=request.to_xml(),
+        headers=headers,
+        base_url=base_url
     )
 
     assert response.status_code == 200
@@ -275,9 +264,9 @@ def test_invalid_auth_header_request(client, version, https):
     request = as_tm(version).DiscoveryRequest(message_id=MESSAGE_ID)
     response = client.post(
         DISCOVERY['address'],
-        data = request.to_xml(),
-        headers = headers,
-        base_url = base_url
+        data=request.to_xml(),
+        headers=headers,
+        base_url=base_url
     )
 
     assert response.status_code == 200

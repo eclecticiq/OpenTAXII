@@ -19,10 +19,11 @@ auth_api:
     c: 3
 '''
 
+
 @pytest.yield_fixture
 def config_file_name(config=CUSTOM_CONFIG):
     f = tempfile.NamedTemporaryFile(delete=False)
-    f.write(config)
+    f.write(config.encode('utf-8'))
     f.close()
     yield f.name
     os.unlink(f.name)
@@ -35,4 +36,4 @@ def test_custom_config_file(config_file_name):
     assert set(config['persistence_api']['parameters'].keys()) == {'a', 'b'}
 
     assert config['auth_api']['class'] == 'other.test.AuthClass'
-    assert config['auth_api']['parameters'].keys() == ['c']
+    assert config['auth_api']['parameters'] == {'c': 3}

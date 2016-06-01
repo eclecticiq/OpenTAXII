@@ -1,21 +1,16 @@
 import pytest
-import tempfile
 
-from opentaxii.server import TAXIIServer
+from libtaxii.constants import SVC_INBOX
 
 from utils import prepare_headers, as_tm
-from conftest import get_config_for_tests
-from fixtures import *
+from fixtures import (
+    SERVICES, MESSAGE_ID, INSTANCES_CONFIGURED,
+    INBOX_A, INBOX_B)
 
-@pytest.fixture(scope='module')
-def server():
 
-    config = get_config_for_tests(DOMAIN)
-
-    server = TAXIIServer(config)
+@pytest.fixture(autouse=True)
+def prepare_server(server):
     server.persistence.create_services_from_object(SERVICES)
-
-    return server
 
 
 @pytest.mark.parametrize("https", [True, False])
@@ -47,7 +42,9 @@ def test_content_bindings_present(server, version, https):
     assert len(response.service_instances) == INSTANCES_CONFIGURED
     assert response.in_response_to == MESSAGE_ID
 
-    inboxes = filter(lambda s: s.service_type == SVC_INBOX, response.service_instances)
+    inboxes = [
+        s for s in response.service_instances
+        if s.service_type == SVC_INBOX]
 
     assert len(inboxes) == 4
 
@@ -56,7 +53,6 @@ def test_content_bindings_present(server, version, https):
     # inbox_a accepts everything, so inbox_service_accepted_content is empty
     assert all([len(i.inbox_service_accepted_content) == 0 for i in inboxes_a])
 
-    
     address_b = INBOX_B['address']
     inboxes_b = [i for i in inboxes if i.service_address.endswith(address_b)]
     bindings = inboxes_b[0].inbox_service_accepted_content
@@ -67,4 +63,3 @@ def test_content_bindings_present(server, version, https):
         binding_ids = [b.binding_id for b in bindings]
 
     assert set(binding_ids) == set(INBOX_B['supported_content'])
-    

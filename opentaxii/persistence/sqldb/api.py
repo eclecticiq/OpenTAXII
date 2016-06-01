@@ -51,7 +51,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
             services = collection.services
         else:
             services = Service.query.all()
-        return map(conv.to_service_entity, services)
+        return [conv.to_service_entity(s) for s in services]
 
     def get_service(self, service_id):
         return conv.to_service_entity(Service.get(service_id))
@@ -77,14 +77,16 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
     def get_collections(self, service_id):
         service = Service.query.get(service_id)
-        return map(conv.to_collection_entity, service.collections)
+        return [
+            conv.to_collection_entity(c) for c in service.collections]
 
     def get_collection(self, name, service_id):
 
         collection = (
             DataCollection.query.join(Service.collections)
                                 .filter(Service.id == service_id)
-                                .filter_by(name=name)).first()
+                                .filter(DataCollection.name == name)).first()
+
         if collection:
             return conv.to_collection_entity(collection)
 
@@ -148,8 +150,9 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         if limit:
             query = query.limit(limit)
 
-        blocks = query.yield_per(YIELD_PER_SIZE)
-        return map(conv.to_block_entity, blocks.all())
+        return [
+            conv.to_block_entity(block)
+            for block in query.yield_per(YIELD_PER_SIZE)]
 
     def create_collection(self, entity):
 
@@ -181,12 +184,13 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
                              .format(collection_id))
 
         services = Service.query.filter(Service.id.in_(service_ids))
+
         collection.services.extend(services)
 
         self.db.session.add(collection)
         self.db.session.commit()
 
-        log.debug("Collection attached", collection=collection.id,
+        log.debug("collection.attached", collection=collection.id,
                   collection_name=collection.name, services=service_ids)
 
     def create_inbox_message(self, entity):
@@ -294,7 +298,8 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
     def get_subscriptions(self, service_id):
         service = Service.query.get(service_id)
-        return map(conv.to_subscription_entity, service.subscriptions)
+        return [
+            conv.to_subscription_entity(s) for s in service.subscriptions]
 
     def update_subscription(self, entity):
 

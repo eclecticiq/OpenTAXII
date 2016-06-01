@@ -1,3 +1,4 @@
+import six
 from libtaxii.constants import (
     CT_DATA_FEED, CT_DATA_SET,
     SS_ACTIVE, SS_PAUSED, SS_UNSUBSCRIBED,
@@ -83,7 +84,7 @@ class CollectionEntity(Entity):
             if not content:
                 continue
 
-            if isinstance(content, basestring):
+            if isinstance(content, six.string_types):
                 binding = ContentBindingEntity(content)
             elif isinstance(content, tuple):
                 bid, subtypes = content
@@ -140,8 +141,9 @@ class CollectionEntity(Entity):
         return overlap
 
     def __repr__(self):
-        return "CollectionEntity(name=%s, type=%s, supported_content=%s)" % (
-                self.name, self.type, self.supported_content)
+        return (
+            "CollectionEntity(name={}, type={}, supported_content={})"
+            .format(self.name, self.type, self.supported_content))
 
 
 class ContentBlockEntity(Entity):
@@ -280,7 +282,7 @@ class PollRequestParametersEntity(SubscriptionParameters):
                  content_bindings=None):
 
         super(PollRequestParametersEntity, self).__init__(
-                response_type=response_type, content_bindings=content_bindings)
+            response_type=response_type, content_bindings=content_bindings)
 
 
 class SubscriptionEntity(Entity):

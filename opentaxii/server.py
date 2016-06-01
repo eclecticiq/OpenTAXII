@@ -18,7 +18,8 @@ class TAXIIServer(object):
     This class keeps Presistence API and Auth API managers instances
     and creates TAXII Service instances on request.
 
-    :param `opentaxii.ServerConfig` config: OpenTAXII server configuration
+    :param `opentaxii.config.ServerConfig` config:
+        OpenTAXII server configuration
     '''
 
     TYPE_TO_SERVICE = {
@@ -99,7 +100,8 @@ class TAXIIServer(object):
         :param list service_ids: list of service IDs (as strings)
 
         :return: list of services
-        :rtype: list of :py:class:`opentaxii.taxii.services.abstract.TAXIIService`  # noqa
+        :rtype: list of
+                :py:class:`opentaxii.taxii.services.abstract.TAXIIService`
         '''
 
         if service_ids is not None and len(service_ids) == 0:
@@ -112,7 +114,9 @@ class TAXIIServer(object):
         services = self._create_services(service_entities)
 
         if service_ids:
-            services = filter(lambda s: s.id in service_ids, services)
+            services = [
+                service for service in services
+                if service.id in service_ids]
 
         return services
 

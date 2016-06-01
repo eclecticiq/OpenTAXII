@@ -35,7 +35,8 @@ class PersistenceManager(object):
         NOTE: Additional method that is only used in the helper scripts
         shipped with OpenTAXII.
         '''
-        return self.api.attach_collection_to_services(collection_id, service_ids)
+        return self.api.attach_collection_to_services(
+            collection_id, service_ids)
 
     def create_collection(self, entity):
         '''Create a collection.
@@ -94,8 +95,8 @@ class PersistenceManager(object):
         '''Get a collection by name and service ID.
 
         According to TAXII spec collection name is unique per service instance.
-        Method retrieves collection entity using collection name ``name`` and service ID
-        ``service_id`` as a composite key.
+        Method retrieves collection entity using collection name
+        ``name`` and service ID ``service_id`` as a composite key.
 
         :param str name: a collection name
         :param str service_id: ID of a service
@@ -105,11 +106,11 @@ class PersistenceManager(object):
         '''
         return self.api.get_collection(name, service_id)
 
-
     def create_inbox_message(self, entity):
         '''Create an inbox message.
 
-        Methods emits :py:const:`opentaxii.signals.INBOX_MESSAGE_CREATED` signal.
+        Methods emits :py:const:`opentaxii.signals.INBOX_MESSAGE_CREATED`
+        signal.
 
         :param `opentaxii.taxii.entities.InboxMessageEntity` entity:
             inbox message entity in question
@@ -127,7 +128,8 @@ class PersistenceManager(object):
                        collections=None):
         '''Create a content block.
 
-        Methods emits :py:const:`opentaxii.signals.CONTENT_BLOCK_CREATED` signal.
+        Methods emits :py:const:`opentaxii.signals.CONTENT_BLOCK_CREATED`
+        signal.
 
         :param `opentaxii.taxii.entities.ContentBlockEntity` entity:
                 content block in question
@@ -146,16 +148,17 @@ class PersistenceManager(object):
 
         collections = collections or []
         collection_ids = [c.id for c in collections]
-        content = self.api.create_content_block(content,
-                collection_ids=collection_ids, service_id=service_id)
+        content = self.api.create_content_block(
+            content, collection_ids=collection_ids, service_id=service_id)
 
-        CONTENT_BLOCK_CREATED.send(self, content_block=content,
-                collection_ids=collection_ids, service_id=service_id)
+        CONTENT_BLOCK_CREATED.send(
+            self, content_block=content,
+            collection_ids=collection_ids, service_id=service_id)
 
         return content
 
-    def get_content_blocks_count(self, collection_id, start_time=None, end_time=None,
-                                 bindings=None):
+    def get_content_blocks_count(self, collection_id, start_time=None,
+                                 end_time=None, bindings=None):
         '''Get a count of the content blocks associated with a collection.
 
         :param str collection_id: ID fo a collection in question
@@ -163,16 +166,16 @@ class PersistenceManager(object):
         :param datetime end_time: end of a time frame
         :param list bindings: list of
             :py:class:`opentaxii.taxii.entities.ContentBindingEntity`
-            
+
         :return: content block count
         :rtype: int
         '''
 
         return self.api.get_content_blocks_count(
-            collection_id = collection_id,
-            start_time = start_time,
-            end_time = end_time,
-            bindings = bindings or [],
+            collection_id=collection_id,
+            start_time=start_time,
+            end_time=end_time,
+            bindings=bindings or [],
         )
 
     def get_content_blocks(self, collection_id, start_time=None, end_time=None,
@@ -186,18 +189,18 @@ class PersistenceManager(object):
             :py:class:`opentaxii.taxii.entities.ContentBindingEntity`
         :param int offset: result set offset
         :param int limit: result set max size
-            
+
         :return: content blocks list
         :rtype: list of :py:class:`opentaxii.taxii.entities.ContentBlockEntity`
         '''
 
         return self.api.get_content_blocks(
-            collection_id = collection_id,
-            start_time = start_time,
-            end_time = end_time,
-            bindings = bindings or [],
-            offset = offset,
-            limit = limit,
+            collection_id=collection_id,
+            start_time=start_time,
+            end_time=end_time,
+            bindings=bindings or [],
+            offset=offset,
+            limit=limit,
         )
 
     def create_result_set(self, entity):
@@ -205,7 +208,7 @@ class PersistenceManager(object):
 
         :param `opentaxii.taxii.entities.ResultSetEntity` entity:
             result set entity in question
-            
+
         :return: updated result set entity
         :rtype: :py:class:`opentaxii.taxii.entities.ResultSetEntity`
         '''
@@ -224,7 +227,8 @@ class PersistenceManager(object):
     def create_subscription(self, entity):
         '''Create a subscription.
 
-        Methods emits :py:const:`opentaxii.signals.SUBSCRIPTION_CREATED` signal.
+        Methods emits :py:const:`opentaxii.signals.SUBSCRIPTION_CREATED`
+        signal.
 
         :param `opentaxii.taxii.entities.SubscriptionEntity` entity:
             subscription entity in question.

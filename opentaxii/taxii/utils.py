@@ -22,12 +22,14 @@ def is_content_supported(supported_bindings, content_binding, version=None):
     else:
         binding_id = content_binding.binding_id
 
-        #FIXME: may be not the best option
-        subtype = content_binding.subtype_ids[0] if content_binding.subtype_ids \
-                else None
+        # FIXME: may be not the best option
+        subtype = (
+            content_binding.subtype_ids[0] if content_binding.subtype_ids
+            else None)
 
     matches = [
-        ((supported.binding == binding_id) and (not supported.subtypes or subtype in supported.subtypes))
+        ((supported.binding == binding_id) and
+         (not supported.subtypes or subtype in supported.subtypes))
         for supported in supported_bindings
     ]
 
@@ -43,7 +45,9 @@ def parse_message(content_type, body, do_validate=True):
             result = validator_parser.validator.validate_string(body)
             if not result.valid:
                 errors = '; '.join([str(err) for err in result.error_log])
-                raise BadMessageStatus('Request was not schema valid: %s' % errors)
+                raise BadMessageStatus(
+                    'Request was not schema valid: {}'
+                    .format(errors))
         except XMLSyntaxError as e:
             log.error("Invalid XML received", exc_info=True)
             raise BadMessageStatus('Request was invalid XML', e=e)
@@ -51,5 +55,3 @@ def parse_message(content_type, body, do_validate=True):
     taxii_message = validator_parser.parser(body)
 
     return taxii_message
-
-

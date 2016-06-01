@@ -38,7 +38,8 @@ class InboxService(TAXIIService):
         self.accept_all_content = accept_all_content
 
         supported_content = supported_content or []
-        self.supported_content = map(ContentBindingEntity, supported_content)
+        self.supported_content = [
+            ContentBindingEntity(c) for c in supported_content]
 
         self.destination_collection_required = destination_collection_required
 
@@ -107,9 +108,9 @@ class InboxService(TAXIIService):
         if self.accept_all_content:
             return service_instances
 
-        for si in service_instances:
-            si.inbox_service_accepted_content = \
-                self.get_supported_content(version)
+        for instance in service_instances:
+            instance.inbox_service_accepted_content = (
+                self.get_supported_content(version))
 
         return service_instances
 

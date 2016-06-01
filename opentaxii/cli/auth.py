@@ -36,4 +36,4 @@ def create_account():
     server = TAXIIServer(config)
     token = server.auth.create_account(args.username, args.password)
 
-    log.info("Account created", username=username, token=token)
+    log.info("Account created", username=args.username, token=token)
