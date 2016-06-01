@@ -19,7 +19,7 @@ You can verify that Python is installed by typing ``python`` or ``python3`` in y
 
 Install OpenTAXII
 -----------------
-To sandbox the project and protect system-wide python it is recommended to install OpenTAXII into a `virtual environment <https://virtualenv.pypa.io/en/latest/installation.html>`_ (*virtualenv*)::
+To sandbox the project and protect system-wide python it is recommended to install OpenTAXII into a `virtual environment <https://virtualenv.pypa.io/en/latest/installation.html>`_ (*virtualenv*).
 
 Create a virtual environment named venv::
 

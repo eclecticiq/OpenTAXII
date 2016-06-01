@@ -7,6 +7,8 @@ Changelog
 * Flake8 full style compatibility. Flake8 check added to Tox configuration.
 * SQLAlchemy session scope issue fixed (related to `#38 <https://github.com/EclecticIQ/OpenTAXII/issues/38>`_).
 * `opentaxii-delete-blocks` CLI command added (related to `#45 <https://github.com/EclecticIQ/OpenTAXII/issues/45>`_).
+* `delete_content_blocks` method `added <https://github.com/EclecticIQ/OpenTAXII/commit/dc6fddc27a98e8450c7e05e583b2bfb741f6e197#diff-6814849ac352b2b74132f8fa52e0ec4eR213>`_ to Persistence API.
+* Collection's name is `required <https://github.com/EclecticIQ/OpenTAXII/commit/dc6fddc27a98e8450c7e05e583b2bfb741f6e197#diff-ce3f7b939e5c540480ac655aef32c513R116>`_ to be unique in default SQL DB Auth API implementation.
 
 0.1.5 (2016-03-15)
 ------------------

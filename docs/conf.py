@@ -51,7 +51,7 @@ copyright = u'2016, EclecticIQ'
 # built documents.
 #
 # The short X.Y version.
-execfile(os.path.join(os.path.dirname(__file__), '../opentaxii/_version.py'))
+exec(open(os.path.join(os.path.dirname(__file__), '../opentaxii/_version.py')).read())
 version = __version__
 
 # The full version, including alpha/beta/rc tags.
