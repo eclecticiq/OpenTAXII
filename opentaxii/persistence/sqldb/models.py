@@ -113,7 +113,7 @@ class DataCollection(AbstractModel):
     __tablename__ = 'data_collections'
 
     id = Column(Integer, primary_key=True)
-    name = Column(Text, index=True)
+    name = Column(Text, index=True, unique=True)
 
     type = Column(String)
     description = Column(Text, nullable=True)

@@ -170,9 +170,6 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         self.db.session.add(collection)
         self.db.session.commit()
 
-        log.debug("collection.created", collection=collection.id,
-                  collection_name=collection.name)
-
         return conv.to_collection_entity(collection)
 
     def attach_collection_to_services(self, collection_id, service_ids):
@@ -180,7 +177,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         collection = DataCollection.query.get(collection_id)
 
         if not collection:
-            raise ValueError("Can't find collection with id={}"
+            raise ValueError("Collection with id {} does not exist"
                              .format(collection_id))
 
         services = Service.query.filter(Service.id.in_(service_ids))
@@ -342,3 +339,37 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
     def create_subscription(self, entity):
         return self.update_subscription(entity)
+
+    def delete_content_blocks(self, collection_name, start_time,
+                              end_time=None):
+
+        collection = DataCollection.query.filter_by(name=collection_name).one()
+
+        if not collection:
+            raise ValueError("Collection with name '{}' does not exist"
+                             .format(collection_name))
+
+        content_blocks_query = (
+            self.db.session.query(ContentBlock.id)
+                           .join(DataCollection.content_blocks)
+                           .filter(DataCollection.id == collection.id)
+                           .filter(ContentBlock.timestamp_label > start_time))
+
+        if end_time:
+            content_blocks_query = content_blocks_query.filter(
+                ContentBlock.timestamp_label <= end_time)
+
+        counter = (
+            ContentBlock.query.filter(
+                ContentBlock.id.in_(content_blocks_query.subquery()))
+            .delete(synchronize_session=False))
+
+        collection.volume = (
+            self.db.session
+            .query(func.count(ContentBlock.id))
+            .join(ContentBlock.collections)
+            .filter(DataCollection.id == collection.id)).scalar()
+
+        self.db.session.commit()
+
+        return counter

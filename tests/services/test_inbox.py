@@ -52,13 +52,21 @@ def make_inbox_message(version, blocks=None, dest_collection=None):
 def prepare_server(server):
     server.persistence.create_services_from_object(SERVICES)
 
+    from opentaxii.persistence.sqldb.models import DataCollection
+
     coll_mapping = {
         'inbox-A': COLLECTIONS_A,
         'inbox-B': COLLECTIONS_B
     }
+    names = set()
     for service, collections in coll_mapping.items():
         for coll in collections:
-            coll = server.persistence.create_collection(coll)
+            if coll.name not in names:
+                coll = server.persistence.create_collection(coll)
+                names.add(coll.name)
+            else:
+                coll = DataCollection.query.filter_by(name=coll.name).one()
+
             server.persistence.attach_collection_to_services(
                 coll.id, service_ids=[service])
 

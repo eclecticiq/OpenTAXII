@@ -9,7 +9,8 @@ class Account(object):
     :param dict details: additional details of an account
     '''
 
-    def __init__(self, id, **details):
+    def __init__(self, id, username, **details):
 
         self.id = id
+        self.username = username
         self.details = details

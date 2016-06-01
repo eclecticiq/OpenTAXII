@@ -1,8 +1,11 @@
+import structlog
 from opentaxii.signals import (
     CONTENT_BLOCK_CREATED, INBOX_MESSAGE_CREATED,
     SUBSCRIPTION_CREATED
 )
 from opentaxii.taxii.converters import blob_to_service_entity
+
+log = structlog.getLogger(__name__)
 
 
 class PersistenceManager(object):
@@ -44,7 +47,9 @@ class PersistenceManager(object):
         NOTE: Additional method that is only used in the helper scripts
         shipped with OpenTAXII.
         '''
-        return self.api.create_collection(entity)
+        collection = self.api.create_collection(entity)
+        log.info("collection.created", collection=collection.name)
+        return collection
 
     def create_services_from_object(self, services_config):
         '''Create services from configuration object and persis them.
@@ -54,7 +59,10 @@ class PersistenceManager(object):
         '''
 
         for blob in services_config:
-            self.create_service(blob_to_service_entity(blob))
+            service = blob_to_service_entity(blob)
+            self.create_service(service)
+
+            log.info("service.created", id=service.id, type=service.type)
 
     # =================================================================
 
@@ -280,3 +288,25 @@ class PersistenceManager(object):
         :param str service_id: ID of a service
         '''
         return self.api.get_domain(service_id)
+
+    def delete_content_blocks(self, collection_name, start_time,
+                              end_time=None):
+        '''Delete content blocks in a specified collection with
+        timestamp label in a specified time frame.
+
+        :param str collection_name: collection name
+        :param datetime start_time: exclusive beginning of a timeframe
+        :param datetime end_time: inclusive end of a timeframe
+
+        :return: the count of rows deleted
+        :rtype: int
+        '''
+        count = self.api.delete_content_blocks(
+            collection_name, start_time, end_time=end_time)
+
+        log.info(
+            "collection.content_blocks.deleted",
+            collection=collection_name,
+            count=count)
+
+        return count

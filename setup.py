@@ -39,6 +39,8 @@ setup(
              'opentaxii.cli.persistence:create_services'),
             ('opentaxii-create-collections = '
              'opentaxii.cli.persistence:create_collections'),
+            ('opentaxii-delete-blocks = '
+             'opentaxii.cli.persistence:delete_content_blocks'),
         ]
     },
     install_requires=install_requires,

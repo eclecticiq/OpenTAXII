@@ -209,3 +209,14 @@ class OpenTAXIIPersistenceAPI(object):
         :param str service_id: ID of a service
         '''
         return None
+
+    def delete_content_blocks(self, collection_name, start_time,
+                              end_time=None):
+        '''Delete content blocks in a specified collection with
+        timestamp label in a specified time frame.
+
+        :param str collection_name: collection name
+        :param datetime start_time: exclusive beginning of a timeframe
+        :param datetime end_time: inclusive end of a timeframe
+        '''
+        pass

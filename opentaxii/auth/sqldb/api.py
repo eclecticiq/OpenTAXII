@@ -72,7 +72,7 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
         if not account:
             return
 
-        return AccountEntity(id=account.id)
+        return AccountEntity(id=account.id, username=account.username)
 
     def create_account(self, username, password):
 
@@ -82,7 +82,7 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
         self.db.session.add(account)
         self.db.session.commit()
 
-        return AccountEntity(id=account.id)
+        return AccountEntity(id=account.id, username=username)
 
     def _generate_token(self, account_id, ttl=TOKEN_TTL):
         exp = datetime.utcnow() + timedelta(minutes=ttl)

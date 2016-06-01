@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.1.6 (2016-06-01)
+------------------
+* Python 3.4 compatibility of the codebase. Tox configuration extended with python 3.4 environment run.
+* Flake8 full style compatibility. Flake8 check added to Tox configuration.
+* SQLAlchemy session scope issue fixed (related to `#38 <https://github.com/EclecticIQ/OpenTAXII/issues/38>`_).
+* `opentaxii-delete-blocks` CLI command added (related to `#45 <https://github.com/EclecticIQ/OpenTAXII/issues/45>`_).
+
 0.1.5 (2016-03-15)
 ------------------
 * Fix for the issue with persistence backend returning ``None`` instead of ``InboxMessage`` object
@@ -17,7 +24,6 @@ Changelog
 
 0.1.2 (2015-07-24)
 ------------------
-
 * Docker configuration added.
 * Health check endpoint added.
 * Basic authentication support added.
@@ -28,7 +34,6 @@ Changelog
 
 0.1.1 (2015-04-08)
 ------------------
-
 * Alias for Root Logger added to logging configuration.
 * Context object in a request scope that holds account and token added.
 * Support for OPTIONS HTTP request to enable auto version negotiation added.
@@ -36,5 +41,4 @@ Changelog
 
 0.1.0 (2015-03-31)
 ------------------
-
 * Initial release

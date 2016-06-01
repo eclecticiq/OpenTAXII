@@ -39,6 +39,10 @@ class SQLAlchemyDB(object):
         base.query = _QueryProperty(self)
         return base
 
+    @property
+    def metadata(self):
+        return self.Model.metadata
+
     def create_scoped_session(self, options=None):
 
         options = options or {}
@@ -53,7 +57,7 @@ class SQLAlchemyDB(object):
         return orm.sessionmaker(bind=self.engine, **options)
 
     def create_all_tables(self):
-        self.Model.metadata.create_all(bind=self.engine)
+        self.metadata.create_all(bind=self.engine)
 
     def init_app(self, app):
         @app.teardown_appcontext

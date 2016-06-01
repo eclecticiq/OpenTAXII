@@ -1,3 +1,7 @@
+import structlog
+
+log = structlog.getLogger(__name__)
+
 
 class AuthManager(object):
     '''Manager responsible for authentication.
@@ -39,4 +43,7 @@ class AuthManager(object):
         NOTE: Additional method that is only used in the helper scripts
         shipped with OpenTAXII.
         '''
-        return self.api.create_account(username, password)
+        account = self.api.create_account(username, password)
+        log.info("account.created", username=account.username)
+
+        return account
