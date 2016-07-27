@@ -1,6 +1,4 @@
-# Set the base image to Python
-FROM python:2.7.9
-MAINTAINER EclecticIQ <opentaxii@eclecticiq.com>
+FROM python:3.4.5
 
 # Create the working dir and set the working directory
 WORKDIR /
@@ -8,11 +6,9 @@ WORKDIR /
 # Install dependencies
 COPY ./requirements.txt /requirements.txt
 RUN pip install -r requirements.txt \
-    && pip install supervisor \
     && pip install gunicorn \
     && pip install psycopg2 \
     && rm -f /requirements.txt
-
 
 # Create directories
 RUN mkdir /opentaxii \
@@ -35,8 +31,6 @@ VOLUME [ "/data", "/input" ]
 COPY docker/entrypoint.sh /entrypoint.sh
 ENTRYPOINT [ "/entrypoint.sh" ]
 
-# Expose and Run using supervisor
-COPY docker/supervisord.conf /supervisord.conf
+# Expose and Run in gunicorn
 EXPOSE 9000
-CMD ["supervisord","-c","/supervisord.conf"]
-
+CMD ["gunicorn", "opentaxii.http:app", "--bind 0.0.0.0:9000"]
