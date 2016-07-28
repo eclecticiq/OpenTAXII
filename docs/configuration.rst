@@ -41,6 +41,34 @@ Default configuration looks like this:
 .. note::
 	 OpenTAXII uses a SQLite Database by default wich is intended only when running OpenTAXII in a development environment. Please change when running in a production environment.
 
+An example of using OpenTAXII with a production database (PostgreSQL is our recommendation):
+
+.. code-block:: yaml
+
+    ---
+    domain: "localhost:9000"
+    support_basic_auth: yes
+
+    persistence_api:
+      class: opentaxii.persistence.sqldb.SQLDatabaseAPI
+      parameters:
+        db_connection: postgresql://username:P@ssword@db.example.com:5432/databasename
+        create_tables: yes
+
+    auth_api:
+      class: opentaxii.auth.sqldb.SQLDatabaseAPI
+      parameters:
+        db_connection: postgresql://username:P@ssword@db.example.com:5432/databasename
+        create_tables: yes
+        secret: SECRET-STRING-NEEDS-TO-BE-CHANGED
+
+    logging:
+      opentaxii: info
+      root: info
+
+    hooks: 
+
+
 Custom configuration
 ====================
 
