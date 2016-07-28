@@ -39,7 +39,7 @@ Default configuration looks like this:
     hooks: 
     
 .. note::
-	 OpenTAXII uses a SQLite Database by default wich is intended only when running OpenTAXII in a development environment. Please change when running in a production environment.
+  OpenTAXII uses a SQLite Database by default wich is intended only when running OpenTAXII in a development environment. Please change when running in a production environment.
 
 An example of using OpenTAXII with a production database (PostgreSQL is our recommendation):
 
