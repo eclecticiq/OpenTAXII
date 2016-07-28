@@ -1,4 +1,5 @@
 FROM python:3.4.5
+MAINTAINER EclecticIQ <opentaxii@eclecticiq.com>
 
 # Create the working dir and set the working directory
 WORKDIR /
