@@ -30,7 +30,7 @@ def import_class(module_class_name):
 def initialize_api(api_config):
     class_name = api_config['class']
     cls = import_class(class_name)
-    params = api_config['parameters']
+    params = api_config.get('parameters', None)
 
     if params:
         instance = cls(**params)

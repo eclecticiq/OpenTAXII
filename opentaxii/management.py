@@ -1,4 +1,6 @@
-from flask import Blueprint, request, jsonify, abort, current_app
+from flask import Blueprint, request, jsonify, abort
+
+from .local import context
 
 management = Blueprint('management', __name__)
 
@@ -13,7 +15,7 @@ def auth():
     if not username or not password:
         return 'Both username and password are required', 400
 
-    token = current_app.taxii_server.auth.authenticate(username, password)
+    token = context.server.auth.authenticate(username, password)
 
     if not token:
         abort(401)

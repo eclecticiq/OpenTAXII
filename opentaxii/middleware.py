@@ -1,5 +1,5 @@
 import structlog
-from functools import wraps
+import functools
 from flask import Flask, request, make_response, abort
 
 from .taxii.exceptions import (
@@ -45,22 +45,22 @@ def create_app(server):
 
     app.register_error_handler(500, handle_internal_error)
     app.register_error_handler(StatusMessageException, handle_status_exception)
-
+    app.before_request(
+        functools.partial(create_context_before_request, server))
     return app
+
+
+def create_context_before_request(server):
+    context.account = _authenticate(server, request.headers)
+    context.server = server
 
 
 def _server_wrapper(server):
 
-    @wraps(_process_with_service)
+    @functools.wraps(_process_with_service)
     def wrapper(relative_path=""):
-
         relative_path = '/' + relative_path
-
         try:
-            context.account = _authenticate(
-                server,
-                request.headers.get(HTTP_AUTHORIZATION)
-            )
 
             for service in server.get_services():
                 if service.path == relative_path:
@@ -84,7 +84,9 @@ def _server_wrapper(server):
     return wrapper
 
 
-def _authenticate(server, auth_header):
+def _authenticate(server, headers):
+
+    auth_header = headers.get(HTTP_AUTHORIZATION)
     if not auth_header:
         return None
 

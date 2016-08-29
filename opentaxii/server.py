@@ -48,12 +48,8 @@ class TAXIIServer(object):
 
     def init_app(self, app):
         self.app = app
-
-        if hasattr(self.persistence.api, 'init_app'):
-            self.persistence.api.init_app(app)
-
-        if hasattr(self.auth.api, 'init_app'):
-            self.auth.api.init_app(app)
+        self.persistence.api.init_app(app)
+        self.auth.api.init_app(app)
 
     def get_domain(self, service_id):
         dynamic_domain = self.persistence.get_domain(service_id)

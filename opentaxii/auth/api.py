@@ -6,6 +6,9 @@ class OpenTAXIIAuthAPI(object):
     a specific Authentication API implementation.
     '''
 
+    def init_app(self, app):
+        pass
+
     def authenticate(self, username, password):
         '''Authenticate a user.
 

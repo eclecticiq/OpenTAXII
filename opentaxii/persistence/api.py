@@ -6,6 +6,9 @@ class OpenTAXIIPersistenceAPI(object):
     a specific Persistence API implementation.
     '''
 
+    def init_app(self, app):
+        pass
+
     def create_service(self, service_entity):
         '''Create a service.
 
