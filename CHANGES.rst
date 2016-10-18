@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.1.7 (2016-10-18)
+------------------
+* Minor fixes.
+* Dependencies were changed from hard-pinned to more flexible.
+* Example of production DB configuration added to docs.
+
 0.1.6 (2016-06-01)
 ------------------
 * Python 3.4 compatibility of the codebase. Tox configuration extended with python 3.4 environment run.
