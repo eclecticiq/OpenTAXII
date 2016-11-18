@@ -50,8 +50,8 @@ class ContentBlock(AbstractModel):
 
     content = schema.Column(types.Text)
 
-    binding_id = schema.Column(types.Text, index=True)
-    binding_subtype = schema.Column(types.Text, index=True)
+    binding_id = schema.Column(types.String(300), index=True)
+    binding_subtype = schema.Column(types.String(300), index=True)
 
     collections = relationship(
         'DataCollection',
@@ -115,8 +115,7 @@ class DataCollection(AbstractModel):
     __tablename__ = 'data_collections'
 
     id = schema.Column(types.Integer, primary_key=True)
-    name = schema.Column(types.Text, index=True, unique=True)
-
+    name = schema.Column(types.String(300), index=True, unique=True)
     type = schema.Column(types.String(150))
     description = schema.Column(types.Text, nullable=True)
 
@@ -158,7 +157,7 @@ class InboxMessage(AbstractModel):
     destination_collections = schema.Column(types.Text, nullable=True)
 
     service_id = schema.Column(
-        types.Text,
+        types.String(150),
         schema.ForeignKey(
             'services.id', onupdate="CASCADE", ondelete="CASCADE"))
 
