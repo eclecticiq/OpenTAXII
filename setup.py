@@ -13,6 +13,7 @@ def get_file_contents(filename):
     with open(here(filename)) as fp:
         return fp.read()
 
+
 # This is a quick and dirty way to include everything from
 # requirements.txt as package dependencies.
 install_requires = get_file_contents('requirements.txt').split()
