@@ -1,3 +1,4 @@
+from collections import namedtuple
 
 import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10
@@ -9,7 +10,6 @@ from libtaxii.constants import (
     VID_TAXII_SERVICES_10, VID_TAXII_SERVICES_11
 )
 
-from collections import namedtuple
 
 ValidatorAndParser = namedtuple('ValidatorAndParser', ['validator', 'parser'])
 
