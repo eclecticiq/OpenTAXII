@@ -59,6 +59,9 @@ def parse_message(content_type, body, do_validate=True):
 
 
 def configure_libtaxii_xml_parser(huge_tree=False):
+    '''
+    Set custom XML parser as a default libtaxii parser
+    '''
     # set XML parser in libraxii right away
     set_xml_parser(etree.XMLParser(
         # inject default attributes from DTD or XMLSchema
