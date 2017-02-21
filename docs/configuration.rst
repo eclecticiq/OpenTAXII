@@ -18,6 +18,7 @@ Default configuration looks like this:
     ---
     domain: "localhost:9000"
     support_basic_auth: yes
+    save_raw_inbox_messages: yes
 
     persistence_api:
       class: opentaxii.persistence.sqldb.SQLDatabaseAPI
@@ -36,19 +37,18 @@ Default configuration looks like this:
       opentaxii: info
       root: info
 
+    xml_parser_supports_huge_tree: yes
+
     hooks: 
     
 .. note::
   OpenTAXII uses a SQLite Database by default wich is intended only when running OpenTAXII in a development environment. Please change when running in a production environment.
 
-An example of using OpenTAXII with a production database (PostgreSQL is our recommendation):
+An example of custom configuration that allows OpenTAXII to connect to production-ready database (PostgreSQL is our recommendation):
 
 .. code-block:: yaml
 
     ---
-    domain: "localhost:9000"
-    support_basic_auth: yes
-
     persistence_api:
       class: opentaxii.persistence.sqldb.SQLDatabaseAPI
       parameters:
@@ -61,12 +61,6 @@ An example of using OpenTAXII with a production database (PostgreSQL is our reco
         db_connection: postgresql://username:P@ssword@db.example.com:5432/databasename
         create_tables: yes
         secret: SECRET-STRING-NEEDS-TO-BE-CHANGED
-
-    logging:
-      opentaxii: info
-      root: info
-
-    hooks: 
 
 
 Custom configuration
@@ -102,6 +96,7 @@ Example custom configuration:
         create_tables: yes
         secret: mueHenjitweridUnviapEasJocdiDrelHonsyorl
 
+    xml_parser_supports_huge_tree: no
     hooks: mypackage.opentaxii.hooks
 
 The built-in implementation of the Persistence and Authentication APIs support SQLite, PostgreSQL, MySQL, and other databases. Check `SQLAlchemy website <http://www.sqlalchemy.org/>`_
