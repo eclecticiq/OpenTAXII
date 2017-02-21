@@ -88,6 +88,6 @@ def configure_libtaxii_xml_parser(huge_tree=False):
         collect_ids=True,
         # replace entities by their text value (default: True)
         resolve_entities=False,
-        # disable security restrictions and support very deep
+        # enable/disable security restrictions and support very deep
         # trees and very long text content
         huge_tree=huge_tree))
