@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.1.8 (2017-02-21)
+------------------
+* Ability to enable/disable "huge trees" support in XML parser. Configuration property `xml_parser_supports_huge_tree` set to `yes` or `true` will disable security restrictions and force XML parser to support very deep trees and very long text content.
+* Adjust SQL Persistence API implemetation so it works smoothly with MySQL backend.
+* Use Python 3.5 instead of Python 3.4 for tests.
+
 0.1.7 (2016-10-18)
 ------------------
 * Minor fixes.
