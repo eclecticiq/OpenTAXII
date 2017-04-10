@@ -21,11 +21,12 @@ def create_services():
 
     args = parser.parse_args()
     services_config = anyconfig.load(args.config, forced_type="yaml")
+    services = services_config.get('services', [])
 
     with app.app_context():
 
         app.taxii_server.persistence.create_services_from_object(
-            services_config)
+            services)
 
 
 def create_collections():
@@ -41,11 +42,12 @@ def create_collections():
 
     args = parser.parse_args()
     collections_config = anyconfig.load(args.config, forced_type="yaml")
+    collections = collections_config.get('collections', [])
 
     with app.app_context():
 
         created = 0
-        for collection in collections_config:
+        for collection in collections:
 
             service_ids = collection.pop('service_ids')
             existing = None
