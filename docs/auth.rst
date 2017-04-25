@@ -46,7 +46,8 @@ Example request using `Cabby library <http://github.com/eclecticiq/cabby>`_ CLI 
 
     # using JWT support in Cabby
     (venv) $ taxii-poll \
-                --host localhost:9000 \
+                --host localhost \
+                --port 9000 \
                 --path /services/poll-a \
                 --collection collection-A \
                 --username test \
