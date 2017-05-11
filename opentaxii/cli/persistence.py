@@ -47,7 +47,7 @@ def create_collections():
     with app.app_context():
 
         created = 0
-        for collection in collections:
+        for collection in collections["collections"]:
 
             service_ids = collection.pop('service_ids')
             existing = None
