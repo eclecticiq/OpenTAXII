@@ -58,7 +58,7 @@ class PersistenceManager(object):
         shipped with OpenTAXII.
         '''
 
-        for blob in services_config:
+        for blob in services_config["services"]:
             service = blob_to_service_entity(blob)
             self.create_service(service)
 
