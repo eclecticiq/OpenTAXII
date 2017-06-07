@@ -1,6 +1,6 @@
 from libtaxii.constants import (
     VID_TAXII_HTTP_10, VID_TAXII_HTTPS_10,
-    CB_STIX_XML_111)
+    CB_STIX_XML_111, CB_STIX_XML_12)
 
 from opentaxii.taxii import entities
 
@@ -83,7 +83,7 @@ INSTANCES_CONFIGURED = sum(len(s['protocol_bindings']) for s in SERVICES)
 MESSAGE_ID = '123'
 CONTENT = 'some-content'
 
-CONTENT_BINDINGS_ONLY_STIX = [CB_STIX_XML_111]
+CONTENT_BINDINGS_ONLY_STIX = [CB_STIX_XML_111, CB_STIX_XML_12]
 CONTENT_BINDINGS_STIX_AND_CUSTOM = (
     CONTENT_BINDINGS_ONLY_STIX + [CUSTOM_CONTENT_BINDING])
 CONTENT_BINDING_SUBTYPE = 'custom-subtype'
