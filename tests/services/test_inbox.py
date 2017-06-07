@@ -3,7 +3,7 @@ import pytest
 from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
 from libtaxii.constants import (
-    ST_SUCCESS, CB_STIX_XML_111)
+    ST_SUCCESS, ST_FAILURE, CB_STIX_XML_111)
 
 from opentaxii.taxii import exceptions
 
@@ -170,6 +170,55 @@ def test_inbox_req_inbox_invalid_inbox_content_binding(server, version, https):
 
     assert isinstance(response, as_tm(version).StatusMessage)
     assert response.status_type == ST_SUCCESS
+    assert response.in_response_to == MESSAGE_ID
+
+    blocks = server.persistence.get_content_blocks(None)
+
+    # Content blocks with invalid content should be ignored
+    assert len(blocks) == 0
+
+
+@pytest.mark.parametrize("https", [True, False])
+@pytest.mark.parametrize("version", [11, 10])
+def test_inbox_req_inbox_non_xml_data(server, version, https):
+
+    inbox = server.get_service('inbox-B')
+
+    content = make_content(version, content="This is not XML")
+    inbox_message = make_inbox_message(
+        version, dest_collection=COLLECTION_OPEN, blocks=[content])
+
+    headers = prepare_headers(version, https)
+
+    response = inbox.process(headers, inbox_message)
+
+    assert isinstance(response, as_tm(version).StatusMessage)
+    assert response.status_type == ST_FAILURE
+    assert response.in_response_to == MESSAGE_ID
+
+    blocks = server.persistence.get_content_blocks(None)
+
+    # Content blocks with invalid content should be ignored
+    assert len(blocks) == 0
+
+
+@pytest.mark.parametrize("https", [True, False])
+@pytest.mark.parametrize("version", [11, 10])
+def test_inbox_req_inbox_xml_non_stix_data(server, version, https):
+
+    inbox = server.get_service('inbox-B')
+
+    content = make_content(version, content="<?xml version='1.0' ?><!DOCTYPE root SYSTEM 'http://notstix.example.com'>"
+                                            "<root><notstix></notstix></root>")
+    inbox_message = make_inbox_message(
+        version, dest_collection=COLLECTION_OPEN, blocks=[content])
+
+    headers = prepare_headers(version, https)
+
+    response = inbox.process(headers, inbox_message)
+
+    assert isinstance(response, as_tm(version).StatusMessage)
+    assert response.status_type == ST_FAILURE
     assert response.in_response_to == MESSAGE_ID
 
     blocks = server.persistence.get_content_blocks(None)
