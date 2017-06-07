@@ -1,8 +1,10 @@
 import structlog
+import sdv
+import StringIO
 
 import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10
-from libtaxii.constants import ST_SUCCESS
+from libtaxii.constants import ST_SUCCESS, ST_FAILURE
 
 from .base_handlers import BaseMessageHandler
 from ...exceptions import raise_failure
@@ -27,6 +29,9 @@ class InboxMessage11Handler(BaseMessageHandler):
         inbox_message = service.server.persistence.create_inbox_message(
             inbox_message_to_inbox_message_entity(
                 request, service_id=service.id, version=11))
+
+        failure = False
+        failure_message = ""
 
         for content_block in request.content_blocks:
 
@@ -55,6 +60,31 @@ class InboxMessage11Handler(BaseMessageHandler):
                             .format(content_block.content_binding))
                 continue
 
+            print ("taxii 1.1 content_block content:{}\n".format(content_block.content))
+            # Validate that the STIX content is actually STIX content with the STIX Validator
+            #results = sdv.validate_xml('stix-content.xml', version='1.2')
+            try:
+                content_block_to_validate  = StringIO.StringIO()
+                content_block_to_validate.write(content_block.content)
+                results = sdv.validate_xml(content_block_to_validate)
+                content_block_to_validate.close()
+                # Test the results of the validator to make sure the schema is valid
+                if not results.is_valid:
+                    failure = True
+                    failure_message = "The TAXII message {} contains invalid STIX content in one of the content blocks ({}).".format(request.message_id,content_block.content_binding)
+                    print ("XML schema is invalid (is_valid is false)")
+                    continue
+                else:
+                    print ("XML schema is valid")
+
+            except Exception as ve:
+                # In some instances the validator can raise an exception. This copes with this fact
+                failure = True
+                failure_message = "The TAXII message {} contains invalid STIX content in one of the content blocks ({}).".format(request.message_id,content_block.content_binding)
+                print ("XML schema is invalid (exception): {}".format(ve))
+                continue
+
+
             block = content_block_to_content_block_entity(
                 content_block, version=11)
 
@@ -64,12 +94,21 @@ class InboxMessage11Handler(BaseMessageHandler):
                 service_id=service.id,
                 inbox_message_id=inbox_message.id if inbox_message else None)
 
-        # Create and return a Status Message indicating success
-        status_message = tm11.StatusMessage(
-            message_id=cls.generate_id(),
-            in_response_to=request.message_id,
-            status_type=ST_SUCCESS
-        )
+        # If we had an error then indicate a failure
+        if failure:
+            status_message = tm11.StatusMessage(
+                message=failure_message,
+                message_id=cls.generate_id(),
+                in_response_to=request.message_id,
+                status_type=ST_FAILURE
+            )
+        else:
+            # Create and return a Status Message indicating success
+            status_message = tm11.StatusMessage(
+                message_id=cls.generate_id(),
+                in_response_to=request.message_id,
+                status_type=ST_SUCCESS
+            )
 
         return status_message
 
