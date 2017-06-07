@@ -21,5 +21,6 @@ logging:
   opentaxii: info
   root: info
 
-hooks: 
+xml_parser_supports_huge_tree: yes
 
+hooks:

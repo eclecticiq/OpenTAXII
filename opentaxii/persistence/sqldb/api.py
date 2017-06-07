@@ -54,7 +54,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         return [conv.to_service_entity(s) for s in services]
 
     def get_service(self, service_id):
-        return conv.to_service_entity(Service.get(service_id))
+        return conv.to_service_entity(Service.query.get(service_id))
 
     def update_service(self, obj):
 

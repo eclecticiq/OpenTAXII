@@ -5,6 +5,7 @@ from .taxii.services import (
     DiscoveryService, InboxService, CollectionManagementService,
     PollService
 )
+from .taxii.utils import configure_libtaxii_xml_parser
 from .persistence import PersistenceManager
 from .auth import AuthManager
 from .utils import get_path_and_address, initialize_api
@@ -44,7 +45,9 @@ class TAXIIServer(object):
             importlib.import_module(signal_hooks)
             log.info("signal_hooks.imported", hooks=signal_hooks)
 
-        log.info("taxiiserver.configured")
+        configure_libtaxii_xml_parser(config['xml_parser_supports_huge_tree'])
+
+        log.info("opentaxii.server_configured")
 
     def init_app(self, app):
         self.app = app
