@@ -208,8 +208,8 @@ def test_inbox_req_inbox_xml_non_stix_data(server, version, https):
 
     inbox = server.get_service('inbox-B')
 
-    content = make_content(version, content="<?xml version='1.0' ?><!DOCTYPE root SYSTEM 'http://example.com'>"
-                                            "<root><test></test></root>")  # noqa
+    content = make_content(version, content="<?xml version='1.0' ?><!DOCTYPE root SYSTEM 'http://notstix.example.com'>"
+                                            "<root><notstix></notstix></root>")
     inbox_message = make_inbox_message(
         version, dest_collection=COLLECTION_OPEN, blocks=[content])
 
