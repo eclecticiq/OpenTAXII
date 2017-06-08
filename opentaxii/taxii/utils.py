@@ -39,7 +39,8 @@ def is_content_supported(supported_bindings, content_binding, version=None):
 
 def verify_content_is_valid(content, content_binding, taxii_message_id):
     # Validate that the STIX content is actually STIX content with the STIX Validator
-    verify_results = namedtuple('VerifyResults', 'is_valid, message')    
+    verify_results = namedtuple('VerifyResults', 'is_valid, message')
+    if not isinstance(content_binding, str): content_binding = str(content_binding)
     try:
         # Prepare the content block for processing by the STIX data validator
         content_block_to_validate  = StringIO.StringIO()
