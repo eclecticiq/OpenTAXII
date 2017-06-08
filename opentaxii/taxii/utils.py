@@ -3,8 +3,15 @@ from collections import namedtuple
 
 import pytz
 import structlog
+import StringIO
+import sdv
+
 from lxml import etree
 from libtaxii.common import set_xml_parser
+from libtaxii.constants import (
+    CB_STIX_XML_10, CB_STIX_XML_101, CB_STIX_XML_11, CB_STIX_XML_111, CB_STIX_XML_12
+)
+
 
 from .exceptions import BadMessageStatus
 from .bindings import MESSAGE_VALIDATOR_PARSER
@@ -44,7 +51,7 @@ def verify_content_is_valid(content, content_binding, taxii_message_id):
     try:
         # Prepare the content block for processing by the STIX data validator
         content_block_to_validate  = StringIO.StringIO()
-        content_block_to_validate.write(content_block.content)
+        content_block_to_validate.write(content)
         # Run the STIX data validator with the correct content binding
         # Eliminates the chance of a client sending the wrong STIX file with the
         # wrong content_binding.
@@ -61,19 +68,20 @@ def verify_content_is_valid(content, content_binding, taxii_message_id):
         else:
             content_block_to_validate.close()
             return verify_results(is_valid=False,
-                                  message= "OpenTAXII does not support the {} STIX content binding".format(content_binding)
+                                  message= "OpenTAXII does not recognize the {} content binding supplied so cannot validate the content.".format(content_binding)
             )
         content_block_to_validate.close()
         # Test the results of the validator to make sure the schema is valid
         if not results.is_valid:
             return verify_results(is_valid=False,
-                         message= "The TAXII message {} contains invalid STIX content in one of the content blocks ({})."
+                         message= "The TAXII message {} contains invalid STIX {} content in one of the content blocks (incorrect content binding supplied?)."
                          .format(taxii_message_id,content_binding)
             )
             
     except Exception as ve:
+        print ve
         return verify_results(is_valid=False,
-                     message= "The TAXII message {} contains invalid STIX content in one of the content blocks ({})."
+                     message= "The TAXII message {} contains invalid STIX {} content in one of the content blocks (incorrect content binding supplied?)."
                      .format(taxii_message_id,content_binding)
         )
         

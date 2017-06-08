@@ -4,7 +4,7 @@ from libtaxii.constants import (
     ST_DESTINATION_COLLECTION_ERROR, ST_NOT_FOUND, SD_ITEM
 )
 
-from ..utils import is_content_supported
+from ..utils import is_content_supported, verify_content_is_valid
 from ..entities import ContentBindingEntity
 from ..exceptions import StatusMessageException
 
@@ -50,6 +50,14 @@ class InboxService(TAXIIService):
 
         return is_content_supported(self.supported_content, content_binding,
                                     version=version)
+
+    def verify_content_is_valid(self, content, content_binding, taxii_message_id):
+
+        if self.accept_all_content:
+            return namedtuple('VerifyResults', 'is_valid=True, message="This TAXII Service is accepting all content."')
+
+        return verify_content_is_valid(content, content_binding, taxii_message_id)
+
 
     def get_destination_collections(self):
         return self.server.persistence.get_collections(self.id)

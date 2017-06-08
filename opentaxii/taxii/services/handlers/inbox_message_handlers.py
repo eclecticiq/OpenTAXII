@@ -42,8 +42,9 @@ class InboxMessage11Handler(BaseMessageHandler):
             # 3.2 Inbox Exchange
             # version1.1/TAXII_Services_Specification.pdf
             if not is_supported:
-                log.warning("Content binding is not supported: {}"
-                            .format(content_block.content_binding))
+                failure = True
+                failure_message = "Content binding is not supported by this Inbox service: {}".format(content_block.content_binding)
+                log.warning(failure_message)
                 continue
 
             supporting_collections = []
@@ -56,43 +57,27 @@ class InboxMessage11Handler(BaseMessageHandler):
 
             if len(supporting_collections) == 0 and not is_supported:
                 # There's nothing to add this content block to
-                log.warning("No collection that support binding {} were found"
-                            .format(content_block.content_binding))
-                continue
-
-            print ("taxii 1.1 content_block content:{}\n".format(content_block.content))
-            # Validate that the STIX content is actually STIX content with the STIX Validator
-            #results = sdv.validate_xml('stix-content.xml', version='1.2')
-            try:
-                content_block_to_validate  = StringIO.StringIO()
-                content_block_to_validate.write(content_block.content)
-                results = sdv.validate_xml(content_block_to_validate)
-                content_block_to_validate.close()
-                # Test the results of the validator to make sure the schema is valid
-                if not results.is_valid:
-                    failure = True
-                    failure_message = "The TAXII message {} contains invalid STIX content in one of the content blocks ({}).".format(request.message_id,content_block.content_binding)
-                    print ("XML schema is invalid (is_valid is false)")
-                    continue
-                else:
-                    print ("XML schema is valid")
-
-            except Exception as ve:
-                # In some instances the validator can raise an exception. This copes with this fact
                 failure = True
-                failure_message = "The TAXII message {} contains invalid STIX content in one of the content blocks ({}).".format(request.message_id,content_block.content_binding)
-                print ("XML schema is invalid (exception): {}".format(ve))
+                failure_message = "No collection that supports binding {} were found".format(content_block.content_binding)
+                log.warning(failure_message)
                 continue
 
+            # Validate that the STIX content is actually STIX content with the STIX Validator
+            results = service.verify_content_is_valid(content_block.content, content_block.content_binding, request.message_id)
+            if results.is_valid:
+                block = content_block_to_content_block_entity(
+                    content_block, version=11)
 
-            block = content_block_to_content_block_entity(
-                content_block, version=11)
-
-            service.server.persistence.create_content(
-                block,
-                collections=supporting_collections,
-                service_id=service.id,
-                inbox_message_id=inbox_message.id if inbox_message else None)
+                service.server.persistence.create_content(
+                    block,
+                    collections=supporting_collections,
+                    service_id=service.id,
+                    inbox_message_id=inbox_message.id if inbox_message else None)
+            else:
+                failure = True
+                failure_message = results.message
+                log.warning(failure_message)
+                continue
 
         # If we had an error then indicate a failure
         if failure:
@@ -134,21 +119,43 @@ class InboxMessage10Handler(BaseMessageHandler):
             if not is_supported:
                 log.warning("Content block binding is not supported: {}"
                             .format(content_block.content_binding))
+                failure = True
+                failure_message = results.message
                 continue
 
-            block = content_block_to_content_block_entity(
-                content_block, version=10)
+            # Validate that the STIX content is actually STIX content with the STIX Validator
+            results = service.verify_content_is_valid(content_block.content, content_block.content_binding, request.message_id)
+            if results.is_valid:
+                block = content_block_to_content_block_entity(
+                    content_block, version=10)
 
-            service.server.persistence.create_content(
-                block, collections=collections,
-                service_id=service.id,
-                inbox_message_id=inbox_message.id if inbox_message else None)
+                service.server.persistence.create_content(
+                    block, collections=collections,
+                    service_id=service.id,
+                    inbox_message_id=inbox_message.id if inbox_message else None)
+    
+            else:
+                failure = True
+                failure_message = results.message
+                log.warning(failure_message)
+                print ("XML schema is invalid (is_valid is false)")
+                continue
 
-        status_message = tm10.StatusMessage(
-            message_id=cls.generate_id(),
-            in_response_to=request.message_id,
-            status_type=ST_SUCCESS
-        )
+        # If we had an error then indicate a failure
+        if failure:
+            status_message = tm10.StatusMessage(
+                message=failure_message,
+                message_id=cls.generate_id(),
+                in_response_to=request.message_id,
+                status_type=ST_FAILURE
+            )
+        else:
+            # Create and return a Status Message indicating success
+            status_message = tm10.StatusMessage(
+                message_id=cls.generate_id(),
+                in_response_to=request.message_id,
+                status_type=ST_SUCCESS
+            )
 
         return status_message
 
