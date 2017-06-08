@@ -83,3 +83,57 @@ class BaseMessageHandler(object):
     @classmethod
     def handle_message(cls, service, request):
         raise NotImplementedError()
+
+    @classmethod
+    def verify_content_is_valid(cls, content, content_binding):
+        # If the content binding isn't something we support, then raise a failure
+        if content_binding not in CONTENT_BINDINGS:
+            raise raise_failure(
+                "OpenTAXII does not support the {} content binding".format(content_binding),
+                taxii_message.message_id)
+
+        print ("taxii 1.1 content_block content:{}\n".format(content_block.content))
+        # Validate that the STIX content is actually STIX content with the STIX Validator
+        #results = sdv.validate_xml('stix-content.xml', version='1.2')
+        try:
+            # Prepare the content block for processing by the STIX data validator
+            content_block_to_validate  = StringIO.StringIO()
+            content_block_to_validate.write(content_block.content)
+            # Run the STIX data validator with the correct content binding
+            # Eliminates the chance of a client sending the wrong STIX file with the
+            # wrong content_binding.
+            if content_binding == CB_STIX_XML_10:
+                results = sdv.validate_xml(content_block_to_validate, '1.0')
+            elif content_binding == CB_STIX_XML_101:
+                results = sdv.validate_xml(content_block_to_validate, '1.0.1')
+            elif content_binding == CB_STIX_XML_11:
+                results = sdv.validate_xml(content_block_to_validate, '1.1')
+            elif content_binding == CB_STIX_XML_111:
+                results = sdv.validate_xml(content_block_to_validate, '1.1.1')
+            elif content_binding == CB_STIX_XML_12:
+                results = sdv.validate_xml(content_block_to_validate, '1.2')
+            else:
+                # Should never get here, but just in case...
+                raise raise_failure(
+                        "OpenTAXII does not support the {} content binding".format(content_binding),
+                        taxii_message.message_id)
+            content_block_to_validate.close()
+            # Test the results of the validator to make sure the schema is valid
+            if not results.is_valid:
+                failure = True
+                failure_message = "The TAXII message {} contains invalid STIX content in one of the content blocks ({}).".format(request.message_id,content_block.content_binding)
+                raise raise_failure(
+                    failure_message,
+                    taxii_message.message_id)
+                return False
+                
+        except Exception as ve:
+            # In some instances the validator can raise an exception. This copes with this fact
+            failure = True
+            failure_message = "The TAXII message {} contains invalid STIX content in one of the content blocks ({}).".format(request.message_id,content_block.content_binding)
+            raise raise_failure(
+                failure_message,
+                taxii_message.message_id)
+            return False
+            
+        return True
