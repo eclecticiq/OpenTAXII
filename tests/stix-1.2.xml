@@ -1,0 +1,175 @@
+<stix:STIX_Package 
+	xmlns:AddressObj="http://cybox.mitre.org/objects#AddressObject-2"
+	xmlns:DomainNameObj="http://cybox.mitre.org/objects#DomainNameObject-1"
+	xmlns:FileObj="http://cybox.mitre.org/objects#FileObject-2"
+	xmlns:URIObj="http://cybox.mitre.org/objects#URIObject-2"
+	xmlns:cybox="http://cybox.mitre.org/cybox-2"
+	xmlns:cyboxCommon="http://cybox.mitre.org/common-2"
+	xmlns:cyboxVocabs="http://cybox.mitre.org/default_vocabularies-2"
+	xmlns:exampledata="http://stix.exampledata.org"
+	xmlns:indicator="http://stix.mitre.org/Indicator-2"
+	xmlns:report="http://stix.mitre.org/Report-1"
+	xmlns:stix="http://stix.mitre.org/stix-1"
+	xmlns:stixCommon="http://stix.mitre.org/common-1"
+	xmlns:stixVocabs="http://stix.mitre.org/default_vocabularies-1"
+	xmlns:ttp="http://stix.mitre.org/TTP-1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="exampledata:Package-173d36d4-aa61-4bbb-ab23-bdf1e5ed857a" version="1.2">
+    <stix:Indicators>
+        <stix:Indicator id="exampledata:indicator-f120c37a-0d65-4d99-9927-e03798041ef6" timestamp="2017-06-08T06:20:06.386241+00:00" xsi:type='indicator:IndicatorType'>
+            <indicator:Title>Test Indicators</indicator:Title>
+            <indicator:Type xsi:type="stixVocabs:IndicatorTypeVocab-1.1">Malware Artifacts</indicator:Type>
+            <indicator:Description>This is a set of false indicators for testing purposes and should not be used in production.</indicator:Description>
+            <indicator:Valid_Time_Position>
+                <indicator:Start_Time precision="second">2017-06-08T06:20:06.387080+00:00</indicator:Start_Time>
+                <indicator:End_Time precision="second">2017-06-15T06:20:06.387091+00:00</indicator:End_Time>
+            </indicator:Valid_Time_Position>
+            <indicator:Observable id="exampledata:Observable-11f915d4-76ff-414a-a6b0-8cdcbae1575f">
+                <cybox:Observable_Composition operator="OR">
+                    <cybox:Observable id="exampledata:Observable-16654294-c91d-42d0-9637-64c128e97814">
+                        <cybox:Observable_Composition operator="OR">
+                            <cybox:Observable id="exampledata:Observable-6536917d-8300-40fc-8381-74b4babf1511">
+                                <cybox:Object id="exampledata:File-79f56983-fa65-45b2-b1ee-3b0018ae61d8">
+                                    <cybox:Properties xsi:type="FileObj:FileObjectType">
+                                        <FileObj:Hashes>
+                                            <cyboxCommon:Hash>
+                                                <cyboxCommon:Type condition="Equals" xsi:type="cyboxVocabs:HashNameVocab-1.0">MD5</cyboxCommon:Type>
+                                                <cyboxCommon:Simple_Hash_Value condition="Equals">41e9c17acf38b8d7176ea66f8cde5bf7</cyboxCommon:Simple_Hash_Value>
+                                            </cyboxCommon:Hash>
+                                        </FileObj:Hashes>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                            <cybox:Observable id="exampledata:Observable-22a930a9-3d04-4422-b112-6ee5b6ae01ea">
+                                <cybox:Object id="exampledata:DomainName-14b133aa-b623-4948-bec1-0e6eb5f01655">
+                                    <cybox:Properties xsi:type="DomainNameObj:DomainNameObjectType" type="FQDN">
+                                        <DomainNameObj:Value condition="Equals">wagoners-leta.trade</DomainNameObj:Value>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                            <cybox:Observable id="exampledata:Observable-7da53001-c74c-4585-883c-6efba0319ee5">
+                                <cybox:Object id="exampledata:DomainName-ba349857-62be-4406-a01c-57df037d8c30">
+                                    <cybox:Properties xsi:type="DomainNameObj:DomainNameObjectType" type="FQDN">
+                                        <DomainNameObj:Value condition="Equals">ultimately-livelong.flowers</DomainNameObj:Value>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                            <cybox:Observable id="exampledata:Observable-42ffba8c-7ee9-4601-a42e-c732b51638b8">
+                                <cybox:Object id="exampledata:Address-043df1dd-7fac-4800-ba25-bef992f2e4ae">
+                                    <cybox:Properties xsi:type="AddressObj:AddressObjectType" category="ipv4-addr">
+                                        <AddressObj:Address_Value condition="Equals">50.54.249.206</AddressObj:Address_Value>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                            <cybox:Observable id="exampledata:Observable-ed32248d-fb24-4d27-98dc-1a1ab3a8a27e">
+                                <cybox:Object id="exampledata:File-7766f9f1-9daa-49d5-8cd9-1f1ac90f61dc">
+                                    <cybox:Properties xsi:type="FileObj:FileObjectType">
+                                        <FileObj:Hashes>
+                                            <cyboxCommon:Hash>
+                                                <cyboxCommon:Type condition="Equals" xsi:type="cyboxVocabs:HashNameVocab-1.0">MD5</cyboxCommon:Type>
+                                                <cyboxCommon:Simple_Hash_Value condition="Equals">8fabea8c9cc74b5409b3c002b0f36ed6</cyboxCommon:Simple_Hash_Value>
+                                            </cyboxCommon:Hash>
+                                        </FileObj:Hashes>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                            <cybox:Observable id="exampledata:Observable-e654ac4d-c1d6-43c3-bf63-4deb229a49a9">
+                                <cybox:Object id="exampledata:Address-be6cbfd9-689b-4c09-93d8-ff39f07597c4">
+                                    <cybox:Properties xsi:type="AddressObj:AddressObjectType" category="ipv4-addr">
+                                        <AddressObj:Address_Value condition="Equals">122.142.134.206</AddressObj:Address_Value>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                        </cybox:Observable_Composition>
+                    </cybox:Observable>
+                    <cybox:Observable id="exampledata:Observable-556858eb-9921-405e-be49-b4218d1d6c12">
+                        <cybox:Observable_Composition operator="AND">
+                            <cybox:Observable id="exampledata:Observable-723bbdf2-51e7-41ab-be1b-c458f04d570c">
+                                <cybox:Object id="exampledata:File-8ad37398-4e66-49ef-bd8d-c146d96d8254">
+                                    <cybox:Properties xsi:type="FileObj:FileObjectType">
+                                        <FileObj:Hashes>
+                                            <cyboxCommon:Hash>
+                                                <cyboxCommon:Type condition="Equals" xsi:type="cyboxVocabs:HashNameVocab-1.0">SHA1</cyboxCommon:Type>
+                                                <cyboxCommon:Simple_Hash_Value condition="Equals">8c45f062f778fd599a1be36ccdc586e67ea3d326</cyboxCommon:Simple_Hash_Value>
+                                            </cyboxCommon:Hash>
+                                        </FileObj:Hashes>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                            <cybox:Observable id="exampledata:Observable-eb9a6673-b53e-481d-8ee1-51047778ce7d">
+                                <cybox:Object id="exampledata:Address-89bdabe4-cdad-493c-80e6-af3672756f8e">
+                                    <cybox:Properties xsi:type="AddressObj:AddressObjectType" category="ipv4-addr">
+                                        <AddressObj:Address_Value condition="Equals">33.60.128.228</AddressObj:Address_Value>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                            <cybox:Observable id="exampledata:Observable-693ffadd-e917-40e6-a764-32567b2b9803">
+                                <cybox:Object id="exampledata:URI-f36ebb8f-1b17-4da9-b089-cd5df24aed1e">
+                                    <cybox:Properties xsi:type="URIObj:URIObjectType" type="URL">
+                                        <URIObj:Value condition="Equals">http://splurging-browse.school/teeters-pyotr/asmara.jsp</URIObj:Value>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                            <cybox:Observable id="exampledata:Observable-f3bdb9bd-33f2-4735-b923-e9921684c6f6">
+                                <cybox:Object id="exampledata:URI-a4d0be80-2c9e-4923-83a0-aa832f30aff2">
+                                    <cybox:Properties xsi:type="URIObj:URIObjectType" type="URL">
+                                        <URIObj:Value condition="Equals">http://caparison-retrospect.az/swearers-amused/mettle.php</URIObj:Value>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                            <cybox:Observable id="exampledata:Observable-1425ac63-7403-4014-a12f-fd741595b390">
+                                <cybox:Object id="exampledata:Address-35abb66a-fc00-4f01-9b19-1c3912bfcc04">
+                                    <cybox:Properties xsi:type="AddressObj:AddressObjectType" category="ipv4-addr">
+                                        <AddressObj:Address_Value condition="Equals">50.54.249.206</AddressObj:Address_Value>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                        </cybox:Observable_Composition>
+                    </cybox:Observable>
+                    <cybox:Observable id="exampledata:Observable-8090c457-68e3-40f4-91a1-cdd4a4b9fa43">
+                        <cybox:Observable_Composition operator="OR">
+                            <cybox:Observable id="exampledata:Observable-ab42769a-7484-47c3-a765-da35babe46a0">
+                                <cybox:Object id="exampledata:URI-2fdd1a5b-2ebc-4429-a4d2-dbfa2564bbe1">
+                                    <cybox:Properties xsi:type="URIObj:URIObjectType" type="URL">
+                                        <URIObj:Value condition="Equals">http://assuaged-trollies.film/eastern-pitying/ortiz.htm</URIObj:Value>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                            <cybox:Observable id="exampledata:Observable-d78f284a-af07-4e41-971b-aa9bd6f5b7d2">
+                                <cybox:Object id="exampledata:URI-3a605266-b218-4479-bb8e-4c5ad2aafbc8">
+                                    <cybox:Properties xsi:type="URIObj:URIObjectType" type="URL">
+                                        <URIObj:Value condition="Equals">http://grabber-lived.xn--1qqw23a/pitchman-doorways/bowdlerizes.jsp</URIObj:Value>
+                                    </cybox:Properties>
+                                </cybox:Object>
+                            </cybox:Observable>
+                        </cybox:Observable_Composition>
+                    </cybox:Observable>
+                </cybox:Observable_Composition>
+            </indicator:Observable>
+            <indicator:Indicated_TTP>
+                <stixCommon:TTP id="exampledata:ttp-e43e0467-8db0-dc33-f6e9-c70786ab6a25" timestamp="2017-06-08T06:20:06.387362+00:00" xsi:type='ttp:TTPType'>
+                    <ttp:Title>External TTP</ttp:Title>
+                </stixCommon:TTP>
+            </indicator:Indicated_TTP>
+            <indicator:Confidence timestamp="2017-06-08T06:20:06.386932+00:00">
+                <stixCommon:Value xsi:type="stixVocabs:HighMediumLowVocab-1.0">None</stixCommon:Value>
+            </indicator:Confidence>
+            <indicator:Producer>
+                <stixCommon:Identity>
+                    <stixCommon:Name>Cosive STIX Example Generator</stixCommon:Name>
+                </stixCommon:Identity>
+                <stixCommon:Time>
+                    <cyboxCommon:Produced_Time>2017-06-08T06:20:06.386845+00:00</cyboxCommon:Produced_Time>
+                </stixCommon:Time>
+            </indicator:Producer>
+        </stix:Indicator>
+    </stix:Indicators>
+    <stix:Reports>
+        <stix:Report timestamp="2017-06-08T06:20:06.385273+00:00" id="exampledata:Report-0c1a94d0-65e9-4cb3-9e72-62e6ee903729" xsi:type='report:ReportType' version="1.0">
+            <report:Header>
+                <report:Title>[TESTING] Test Indicators</report:Title>
+                <report:Intent xsi:type="stixVocabs:ReportIntentVocab-1.0">Indicators - Watchlist</report:Intent>
+                <report:Description>These indicators are automatically generated and should not be used in live environments.</report:Description>
+            </report:Header>
+        </stix:Report>
+    </stix:Reports>
+</stix:STIX_Package>

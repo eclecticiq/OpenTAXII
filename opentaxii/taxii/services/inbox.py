@@ -1,4 +1,4 @@
-
+from collections import namedtuple
 from libtaxii.constants import (
     SVC_INBOX, MSG_INBOX_MESSAGE, SD_ACCEPTABLE_DESTINATION,
     ST_DESTINATION_COLLECTION_ERROR, ST_NOT_FOUND, SD_ITEM
@@ -54,7 +54,8 @@ class InboxService(TAXIIService):
     def verify_content_is_valid(self, content, content_binding, taxii_message_id):
 
         if self.accept_all_content:
-            return namedtuple('VerifyResults', 'is_valid=True, message="This TAXII Service is accepting all content."')
+            verify_results = namedtuple('VerifyResults', 'is_valid, message')
+            return verify_results(is_valid=True,  message="This TAXII Service is accepting all content.")
 
         return verify_content_is_valid(content, content_binding, taxii_message_id)
 

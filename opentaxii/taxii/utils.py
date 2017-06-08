@@ -46,7 +46,7 @@ def is_content_supported(supported_bindings, content_binding, version=None):
 
 def verify_content_is_valid(content, content_binding, taxii_message_id):
     # Validate that the STIX content is actually STIX content with the STIX Validator
-    verify_results = namedtuple('VerifyResults', 'is_valid, message')
+    verify_results = namedtuple('VerifyResults', 'is_valid message')
     if not isinstance(content_binding, str): content_binding = str(content_binding)
     try:
         # Prepare the content block for processing by the STIX data validator
@@ -66,9 +66,12 @@ def verify_content_is_valid(content, content_binding, taxii_message_id):
         elif content_binding == CB_STIX_XML_12:
             results = sdv.validate_xml(content_block_to_validate, '1.2')
         else:
+            # this is not a content type we can validate
+            # it might be a custom URN, so we need to just let it through without validation
             content_block_to_validate.close()
-            return verify_results(is_valid=False,
-                                  message= "OpenTAXII does not recognize the {} content binding supplied so cannot validate the content.".format(content_binding)
+            return verify_results(is_valid=True,
+                 message=  "The STIX content in the content block is valid ({})."
+                 .format(content_binding)
             )
         content_block_to_validate.close()
         # Test the results of the validator to make sure the schema is valid
@@ -79,6 +82,7 @@ def verify_content_is_valid(content, content_binding, taxii_message_id):
             )
             
     except Exception as ve:
+        content_block_to_validate.close()
         print ve
         return verify_results(is_valid=False,
                      message= "The TAXII message {} contains invalid STIX {} content in one of the content blocks (incorrect content binding supplied?)."

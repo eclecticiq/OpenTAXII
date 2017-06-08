@@ -3,7 +3,7 @@ import pytest
 from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
 from libtaxii.constants import (
-    ST_SUCCESS, ST_FAILURE, CB_STIX_XML_111)
+    ST_SUCCESS, ST_FAILURE, CB_STIX_XML_111, CB_STIX_XML_12)
 
 from opentaxii.taxii import exceptions
 
@@ -12,7 +12,9 @@ from fixtures import (
     CUSTOM_CONTENT_BINDING, CONTENT, MESSAGE_ID,
     SERVICES, COLLECTIONS_A, COLLECTIONS_B,
     CONTENT_BINDING_SUBTYPE, INVALID_CONTENT_BINDING,
-    COLLECTION_OPEN, COLLECTION_ONLY_STIX)
+    COLLECTION_OPEN, COLLECTION_ONLY_STIX,
+    STIX_12_CONTENT, STIX_111_CONTENT
+)
 
 
 def make_content(version, content_binding=CUSTOM_CONTENT_BINDING,
@@ -136,7 +138,7 @@ def test_inbox_request_inbox_valid_content_binding(server, version, https):
             subtype=CONTENT_BINDING_SUBTYPE),
         make_content(
             version,
-            content_binding=CB_STIX_XML_111)
+            content_binding=CB_STIX_XML_12)
     ]
 
     inbox_message = make_inbox_message(
@@ -146,7 +148,7 @@ def test_inbox_request_inbox_valid_content_binding(server, version, https):
     response = inbox.process(headers, inbox_message)
 
     assert isinstance(response, as_tm(version).StatusMessage)
-    assert response.status_type == ST_SUCCESS
+    assert response.status_type == ST_FAILURE
     assert response.in_response_to == MESSAGE_ID
 
     # all blocks
@@ -169,47 +171,71 @@ def test_inbox_req_inbox_invalid_inbox_content_binding(server, version, https):
     response = inbox.process(headers, inbox_message)
 
     assert isinstance(response, as_tm(version).StatusMessage)
+    assert response.status_type == ST_FAILURE
+    assert response.in_response_to == MESSAGE_ID
+
+    blocks = server.persistence.get_content_blocks(None)
+
+    # Content blocks with invalid content should be ignored
+    assert len(blocks) == 0
+
+
+@pytest.mark.parametrize("https", [True, False])
+@pytest.mark.parametrize("version", [11, 10])
+def test_inbox_restricted_inbox_non_xml_data_as_stix(server, version, https):
+
+    inbox = server.get_service('inbox-B')
+
+    content = make_content(version, content="This is not XML", content_binding=CB_STIX_XML_12)
+    inbox_message = make_inbox_message(
+        version, dest_collection=COLLECTION_ONLY_STIX, blocks=[content])
+
+    headers = prepare_headers(version, https)
+
+    response = inbox.process(headers, inbox_message)
+
+    assert isinstance(response, as_tm(version).StatusMessage)
+    assert response.status_type == ST_FAILURE
+    assert response.in_response_to == MESSAGE_ID
+
+    blocks = server.persistence.get_content_blocks(None)
+
+    # Content blocks with invalid content should be ignored
+    assert len(blocks) == 0
+
+
+@pytest.mark.parametrize("https", [True, False])
+@pytest.mark.parametrize("version", [11, 10])
+def test_inbox_unresticted_inbox_non_xml_data(server, version, https):
+
+    inbox = server.get_service('inbox-B')
+
+    content = make_content(version, content="This is not XML", content_binding=CUSTOM_CONTENT_BINDING)
+    inbox_message = make_inbox_message(
+        version, dest_collection=COLLECTION_OPEN, blocks=[content])
+
+    headers = prepare_headers(version, https)
+
+    response = inbox.process(headers, inbox_message)
+
+    assert isinstance(response, as_tm(version).StatusMessage)
     assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
     blocks = server.persistence.get_content_blocks(None)
 
     # Content blocks with invalid content should be ignored
-    assert len(blocks) == 0
+    assert len(blocks) == 1
 
 
 @pytest.mark.parametrize("https", [True, False])
 @pytest.mark.parametrize("version", [11, 10])
-def test_inbox_req_inbox_non_xml_data(server, version, https):
-
-    inbox = server.get_service('inbox-B')
-
-    content = make_content(version, content="This is not XML")
-    inbox_message = make_inbox_message(
-        version, dest_collection=COLLECTION_OPEN, blocks=[content])
-
-    headers = prepare_headers(version, https)
-
-    response = inbox.process(headers, inbox_message)
-
-    assert isinstance(response, as_tm(version).StatusMessage)
-    assert response.status_type == ST_FAILURE
-    assert response.in_response_to == MESSAGE_ID
-
-    blocks = server.persistence.get_content_blocks(None)
-
-    # Content blocks with invalid content should be ignored
-    assert len(blocks) == 0
-
-
-@pytest.mark.parametrize("https", [True, False])
-@pytest.mark.parametrize("version", [11, 10])
-def test_inbox_req_inbox_xml_non_stix_data(server, version, https):
+def test_inbox_restricted_inbox_non_stix_xml_as_stix(server, version, https):
 
     inbox = server.get_service('inbox-B')
 
     content = make_content(version, content="<?xml version='1.0' ?><!DOCTYPE root SYSTEM 'http://notstix.example.com'>"
-                                            "<root><notstix></notstix></root>")
+                                            "<root><notstix></notstix></root>", content_binding=CB_STIX_XML_12)
     inbox_message = make_inbox_message(
         version, dest_collection=COLLECTION_OPEN, blocks=[content])
 
@@ -225,6 +251,102 @@ def test_inbox_req_inbox_xml_non_stix_data(server, version, https):
 
     # Content blocks with invalid content should be ignored
     assert len(blocks) == 0
+
+
+@pytest.mark.parametrize("https", [True, False])
+@pytest.mark.parametrize("version", [11, 10])
+def test_inbox_restricted_inbox_stix12_as_stix12(server, version, https):
+
+    inbox = server.get_service('inbox-B')
+
+    content = make_content(version, content=STIX_12_CONTENT, content_binding=CB_STIX_XML_12)
+    inbox_message = make_inbox_message(
+        version, dest_collection=COLLECTION_ONLY_STIX, blocks=[content])
+
+    headers = prepare_headers(version, https)
+
+    response = inbox.process(headers, inbox_message)
+
+    assert isinstance(response, as_tm(version).StatusMessage)
+    assert response.status_type == ST_SUCCESS
+    assert response.in_response_to == MESSAGE_ID
+
+    blocks = server.persistence.get_content_blocks(None)
+
+    # Content blocks with invalid content should be ignored
+    assert len(blocks) == 1
+
+
+@pytest.mark.parametrize("https", [True, False])
+@pytest.mark.parametrize("version", [11, 10])
+def test_inbox_restricted_inbox_stix111_as_stix12(server, version, https):
+
+    inbox = server.get_service('inbox-B')
+
+    content = make_content(version, content=STIX_111_CONTENT, content_binding=CB_STIX_XML_12)
+    inbox_message = make_inbox_message(
+        version, dest_collection=COLLECTION_ONLY_STIX, blocks=[content])
+
+    headers = prepare_headers(version, https)
+
+    response = inbox.process(headers, inbox_message)
+
+    assert isinstance(response, as_tm(version).StatusMessage)
+    assert response.status_type == ST_SUCCESS
+    assert response.in_response_to == MESSAGE_ID
+
+    blocks = server.persistence.get_content_blocks(None)
+
+    # Content blocks with invalid content should be ignored
+    assert len(blocks) == 1
+
+
+@pytest.mark.parametrize("https", [True, False])
+@pytest.mark.parametrize("version", [11, 10])
+def test_inbox_restricted_inbox_stix12_as_stix111(server, version, https):
+
+    inbox = server.get_service('inbox-B')
+
+    content = make_content(version, content=STIX_12_CONTENT, content_binding=CB_STIX_XML_111)
+    inbox_message = make_inbox_message(
+        version, dest_collection=COLLECTION_ONLY_STIX, blocks=[content])
+
+    headers = prepare_headers(version, https)
+
+    response = inbox.process(headers, inbox_message)
+
+    assert isinstance(response, as_tm(version).StatusMessage)
+    assert response.status_type == ST_FAILURE
+    assert response.in_response_to == MESSAGE_ID
+
+    blocks = server.persistence.get_content_blocks(None)
+
+    # Content blocks with invalid content should be ignored
+    assert len(blocks) == 0
+
+
+@pytest.mark.parametrize("https", [True, False])
+@pytest.mark.parametrize("version", [11, 10])
+def test_inbox_restricted_inbox_stix111_as_stix111(server, version, https):
+
+    inbox = server.get_service('inbox-B')
+
+    content = make_content(version, content=STIX_111_CONTENT, content_binding=CB_STIX_XML_111)
+    inbox_message = make_inbox_message(
+        version, dest_collection=COLLECTION_ONLY_STIX, blocks=[content])
+
+    headers = prepare_headers(version, https)
+
+    response = inbox.process(headers, inbox_message)
+
+    assert isinstance(response, as_tm(version).StatusMessage)
+    assert response.status_type == ST_SUCCESS
+    assert response.in_response_to == MESSAGE_ID
+
+    blocks = server.persistence.get_content_blocks(None)
+
+    # Content blocks with invalid content should be ignored
+    assert len(blocks) == 1
 
 
 @pytest.mark.parametrize("https", [True, False])
@@ -245,7 +367,7 @@ def test_inbox_req_coll_content_bindings_filtering(server, version, https):
     response = inbox.process(headers, inbox_message)
 
     assert isinstance(response, as_tm(version).StatusMessage)
-    assert response.status_type == ST_SUCCESS
+    assert response.status_type == ST_FAILURE
     assert response.in_response_to == MESSAGE_ID
 
     blocks = server.persistence.get_content_blocks(None)

@@ -111,16 +111,18 @@ class InboxMessage10Handler(BaseMessageHandler):
             inbox_message_to_inbox_message_entity(
                 request, service_id=service.id, version=10))
 
+        failure = False
+        failure_message = ""
+
         for content_block in request.content_blocks:
 
             is_supported = service.is_content_supported(
                 content_block.content_binding, version=10)
 
             if not is_supported:
-                log.warning("Content block binding is not supported: {}"
-                            .format(content_block.content_binding))
                 failure = True
-                failure_message = results.message
+                failure_message = "Content block binding is not supported: {}".format(content_block.content_binding)
+                log.warning(failure_message)
                 continue
 
             # Validate that the STIX content is actually STIX content with the STIX Validator
@@ -138,7 +140,6 @@ class InboxMessage10Handler(BaseMessageHandler):
                 failure = True
                 failure_message = results.message
                 log.warning(failure_message)
-                print ("XML schema is invalid (is_valid is false)")
                 continue
 
         # If we had an error then indicate a failure

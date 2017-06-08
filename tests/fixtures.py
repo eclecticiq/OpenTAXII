@@ -3,6 +3,8 @@ from libtaxii.constants import (
     CB_STIX_XML_111, CB_STIX_XML_12)
 
 from opentaxii.taxii import entities
+import os
+test_dir = os.path.dirname(__file__)
 
 PROTOCOL_BINDINGS = [VID_TAXII_HTTP_10, VID_TAXII_HTTPS_10]
 
@@ -25,7 +27,7 @@ INBOX_B = dict(
     description='inbox-B description',
     destination_collection_required='yes',
     address='/relative/path/inbox-b',
-    supported_content=[CB_STIX_XML_111, CUSTOM_CONTENT_BINDING],
+    supported_content=[CB_STIX_XML_111, CB_STIX_XML_12, CUSTOM_CONTENT_BINDING],
     protocol_bindings=PROTOCOL_BINDINGS
 )
 
@@ -83,7 +85,7 @@ INSTANCES_CONFIGURED = sum(len(s['protocol_bindings']) for s in SERVICES)
 MESSAGE_ID = '123'
 CONTENT = 'some-content'
 
-CONTENT_BINDINGS_ONLY_STIX = [CB_STIX_XML_111, CB_STIX_XML_12]
+CONTENT_BINDINGS_ONLY_STIX = [CB_STIX_XML_12]
 CONTENT_BINDINGS_STIX_AND_CUSTOM = (
     CONTENT_BINDINGS_ONLY_STIX + [CUSTOM_CONTENT_BINDING])
 CONTENT_BINDING_SUBTYPE = 'custom-subtype'
@@ -128,3 +130,12 @@ COLLECTIONS_B = [
         'available': False
     }]
 ]
+
+f = open(test_dir + '/stix-1.1.1.xml')
+STIX_111_CONTENT = f.read()
+f.close()
+
+f = open(test_dir + '/stix-1.2.xml')
+STIX_12_CONTENT = f.read()
+f.close()
+

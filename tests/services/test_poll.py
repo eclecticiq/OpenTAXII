@@ -3,7 +3,7 @@ import pytest
 from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
 from libtaxii.constants import (
-    RT_COUNT_ONLY, RT_FULL, CB_STIX_XML_111, ACT_SUBSCRIBE)
+    RT_COUNT_ONLY, RT_FULL, CB_STIX_XML_111, CB_STIX_XML_12, ACT_SUBSCRIBE)
 
 from opentaxii.taxii import exceptions
 
@@ -114,7 +114,7 @@ def test_poll_get_content(server, version, https):
     service = server.get_service('poll-A')
     original = persist_content(
         server.persistence, COLLECTION_ONLY_STIX,
-        service.id, binding=CB_STIX_XML_111)
+        service.id, binding=CB_STIX_XML_12)
 
     # wrong collection
     headers = prepare_headers(version, https)
@@ -296,7 +296,7 @@ def test_subscribe_and_poll(server, version, https):
 
     params = dict(
         response_type=RT_COUNT_ONLY,
-        content_bindings=[CB_STIX_XML_111, CUSTOM_CONTENT_BINDING]
+        content_bindings=[CB_STIX_XML_12, CUSTOM_CONTENT_BINDING]
     )
 
     subs_request = prepare_subscription_request(

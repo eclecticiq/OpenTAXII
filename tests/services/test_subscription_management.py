@@ -1,7 +1,7 @@
 import pytest
 
 from libtaxii.constants import (
-    RT_FULL, CB_STIX_XML_111, ACT_PAUSE, ACT_RESUME, ACT_UNSUBSCRIBE,
+    RT_FULL, CB_STIX_XML_111, CB_STIX_XML_12, ACT_PAUSE, ACT_RESUME, ACT_UNSUBSCRIBE,
     ACT_SUBSCRIBE, SS_ACTIVE, SS_PAUSED, SS_UNSUBSCRIBED)
 
 from opentaxii.taxii import exceptions
@@ -42,7 +42,7 @@ def test_subscribe(server, version, https):
 
     params = dict(
         response_type=RT_FULL,
-        content_bindings=[CB_STIX_XML_111, CUSTOM_CONTENT_BINDING]
+        content_bindings=[CB_STIX_XML_12, CUSTOM_CONTENT_BINDING]
     )
 
     request = prepare_request(
@@ -100,7 +100,7 @@ def test_subscribe_pause_resume(server, https):
 
     params = dict(
         response_type=RT_FULL,
-        content_bindings=[CB_STIX_XML_111, CUSTOM_CONTENT_BINDING]
+        content_bindings=[CB_STIX_XML_12, CUSTOM_CONTENT_BINDING]
     )
 
     # Subscribing
@@ -218,7 +218,7 @@ def test_unsubscribe(server, version, https):
 
     params = dict(
         response_type=RT_FULL,
-        content_bindings=[CB_STIX_XML_111, CUSTOM_CONTENT_BINDING]
+        content_bindings=[CB_STIX_XML_12, CUSTOM_CONTENT_BINDING]
     )
 
     # Subscribing
