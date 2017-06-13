@@ -153,3 +153,4 @@ def test_services_available(client, version, https):
 
     assert isinstance(message, as_tm(version).StatusMessage)
     assert message.status_type == ST_FAILURE
+

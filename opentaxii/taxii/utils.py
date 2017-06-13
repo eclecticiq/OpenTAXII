@@ -1,9 +1,17 @@
 from datetime import datetime
+from collections import namedtuple
 
 import pytz
 import structlog
+import StringIO
+import sdv
+
 from lxml import etree
 from libtaxii.common import set_xml_parser
+from libtaxii.constants import (
+    CB_STIX_XML_10, CB_STIX_XML_101, CB_STIX_XML_11, CB_STIX_XML_111, CB_STIX_XML_12
+)
+
 
 from .exceptions import BadMessageStatus
 from .bindings import MESSAGE_VALIDATOR_PARSER
@@ -35,6 +43,56 @@ def is_content_supported(supported_bindings, content_binding, version=None):
     ]
 
     return any(matches)
+
+def verify_content_is_valid(content, content_binding, taxii_message_id):
+    # Validate that the STIX content is actually STIX content with the STIX Validator
+    verify_results = namedtuple('VerifyResults', 'is_valid message')
+    if not isinstance(content_binding, str): content_binding = str(content_binding)
+    try:
+        # Prepare the content block for processing by the STIX data validator
+        content_block_to_validate  = StringIO.StringIO()
+        content_block_to_validate.write(content)
+        # Run the STIX data validator with the correct content binding
+        # Eliminates the chance of a client sending the wrong STIX file with the
+        # wrong content_binding.
+        if content_binding == CB_STIX_XML_10:
+            results = sdv.validate_xml(content_block_to_validate, '1.0')
+        elif content_binding == CB_STIX_XML_101:
+            results = sdv.validate_xml(content_block_to_validate, '1.0.1')
+        elif content_binding == CB_STIX_XML_11:
+            results = sdv.validate_xml(content_block_to_validate, '1.1')
+        elif content_binding == CB_STIX_XML_111:
+            results = sdv.validate_xml(content_block_to_validate, '1.1.1')
+        elif content_binding == CB_STIX_XML_12:
+            results = sdv.validate_xml(content_block_to_validate, '1.2')
+        else:
+            # this is not a content type we can validate
+            # it might be a custom URN, so we need to just let it through without validation
+            content_block_to_validate.close()
+            return verify_results(is_valid=True,
+                 message=  "The STIX content in the content block is valid ({})."
+                 .format(content_binding)
+            )
+        content_block_to_validate.close()
+        # Test the results of the validator to make sure the schema is valid
+        if not results.is_valid:
+            return verify_results(is_valid=False,
+                         message= "The TAXII message {} contains invalid STIX {} content in one of the content blocks (incorrect content binding supplied?)."
+                         .format(taxii_message_id,content_binding)
+            )
+            
+    except Exception as ve:
+        content_block_to_validate.close()
+        print ve
+        return verify_results(is_valid=False,
+                     message= "The TAXII message {} contains invalid STIX {} content in one of the content blocks (incorrect content binding supplied?)."
+                     .format(taxii_message_id,content_binding)
+        )
+        
+    return verify_results(is_valid=True,
+                 message=  "The STIX content in the content block is valid ({})."
+                 .format(content_binding)
+    )
 
 
 def parse_message(content_type, body, do_validate=True):

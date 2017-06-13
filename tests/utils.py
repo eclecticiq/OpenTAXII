@@ -12,7 +12,7 @@ from opentaxii.taxii.http import (
 from opentaxii.taxii.utils import get_utc_now
 
 from fixtures import (
-    CB_STIX_XML_111, CONTENT, MESSAGE, MESSAGE_ID)
+    CB_STIX_XML_12, CONTENT, MESSAGE, MESSAGE_ID)
 
 
 def as_tm(version):
@@ -44,7 +44,7 @@ def prepare_headers(version, https):
 
 
 def persist_content(manager, collection_name, service_id, timestamp=None,
-                    binding=CB_STIX_XML_111, subtypes=[]):
+                    binding=CB_STIX_XML_12, subtypes=[]):
 
     timestamp = timestamp or get_utc_now()
 
