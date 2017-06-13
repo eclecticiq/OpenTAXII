@@ -50,8 +50,6 @@ def run_https_in_dev_mode():
                 encryption_algorithm=serialization.NoEncryption(),
             ))
 
-        print "hostname is {}".format(socket.gethostname())
-
         # Generate the self signed certifiate
         subject = issuer = x509.Name([
             x509.NameAttribute(NameOID.COUNTRY_NAME, u"NL"),
