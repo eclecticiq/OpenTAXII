@@ -67,7 +67,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
                 id=obj.id, type=obj.type,
                 properties=obj.properties)
 
-        service = self.db.session.add(service)
+        self.db.session.add(service)
         self.db.session.commit()
 
         return conv.to_service_entity(service)
