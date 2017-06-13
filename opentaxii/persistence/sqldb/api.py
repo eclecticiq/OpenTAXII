@@ -207,6 +207,8 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
             service_id=entity.service_id,
 
+            message_id=entity.message_id,
+
             result_id=entity.result_id,
             record_count=entity.record_count,
             partial_count=entity.partial_count,
