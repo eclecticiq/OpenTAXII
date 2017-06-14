@@ -10,3 +10,4 @@ pyjwt>=1.4.0
 six>=1.10.0
 stix>=1.2.0
 stix-validator>=2.4.0
+cryptography>=1.9.0
