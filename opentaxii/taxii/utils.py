@@ -3,7 +3,7 @@ from collections import namedtuple
 
 import pytz
 import structlog
-import StringIO
+import six
 import sdv
 
 from lxml import etree
@@ -50,7 +50,7 @@ def verify_content_is_valid(content, content_binding, taxii_message_id):
     if not isinstance(content_binding, str): content_binding = str(content_binding)
     try:
         # Prepare the content block for processing by the STIX data validator
-        content_block_to_validate  = StringIO.StringIO()
+        content_block_to_validate  = six.StringIO()
         content_block_to_validate.write(content)
         # Run the STIX data validator with the correct content binding
         # Eliminates the chance of a client sending the wrong STIX file with the
@@ -83,7 +83,7 @@ def verify_content_is_valid(content, content_binding, taxii_message_id):
             
     except Exception as ve:
         content_block_to_validate.close()
-        print ve
+        print (ve)
         return verify_results(is_valid=False,
                      message= "The TAXII message {} contains invalid STIX {} content in one of the content blocks (incorrect content binding supplied?)."
                      .format(taxii_message_id,content_binding)
