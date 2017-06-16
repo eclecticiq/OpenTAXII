@@ -1,5 +1,4 @@
 import structlog
-import sdv
 
 import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10

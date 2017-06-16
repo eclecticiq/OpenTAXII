@@ -11,7 +11,7 @@ from libtaxii.common import set_xml_parser
 from libtaxii.constants import (
     CB_STIX_XML_10, CB_STIX_XML_101, CB_STIX_XML_11, CB_STIX_XML_111, CB_STIX_XML_12
 )
-
+from builtins import str
 
 from .exceptions import BadMessageStatus
 from .bindings import MESSAGE_VALIDATOR_PARSER
@@ -25,7 +25,7 @@ def get_utc_now():
 
 def is_content_supported(supported_bindings, content_binding, version=None):
 
-    if not hasattr(content_binding, 'binding_id') or version == 10:
+    if not hasattr(content_binding, u'binding_id') or version == 10:
         binding_id = content_binding
         subtype = None
     else:
@@ -46,26 +46,27 @@ def is_content_supported(supported_bindings, content_binding, version=None):
 
 def verify_content_is_valid(content, content_binding, taxii_message_id):
     # Validate that the STIX content is actually STIX content with the STIX Validator
-    verify_results = namedtuple('VerifyResults', 'is_valid message')
-    if not isinstance(content_binding, str): content_binding = str(content_binding)
+    verify_results = namedtuple(u'VerifyResults', u'is_valid message')
+    if not isinstance(content_binding, str): content_binding = str(content_binding.to_text())
     try:
         # Prepare the content block for processing by the STIX data validator
         content_block_to_validate  = six.StringIO()
-        content_block_to_validate.write(content)
+        content_block_to_validate.write(content.decode())
         # Run the STIX data validator with the correct content binding
         # Eliminates the chance of a client sending the wrong STIX file with the
         # wrong content_binding.
         if content_binding == CB_STIX_XML_10:
-            results = sdv.validate_xml(content_block_to_validate, '1.0')
+            results = sdv.validate_xml(content_block_to_validate, u'1.0')
         elif content_binding == CB_STIX_XML_101:
-            results = sdv.validate_xml(content_block_to_validate, '1.0.1')
+            results = sdv.validate_xml(content_block_to_validate, u'1.0.1')
         elif content_binding == CB_STIX_XML_11:
-            results = sdv.validate_xml(content_block_to_validate, '1.1')
+            results = sdv.validate_xml(content_block_to_validate, u'1.1')
         elif content_binding == CB_STIX_XML_111:
-            results = sdv.validate_xml(content_block_to_validate, '1.1.1')
+            results = sdv.validate_xml(content_block_to_validate, u'1.1.1')
         elif content_binding == CB_STIX_XML_12:
-            results = sdv.validate_xml(content_block_to_validate, '1.2')
+            results = sdv.validate_xml(content_block_to_validate, u'1.2')
         else:
+            print ("we are skipping validation as the content is a customer urn {}".format(content_binding))
             # this is not a content type we can validate
             # it might be a custom URN, so we need to just let it through without validation
             content_block_to_validate.close()

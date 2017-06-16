@@ -219,13 +219,13 @@ def test_inbox_unresticted_inbox_non_xml_data(server, version, https):
     response = inbox.process(headers, inbox_message)
 
     assert isinstance(response, as_tm(version).StatusMessage)
-    assert response.status_type == ST_SUCCESS
+    assert response.status_type == ST_FAILURE
     assert response.in_response_to == MESSAGE_ID
 
     blocks = server.persistence.get_content_blocks(None)
 
     # Content blocks with invalid content should be ignored
-    assert len(blocks) == 1
+    assert len(blocks) == 0
 
 
 @pytest.mark.parametrize("https", [True, False])
@@ -361,6 +361,9 @@ def test_inbox_req_coll_content_bindings_filtering(server, version, https):
         make_content(version, content_binding=INVALID_CONTENT_BINDING),
     ]
 
+    import pprint
+    pprint.pprint(blocks)
+
     inbox_message = make_inbox_message(
         version, dest_collection=COLLECTION_ONLY_STIX, blocks=blocks)
 
@@ -373,4 +376,4 @@ def test_inbox_req_coll_content_bindings_filtering(server, version, https):
     blocks = server.persistence.get_content_blocks(None)
 
     # Content blocks with invalid content should be ignored
-    assert len(blocks) == 1
+    assert len(blocks) == 0
