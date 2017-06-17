@@ -12,7 +12,7 @@ from fixtures import (
     CUSTOM_CONTENT_BINDING, CONTENT, MESSAGE_ID,
     SERVICES, COLLECTIONS_A, COLLECTIONS_B,
     CONTENT_BINDING_SUBTYPE, INVALID_CONTENT_BINDING,
-    COLLECTION_OPEN, COLLECTION_ONLY_STIX,
+    COLLECTION_OPEN, COLLECTION_ONLY_STIX, COLLECTION_STIX_AND_CUSTOM,
     STIX_12_CONTENT, STIX_111_CONTENT
 )
 
@@ -219,13 +219,13 @@ def test_inbox_unresticted_inbox_non_xml_data(server, version, https):
     response = inbox.process(headers, inbox_message)
 
     assert isinstance(response, as_tm(version).StatusMessage)
-    assert response.status_type == ST_FAILURE
+    assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
     blocks = server.persistence.get_content_blocks(None)
 
     # Content blocks with invalid content should be ignored
-    assert len(blocks) == 0
+    assert len(blocks) == 1
 
 
 @pytest.mark.parametrize("https", [True, False])
@@ -357,15 +357,15 @@ def test_inbox_req_coll_content_bindings_filtering(server, version, https):
     headers = prepare_headers(version, https)
 
     blocks = [
-        make_content(version, content_binding=CUSTOM_CONTENT_BINDING),
-        make_content(version, content_binding=INVALID_CONTENT_BINDING),
+        make_content(version, content="This is not XML", content_binding=CUSTOM_CONTENT_BINDING),
+        make_content(version, content="This is not XML", content_binding=INVALID_CONTENT_BINDING),
     ]
 
     import pprint
     pprint.pprint(blocks)
 
     inbox_message = make_inbox_message(
-        version, dest_collection=COLLECTION_ONLY_STIX, blocks=blocks)
+        version, dest_collection=COLLECTION_STIX_AND_CUSTOM, blocks=blocks)
 
     response = inbox.process(headers, inbox_message)
 
@@ -376,4 +376,5 @@ def test_inbox_req_coll_content_bindings_filtering(server, version, https):
     blocks = server.persistence.get_content_blocks(None)
 
     # Content blocks with invalid content should be ignored
-    assert len(blocks) == 0
+    assert len(blocks) == 1
+

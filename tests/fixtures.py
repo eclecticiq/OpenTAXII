@@ -3,6 +3,7 @@ from libtaxii.constants import (
     CB_STIX_XML_111, CB_STIX_XML_12)
 
 from opentaxii.taxii import entities
+from io import open
 import os
 test_dir = os.path.dirname(__file__)
 
