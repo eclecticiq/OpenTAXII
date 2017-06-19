@@ -11,7 +11,6 @@ from libtaxii.common import set_xml_parser
 from libtaxii.constants import (
     CB_STIX_XML_10, CB_STIX_XML_101, CB_STIX_XML_11, CB_STIX_XML_111, CB_STIX_XML_12
 )
-from builtins import str
 
 from .exceptions import BadMessageStatus
 from .bindings import MESSAGE_VALIDATOR_PARSER
@@ -46,8 +45,6 @@ def is_content_supported(supported_bindings, content_binding, version=None):
 
 def verify_content_is_valid(content, content_binding, taxii_message_id):
 
-    content_to_validate = ""
-
     # Validate that the STIX content is actually STIX content with the STIX Validator
     verify_results = namedtuple(u'VerifyResults', u'is_valid message')
 
@@ -64,9 +61,6 @@ def verify_content_is_valid(content, content_binding, taxii_message_id):
         content_binding = str(content_binding.to_text())
 
     try:
-        # Prepare the content block for processing by the STIX data validator
-        #content_block_to_validate  = six.StringIO()
-        #content_block_to_validate.write(content)
         # Run the STIX data validator with the correct content binding
         # Eliminates the chance of a client sending the wrong STIX file with the
         # wrong content_binding.
