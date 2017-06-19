@@ -3,7 +3,7 @@ Changelog
 
 0.1.9 (2017-06-19)
 ------------------
-* Dependencies upgraded (`changes <https://github.com/EclecticIQ/OpenTAXII/commit/08928d9904b57c350694d8d596e7861e5a7bac0f>`_).
+* `libtaxii <https://github.com/TAXIIProject/libtaxii>`_ dependency upgraded to 1.1.111.
 * Various bug fixes and improvements (thanks to `@bjigmp <https://github.com/bjigmp>`_, `@chorsley <https://github.com/chorsley>`_, `@rjprins <https://github.com/rjprins>`_).
 
 0.1.8 (2017-02-21)
