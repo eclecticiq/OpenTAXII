@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.1.9 (2017-06-19)
+------------------
+* Dependencies upgraded (`changes <https://github.com/EclecticIQ/OpenTAXII/commit/08928d9904b57c350694d8d596e7861e5a7bac0f>`_).
+* Various bug fixes and improvements (thanks to `@bjigmp <https://github.com/bjigmp>`_, `@chorsley <https://github.com/chorsley>`_, `@rjprins <https://github.com/rjprins>`_).
+
 0.1.8 (2017-02-21)
 ------------------
 * Ability to enable/disable "huge trees" support in XML parser. Configuration property `xml_parser_supports_huge_tree` set to `yes` or `true` will disable security restrictions and force XML parser to support very deep trees and very long text content.
