@@ -8,7 +8,7 @@ designed application.
 
 OpenTAXII is guaranteed to be compatible with [Cabby](https://github.com/EclecticIQ/cabby), TAXII client library.
 
-[Source] (https://github.com/EclecticIQ/OpenTAXII) | [Documentation](http://opentaxii.readthedocs.org) | [Information](http://www.eclecticiq.com) | [Download] (https://pypi.python.org/pypi/opentaxii/)
+[Source](https://github.com/EclecticIQ/OpenTAXII) | [Documentation](http://opentaxii.readthedocs.org) | [Information](http://www.eclecticiq.com) | [Download](https://pypi.python.org/pypi/opentaxii/)
 
 
 [![Build Status](https://travis-ci.org/EclecticIQ/OpenTAXII.svg?branch=move_docs)](https://travis-ci.org/EclecticIQ/OpenTAXII)
@@ -28,7 +28,7 @@ of docker.
 
 To get a default (development) instance using docker
 
-``` {.sourceCode .shell}
+```bash
 $ docker run -d -p 9000:9000 eclecticiq/opentaxii
 ```
 
