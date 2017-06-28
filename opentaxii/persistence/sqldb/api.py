@@ -235,7 +235,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
             subtype = None
 
         content = ContentBlock(
-            timestamp_label=entity.timestamp_label,
+            timestamp_label=entity.timestamp_label.strftime('%Y-%m-%d %H:%M:%S'),
             inbox_message_id=entity.inbox_message_id,
             content=entity.content,
             binding_id=binding,
