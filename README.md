@@ -15,6 +15,8 @@ OpenTAXII is guaranteed to be compatible with [Cabby](https://github.com/Eclecti
 [![Code Health](https://landscape.io/github/EclecticIQ/OpenTAXII/master/landscape.svg?style=flat)](https://landscape.io/github/EclecticIQ/OpenTAXII/master)
 [![Coverage Status](https://coveralls.io/repos/EclecticIQ/OpenTAXII/badge.svg)](https://coveralls.io/r/EclecticIQ/OpenTAXII)
 [![Documentation Status](https://readthedocs.org/projects/opentaxii/badge/?version=latest)](https://readthedocs.org/projects/opentaxii/)
+[![Dependency Status](https://gemnasium.com/badges/github.com/EclecticIQ/OpenTAXII.svg)](https://gemnasium.com/github.com/EclecticIQ/OpenTAXII)
+[![Requirements Status](https://requires.io/github/EclecticIQ/OpenTAXII/requirements.svg?branch=master)](https://requires.io/github/EclecticIQ/OpenTAXII/requirements/?branch=master)
 
 
 ## Getting started
