@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.1.9 (2017-06-19)
+------------------
+* `libtaxii <https://github.com/TAXIIProject/libtaxii>`_ dependency upgraded to 1.1.111.
+* Various bug fixes and improvements (thanks to `@bjigmp <https://github.com/bjigmp>`_, `@chorsley <https://github.com/chorsley>`_, `@rjprins <https://github.com/rjprins>`_).
+
 0.1.8 (2017-02-21)
 ------------------
 * Ability to enable/disable "huge trees" support in XML parser. Configuration property `xml_parser_supports_huge_tree` set to `yes` or `true` will disable security restrictions and force XML parser to support very deep trees and very long text content.

@@ -14,7 +14,7 @@ OpenTAXII is guaranteed to be compatible with `Cabby <http://pypi.python.org/pyp
 :Information: https://www.eclecticiq.com
 :Download: https://pypi.python.org/pypi/opentaxii/
 
-|travis badge| |landscape.io badge| |coveralls.io badge| |version badge| |py.version badge| |downloads badge| |license badge| |docs badge|
+|travis badge| |landscape.io badge| |coveralls.io badge| |version badge| |py.version badge| |downloads badge| |license badge| |docs badge| |requirements badge|
 
 .. |travis badge| image:: https://travis-ci.org/EclecticIQ/OpenTAXII.svg?branch=master
    :target: https://travis-ci.org/EclecticIQ/OpenTAXII
@@ -37,6 +37,9 @@ OpenTAXII is guaranteed to be compatible with `Cabby <http://pypi.python.org/pyp
     :alt: Documentation Status
     :scale: 100%
     :target: https://readthedocs.org/projects/opentaxii/
+.. |requirements badge| image:: https://requires.io/github/EclecticIQ/OpenTAXII/requirements.svg?branch=master
+     :target: https://requires.io/github/EclecticIQ/OpenTAXII/requirements/?branch=master
+     :alt: Requirements Status
 
 Getting started
 ---------------

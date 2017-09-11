@@ -2,7 +2,7 @@
 OpenTAXII
 =========
 
-Latest stable release is v0.1.8. (:doc:`Changelog <changes>`)
+Latest stable release is v0.1.9. (:doc:`Changelog <changes>`)
 
 ..
     Release v\ |version|. (:doc:`Changelog <changes>`)

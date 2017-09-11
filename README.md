@@ -8,14 +8,14 @@ designed application.
 
 OpenTAXII is guaranteed to be compatible with [Cabby](https://github.com/EclecticIQ/cabby), TAXII client library.
 
-[Source] (https://github.com/EclecticIQ/OpenTAXII) | [Documentation](http://opentaxii.readthedocs.org) | [Information](http://www.eclecticiq.com) | [Download] (https://pypi.python.org/pypi/opentaxii/)
+[Source](https://github.com/EclecticIQ/OpenTAXII) | [Documentation](http://opentaxii.readthedocs.org) | [Information](http://www.eclecticiq.com) | [Download](https://pypi.python.org/pypi/opentaxii/)
 
 
 [![Build Status](https://travis-ci.org/EclecticIQ/OpenTAXII.svg?branch=move_docs)](https://travis-ci.org/EclecticIQ/OpenTAXII)
 [![Code Health](https://landscape.io/github/EclecticIQ/OpenTAXII/master/landscape.svg?style=flat)](https://landscape.io/github/EclecticIQ/OpenTAXII/master)
 [![Coverage Status](https://coveralls.io/repos/EclecticIQ/OpenTAXII/badge.svg)](https://coveralls.io/r/EclecticIQ/OpenTAXII)
 [![Documentation Status](https://readthedocs.org/projects/opentaxii/badge/?version=latest)](https://readthedocs.org/projects/opentaxii/)
-
+[![Requirements Status](https://requires.io/github/EclecticIQ/OpenTAXII/requirements.svg?branch=master)](https://requires.io/github/EclecticIQ/OpenTAXII/requirements/?branch=master)
 
 ## Getting started
 See [the documentation](https://opentaxii.readthedocs.org/en/latest/installation.html).
@@ -28,7 +28,7 @@ of docker.
 
 To get a default (development) instance using docker
 
-``` {.sourceCode .shell}
+```bash
 $ docker run -d -p 9000:9000 eclecticiq/opentaxii
 ```
 
