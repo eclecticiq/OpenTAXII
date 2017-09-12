@@ -41,7 +41,10 @@ class InboxMessage11Handler(BaseMessageHandler):
             # version1.1/TAXII_Services_Specification.pdf
             if not is_supported:
                 failure = True
-                failure_message = "Content binding is not supported by this Inbox service: {}".format(content_block.content_binding)
+                failure_message = (
+                    "Content binding is not supported by this Inbox",
+                    " service: {}".format(content_block.content_binding)
+                )
                 log.warning(failure_message)
                 continue
 
@@ -56,21 +59,33 @@ class InboxMessage11Handler(BaseMessageHandler):
             if len(supporting_collections) == 0 and not is_supported:
                 # There's nothing to add this content block to
                 failure = True
-                failure_message = "No collection that supports binding {} were found".format(content_block.content_binding)
+                failure_message = (
+                    "No collection that supports binding {} were",
+                    " found".format(content_block.content_binding)
+                )
                 log.warning(failure_message)
                 continue
 
-            # Validate that the STIX content is actually STIX content with the STIX Validator
-            results = service.verify_content_is_valid(content_block.content, content_block.content_binding, request.message_id)
+            # Validate that the STIX content is actually STIX content with
+            # the STIX Validator
+            results = service.verify_content_is_valid(
+                content_block.content,
+                content_block.content_binding,
+                request.message_id
+            )
             if results.is_valid:
                 block = content_block_to_content_block_entity(
-                    content_block, version=11)
+                    content_block,
+                    version=11
+                )
 
                 service.server.persistence.create_content(
                     block,
                     collections=supporting_collections,
                     service_id=service.id,
-                    inbox_message_id=inbox_message.id if inbox_message else None)
+                    inbox_message_id=inbox_message.id
+                    if inbox_message else None
+                )
             else:
                 failure = True
                 failure_message = results.message
@@ -107,7 +122,10 @@ class InboxMessage10Handler(BaseMessageHandler):
 
         inbox_message = service.server.persistence.create_inbox_message(
             inbox_message_to_inbox_message_entity(
-                request, service_id=service.id, version=10))
+                request,
+                service_id=service.id,
+                version=10)
+        )
 
         failure = False
         failure_message = ""
@@ -119,21 +137,32 @@ class InboxMessage10Handler(BaseMessageHandler):
 
             if not is_supported:
                 failure = True
-                failure_message = "Content block binding is not supported: {}".format(content_block.content_binding)
+                failure_message = (
+                    "Content block binding is not supported:",
+                    "{}".format(content_block.content_binding)
+                )
                 log.warning(failure_message)
                 continue
 
-            # Validate that the STIX content is actually STIX content with the STIX Validator
-            results = service.verify_content_is_valid(content_block.content, content_block.content_binding, request.message_id)
+            # Validate that the STIX content is actually STIX content with the
+            # STIX Validator
+            results = service.verify_content_is_valid(
+                content_block.content,
+                content_block.content_binding,
+                request.message_id
+            )
             if results.is_valid:
                 block = content_block_to_content_block_entity(
                     content_block, version=10)
 
                 service.server.persistence.create_content(
-                    block, collections=collections,
+                    block,
+                    collections=collections,
                     service_id=service.id,
-                    inbox_message_id=inbox_message.id if inbox_message else None)
-    
+                    inbox_message_id=inbox_message.id
+                    if inbox_message else None
+                )
+
             else:
                 failure = True
                 failure_message = results.message

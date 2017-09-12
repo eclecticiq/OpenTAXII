@@ -3,7 +3,7 @@ import pytest
 from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
 from libtaxii.constants import (
-    RT_COUNT_ONLY, RT_FULL, CB_STIX_XML_111, CB_STIX_XML_12, ACT_SUBSCRIBE)
+    RT_COUNT_ONLY, RT_FULL, CB_STIX_XML_12, ACT_SUBSCRIBE)
 
 from opentaxii.taxii import exceptions
 

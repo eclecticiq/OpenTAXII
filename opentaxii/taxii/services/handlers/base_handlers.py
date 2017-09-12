@@ -83,4 +83,3 @@ class BaseMessageHandler(object):
     @classmethod
     def handle_message(cls, service, request):
         raise NotImplementedError()
-

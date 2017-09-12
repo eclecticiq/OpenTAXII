@@ -28,7 +28,11 @@ INBOX_B = dict(
     description='inbox-B description',
     destination_collection_required='yes',
     address='/relative/path/inbox-b',
-    supported_content=[CB_STIX_XML_111, CB_STIX_XML_12, CUSTOM_CONTENT_BINDING],
+    supported_content=[
+        CB_STIX_XML_111,
+        CB_STIX_XML_12,
+        CUSTOM_CONTENT_BINDING
+    ],
     protocol_bindings=PROTOCOL_BINDINGS
 )
 
@@ -139,4 +143,3 @@ f.close()
 f = open(test_dir + '/stix-1.2.xml')
 STIX_12_CONTENT = f.read()
 f.close()
-

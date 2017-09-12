@@ -51,14 +51,21 @@ class InboxService(TAXIIService):
         return is_content_supported(self.supported_content, content_binding,
                                     version=version)
 
-    def verify_content_is_valid(self, content, content_binding, taxii_message_id):
+    def verify_content_is_valid(self, content, content_binding,
+                                taxii_message_id):
 
         if self.accept_all_content:
             verify_results = namedtuple('VerifyResults', 'is_valid, message')
-            return verify_results(is_valid=True,  message="This TAXII Service is accepting all content.")
+            return verify_results(
+                is_valid=True,
+                message="This TAXII Service is accepting all content."
+            )
 
-        return verify_content_is_valid(content, content_binding, taxii_message_id)
-
+        return verify_content_is_valid(
+            content,
+            content_binding,
+            taxii_message_id
+        )
 
     def get_destination_collections(self):
         return self.server.persistence.get_collections(self.id)

@@ -1,7 +1,7 @@
 import pytest
 
 from libtaxii.constants import (
-    RT_FULL, CB_STIX_XML_111, CB_STIX_XML_12, ACT_PAUSE, ACT_RESUME, ACT_UNSUBSCRIBE,
+    RT_FULL, CB_STIX_XML_12, ACT_PAUSE, ACT_RESUME, ACT_UNSUBSCRIBE,
     ACT_SUBSCRIBE, SS_ACTIVE, SS_PAUSED, SS_UNSUBSCRIBED)
 
 from opentaxii.taxii import exceptions

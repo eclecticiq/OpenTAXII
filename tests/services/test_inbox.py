@@ -37,11 +37,15 @@ def make_inbox_message(version, blocks=None, dest_collection=None):
 
     if version == 10:
         inbox_message = tm10.InboxMessage(
-            message_id=MESSAGE_ID, content_blocks=blocks)
+            message_id=MESSAGE_ID,
+            content_blocks=blocks
+        )
 
     elif version == 11:
         inbox_message = tm11.InboxMessage(
-            message_id=MESSAGE_ID, content_blocks=blocks)
+            message_id=MESSAGE_ID,
+            content_blocks=blocks
+        )
         if dest_collection:
             inbox_message.destination_collection_names.append(dest_collection)
     else:
@@ -90,7 +94,10 @@ def test_inbox_request_all_content(server, version, https):
             version,
             content_binding=INVALID_CONTENT_BINDING)
     ]
-    inbox_message = make_inbox_message(version, blocks=blocks)
+    inbox_message = make_inbox_message(
+        version,
+        blocks=blocks
+    )
 
     # "inbox-A" accepts all content
     response = inbox_a.process(headers, inbox_message)
@@ -109,7 +116,10 @@ def test_inbox_request_destination_collection(server, https):
     version = 11
 
     inbox_message = make_inbox_message(
-        version, blocks=[make_content(version)], dest_collection=None)
+        version,
+        blocks=[make_content(version)],
+        dest_collection=None
+    )
     headers = prepare_headers(version, https)
 
     inbox = server.get_service('inbox-A')
@@ -142,7 +152,10 @@ def test_inbox_request_inbox_valid_content_binding(server, version, https):
     ]
 
     inbox_message = make_inbox_message(
-        version, dest_collection=COLLECTION_OPEN, blocks=blocks)
+        version,
+        dest_collection=COLLECTION_OPEN,
+        blocks=blocks
+    )
     headers = prepare_headers(version, https)
 
     response = inbox.process(headers, inbox_message)
@@ -162,9 +175,15 @@ def test_inbox_req_inbox_invalid_inbox_content_binding(server, version, https):
 
     inbox = server.get_service('inbox-B')
 
-    content = make_content(version, content_binding=INVALID_CONTENT_BINDING)
+    content = make_content(
+        version,
+        content_binding=INVALID_CONTENT_BINDING
+    )
     inbox_message = make_inbox_message(
-        version, dest_collection=COLLECTION_OPEN, blocks=[content])
+        version,
+        dest_collection=COLLECTION_OPEN,
+        blocks=[content]
+    )
 
     headers = prepare_headers(version, https)
 
@@ -186,9 +205,16 @@ def test_inbox_restricted_inbox_non_xml_data_as_stix(server, version, https):
 
     inbox = server.get_service('inbox-B')
 
-    content = make_content(version, content="This is not XML", content_binding=CB_STIX_XML_12)
+    content = make_content(
+        version,
+        content="This is not XML",
+        content_binding=CB_STIX_XML_12
+    )
     inbox_message = make_inbox_message(
-        version, dest_collection=COLLECTION_ONLY_STIX, blocks=[content])
+        version,
+        dest_collection=COLLECTION_ONLY_STIX,
+        blocks=[content]
+    )
 
     headers = prepare_headers(version, https)
 
@@ -210,9 +236,16 @@ def test_inbox_unresticted_inbox_non_xml_data(server, version, https):
 
     inbox = server.get_service('inbox-B')
 
-    content = make_content(version, content="This is not XML", content_binding=CUSTOM_CONTENT_BINDING)
+    content = make_content(
+        version,
+        content="This is not XML",
+        content_binding=CUSTOM_CONTENT_BINDING
+    )
     inbox_message = make_inbox_message(
-        version, dest_collection=COLLECTION_OPEN, blocks=[content])
+        version,
+        dest_collection=COLLECTION_OPEN,
+        blocks=[content]
+    )
 
     headers = prepare_headers(version, https)
 
@@ -234,10 +267,20 @@ def test_inbox_restricted_inbox_non_stix_xml_as_stix(server, version, https):
 
     inbox = server.get_service('inbox-B')
 
-    content = make_content(version, content="<?xml version='1.0' ?><!DOCTYPE root SYSTEM 'http://notstix.example.com'>"
-                                            "<root><notstix></notstix></root>", content_binding=CB_STIX_XML_12)
+    content = make_content(
+        version,
+        content=(
+            "<?xml version='1.0' ?><!DOCTYPE root",
+            " SYSTEM 'http://notstix.example.com'>",
+            "<root><notstix></notstix></root>"
+        ),
+        content_binding=CB_STIX_XML_12
+    )
     inbox_message = make_inbox_message(
-        version, dest_collection=COLLECTION_OPEN, blocks=[content])
+        version,
+        dest_collection=COLLECTION_OPEN,
+        blocks=[content]
+    )
 
     headers = prepare_headers(version, https)
 
@@ -259,9 +302,16 @@ def test_inbox_restricted_inbox_stix12_as_stix12(server, version, https):
 
     inbox = server.get_service('inbox-B')
 
-    content = make_content(version, content=STIX_12_CONTENT, content_binding=CB_STIX_XML_12)
+    content = make_content(
+        version,
+        content=STIX_12_CONTENT,
+        content_binding=CB_STIX_XML_12
+    )
     inbox_message = make_inbox_message(
-        version, dest_collection=COLLECTION_ONLY_STIX, blocks=[content])
+        version,
+        dest_collection=COLLECTION_ONLY_STIX,
+        blocks=[content]
+    )
 
     headers = prepare_headers(version, https)
 
@@ -283,9 +333,16 @@ def test_inbox_restricted_inbox_stix111_as_stix12(server, version, https):
 
     inbox = server.get_service('inbox-B')
 
-    content = make_content(version, content=STIX_111_CONTENT, content_binding=CB_STIX_XML_12)
+    content = make_content(
+        version,
+        content=STIX_111_CONTENT,
+        content_binding=CB_STIX_XML_12
+    )
     inbox_message = make_inbox_message(
-        version, dest_collection=COLLECTION_ONLY_STIX, blocks=[content])
+        version,
+        dest_collection=COLLECTION_ONLY_STIX,
+        blocks=[content]
+    )
 
     headers = prepare_headers(version, https)
 
@@ -307,9 +364,16 @@ def test_inbox_restricted_inbox_stix12_as_stix111(server, version, https):
 
     inbox = server.get_service('inbox-B')
 
-    content = make_content(version, content=STIX_12_CONTENT, content_binding=CB_STIX_XML_111)
+    content = make_content(
+        version,
+        content=STIX_12_CONTENT,
+        content_binding=CB_STIX_XML_111
+    )
     inbox_message = make_inbox_message(
-        version, dest_collection=COLLECTION_ONLY_STIX, blocks=[content])
+        version,
+        dest_collection=COLLECTION_ONLY_STIX,
+        blocks=[content]
+    )
 
     headers = prepare_headers(version, https)
 
@@ -331,9 +395,16 @@ def test_inbox_restricted_inbox_stix111_as_stix111(server, version, https):
 
     inbox = server.get_service('inbox-B')
 
-    content = make_content(version, content=STIX_111_CONTENT, content_binding=CB_STIX_XML_111)
+    content = make_content(
+        version,
+        content=STIX_111_CONTENT,
+        content_binding=CB_STIX_XML_111
+    )
     inbox_message = make_inbox_message(
-        version, dest_collection=COLLECTION_ONLY_STIX, blocks=[content])
+        version,
+        dest_collection=COLLECTION_ONLY_STIX,
+        blocks=[content]
+    )
 
     headers = prepare_headers(version, https)
 
@@ -357,8 +428,16 @@ def test_inbox_req_coll_content_bindings_filtering(server, version, https):
     headers = prepare_headers(version, https)
 
     blocks = [
-        make_content(version, content="This is not XML", content_binding=CUSTOM_CONTENT_BINDING),
-        make_content(version, content="This is not XML", content_binding=INVALID_CONTENT_BINDING),
+        make_content(
+            version,
+            content="This is not XML",
+            content_binding=CUSTOM_CONTENT_BINDING
+        ),
+        make_content(
+            version,
+            content="This is not XML",
+            content_binding=INVALID_CONTENT_BINDING
+        ),
     ]
 
     import pprint
@@ -377,4 +456,3 @@ def test_inbox_req_coll_content_bindings_filtering(server, version, https):
 
     # Content blocks with invalid content should be ignored
     assert len(blocks) == 1
-

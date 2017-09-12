@@ -9,13 +9,15 @@ import sdv
 from lxml import etree
 from libtaxii.common import set_xml_parser
 from libtaxii.constants import (
-    CB_STIX_XML_10, CB_STIX_XML_101, CB_STIX_XML_11, CB_STIX_XML_111, CB_STIX_XML_12
+    CB_STIX_XML_10, CB_STIX_XML_101, CB_STIX_XML_11, CB_STIX_XML_111,
+    CB_STIX_XML_12
 )
 
 from .exceptions import BadMessageStatus
 from .bindings import MESSAGE_VALIDATOR_PARSER
 
 log = structlog.getLogger(__name__)
+
 
 def get_utc_now():
     return datetime.utcnow().replace(tzinfo=pytz.UTC)
@@ -42,13 +44,16 @@ def is_content_supported(supported_bindings, content_binding, version=None):
 
     return any(matches)
 
+
 def verify_content_is_valid(content, content_binding, taxii_message_id):
 
-    # Validate that the STIX content is actually STIX content with the STIX Validator
+    # Validate that the STIX content is actually STIX content with the
+    # STIX Validator
     verify_results = namedtuple(u'VerifyResults', u'is_valid message')
 
     # Handle whatever sort of bytes or strings we get
-    # and put it in a StringIO so that the Stix-validator will process it correctly
+    # and put it in a StringIO so that the Stix-validator will process
+    # it correctly
     if isinstance(content, six.BytesIO):
         content_to_validate = six.StringIO(content.decode())
     elif isinstance(content, bytes):
@@ -56,13 +61,13 @@ def verify_content_is_valid(content, content_binding, taxii_message_id):
     else:
         content_to_validate = six.StringIO(content)
 
-    if not isinstance(content_binding, str): 
+    if not isinstance(content_binding, str):
         content_binding = str(content_binding.to_text())
 
     try:
         # Run the STIX data validator with the correct content binding
-        # Eliminates the chance of a client sending the wrong STIX file with the
-        # wrong content_binding.
+        # Eliminates the chance of a client sending the wrong STIX file
+        # with the wrong content_binding.
         if content_binding == CB_STIX_XML_10:
             results = sdv.validate_xml(content_to_validate, u'1.0')
         elif content_binding == CB_STIX_XML_101:
@@ -75,32 +80,51 @@ def verify_content_is_valid(content, content_binding, taxii_message_id):
             results = sdv.validate_xml(content_to_validate, u'1.2')
         else:
             # this is not a content type we can validate
-            # it might be a custom URN, so we need to just let it through without validation
-            return verify_results(is_valid=True,
-                 message=  "The STIX content in the content block is valid ({})."
-                 .format(content_binding)
+            # it might be a custom URN, so we need to just let it through
+            # without validation
+            return verify_results(
+                 is_valid=True,
+                 message="The STIX content in the content block is valid ({})."
+                         .format(content_binding)
             )
         # Test the results of the validator to make sure the schema is valid
         if not results.is_valid:
-            log.warning("The TAXII message {} contains invalid STIX {} content in one of the content blocks (incorrect content binding supplied?)."
-                .format(taxii_message_id,content_binding)
+            log.warning(
+                (
+                  "The TAXII message {} contains invalid STIX {} content in",
+                  " one of the content blocks (incorrect content binding",
+                  " supplied?)."
+                ).format(taxii_message_id, content_binding)
             )
-            return verify_results(is_valid=False, \
-                message= "The TAXII message {} contains invalid STIX {} content in one of the content blocks (incorrect content binding supplied?)."
-                .format(taxii_message_id,content_binding)
-            )
-            
+            return verify_results(
+                is_valid=False,
+                message=(
+                  "The TAXII message {} contains invalid STIX {} content",
+                  " in one of the content blocks (incorrect content",
+                  " binding supplied?)."
+                ).format(taxii_message_id, content_binding)
+             )
+
     except Exception as ve:
-        log.warning("The TAXII message {} contains invalid STIX {} content in one of the content blocks (incorrect content binding supplied?)."
-            .format(taxii_message_id,content_binding)
+        log.warning(
+            (
+              "The TAXII message {} contains invalid STIX {} content in one",
+              " of the content blocks (incorrect content binding supplied?)."
+            ).format(taxii_message_id, content_binding)
         )
-        return verify_results(is_valid=False, \
-            message= "The TAXII message {} contains invalid STIX {} content in one of the content blocks (incorrect content binding supplied?)."
-            .format(taxii_message_id,content_binding)
+        return verify_results(
+            is_valid=False,
+            message=(
+                "The TAXII message {} contains invalid STIX {} content",
+                " in one of the content blocks (incorrect content",
+                " binding supplied?)."
+            ).format(taxii_message_id, content_binding)
         )
-        
-    return verify_results(is_valid=True,
-        message=  "The STIX content in the content block is valid ({}).".format(content_binding)
+
+    return verify_results(
+        is_valid=True,
+        message="The STIX content in the content block is valid ({})."
+                .format(content_binding)
     )
 
 

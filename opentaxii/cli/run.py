@@ -24,8 +24,10 @@ KEY_FILE = os.path.join(CERT_STORAGE_DIR, "opentaxii-self-signed-cert.key")
 
 log = structlog.getLogger(__name__)
 
+
 def run_in_dev_mode():
     app.run(port=9000)
+
 
 def run_https_in_dev_mode():
 
@@ -33,8 +35,10 @@ def run_https_in_dev_mode():
     if not os.path.isfile(CERT_FILE) or not os.path.isfile(KEY_FILE):
 
         log.warning(
-             "Invalid or missing SSL Certificate or Private Key. Creating new SSL certificate at {} and Private Key at {}".format(CERT_FILE, KEY_FILE))
-     
+             "Invalid or missing SSL Certificate or Private Key."
+             " Creating new SSL certificate at {} and Private Key at {}"
+             .format(CERT_FILE, KEY_FILE))
+
         # Create private key
         key = rsa.generate_private_key(
             public_exponent=65537,
@@ -53,10 +57,14 @@ def run_https_in_dev_mode():
         # Generate the self signed certifiate
         subject = issuer = x509.Name([
             x509.NameAttribute(NameOID.COUNTRY_NAME, u"NL"),
-            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u"North Holland"),
+            x509.NameAttribute(
+                NameOID.STATE_OR_PROVINCE_NAME,
+                u"North Holland"),
             x509.NameAttribute(NameOID.LOCALITY_NAME, u"Amsterdam"),
             x509.NameAttribute(NameOID.ORGANIZATION_NAME, u"EclecticIQ"),
-            x509.NameAttribute(NameOID.COMMON_NAME, six.u(socket.gethostname())),
+            x509.NameAttribute(
+                NameOID.COMMON_NAME,
+                six.u(socket.gethostname())),
         ])
         cert = x509.CertificateBuilder().subject_name(
             subject
@@ -73,20 +81,22 @@ def run_https_in_dev_mode():
         ).add_extension(
             x509.SubjectAlternativeName([x509.DNSName(u"localhost")]),
             critical=False,
-        # Sign our certificate with our private key
+            # Sign our certificate with our private key
         ).sign(key, hashes.SHA256(), default_backend())
 
         # Write our certificate out to disk.
         with open(CERT_FILE, "wb") as f:
             f.write(cert.public_bytes(serialization.Encoding.PEM))
     else:
-        log.info("Using SSL certificate at {} and Private Key at {}".format(CERT_FILE, KEY_FILE))
+        log.info(
+            "Using SSL certificate at {} and Private Key at {}"
+            .format(CERT_FILE, KEY_FILE))
 
     # Set up the SSL configuration
     context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
     context.options |= ssl.OP_NO_SSLv2
     context.options |= ssl.OP_NO_SSLv3
     context.load_cert_chain(certfile=CERT_FILE, keyfile=KEY_FILE)
-    
+
     # Run the application
     app.run(port=9000, ssl_context=context)
