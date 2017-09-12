@@ -26,7 +26,11 @@ class InboxMessage11Handler(BaseMessageHandler):
 
         inbox_message = service.server.persistence.create_inbox_message(
             inbox_message_to_inbox_message_entity(
-                request, service_id=service.id, version=11))
+                request,
+                service_id=service.id,
+                version=11
+            )
+        )
 
         failure = False
         failure_message = ""
@@ -42,8 +46,8 @@ class InboxMessage11Handler(BaseMessageHandler):
             if not is_supported:
                 failure = True
                 failure_message = (
-                    "Content binding is not supported by this Inbox",
-                    " service: {}".format(content_block.content_binding)
+                   "Content binding is not supported by this"
+                   " Inbox service: {}".format(content_block.content_binding)
                 )
                 log.warning(failure_message)
                 continue
@@ -60,8 +64,8 @@ class InboxMessage11Handler(BaseMessageHandler):
                 # There's nothing to add this content block to
                 failure = True
                 failure_message = (
-                    "No collection that supports binding {} were",
-                    " found".format(content_block.content_binding)
+                    "No collection that supports binding"
+                    " {} were found".format(content_block.content_binding)
                 )
                 log.warning(failure_message)
                 continue
@@ -138,7 +142,7 @@ class InboxMessage10Handler(BaseMessageHandler):
             if not is_supported:
                 failure = True
                 failure_message = (
-                    "Content block binding is not supported:",
+                    "Content block binding is not supported:"
                     "{}".format(content_block.content_binding)
                 )
                 log.warning(failure_message)

@@ -270,8 +270,8 @@ def test_inbox_restricted_inbox_non_stix_xml_as_stix(server, version, https):
     content = make_content(
         version,
         content=(
-            "<?xml version='1.0' ?><!DOCTYPE root",
-            " SYSTEM 'http://notstix.example.com'>",
+            "<?xml version='1.0' ?><!DOCTYPE root"
+            " SYSTEM 'http://notstix.example.com'>"
             "<root><notstix></notstix></root>"
         ),
         content_binding=CB_STIX_XML_12

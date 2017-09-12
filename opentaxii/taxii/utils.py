@@ -84,47 +84,34 @@ def verify_content_is_valid(content, content_binding, taxii_message_id):
             # without validation
             return verify_results(
                  is_valid=True,
-                 message="The STIX content in the content block is valid ({})."
-                         .format(content_binding)
+                 message=(
+                     "The STIX content in the content block is valid "
+                     "({})".format(content_binding)
+                 )
             )
         # Test the results of the validator to make sure the schema is valid
         if not results.is_valid:
-            log.warning(
-                (
-                  "The TAXII message {} contains invalid STIX {} content in",
-                  " one of the content blocks (incorrect content binding",
-                  " supplied?)."
-                ).format(taxii_message_id, content_binding)
-            )
             return verify_results(
                 is_valid=False,
-                message=(
-                  "The TAXII message {} contains invalid STIX {} content",
-                  " in one of the content blocks (incorrect content",
-                  " binding supplied?)."
-                ).format(taxii_message_id, content_binding)
-             )
+                message="The TAXII message {}".format(taxii_message_id)
+                        + " contains invalid STIX {}".format(content_binding)
+                        + " content in one of the content blocks (incorrect"
+                        + " content binding supplied?)"
+            )
 
     except Exception as ve:
-        log.warning(
-            (
-              "The TAXII message {} contains invalid STIX {} content in one",
-              " of the content blocks (incorrect content binding supplied?)."
-            ).format(taxii_message_id, content_binding)
-        )
         return verify_results(
             is_valid=False,
-            message=(
-                "The TAXII message {} contains invalid STIX {} content",
-                " in one of the content blocks (incorrect content",
-                " binding supplied?)."
-            ).format(taxii_message_id, content_binding)
+            message="The TAXII message {} contains".format(taxii_message_id)
+                    + " invalid STIX {} content".format(content_binding)
+                    + " in one of the content blocks (incorrect content"
+                    + " binding supplied?)"
         )
 
     return verify_results(
         is_valid=True,
-        message="The STIX content in the content block is valid ({})."
-                .format(content_binding)
+        message="The STIX content in the content block is valid"
+                + "({})".format(content_binding)
     )
 
 
