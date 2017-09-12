@@ -9,11 +9,18 @@ Here we describe how to run OpenTAXII in a *development* or *production* mode. D
 Development mode
 ================
 
-To run the server in development mode use the CLI command shipped with OpenTAXII package::
+To run the server over HTTP in development mode use the CLI command shipped with OpenTAXII package::
 
    (venv) $ opentaxii-run-dev
 
-This will start OpenTAXII in a development mode and bind it to ``localhost:9000``.
+This will start OpenTAXII in a development mode and bind it to ``http://localhost:9000``.
+
+To run the server over HTTPS in development mode use the CLI command shipped with OpenTAXII package::
+
+   (venv) $ opentaxii-run-https-dev
+
+This will create a self-signed TLS certificate, and start OpenTAXII in a development mode and bind it to ``http://localhost:9000``. NOTE: You will need to turn off certificate verification on your TAXII
+Client in order for the HTTPS connection to work. If you are using `Cabby <http://cabby.readthedocs.io/en/stable/index.html>`, you can simpley add the --bind parameter to your cabby command.
 
 
 Production mode

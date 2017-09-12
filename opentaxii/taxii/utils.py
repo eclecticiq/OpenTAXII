@@ -17,7 +17,6 @@ from .bindings import MESSAGE_VALIDATOR_PARSER
 
 log = structlog.getLogger(__name__)
 
-
 def get_utc_now():
     return datetime.utcnow().replace(tzinfo=pytz.UTC)
 
@@ -83,20 +82,25 @@ def verify_content_is_valid(content, content_binding, taxii_message_id):
             )
         # Test the results of the validator to make sure the schema is valid
         if not results.is_valid:
-            return verify_results(is_valid=False,
-                         message= "The TAXII message {} contains invalid STIX {} content in one of the content blocks (incorrect content binding supplied?)."
-                         .format(taxii_message_id,content_binding)
+            log.warning("The TAXII message {} contains invalid STIX {} content in one of the content blocks (incorrect content binding supplied?)."
+                .format(taxii_message_id,content_binding)
+            )
+            return verify_results(is_valid=False, \
+                message= "The TAXII message {} contains invalid STIX {} content in one of the content blocks (incorrect content binding supplied?)."
+                .format(taxii_message_id,content_binding)
             )
             
     except Exception as ve:
-        return verify_results(is_valid=False,
-                     message= "The TAXII message {} contains invalid STIX {} content in one of the content blocks (incorrect content binding supplied?)."
-                     .format(taxii_message_id,content_binding)
+        log.warning("The TAXII message {} contains invalid STIX {} content in one of the content blocks (incorrect content binding supplied?)."
+            .format(taxii_message_id,content_binding)
+        )
+        return verify_results(is_valid=False, \
+            message= "The TAXII message {} contains invalid STIX {} content in one of the content blocks (incorrect content binding supplied?)."
+            .format(taxii_message_id,content_binding)
         )
         
     return verify_results(is_valid=True,
-                 message=  "The STIX content in the content block is valid ({})."
-                 .format(content_binding)
+        message=  "The STIX content in the content block is valid ({}).".format(content_binding)
     )
 
 

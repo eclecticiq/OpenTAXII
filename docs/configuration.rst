@@ -42,7 +42,7 @@ Default configuration looks like this:
     hooks: 
     
 .. note::
-  OpenTAXII uses a SQLite Database by default wich is intended only when running OpenTAXII in a development environment. Please change when running in a production environment.
+  OpenTAXII uses a SQLite Database by default which is intended only when running OpenTAXII in a development environment. Please change when running in a production environment.
 
 An example of custom configuration that allows OpenTAXII to connect to production-ready database (PostgreSQL is our recommendation):
 
@@ -125,6 +125,8 @@ We will need to create YAML files with services and collections configurations. 
 
   Services have relative path in the address field, which means OpenTAXII will prepend it with domain configured in server configuration file (``localhost:9000`` in `default configuration`_).
 
+  STIX Validation will NOT be performed on any files uploaded into an Inbox Service if the "accept_all_content:yes" is specified for that Inbox Service. 
+
 * `examples/collections.yml <https://raw.githubusercontent.com/eclecticiq/OpenTAXII/master/examples/collections.yml>`_
 
   Lists 4 collections: 
@@ -133,6 +135,9 @@ We will need to create YAML files with services and collections configurations. 
     * ``collection-B`` that accepts only content specified in field ``content_bindings``.
     * ``collection-C`` that accepts not only STIX v1.1.1 content but also custom content type ``urn:custom.bindings.com:json:0.0.1``
     * ``collection-D`` that is marked as not available.
+
+  STIX Validation will NOT be performed on files uploaded to a collection if the "accept_all_content:true" is specified for that Collection. Only STIX content bindings listed within the supported_content section of the collection settings will be tested for STIX validity 
+
 
 Step 2
 ------

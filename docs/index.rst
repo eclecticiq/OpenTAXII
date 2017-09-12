@@ -17,8 +17,8 @@ OpenTAXII implements all TAXII services according to TAXII specification (versio
 
 - customizable APIs,
 - authentication,
-- flexible logging.
-
+- flexible logging,
+- stix validation.
 
 **Designed to be extendable**
 
