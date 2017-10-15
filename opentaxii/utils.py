@@ -60,10 +60,17 @@ def parse_basic_auth_token(token):
 class PlainRenderer(object):
 
     def __call__(self, logger, name, event_dict):
-        pairs = ', '.join(['%s=%s' % (k, v) for k, v in event_dict.items()])
+        details = event_dict.copy()
+        timestamp = details.pop('timestamp')
+        logger = details.pop('logger')
+        level = details.pop('level')
+        event = details.pop('event')
+        pairs = ', '.join(['%s=%s' % (k, v) for k, v in details.items()])
         return (
             '{timestamp} [{logger}] {level}: {event} {{{pairs}}}'
-            .format(pairs=pairs, **event_dict))
+            .format(
+                timestamp=timestamp, logger=logger, level=level,
+                event=event, pairs=pairs))
 
 
 def configure_logging(logging_levels, plain=False):

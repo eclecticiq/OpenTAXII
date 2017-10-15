@@ -83,8 +83,7 @@ class PollService(TAXIIService):
             end_time=end_time,
             bindings=content_bindings,
             offset=offset,
-            limit=limit,
-        )
+            limit=limit)
 
     def create_result_set(self, collection, content_bindings=None,
                           timeframe=None):
