@@ -123,7 +123,7 @@ class PersistenceManager(object):
         :rtype: :py:class:`opentaxii.taxii.entities.CollectionEntity`
         '''
         collection = self.api.get_collection(name, service_id=service_id)
-        if context.account.can_read(collection.name):
+        if collection and context.account.can_read(collection.name):
             return collection
 
     def update_collection(self, collection):
