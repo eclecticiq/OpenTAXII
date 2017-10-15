@@ -22,11 +22,14 @@ collection_to_content_block = schema.Table(
     'collection_to_content_block',
     Base.metadata,
     schema.Column(
-        'collection_id', types.Integer,
-        schema.ForeignKey('data_collections.id')),
+        'collection_id',
+        types.Integer,
+        schema.ForeignKey('data_collections.id', ondelete='CASCADE')),
     schema.Column(
-        'content_block_id', types.Integer,
-        schema.ForeignKey('content_blocks.id'), index=True),
+        'content_block_id',
+        types.Integer,
+        schema.ForeignKey('content_blocks.id', ondelete='CASCADE'),
+        index=True),
     schema.PrimaryKeyConstraint('collection_id', 'content_block_id')
 )
 
@@ -76,10 +79,14 @@ class ContentBlock(AbstractModel):
 service_to_collection = schema.Table(
     'service_to_collection',
     Base.metadata,
-    schema.Column('service_id',
-                  types.String(150), schema.ForeignKey('services.id')),
-    schema.Column('collection_id',
-                  types.Integer, schema.ForeignKey('data_collections.id')),
+    schema.Column(
+        'service_id',
+        types.String(150),
+        schema.ForeignKey('services.id', ondelete='CASCADE')),
+    schema.Column(
+        'collection_id',
+        types.Integer,
+        schema.ForeignKey('data_collections.id', ondelete='CASCADE')),
     schema.PrimaryKeyConstraint('service_id', 'collection_id')
 )
 
