@@ -53,21 +53,16 @@ def to_inbox_message_entity(model):
         original_message=model.original_message,
         content_block_count=model.content_block_count,
         destination_collections=names,
-
         service_id=model.service_id,
-
         result_id=model.result_id,
         record_count=model.record_count,
         partial_count=model.partial_count,
-
         subscription_collection_name=model.subscription_collection_name,
         subscription_id=model.subscription_id,
-
         exclusive_begin_timestamp_label=enforce_timezone(
             model.exclusive_begin_timestamp_label),
         inclusive_end_timestamp_label=enforce_timezone(
-            model.inclusive_end_timestamp_label),
-    )
+            model.inclusive_end_timestamp_label))
 
 
 def to_result_set_entity(model):
@@ -79,8 +74,7 @@ def to_result_set_entity(model):
         content_bindings=deserialize_content_bindings(model.bindings),
         timeframe=(
             enforce_timezone(model.begin_time),
-            enforce_timezone(model.end_time))
-    )
+            enforce_timezone(model.end_time)))
 
 
 def to_subscription_entity(model):
