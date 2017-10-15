@@ -24,8 +24,8 @@ from .local import release_context, context
 log = structlog.get_logger(__name__)
 
 
-anonymous = Account(
-    id=None, username=None, permissions=None, is_admin=True)
+anonymous_full_access = Account(
+    id=None, username=None, permissions={}, is_admin=True)
 
 
 def create_app(server):
@@ -77,7 +77,7 @@ def _server_wrapper(server):
 
                 if not service.authentication_required:
                     # if service is not protected, full access
-                    context.account = anonymous
+                    context.account = anonymous_full_access
 
                 if not service.available:
                     raise_failure("The service is not available")
@@ -204,12 +204,13 @@ def handle_status_exception(error):
 
 
 def handle_internal_error(error):
+    from opentaxii.http import server
     log.error('Internal error', exc_info=True)
 
     if 'application/xml' not in request.accept_mimetypes:
         return 'Unacceptable', 406
 
-    if context.server.config['return_server_error_details']:
+    if server.config['return_server_error_details']:
         message = "Server error occurred: {}".format(error)
     else:
         message = "Server error occurred"
