@@ -10,7 +10,7 @@ from opentaxii.taxii import exceptions
 from utils import prepare_headers, as_tm
 from fixtures import (
     CUSTOM_CONTENT_BINDING, CONTENT, MESSAGE_ID,
-    SERVICES, COLLECTIONS_A, COLLECTIONS_B,
+    COLLECTIONS_A, COLLECTIONS_B,
     CONTENT_BINDING_SUBTYPE, INVALID_CONTENT_BINDING,
     COLLECTION_OPEN, COLLECTION_ONLY_STIX)
 
@@ -49,15 +49,13 @@ def make_inbox_message(version, blocks=None, dest_collection=None):
 
 
 @pytest.fixture(autouse=True)
-def prepare_server(server):
-    server.persistence.create_services_from_object(SERVICES)
-
+def prepare_server(server, services):
     from opentaxii.persistence.sqldb.models import DataCollection
 
     coll_mapping = {
         'inbox-A': COLLECTIONS_A,
-        'inbox-B': COLLECTIONS_B
-    }
+        'inbox-B': COLLECTIONS_B}
+
     names = set()
     for service, collections in coll_mapping.items():
         for coll in collections:
@@ -67,7 +65,7 @@ def prepare_server(server):
             else:
                 coll = DataCollection.query.filter_by(name=coll.name).one()
 
-            server.persistence.attach_collection_to_services(
+            server.persistence.set_collection_services(
                 coll.id, service_ids=[service])
 
 
@@ -186,7 +184,7 @@ def test_inbox_req_coll_content_bindings_filtering(server, version, https):
     headers = prepare_headers(version, https)
 
     blocks = [
-        make_content(version, content_binding=CUSTOM_CONTENT_BINDING),
+        make_content(version, content_binding=CB_STIX_XML_111),
         make_content(version, content_binding=INVALID_CONTENT_BINDING),
     ]
 

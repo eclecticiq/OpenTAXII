@@ -4,13 +4,13 @@ from libtaxii.constants import SVC_INBOX
 
 from utils import prepare_headers, as_tm
 from fixtures import (
-    SERVICES, MESSAGE_ID, INSTANCES_CONFIGURED,
+    MESSAGE_ID, INSTANCES_CONFIGURED,
     INBOX_A, INBOX_B)
 
 
 @pytest.fixture(autouse=True)
-def prepare_server(server):
-    server.persistence.create_services_from_object(SERVICES)
+def server_with_services(server, services):
+    pass
 
 
 @pytest.mark.parametrize("https", [True, False])

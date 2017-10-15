@@ -8,26 +8,21 @@ from opentaxii.taxii import exceptions
 
 from utils import (
     prepare_headers, as_tm,
-    prepare_subscription_request as prepare_request
-)
+    prepare_subscription_request as prepare_request)
 
 from fixtures import (
-    SERVICES, CUSTOM_CONTENT_BINDING,
-    COLLECTION_OPEN, SUBSCRIPTION_MESSAGE,
+    CUSTOM_CONTENT_BINDING, COLLECTION_OPEN, SUBSCRIPTION_MESSAGE,
     COLLECTIONS_B)
 
 ASSIGNED_SERVICES = ['collection-management-A', 'poll-A']
 
 
 @pytest.fixture(autouse=True)
-def prepare_server(server):
-    server.persistence.create_services_from_object(SERVICES)
-
+def prepare_server(server, services):
     for coll in COLLECTIONS_B:
         coll = server.persistence.create_collection(coll)
-        server.persistence.attach_collection_to_services(
+        server.persistence.set_collection_services(
             coll.id, service_ids=ASSIGNED_SERVICES)
-
     return server
 
 
