@@ -238,7 +238,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
             else entity.original_message)
 
         message = InboxMessage(
-            message_id=message_id,
+            message_id=entity.message_id,
             original_message=content,
             content_block_count=entity.content_block_count,
             destination_collections=names,
