@@ -1,5 +1,6 @@
 import json
 import structlog
+import six
 from sqlalchemy import func, and_, or_
 
 from opentaxii.persistence import OpenTAXIIPersistenceAPI
@@ -231,23 +232,23 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         begin = entity.exclusive_begin_timestamp_label
         end = entity.inclusive_end_timestamp_label
 
+        content = (
+            entity.original_message.encode('utf-8')
+            if isinstance(entity.original_message, six.string_types)
+            else entity.original_message)
+
         message = InboxMessage(
-            original_message=entity.original_message,
+            original_message=content,
             content_block_count=entity.content_block_count,
             destination_collections=names,
-
             service_id=entity.service_id,
-
             result_id=entity.result_id,
             record_count=entity.record_count,
             partial_count=entity.partial_count,
-
             subscription_collection_name=entity.subscription_collection_name,
             subscription_id=entity.subscription_id,
-
             exclusive_begin_timestamp_label=begin,
-            inclusive_end_timestamp_label=end
-        )
+            inclusive_end_timestamp_label=end)
 
         self.db.session.add(message)
         self.db.session.commit()
@@ -265,13 +266,17 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
             binding = None
             subtype = None
 
+        content = (
+            entity.content.encode('utf-8')
+            if isinstance(entity.content, six.string_types)
+            else entity.content)
+
         content = ContentBlock(
             timestamp_label=entity.timestamp_label,
             inbox_message_id=entity.inbox_message_id,
-            content=entity.content,
+            content=content,
             binding_id=binding,
-            binding_subtype=subtype
-        )
+            binding_subtype=subtype)
 
         self.db.session.add(content)
         self.db.session.commit()

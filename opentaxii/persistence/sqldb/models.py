@@ -51,7 +51,7 @@ class ContentBlock(AbstractModel):
             'inbox_messages.id', onupdate='CASCADE', ondelete='CASCADE'),
         nullable=True)
 
-    content = schema.Column(types.Text)
+    content = schema.Column(types.LargeBinary, nullable=False)
 
     binding_id = schema.Column(types.String(300), index=True)
     binding_subtype = schema.Column(types.String(300), index=True)
@@ -157,7 +157,7 @@ class InboxMessage(AbstractModel):
     inclusive_end_timestamp_label = schema.Column(
         types.DateTime(timezone=True), nullable=True)
 
-    original_message = schema.Column(types.Text, nullable=False)
+    original_message = schema.Column(types.LargeBinary, nullable=False)
     content_block_count = schema.Column(types.Integer)
 
     # FIXME: should be a proper reference ID

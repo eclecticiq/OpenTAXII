@@ -145,7 +145,7 @@ def test_poll_get_content(server, version, https):
 
     block = response.content_blocks[0]
 
-    assert original.content == block.content
+    assert original.content == block.content.encode('utf-8')
     assert original.timestamp_label == block.timestamp_label
 
     # right collection and request with wrong content_type

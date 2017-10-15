@@ -92,23 +92,18 @@ class PollRequest11Handler(BaseMessageHandler):
         else:
             params = request.poll_parameters
             raw_bindings = params.content_bindings
-
             requested_bindings = parse_content_bindings(
                 raw_bindings, version=11)
-
             content_bindings = collection.get_matching_bindings(
                 requested_bindings)
 
             if requested_bindings and not content_bindings:
-
                 supported = content_binding_entities_to_content_bindings(
                     collection.supported_content, version=11)
-
                 raise StatusMessageException(
                     ST_UNSUPPORTED_CONTENT_BINDING,
                     in_response_to=request.message_id,
                     status_details={SD_SUPPORTED_CONTENT: supported})
-
             response_type = params.response_type
             allow_async = params.allow_asynch
 
@@ -128,18 +123,15 @@ class PollRequest11Handler(BaseMessageHandler):
             in_response_to=request.message_id,
             allow_async=allow_async,
             return_content=(response_type == RT_FULL),
-            subscription_id=request.subscription_id
-        )
+            subscription_id=request.subscription_id)
 
     @classmethod
-    def prepare_poll_response(cls, service, collection, in_response_to,
-                              timeframe=None, content_bindings=None,
-                              result_part=1, allow_async=False,
-                              return_content=True, result_id=None,
-                              subscription_id=None):
+    def prepare_poll_response(
+            cls, service, collection, in_response_to, timeframe=None,
+            content_bindings=None, result_part=1, allow_async=False,
+            return_content=True, result_id=None, subscription_id=None):
 
         timeframe = timeframe or (None, None)
-
         try:
             content_blocks = service.get_content_blocks(
                 collection,
@@ -150,9 +142,8 @@ class PollRequest11Handler(BaseMessageHandler):
             if not allow_async:
                 message = ("The content is not available now and "
                            "the request has allow_asynch set to false")
-
-                raise_failure(message=message,
-                              in_response_to=in_response_to)
+                raise_failure(
+                    message=message, in_response_to=in_response_to)
 
             result_set = service.create_result_set(
                 collection, timeframe=timeframe,

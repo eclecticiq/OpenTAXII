@@ -77,7 +77,7 @@ class PlainRenderer(object):
                 logger=logger,
                 level=level,
                 event=event,
-                pairs=('{{}}'.format(pairs) if pairs else "")))
+                pairs=('{{{}}}'.format(pairs) if pairs else "")))
 
 
 def configure_logging(logging_levels, plain=False):

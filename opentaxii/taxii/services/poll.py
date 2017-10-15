@@ -59,24 +59,20 @@ class PollService(TAXIIService):
 
         return offset, limit
 
-    def get_content_blocks_count(self, collection, timeframe=None,
-                                 content_bindings=None):
-
+    def get_content_blocks_count(
+            self, collection, timeframe=None, content_bindings=None):
         start_time, end_time = timeframe or (None, None)
-
         return self.server.persistence.get_content_blocks_count(
             collection_id=collection.id,
             start_time=start_time,
             end_time=end_time,
-            bindings=content_bindings
-        )
+            bindings=content_bindings)
 
-    def get_content_blocks(self, collection, timeframe=None,
-                           content_bindings=None, part_number=1):
-
+    def get_content_blocks(
+            self, collection, timeframe=None, content_bindings=None,
+            part_number=1):
         start_time, end_time = timeframe or (None, None)
         offset, limit = self.get_offset_limit(part_number)
-
         return self.server.persistence.get_content_blocks(
             collection_id=collection.id,
             start_time=start_time,

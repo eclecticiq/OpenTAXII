@@ -1,3 +1,4 @@
+import six
 import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10
 
@@ -306,25 +307,28 @@ def content_block_to_content_block_entity(content_block, version,
 
 
 def content_block_entity_to_content_block(entity, version):
-
     content_bindings = content_binding_entity_to_content_binding(
         entity.content_binding,
         version=version)
 
+    # Libtaxii requires content to be unicode
+    content = (
+        entity.content
+        if isinstance(entity.content, six.string_types)
+        else entity.content.decode('utf-8'))
+
     if version == 10:
         return tm10.ContentBlock(
             content_binding=content_bindings,
-            content=entity.content,
-            timestamp_label=entity.timestamp_label,
-        )
+            content=content,
+            timestamp_label=entity.timestamp_label)
 
     elif version == 11:
         return tm11.ContentBlock(
             content_binding=content_bindings,
-            content=entity.content,
+            content=content,
             timestamp_label=entity.timestamp_label,
-            message=entity.message,
-        )
+            message=entity.message)
 
 
 def dict_to_service_entity(blob):
