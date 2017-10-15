@@ -1,5 +1,7 @@
 import structlog
 
+from opentaxii.local import context
+
 import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10
 from libtaxii.constants import (
@@ -143,51 +145,56 @@ class PollRequest11Handler(BaseMessageHandler):
 
         timeframe = timeframe or (None, None)
 
-        if not any(timeframe) and not content_bindings:
-            total_count = collection.volume or 0
-        else:
-            try:
-                total_count = service.get_content_blocks_count(
-                    collection, timeframe=timeframe,
-                    content_bindings=content_bindings)
-            except ResultsNotReady:
-                if not allow_async:
-                    message = ("The content is not available now and "
-                               "the request has allow_asynch set to false")
+        try:
+            content_blocks = service.get_content_blocks(
+                collection,
+                timeframe=timeframe,
+                content_bindings=content_bindings,
+                part_number=result_part)
+        except ResultsNotReady:
+            if not allow_async:
+                message = ("The content is not available now and "
+                           "the request has allow_asynch set to false")
 
-                    raise_failure(message=message,
-                                  in_response_to=in_response_to)
+                raise_failure(message=message,
+                              in_response_to=in_response_to)
 
-                result_set = service.create_result_set(
-                    collection, timeframe=timeframe,
-                    content_bindings=content_bindings)
+            result_set = service.create_result_set(
+                collection, timeframe=timeframe,
+                content_bindings=content_bindings)
 
-                if not result_set:
-                    raise StatusMessageException(
-                        ST_DENIED,
-                        message="Poll fulfilment is not supported",
-                        in_response_to=in_response_to)
+            if not result_set:
+                raise StatusMessageException(
+                    ST_DENIED,
+                    message="Poll fulfilment is not supported",
+                    in_response_to=in_response_to)
 
-                return tm11.StatusMessage(
-                    message_id=service.generate_id(),
-                    in_response_to=in_response_to,
-                    status_type=ST_PENDING,
-                    status_detail={
-                        SD_ESTIMATED_WAIT: service.wait_time,
-                        SD_RESULT_ID: result_set.id,
-                        SD_WILL_PUSH: service.can_push
-                    }
-                )
+            return tm11.StatusMessage(
+                message_id=service.generate_id(),
+                in_response_to=in_response_to,
+                status_type=ST_PENDING,
+                status_detail={
+                    SD_ESTIMATED_WAIT: service.wait_time,
+                    SD_RESULT_ID: result_set.id,
+                    SD_WILL_PUSH: service.can_push})
 
         # TODO: temporary fix, pending:
         # https://github.com/TAXIIProject/libtaxii/issues/191
         result_part = int(result_part)
 
-        # dividing instead of multiplying to be safe from overflow
-        has_more = (float(total_count) / service.max_result_size) > result_part
-
-        capped_count = min(service.max_result_count, total_count)
-        is_partial = (capped_count < total_count)
+        if context.server.config['count_blocks_in_poll_responses']:
+            # dividing instead of multiplying to be safe from overflow
+            total_count = service.get_content_blocks_count(
+                collection, timeframe=timeframe,
+                content_bindings=content_bindings)
+            has_more = (
+                (float(total_count) / service.max_result_size) > result_part)
+            capped_count = min(service.max_result_count, total_count)
+            is_partial = (capped_count < total_count)
+        else:
+            has_more = len(content_blocks) == service.max_result_size
+            capped_count = None
+            is_partial = False
 
         if has_more and not result_id:
             result_set = service.create_result_set(
@@ -207,18 +214,13 @@ class PollRequest11Handler(BaseMessageHandler):
             inclusive_end_timestamp_label=timeframe[1],
             # TODO: Temporararily make capped_count an int, pending:
             # https://github.com/TAXIIProject/libtaxii/issues/191
-            record_count=tm11.RecordCount(int(capped_count), is_partial),
-            subscription_id=subscription_id
-        )
+            record_count=(
+                tm11.RecordCount(int(capped_count), is_partial)
+                if capped_count is not None
+                else None),
+            subscription_id=subscription_id)
 
         if return_content:
-
-            content_blocks = service.get_content_blocks(
-                collection,
-                timeframe=timeframe,
-                content_bindings=content_bindings,
-                part_number=result_part)
-
             for block in content_blocks:
                 response.content_blocks.append(
                     content_block_entity_to_content_block(block, version=11))

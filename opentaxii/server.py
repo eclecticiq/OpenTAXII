@@ -33,12 +33,11 @@ class TAXIIServer(object):
     def __init__(self, config):
 
         self.config = config
-
         self.persistence = PersistenceManager(
             server=self, api=initialize_api(config['persistence_api']))
 
         self.auth = AuthManager(
-            api=initialize_api(config['auth_api']))
+            server=self, api=initialize_api(config['auth_api']))
 
         signal_hooks = config['hooks']
         if signal_hooks:

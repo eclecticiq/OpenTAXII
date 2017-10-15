@@ -57,7 +57,6 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         return conv.to_service_entity(Service.query.get(service_id))
 
     def update_service(self, obj):
-
         service = Service.query.get(obj.id) if obj.id else None
         if service:
             service.type = obj.type
@@ -66,29 +65,61 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
             service = Service(
                 id=obj.id, type=obj.type,
                 properties=obj.properties)
-
-        service = self.db.session.add(service)
+        self.db.session.add(service)
         self.db.session.commit()
-
         return conv.to_service_entity(service)
 
     def create_service(self, entity):
         return self.update_service(entity)
 
-    def get_collections(self, service_id):
-        service = Service.query.get(service_id)
-        return [
-            conv.to_collection_entity(c) for c in service.collections]
+    def get_collections(self, service_id=None):
+        if service_id:
+            service = Service.query.get(service_id)
+            collections = service.collections
+        else:
+            collections = DataCollection.query.all()
+        return [conv.to_collection_entity(c) for c in collections]
 
-    def get_collection(self, name, service_id):
-
-        collection = (
-            DataCollection.query.join(Service.collections)
-                                .filter(Service.id == service_id)
-                                .filter(DataCollection.name == name)).first()
-
+    def get_collection(self, name, service_id=None):
+        if service_id:
+            collection = (
+                DataCollection.query
+                .join(Service.collections)
+                .filter(Service.id == service_id)
+                .filter(DataCollection.name == name).one_or_none())
+        else:
+            collection = (
+                DataCollection.query
+                .filter(DataCollection.name == name).one_or_none())
         if collection:
             return conv.to_collection_entity(collection)
+
+    def update_collection(self, entity):
+        _bindings = conv.serialize_content_bindings(entity.supported_content)
+        collection = DataCollection.query.get(entity.id)
+        if not collection:
+            raise ValueError(
+                "DataCollection with id {} is not found".format(entity.id))
+        collection.name = entity.name
+        collection.type = entity.type
+        collection.description = entity.description
+        collection.available = entity.available
+        collection.accept_all_content = entity.accept_all_content
+        collection.bindings = _bindings
+        self.db.session.commit()
+        return conv.to_collection_entity(collection)
+
+    def delete_collection(self, collection_name):
+        collection = (
+            DataCollection.query.filter(
+                DataCollection.name == collection_name).one())
+        self.db.session.delete(collection)
+        self.db.session.commit()
+
+    def delete_service(self, service_id):
+        service = Service.query.get(service_id)
+        self.db.session.delete(service)
+        self.db.session.commit()
 
     def _get_content_query(self, collection_id=None, start_time=None,
                            end_time=None, bindings=None, count=False):
@@ -172,23 +203,23 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
         return conv.to_collection_entity(collection)
 
-    def attach_collection_to_services(self, collection_id, service_ids):
-
+    def set_collection_services(self, collection_id, service_ids):
         collection = DataCollection.query.get(collection_id)
-
         if not collection:
-            raise ValueError("Collection with id {} does not exist"
-                             .format(collection_id))
-
-        services = Service.query.filter(Service.id.in_(service_ids))
-
-        collection.services.extend(services)
-
+            raise ValueError(
+                "Collection with id {} does not exist".format(collection_id))
+        services = (
+            Service.query.filter(Service.id.in_(service_ids)).all()
+            if service_ids else [])
+        missing_services = set(service_ids) - {s.id for s in services}
+        if missing_services:
+            raise ValueError(
+                "Services with ids {} do not exist".format(missing_services))
+        collection.services = services
         self.db.session.add(collection)
         self.db.session.commit()
-
-        log.debug("collection.attached", collection=collection.id,
-                  collection_name=collection.name, services=service_ids)
+        log.debug("collection.services_set", id=collection.id,
+                  name=collection.name, services=service_ids)
 
     def create_inbox_message(self, entity):
 

@@ -13,7 +13,8 @@ class AuthManager(object):
         instance of Auth API class
     '''
 
-    def __init__(self, api):
+    def __init__(self, server, api):
+        self.server = server
         self.api = api
 
     def authenticate(self, username, password):
@@ -37,13 +38,24 @@ class AuthManager(object):
         '''
         return self.api.get_account(token)
 
-    def create_account(self, username, password):
+    def update_account(self, account, password):
         '''Create an account.
 
         NOTE: Additional method that is only used in the helper scripts
         shipped with OpenTAXII.
         '''
-        account = self.api.create_account(username, password)
-        log.info("account.created", username=account.username)
-
+        for colname, permission in list(account.permissions.items()):
+            collection = self.server.persistence.get_collection(colname)
+            if not collection:
+                log.warning(
+                    "update_account.unknown_collection",
+                    collection=colname)
+                account.permissions.pop(colname)
+        account = self.api.update_account(account, password)
         return account
+
+    def get_accounts(self):
+        return self.api.get_accounts()
+
+    def delete_account(self, username):
+        return self.api.delete_account(username)

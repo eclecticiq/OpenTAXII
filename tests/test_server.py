@@ -1,5 +1,7 @@
 import pytest
 
+from opentaxii.taxii.converters import dict_to_service_entity
+
 from fixtures import DOMAIN
 
 INBOX = dict(
@@ -36,8 +38,9 @@ SERVICES = INTERNAL_SERVICES + [DISCOVERY_EXTERNAL]
 
 
 @pytest.fixture(autouse=True)
-def prepare_server(server):
-    server.persistence.create_services_from_object(SERVICES)
+def local_services(server):
+    for service in SERVICES:
+        server.persistence.update_service(dict_to_service_entity(service))
 
 
 def test_services_configured(server):

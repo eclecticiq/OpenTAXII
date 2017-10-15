@@ -1,8 +1,12 @@
 ---
 
 domain: "localhost:9000"
+
 support_basic_auth: yes
 save_raw_inbox_messages: yes
+xml_parser_supports_huge_tree: yes
+count_blocks_in_poll_responses: no
+return_server_error_details: no
 
 persistence_api:
   class: opentaxii.persistence.sqldb.SQLDatabaseAPI
@@ -21,6 +25,5 @@ logging:
   opentaxii: info
   root: info
 
-xml_parser_supports_huge_tree: yes
-
 hooks:
+

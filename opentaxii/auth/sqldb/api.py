@@ -32,18 +32,14 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
     """
 
     def __init__(self, db_connection, create_tables=False, secret=None):
-
         self.db = SQLAlchemyDB(
             db_connection, Base, session_options={
-                'autocommit': False, 'autoflush': True,
-            })
+                'autocommit': False, 'autoflush': True})
         if create_tables:
             self.db.create_all_tables()
-
         if not secret:
             raise ValueError('Secret is not defined for %s.%s' % (
                 self.__module__, self.__class__.__name__))
-
         self.secret = secret
 
     def init_app(self, app):
@@ -54,35 +50,39 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
             account = Account.query.filter_by(username=username).one()
         except exc.NoResultFound:
             return
-
         if not account.is_password_valid(password):
             return
-
         return self._generate_token(account.id, ttl=TOKEN_TTL)
 
     def get_account(self, token):
-
         account_id = self._get_account_id(token)
-
         if not account_id:
             return
-
         account = Account.query.get(account_id)
-
         if not account:
             return
+        return account_to_account_entity(account)
 
-        return AccountEntity(id=account.id, username=account.username)
+    def delete_account(self, username):
+        account = Account.query.filter_by(username=username).one_or_none()
+        if account:
+            self.db.session.delete(account)
+            self.db.session.commit()
 
-    def create_account(self, username, password):
+    def get_accounts(self):
+        return [
+            account_to_account_entity(account)
+            for account in Account.query.all()]
 
-        account = Account(username=username)
+    def update_account(self, obj, password):
+        account = Account.query.filter_by(username=obj.username).one_or_none()
+        if not account:
+            account = Account(username=obj.username)
+            self.db.session.add(account)
         account.set_password(password)
-
-        self.db.session.add(account)
+        account.permissions = obj.permissions
         self.db.session.commit()
-
-        return AccountEntity(id=account.id, username=username)
+        return account_to_account_entity(account)
 
     def _generate_token(self, account_id, ttl=TOKEN_TTL):
         exp = datetime.utcnow() + timedelta(minutes=ttl)
@@ -101,3 +101,11 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
             return
 
         return payload.get('account_id')
+
+
+def account_to_account_entity(account):
+    return AccountEntity(
+        id=account.id,
+        username=account.username,
+        is_admin=account.is_admin,
+        permissions=account.permissions)

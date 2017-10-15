@@ -4,10 +4,8 @@ from opentaxii.taxii import entities
 
 from utils import prepare_headers, as_tm, persist_content
 from fixtures import (
-    SERVICES, COLLECTIONS_B, MESSAGE_ID,
-    COLLECTION_OPEN, COLLECTION_ONLY_STIX, COLLECTION_STIX_AND_CUSTOM,
-    COLLECTION_DISABLED
-)
+    SERVICES, COLLECTIONS_B, MESSAGE_ID, COLLECTION_OPEN, COLLECTION_ONLY_STIX,
+    COLLECTION_STIX_AND_CUSTOM, COLLECTION_DISABLED)
 
 ASSIGNED_SERVICES = ['collection-management-A', 'inbox-A', 'inbox-B', 'poll-A']
 
@@ -23,12 +21,10 @@ ASSIGNED_SUBSCTRIPTION_INSTANCES = sum(
 
 
 @pytest.fixture(autouse=True)
-def prepare_server(server):
-    server.persistence.create_services_from_object(SERVICES)
-
+def prepare_server(server, services):
     for coll in COLLECTIONS_B:
         coll = server.persistence.create_collection(coll)
-        server.persistence.attach_collection_to_services(
+        server.persistence.set_collection_services(
             coll.id, service_ids=ASSIGNED_SERVICES)
 
 

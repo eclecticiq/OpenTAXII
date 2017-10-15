@@ -30,10 +30,19 @@ class OpenTAXIIAuthAPI(object):
         '''
         raise NotImplementedError()
 
-    def create_account(self, username, password):
+    def update_account(self, account, password):
         '''Create an account.
 
-        NOTE: Additional method that is only used in the helper scripts
-        shipped with OpenTAXII.
+        :param str username: username
+        :param str password: password
+
+        :return: an account entity
+        :rtype: `opentaxii.entities.Account`
         '''
+        raise NotImplementedError()
+
+    def get_accounts(self):
+        raise NotImplementedError()
+
+    def delete_account(self, username):
         raise NotImplementedError()

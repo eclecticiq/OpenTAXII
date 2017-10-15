@@ -44,12 +44,10 @@ class InboxService(TAXIIService):
         self.destination_collection_required = destination_collection_required
 
     def is_content_supported(self, content_binding, version=None):
-
         if self.accept_all_content:
             return True
-
-        return is_content_supported(self.supported_content, content_binding,
-                                    version=version)
+        return is_content_supported(
+            self.supported_content, content_binding, version=version)
 
     def get_destination_collections(self):
         return self.server.persistence.get_collections(self.id)
@@ -85,9 +83,8 @@ class InboxService(TAXIIService):
             return []
 
         collections = []
-
-        destinations_map = {c.name: c
-                            for c in self.get_destination_collections()}
+        destinations_map = {
+            c.name: c for c in self.get_destination_collections()}
 
         for name in name_list:
             if name in destinations_map:

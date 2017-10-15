@@ -46,6 +46,24 @@ class ContentBindingEntity(Entity):
         self.subtypes = subtypes or []
 
 
+def deserialize_content_bindings(supported_content):
+    bindings = []
+    for content in (supported_content or []):
+        if not content:
+            continue
+        if isinstance(content, six.string_types):
+            binding = ContentBindingEntity(content)
+        elif isinstance(content, tuple):
+            bid, subtypes = content
+            binding = ContentBindingEntity(bid, subtypes=subtypes)
+        elif isinstance(content, ContentBindingEntity):
+            binding = content
+        else:
+            raise ValueError('Unknown content binding "%s"' % content)
+        bindings.append(binding)
+    return bindings
+
+
 class CollectionEntity(Entity):
     '''TAXII Collection entity.
 
@@ -73,28 +91,11 @@ class CollectionEntity(Entity):
         self.volume = volume
         self.description = description
         self.accept_all_content = accept_all_content
-
         if type not in [self.TYPE_FEED, self.TYPE_SET]:
             raise ValueError('Unknown collection type "%s"' % type)
-
         self.type = type
-
-        self.supported_content = []
-        for content in (supported_content or []):
-            if not content:
-                continue
-
-            if isinstance(content, six.string_types):
-                binding = ContentBindingEntity(content)
-            elif isinstance(content, tuple):
-                bid, subtypes = content
-                binding = ContentBindingEntity(bid, subtypes=subtypes)
-            elif isinstance(content, ContentBindingEntity):
-                binding = content
-            else:
-                raise ValueError('Unknown content binding "%s"' % content)
-
-            self.supported_content.append(binding)
+        self.supported_content = (
+            deserialize_content_bindings(supported_content))
 
     def is_content_supported(self, content_binding):
         if self.accept_all_content:

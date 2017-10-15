@@ -2,6 +2,7 @@ import pytest
 
 from libtaxii.constants import ST_FAILURE, ST_BAD_MESSAGE
 from opentaxii.taxii.http import HTTP_X_TAXII_SERVICES
+from opentaxii.taxii.converters import dict_to_service_entity
 
 from utils import prepare_headers, is_headers_valid, as_tm
 
@@ -37,14 +38,14 @@ DISCOVERY_NOT_AVAILABLE = dict(
 )
 
 SERVICES = [INBOX, DISCOVERY, DISCOVERY_NOT_AVAILABLE]
-
 INSTANCES_CONFIGURED = sum(len(s['protocol_bindings']) for s in SERVICES)
 MESSAGE_ID = '123'
 
 
 @pytest.fixture(autouse=True)
-def prepare_server(server):
-    server.persistence.create_services_from_object(SERVICES)
+def local_services(server):
+    for service in SERVICES:
+        server.persistence.update_service(dict_to_service_entity(service))
 
 
 def test_root_get(client):

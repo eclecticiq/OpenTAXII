@@ -1,9 +1,8 @@
 import structlog
+from opentaxii.local import context
 from opentaxii.signals import (
     CONTENT_BLOCK_CREATED, INBOX_MESSAGE_CREATED,
-    SUBSCRIPTION_CREATED
-)
-from opentaxii.taxii.converters import blob_to_service_entity
+    SUBSCRIPTION_CREATED)
 
 log = structlog.getLogger(__name__)
 
@@ -22,49 +21,56 @@ class PersistenceManager(object):
         self.server = server
         self.api = api
 
-    # Methods only used in the CLI scripts provided with OpenTAXII.
+    def create_service(self, service_entity):
+        '''Create service.
 
-    def create_service(self, entity):
-        '''Create a service.
+        :param `opentaxii.taxii.entities.ServiceEntity` service_entity:
+            service entity object
+
+        :return: created collection entity
+        :rtype: :py:class:`opentaxii.taxii.entities.ServiceEntity`
+        '''
+        return self.api.create_service(service_entity)
+
+    def update_service(self, service_entity):
+        '''Update service.
+
+        :param `opentaxii.taxii.entities.ServiceEntity` service_entity:
+            service entity object
+
+        :return: created collection entity
+        :rtype: :py:class:`opentaxii.taxii.entities.ServiceEntity`
+        '''
+        return self.api.update_service(service_entity)
+
+    def delete_service(self, service_id):
+        '''Delete service.
+
+        :param `opentaxii.taxii.entities.ServiceEntity` service_entity:
+            service entity object
+        '''
+        return self.api.delete_service(service_id)
+
+    def set_collection_services(self, collection_id, service_ids):
+        '''Set collection's services.
 
         NOTE: Additional method that is only used in the helper scripts
         shipped with OpenTAXII.
         '''
-        return self.api.create_service(entity)
-
-    def attach_collection_to_services(self, collection_id, service_ids):
-        '''Attach collection to the services.
-
-        NOTE: Additional method that is only used in the helper scripts
-        shipped with OpenTAXII.
-        '''
-        return self.api.attach_collection_to_services(
+        return self.api.set_collection_services(
             collection_id, service_ids)
 
     def create_collection(self, entity):
         '''Create a collection.
 
-        NOTE: Additional method that is only used in the helper scripts
-        shipped with OpenTAXII.
+        :param `opentaxii.taxii.entities.CollectionEntity` collection_entity:
+            collection entity object
+
+        :return: created collection entity
+        :rtype: :py:class:`opentaxii.taxii.entities.CollectionEntity`
         '''
         collection = self.api.create_collection(entity)
-        log.info("collection.created", collection=collection.name)
         return collection
-
-    def create_services_from_object(self, services_config):
-        '''Create services from configuration object and persis them.
-
-        NOTE: Additional method that is only used in the helper scripts
-        shipped with OpenTAXII.
-        '''
-
-        for blob in services_config:
-            service = blob_to_service_entity(blob)
-            self.create_service(service)
-
-            log.info("service.created", id=service.id, type=service.type)
-
-    # =================================================================
 
     def get_services(self):
         '''Get configured services.
@@ -85,24 +91,28 @@ class PersistenceManager(object):
         :return: list of service entities.
         :rtype: list of :py:class:`opentaxii.taxii.entities.ServiceEntity`
         '''
+        if context.account.can_read(collection.name):
+            return self.api.get_services(collection_id=collection.id)
 
-        return self.api.get_services(collection_id=collection.id)
-
-    def get_collections(self, service_id):
-        '''Get the collections associated with a service.
+    def get_collections(self, service_id=None):
+        '''Get the collections. If `service_id` is provided, return collection
+        attached to a service.
 
         :param str service_id: ID of the service in question
 
         :return: list of collection entities.
         :rtype: list of :py:class:`opentaxii.taxii.entities.CollectionEntity`
         '''
+        collections = [
+            collection
+            for collection in self.api.get_collections(service_id=service_id)
+            if context.account.can_read(collection.name)]
+        return collections
 
-        return self.api.get_collections(service_id)
-
-    def get_collection(self, name, service_id):
+    def get_collection(self, name, service_id=None):
         '''Get a collection by name and service ID.
 
-        According to TAXII spec collection name is unique per service instance.
+        Collection name is unique globally, so can be used as a key.
         Method retrieves collection entity using collection name
         ``name`` and service ID ``service_id`` as a composite key.
 
@@ -112,7 +122,20 @@ class PersistenceManager(object):
         :return: collection entity
         :rtype: :py:class:`opentaxii.taxii.entities.CollectionEntity`
         '''
-        return self.api.get_collection(name, service_id)
+        collection = self.api.get_collection(name, service_id=service_id)
+        if context.account.can_read(collection.name):
+            return collection
+
+    def update_collection(self, collection):
+        '''Update a collection
+
+        :param `opentaxii.taxii.entities.CollectionEntity` collection_entity:
+            collection entity object
+
+        :return: updated collection entity
+        :rtype: :py:class:`opentaxii.taxii.entities.CollectionEntity`
+        '''
+        return self.api.update_collection(collection)
 
     def create_inbox_message(self, entity):
         '''Create an inbox message.
@@ -150,18 +173,26 @@ class PersistenceManager(object):
         :return: updated content block entity
         :rtype: :py:class:`opentaxii.taxii.entities.ContentBlockEntity`
         '''
-
         if inbox_message_id:
             content.inbox_message_id = inbox_message_id
 
         collections = collections or []
-        collection_ids = [c.id for c in collections]
-        content = self.api.create_content_block(
-            content, collection_ids=collection_ids, service_id=service_id)
+        collection_ids = [
+            collection.id
+            for collection in collections
+            if context.account.can_modify(collection.name)]
 
-        CONTENT_BLOCK_CREATED.send(
-            self, content_block=content,
-            collection_ids=collection_ids, service_id=service_id)
+        if collection_ids:
+            content = self.api.create_content_block(
+                content, collection_ids=collection_ids, service_id=service_id)
+            CONTENT_BLOCK_CREATED.send(
+                self, content_block=content,
+                collection_ids=collection_ids, service_id=service_id)
+        else:
+            log.warning(
+                "create_content.unknown_collections",
+                collections=[c.name for c in collections],
+                user=context.account)
 
         return content
 
@@ -178,13 +209,11 @@ class PersistenceManager(object):
         :return: content block count
         :rtype: int
         '''
-
         return self.api.get_content_blocks_count(
             collection_id=collection_id,
             start_time=start_time,
             end_time=end_time,
-            bindings=bindings or [],
-        )
+            bindings=bindings or [])
 
     def get_content_blocks(self, collection_id, start_time=None, end_time=None,
                            bindings=None, offset=0, limit=None):
@@ -208,8 +237,7 @@ class PersistenceManager(object):
             end_time=end_time,
             bindings=bindings or [],
             offset=offset,
-            limit=limit,
-        )
+            limit=limit)
 
     def create_result_set(self, entity):
         '''Create a result set.

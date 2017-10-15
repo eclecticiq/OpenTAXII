@@ -1,6 +1,7 @@
 import pytest
 
 from opentaxii.taxii.http import HTTP_X_TAXII_CONTENT_TYPES
+from opentaxii.taxii.converters import dict_to_service_entity
 
 DISCOVERY = dict(
     id='discovery-A',
@@ -12,12 +13,11 @@ DISCOVERY = dict(
     authentication_required=False,
 )
 
-SERVICES = [DISCOVERY]
-
 
 @pytest.fixture(autouse=True)
-def prepare_server(server):
-    server.persistence.create_services_from_object(SERVICES)
+def local_services(server):
+    for service in [DISCOVERY]:
+        server.persistence.update_service(dict_to_service_entity(service))
 
 
 @pytest.mark.parametrize("https", [True, False])

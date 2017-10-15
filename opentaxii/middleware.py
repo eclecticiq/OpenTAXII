@@ -17,10 +17,15 @@ from .taxii.http import (
 )
 from .exceptions import UnauthorizedException, InvalidAuthHeader
 from .utils import parse_basic_auth_token
+from .entities import Account
 from .management import management
 from .local import release_context, context
 
 log = structlog.get_logger(__name__)
+
+
+anonymous = Account(
+    id=None, username=None, permissions=None, is_admin=True)
 
 
 def create_app(server):
@@ -61,21 +66,25 @@ def _server_wrapper(server):
     def wrapper(relative_path=""):
         relative_path = '/' + relative_path
         try:
+            services = server.get_services()
+            service = next(
+                (s for s in services if s.path == relative_path),
+                None)
+            if service:
+                if (service.authentication_required
+                        and context.account is None):
+                    raise UnauthorizedException()
 
-            for service in server.get_services():
-                if service.path == relative_path:
+                if not service.authentication_required:
+                    # if service is not protected, full access
+                    context.account = anonymous
 
-                    if (service.authentication_required and
-                            context.account is None):
-                        raise UnauthorizedException()
-
-                    if not service.available:
-                        raise_failure("The service is not available")
-
-                    if request.method == 'POST':
-                        return _process_with_service(service)
-                    elif request.method == 'OPTIONS':
-                        return _process_options_request(service)
+                if not service.available:
+                    raise_failure("The service is not available")
+                if request.method == 'POST':
+                    return _process_with_service(service)
+                elif request.method == 'OPTIONS':
+                    return _process_options_request(service)
         finally:
             release_context()
 
@@ -157,9 +166,7 @@ def _process_with_service(service):
         response_message.version, request.is_secure)
     validate_response_headers(response_headers)
 
-    # FIXME: pretty-printing should be configurable
     taxii_xml = response_message.to_xml(pretty_print=True)
-
     return make_taxii_response(taxii_xml, response_headers)
 
 
@@ -202,8 +209,12 @@ def handle_internal_error(error):
     if 'application/xml' not in request.accept_mimetypes:
         return 'Unacceptable', 406
 
-    new_error = FailureStatus("Error occured", e=error)
+    if context.server.config['return_server_error_details']:
+        message = "Server error occurred: {}".format(error)
+    else:
+        message = "Server error occurred"
 
+    new_error = FailureStatus(message, e=error)
     xml, headers = process_status_exception(
         new_error, request.headers, request.is_secure)
     return make_taxii_response(xml, headers)

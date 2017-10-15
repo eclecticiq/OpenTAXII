@@ -41,18 +41,16 @@ class InboxMessage11Handler(BaseMessageHandler):
                             .format(content_block.content_binding))
                 continue
 
-            supporting_collections = []
-            for collection in collections:
+            correct_binding_collections = [
+                c for c in collections
+                if c.is_content_supported(content_block.content_binding)]
 
-                if collection.is_content_supported(
-                        content_block.content_binding):
-
-                    supporting_collections.append(collection)
-
-            if len(supporting_collections) == 0 and not is_supported:
+            if len(correct_binding_collections) == 0:
                 # There's nothing to add this content block to
-                log.warning("No collection that support binding {} were found"
-                            .format(content_block.content_binding))
+                log.warning(
+                    "No accessible collection that support "
+                    "binding {} were found"
+                    .format(content_block.content_binding))
                 continue
 
             block = content_block_to_content_block_entity(
@@ -60,7 +58,7 @@ class InboxMessage11Handler(BaseMessageHandler):
 
             service.server.persistence.create_content(
                 block,
-                collections=supporting_collections,
+                collections=correct_binding_collections,
                 service_id=service.id,
                 inbox_message_id=inbox_message.id if inbox_message else None)
 

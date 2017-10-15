@@ -5,6 +5,7 @@ import base64
 
 from libtaxii.constants import ST_UNAUTHORIZED, ST_BAD_MESSAGE
 from opentaxii.taxii.http import HTTP_AUTHORIZATION
+from opentaxii.taxii.converters import dict_to_service_entity
 
 from utils import prepare_headers, is_headers_valid, as_tm
 
@@ -26,8 +27,6 @@ DISCOVERY = dict(
     authentication_required=True,
 )
 
-SERVICES = [INBOX, DISCOVERY]
-
 MESSAGE_ID = '123'
 
 USERNAME = 'some-username'
@@ -37,9 +36,16 @@ AUTH_PATH = '/management/auth'
 
 
 @pytest.fixture(autouse=True)
-def prepare_server(server):
-    server.persistence.create_services_from_object(SERVICES)
-    server.auth.create_account(USERNAME, PASSWORD)
+def local_services(server):
+    for service in [INBOX, DISCOVERY]:
+        server.persistence.update_service(dict_to_service_entity(service))
+
+
+@pytest.fixture(autouse=True)
+def test_account(server):
+    from opentaxii.entities import Account
+    account = Account(id=None, username=USERNAME, permissions={})
+    server.auth.update_account(account, PASSWORD)
 
 
 @pytest.mark.parametrize("https", [True, False])

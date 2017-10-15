@@ -327,10 +327,8 @@ def content_block_entity_to_content_block(entity, version):
         )
 
 
-def blob_to_service_entity(blob):
-
+def dict_to_service_entity(blob):
     properties = dict(blob)
     _id = properties.pop('id')
     _type = properties.pop('type')
-
     return ServiceEntity(id=_id, type=_type, properties=properties)
