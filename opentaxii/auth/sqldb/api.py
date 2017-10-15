@@ -81,6 +81,7 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
             self.db.session.add(account)
         account.set_password(password)
         account.permissions = obj.permissions
+        account.is_admin = obj.is_admin
         self.db.session.commit()
         return account_to_account_entity(account)
 
