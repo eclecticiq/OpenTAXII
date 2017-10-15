@@ -3,45 +3,114 @@ import pytest
 
 import base64
 
-from libtaxii.constants import ST_UNAUTHORIZED, ST_BAD_MESSAGE
+from libtaxii.constants import (
+    ST_UNAUTHORIZED, ST_BAD_MESSAGE, CB_STIX_XML_111)
 from opentaxii.taxii.http import HTTP_AUTHORIZATION
-from opentaxii.taxii.converters import dict_to_service_entity
+from opentaxii.utils import sync_conf_dict_into_db
 
 from utils import prepare_headers, is_headers_valid, as_tm
+from fixtures import VID_TAXII_HTTP_10
+from services.test_poll import prepare_request
+from services.test_inbox import make_inbox_message, make_content
 
-INBOX = dict(
+
+INBOX_OPEN = dict(
     id='inbox-A',
     type='inbox',
     description='inboxA description',
     address='/path/inbox',
-    authentication_required=True
-)
+    destination_collection_required=True,
+    authentication_required=False)
+
+INBOX_CLOSED = dict(
+    id='inbox-A',
+    type='inbox',
+    description='inboxA description',
+    address='/path/inbox',
+    destination_collection_required=True,
+    authentication_required=True)
 
 DISCOVERY = dict(
     id='discovery-A',
     type='discovery',
     description='discoveryA description',
     address='/path/discovery',
-    advertised_services=['inboxA', 'discoveryA'],
-    protocol_bindings=['urn:taxii.mitre.org:protocol:http:1.0'],
-    authentication_required=True,
-)
+    advertised_services=['inbox-A', 'poll-A'],
+    protocol_bindings=[VID_TAXII_HTTP_10],
+    authentication_required=True)
 
-MESSAGE_ID = '123'
+POLL_CLOSED = dict(
+    id='poll-A',
+    type='poll',
+    description='Poll service description',
+    address='/path/poll-a',
+    protocol_bindings=[VID_TAXII_HTTP_10],
+    authentication_required=True,
+    max_result_size=100,
+    max_result_count=10)
+
+POLL_OPEN = dict(
+    id='poll-B',
+    type='poll',
+    description='Poll service description',
+    address='/path/poll-b',
+    protocol_bindings=[VID_TAXII_HTTP_10],
+    authentication_required=False,  # <- open for all
+    max_result_size=100,
+    max_result_count=10)
+
+COLLECTIONS = [
+    {'name': 'collection-1',
+     'available': True,
+     'accept_all_content': True,
+     'type': 'DATA_FEED',
+     'service_ids': ['discovery-A', 'inbox-A', 'poll-A', 'poll-B']},
+    {'name': 'collection-2',
+     'available': True,
+     'accept_all_content': True,
+     'type': 'DATA_FEED',
+     'service_ids': ['discovery-A', 'inbox-A', 'poll-A', 'poll-B']}]
 
 USERNAME = 'some-username'
 PASSWORD = 'some-password'
+
+ACCOUNTS = [
+    {'username': 'johnny',
+     'password': 'johnny',
+     'permissions': {
+         'collection-1': 'read',
+         'collection-2': 'modify'}},
+    {'username': 'billy',
+     'password': 'billy',
+     'permissions': {
+         'collection-1': 'modify'}},
+    {'username': 'wally',
+     'password': 'wally',
+     'is_admin': True},
+    {'username': USERNAME,
+     'password': PASSWORD}]
+
+MESSAGE_ID = '123'
 
 AUTH_PATH = '/management/auth'
 
 
 @pytest.fixture(autouse=True)
-def local_services(server):
-    for service in [INBOX, DISCOVERY]:
-        server.persistence.update_service(dict_to_service_entity(service))
+def auth_fixtures(server):
+    sync_conf_dict_into_db(
+        server,
+        config={
+            'services': [
+                INBOX_OPEN, INBOX_CLOSED,
+                DISCOVERY, POLL_OPEN, POLL_CLOSED],
+            'collections': COLLECTIONS,
+            'accounts': ACCOUNTS})
+
+    assert len(server.persistence.get_services()) == 4
+    assert len(server.persistence.get_collections()) == len(COLLECTIONS)
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def test_account(server):
     from opentaxii.entities import Account
     account = Account(id=None, username=USERNAME, permissions={})
@@ -50,16 +119,13 @@ def test_account(server):
 
 @pytest.mark.parametrize("https", [True, False])
 @pytest.mark.parametrize("version", [11, 10])
-def test_unauthorized_request(server, client, version, https):
-
+def test_unauthorized_request(app, client, version, https):
     base_url = '%s://localhost' % ('https' if https else 'http')
-
     response = client.post(
-        INBOX['address'],
+        INBOX_OPEN['address'],
         data='invalid-body',
         headers=prepare_headers(version, https),
-        base_url=base_url
-    )
+        base_url=base_url)
 
     assert response.status_code == 200
     assert is_headers_valid(response.headers, version, https)
@@ -74,31 +140,26 @@ def test_unauthorized_request(server, client, version, https):
 @pytest.mark.parametrize("https", [True, False])
 @pytest.mark.parametrize("version", [11, 10])
 def test_get_token(client, version, https):
-
     base_url = '%s://localhost' % ('https' if https else 'http')
-
     # Invalid credentials
     response = client.post(
         AUTH_PATH,
         data={'username': 'dummy', 'password': 'wrong'},
-        base_url=base_url
-    )
+        base_url=base_url)
     assert response.status_code == 401
 
     # Invalid auth data
     response = client.post(
         AUTH_PATH,
         data={'other': 'somethind'},
-        base_url=base_url
-    )
+        base_url=base_url)
     assert response.status_code == 400
 
     # Valid credentials as form data
     response = client.post(
         AUTH_PATH,
         data={'username': USERNAME, 'password': PASSWORD},
-        base_url=base_url
-    )
+        base_url=base_url)
 
     assert response.status_code == 200
 
@@ -110,8 +171,7 @@ def test_get_token(client, version, https):
         AUTH_PATH,
         data=json.dumps({'username': USERNAME, 'password': PASSWORD}),
         base_url=base_url,
-        content_type='application/json'
-    )
+        content_type='application/json')
 
     assert response.status_code == 200
 
@@ -129,8 +189,7 @@ def test_get_token_and_send_request(client, version, https):
     response = client.post(
         AUTH_PATH,
         data={'username': USERNAME, 'password': PASSWORD},
-        base_url=base_url
-    )
+        base_url=base_url)
 
     assert response.status_code == 200
 
@@ -144,11 +203,10 @@ def test_get_token_and_send_request(client, version, https):
 
     # Get correct response for invalid body
     response = client.post(
-        INBOX['address'],
+        INBOX_OPEN['address'],
         data='invalid-body',
         headers=headers,
-        base_url=base_url
-    )
+        base_url=base_url)
 
     assert response.status_code == 200
     assert is_headers_valid(response.headers, version, https)
@@ -165,8 +223,7 @@ def test_get_token_and_send_request(client, version, https):
         DISCOVERY['address'],
         data=request.to_xml(),
         headers=headers,
-        base_url=base_url
-    )
+        base_url=base_url)
 
     assert response.status_code == 200
     assert is_headers_valid(response.headers, version=version, https=https)
@@ -197,11 +254,10 @@ def test_request_with_basic_auth(client, version, https):
 
     # Get correct response for invalid body
     response = client.post(
-        INBOX['address'],
+        INBOX_OPEN['address'],
         data='invalid-body',
         headers=headers,
-        base_url=base_url
-    )
+        base_url=base_url)
 
     assert response.status_code == 200
     assert is_headers_valid(response.headers, version, https)
@@ -246,8 +302,7 @@ def test_invalid_basic_auth_request(client, version, https):
         DISCOVERY['address'],
         data=request.to_xml(),
         headers=headers,
-        base_url=base_url
-    )
+        base_url=base_url)
 
     assert response.status_code == 200
     assert is_headers_valid(response.headers, version, https)
@@ -272,11 +327,135 @@ def test_invalid_auth_header_request(client, version, https):
         DISCOVERY['address'],
         data=request.to_xml(),
         headers=headers,
-        base_url=base_url
-    )
+        base_url=base_url)
 
     assert response.status_code == 200
     assert is_headers_valid(response.headers, version, https)
 
     message = as_tm(version).get_message_from_xml(response.data)
     assert message.status_type == ST_UNAUTHORIZED
+
+
+def prepare_url_headers(version, https, username, password):
+    base_url = '%s://localhost' % ('https' if https else 'http')
+    headers = prepare_headers(version, https)
+    basic_auth_header = 'Basic {}'.format(
+        basic_auth_token(username, password).decode('utf-8'))
+    headers[HTTP_AUTHORIZATION] = basic_auth_header
+    return base_url, headers
+
+
+@pytest.mark.parametrize("https", [True, False])
+@pytest.mark.parametrize("version", [11, 10])
+def test_collection_access_private_poll(client, version, https):
+
+    # POLL_CLOSED collection allowed read access
+    url, headers = prepare_url_headers(version, https, 'johnny', 'johnny')
+    request = prepare_request(
+        'collection-1', version, bindings=[CB_STIX_XML_111])
+
+    response = client.post(
+        POLL_CLOSED['address'],
+        data=request.to_xml(),
+        headers=headers,
+        base_url=url)
+    assert response.status_code == 200
+    assert is_headers_valid(response.headers, version, https)
+    message = as_tm(version).get_message_from_xml(response.data)
+    assert message.message_type == 'Poll_Response'
+
+    # POLL_CLOSED collection disallowed read access
+    url, headers = prepare_url_headers(version, https, 'billy', 'billy')
+    request = prepare_request(
+        'collection-2', version, bindings=[CB_STIX_XML_111])
+
+    response = client.post(
+        POLL_CLOSED['address'],
+        data=request.to_xml(),
+        headers=headers,
+        base_url=url)
+    assert response.status_code == 200
+    assert is_headers_valid(response.headers, version, https)
+    message = as_tm(version).get_message_from_xml(response.data)
+    assert message.status_type == 'NOT_FOUND'
+
+    # POLL_CLOSED collection admin access
+    url, headers = prepare_url_headers(version, https, 'wally', 'wally')
+    request = prepare_request(
+        'collection-2', version, bindings=[CB_STIX_XML_111])
+
+    response = client.post(
+        POLL_CLOSED['address'],
+        data=request.to_xml(),
+        headers=headers,
+        base_url=url)
+    assert response.status_code == 200
+    assert is_headers_valid(response.headers, version, https)
+    message = as_tm(version).get_message_from_xml(response.data)
+    assert message.message_type == 'Poll_Response'
+
+
+@pytest.mark.parametrize("https", [True, False])
+@pytest.mark.parametrize("version", [11, 10])
+def test_collection_access_private_inbox(client, version, https):
+    # INBOX read-only collection access
+    url, headers = prepare_url_headers(version, https, 'johnny', 'johnny')
+    request = make_inbox_message(
+        version,
+        dest_collection='collection-1',
+        blocks=[make_content(version)])
+
+    response = client.post(
+        INBOX_CLOSED['address'],
+        data=request.to_xml(),
+        headers=headers,
+        base_url=url)
+    assert response.status_code == 200
+    assert is_headers_valid(response.headers, version, https)
+    message = as_tm(version).get_message_from_xml(response.data)
+    assert message.message_type == 'Status_Message'
+
+    if version == 11:
+        assert message.status_type == 'UNAUTHORIZED'
+        assert (
+            message.message ==
+            'User can not write to collection collection-1')
+    else:
+        # Because in TAXII 1.0 destination collection can not be specified
+        # so it impossible to verify access
+        assert message.status_type == 'SUCCESS'
+
+    # INBOX modify collection access
+    request = make_inbox_message(
+        version,
+        dest_collection='collection-2',
+        blocks=[make_content(version)])
+
+    response = client.post(
+        INBOX_CLOSED['address'],
+        data=request.to_xml(),
+        headers=headers,
+        base_url=url)
+    assert response.status_code == 200
+    assert is_headers_valid(response.headers, version, https)
+    message = as_tm(version).get_message_from_xml(response.data)
+    assert message.message_type == 'Status_Message'
+    assert message.status_type == 'SUCCESS'
+
+    # INBOX modify collection access
+    url, headers = prepare_url_headers(version, https, 'wally', 'wally')
+    request = make_inbox_message(
+        version,
+        dest_collection='collection-2',
+        blocks=[make_content(version)])
+
+    response = client.post(
+        INBOX_CLOSED['address'],
+        data=request.to_xml(),
+        headers=headers,
+        base_url=url)
+    assert response.status_code == 200
+    assert is_headers_valid(response.headers, version, https)
+    message = as_tm(version).get_message_from_xml(response.data)
+    assert message.message_type == 'Status_Message'
+    assert message.status_type == 'SUCCESS'

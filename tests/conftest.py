@@ -15,54 +15,48 @@ def setup_logging():
     configure_logging({'': 'debug'})
 
 
-def get_config_for_tests(domain=DOMAIN, persistence_db=None, auth_db=None):
-
+def prepare_test_config():
     config = ServerConfig()
     config.update({
         'persistence_api': {
             'class': 'opentaxii.persistence.sqldb.SQLDatabaseAPI',
             'parameters': {
-                'db_connection': persistence_db or 'sqlite://',
-                'create_tables': True
-            }
-        },
+                'db_connection': 'sqlite://',
+                'create_tables': True}},
         'auth_api': {
             'class': 'opentaxii.auth.sqldb.SQLDatabaseAPI',
             'parameters': {
-                'db_connection': auth_db or 'sqlite://',
+                'db_connection': 'sqlite://',
                 'create_tables': True,
-                'secret': 'dummy-secret-string-for-tests'
-            }
-        }
-    })
-    config['domain'] = domain
+                'secret': 'dummy-secret-string-for-tests'}}})
+    config['domain'] = DOMAIN
     return config
-
-
-@pytest.fixture()
-def config(request):
-    return get_config_for_tests()
 
 
 @pytest.yield_fixture()
 def anonymous_user():
-    from opentaxii.middleware import anonymous
-    context.account = anonymous
+    from opentaxii.middleware import anonymous_full_access
+    context.account = anonymous_full_access
     yield
     release_context()
 
 
-@pytest.fixture()
-def server(config, anonymous_user):
-    context.server = TAXIIServer(config)
-    yield context.server
+@pytest.fixture
+def app():
+    context.server = TAXIIServer(prepare_test_config())
+    app = create_app(context.server)
+    app.config['TESTING'] = True
+    return app
+
+
+@pytest.yield_fixture()
+def server(app, anonymous_user):
+    yield app.taxii_server
     release_context()
 
 
 @pytest.fixture()
-def client(server):
-    app = create_app(server)
-    app.config['TESTING'] = True
+def client(app):
     return app.test_client()
 
 

@@ -38,8 +38,7 @@ def prepare_request(collection_name, version, count_only=False,
             poll_parameters = tm11.PollParameters(
                 response_type=(
                     RT_FULL if not count_only else RT_COUNT_ONLY),
-                content_bindings=content_bindings,
-            )
+                content_bindings=content_bindings)
         return tm11.PollRequest(
             message_id=MESSAGE_ID,
             collection_name=collection_name,
