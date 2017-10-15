@@ -100,10 +100,10 @@ accounts:
   - username: test
     password: test
     permissions:
-      collection-A: read-write
-      collection-B: write
+      collection-A: modify
+      collection-B: read
       collection-C: read
-      collection=X: some
+      collection-X: some
   - username: admin
     password: admin
     is_admin: yes
