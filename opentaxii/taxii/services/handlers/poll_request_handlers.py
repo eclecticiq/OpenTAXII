@@ -23,39 +23,34 @@ from ...utils import get_utc_now
 log = structlog.getLogger(__name__)
 
 
-def retrieve_subscription(service, subscription_id, in_response_to):
-
+def retrieve_subscription(version, service, subscription_id, in_response_to):
     subscription = service.get_subscription(subscription_id)
-
     if not subscription:
-        message = "The subscription requested was not found"
-        details = {SD_ITEM: subscription_id}
+        message = "Requested subscription was not found"
+        details = (
+            {SD_ITEM: subscription_id} if version == 11 else subscription_id)
         raise StatusMessageException(
             ST_NOT_FOUND,
             message=message,
             in_response_to=in_response_to,
             status_details=details)
-
     return subscription
 
 
-def retrieve_collection(service, collection_name, in_response_to):
-
+def retrieve_collection(version, service, collection_name, in_response_to):
     collection = service.get_collection(collection_name)
-
+    details = {SD_ITEM: collection_name} if version == 11 else collection_name
     if not collection:
         raise StatusMessageException(
             ST_NOT_FOUND,
-            message="The collection requested was not found",
+            message="Requested collection was not found",
             in_response_to=in_response_to,
-            status_details={SD_ITEM: collection_name})
-
+            status_details=details)
     if not collection.available:
         raise FailureStatus(
             message="The collection is not available",
             in_response_to=in_response_to,
-            status_details={SD_ITEM: collection_name})
-
+            status_details=details)
     return collection
 
 
@@ -69,7 +64,7 @@ class PollRequest11Handler(BaseMessageHandler):
         if service.subscription_required and not request.subscription_id:
             raise StatusMessageException(
                 ST_DENIED,
-                message="Subscription required",
+                message="Subscription id is required",
                 in_response_to=request.message_id)
 
         if request.subscription_id and request.poll_parameters:
@@ -78,11 +73,11 @@ class PollRequest11Handler(BaseMessageHandler):
                         subscription_id=request.subscription_id)
 
         collection = retrieve_collection(
-            service, request.collection_name, request.message_id)
+            11, service, request.collection_name, request.message_id)
 
         if request.subscription_id:
             subscription = retrieve_subscription(
-                service, request.subscription_id, request.message_id)
+                11, service, request.subscription_id, request.message_id)
 
             if collection.id != subscription.collection_id:
                 raise StatusMessageException(
@@ -235,13 +230,12 @@ class PollRequest10Handler(BaseMessageHandler):
     @classmethod
     def handle_message(cls, service, request):
 
-        collection = retrieve_collection(service, request.feed_name,
-                                         request.message_id)
+        collection = retrieve_collection(
+            10, service, request.feed_name, request.message_id)
 
         if request.subscription_id:
             subscription = retrieve_subscription(
-                service, request.subscription_id,
-                request.message_id)
+                10, service, request.subscription_id, request.message_id)
 
             if collection.id != subscription.collection_id:
                 details = {SD_ITEM: request.collection_name}
@@ -258,9 +252,9 @@ class PollRequest10Handler(BaseMessageHandler):
                 requested_bindings)
 
             if requested_bindings and not content_bindings:
-                supported_bindings = \
+                supported_bindings = (
                     content_binding_entities_to_content_bindings(
-                        collection.supported_content, version=10)
+                        collection.supported_content, version=10))
 
                 details = {SD_SUPPORTED_CONTENT: supported_bindings}
                 raise StatusMessageException(
@@ -291,8 +285,7 @@ class PollRequest10Handler(BaseMessageHandler):
 
             #  FIXME: exclusive/inclusive clash
             inclusive_begin_timestamp_label=start,
-            inclusive_end_timestamp_label=end_response,
-        )
+            inclusive_end_timestamp_label=end_response)
 
         content_blocks = service.get_content_blocks(
             collection,

@@ -83,10 +83,6 @@ class TAXIIService(object):
             response_message = handler.handle_message(self, message)
         except StatusMessageException:
             raise
-        except Exception:
-            raise_failure(
-                "There was a failure while executing the message handler",
-                in_response_to=message.message_id)
 
         if not response_message:
             raise_failure(

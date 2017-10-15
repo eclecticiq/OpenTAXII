@@ -4,6 +4,9 @@ from libtaxii.constants import (
     ST_DESTINATION_COLLECTION_ERROR, ST_NOT_FOUND, SD_ITEM
 )
 
+from opentaxii.local import context
+from opentaxii.exceptions import UnauthorizedException
+
 from ..utils import is_content_supported
 from ..entities import ContentBindingEntity
 from ..exceptions import StatusMessageException
@@ -56,22 +59,18 @@ class InboxService(TAXIIService):
 
         name_list = name_list or []
 
-        if (self.destination_collection_required and not name_list) or \
-                (not self.destination_collection_required and name_list):
-
+        if ((self.destination_collection_required and not name_list)
+                or (not self.destination_collection_required and name_list)):
             if not name_list:
                 message = ('A Destination_Collection_Name is required '
                            'and none were specified')
             else:
                 message = ('Destination_Collection_Names are prohibited '
                            'for this Inbox Service')
-
             details = {
                 SD_ACCEPTABLE_DESTINATION: [
                     c.name for c in self.get_destination_collections()
-                    if c.available
-                ]
-            }
+                    if c.available]}
 
             raise StatusMessageException(
                 ST_DESTINATION_COLLECTION_ERROR,
@@ -88,11 +87,17 @@ class InboxService(TAXIIService):
 
         for name in name_list:
             if name in destinations_map:
-                collections.append(destinations_map[name])
+                collection = destinations_map[name]
+                if context.account.can_modify(name):
+                    collections.append(collection)
+                else:
+                    raise UnauthorizedException(
+                        message=('User can not write to collection {}'
+                                 .format(name)))
             else:
                 raise StatusMessageException(
                     ST_NOT_FOUND,
-                    message='The Data Collection was not found',
+                    message='Collection {} was not found'.format(name),
                     in_response_to=in_response_to,
                     extended_headers={SD_ITEM: name})
 

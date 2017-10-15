@@ -157,9 +157,8 @@ class SubscriptionRequest11Handler(BaseMessageHandler):
 
         cls.validate_request(request, subscription)
 
-        collection = retrieve_collection(service,
-                                         request.collection_name,
-                                         request.message_id)
+        collection = retrieve_collection(
+            11, service, request.collection_name, request.message_id)
 
         if subscription and subscription.collection_id != collection.id:
             raise StatusMessageException(
@@ -224,9 +223,8 @@ class SubscriptionRequest10Handler(BaseMessageHandler):
 
         cls.validate_request(request)
 
-        collection = retrieve_collection(service,
-                                         request.feed_name,
-                                         request.message_id)
+        collection = retrieve_collection(
+            10, service, request.feed_name, request.message_id)
 
         if request.subscription_id:
             subscription = service.get_subscription(request.subscription_id)
@@ -236,7 +234,7 @@ class SubscriptionRequest10Handler(BaseMessageHandler):
         if subscription and subscription.collection_id != collection.id:
             raise StatusMessageException(
                 ST_NOT_FOUND,
-                status_details={SD_ITEM: request.feed_name},
+                status_details=request.feed_name,
                 in_response_to=request.message_id)
 
         response = tm10.ManageFeedSubscriptionResponse(
@@ -262,9 +260,7 @@ class SubscriptionRequest10Handler(BaseMessageHandler):
             instance = subscription_to_subscription_instance(
                 subscription=_result,
                 polling_services=polling_services,
-                version=10
-            )
-
+                version=10)
             response.subscription_instances.append(instance)
 
         return response
@@ -277,17 +273,13 @@ class SubscriptionRequestHandler(BaseMessageHandler):
 
     @classmethod
     def handle_message(cls, service, request):
-
         if isinstance(request, tm10.ManageFeedSubscriptionRequest):
-
             return SubscriptionRequest10Handler.handle_message(
                 service, request)
-
         elif isinstance(request, tm11.ManageCollectionSubscriptionRequest):
-
             return SubscriptionRequest11Handler.handle_message(
                 service, request)
-
         else:
-            raise_failure("TAXII Message not supported by message handler",
-                          request.message_id)
+            raise_failure(
+                "TAXII Message not supported by message handler",
+                request.message_id)

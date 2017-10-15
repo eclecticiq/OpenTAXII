@@ -86,7 +86,6 @@ class InboxMessage10Handler(BaseMessageHandler):
                 request, service_id=service.id, version=10))
 
         for content_block in request.content_blocks:
-
             is_supported = service.is_content_supported(
                 content_block.content_binding, version=10)
 

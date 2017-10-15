@@ -25,8 +25,7 @@ class PollFulfilmentRequest11Handler(BaseMessageHandler):
         result_set = service.get_result_set(result_id)
 
         collection = retrieve_collection(
-            service, collection_name,
-            in_response_to=request.message_id)
+            11, service, collection_name, in_response_to=request.message_id)
 
         if not result_set or result_set.collection_id != collection.id:
             raise StatusMessageException(
@@ -43,8 +42,7 @@ class PollFulfilmentRequest11Handler(BaseMessageHandler):
             result_part=part_number,
             allow_async=True,
             return_content=True,
-            result_id=result_id
-        )
+            result_id=result_id)
         return response
 
 
