@@ -31,7 +31,6 @@ class TAXIIServer(object):
     }
 
     def __init__(self, config):
-
         self.config = config
         self.persistence = PersistenceManager(
             server=self, api=initialize_api(config['persistence_api']))
@@ -45,7 +44,6 @@ class TAXIIServer(object):
             log.info("signal_hooks.imported", hooks=signal_hooks)
 
         configure_libtaxii_xml_parser(config['xml_parser_supports_huge_tree'])
-
         log.info("opentaxii.server_configured")
 
     def init_app(self, app):
