@@ -49,7 +49,7 @@ class OpenTAXIIPersistenceAPI(object):
         raise NotImplementedError()
 
     def get_services(self, collection_id=None):
-        '''Get the configured services.
+        '''Get configured services.
 
         :param str collection_id: get only services assigned to
                                   collection with provided ID
@@ -59,8 +59,9 @@ class OpenTAXIIPersistenceAPI(object):
         '''
         raise NotImplementedError()
 
-    def get_collections(self, service_id):
-        '''Get the collections attached to a service.
+    def get_collections(self, service_id=None):
+        '''Get the collections. If `service_id` is provided, return collection
+        attached to a service.
 
         :param str service_id: ID of a service in question
 
@@ -69,10 +70,10 @@ class OpenTAXIIPersistenceAPI(object):
         '''
         raise NotImplementedError()
 
-    def get_collection(self, collection_name, service_id):
+    def get_collection(self, collection_name, service_id=None):
         '''Get a collection by name and service ID.
 
-        According to TAXII spec collection name is unique per service instance.
+        Collection name is unique globally, so can be used as a key.
         Method retrieves collection entity using collection name
         ``collection_name`` and service ID ``service_id`` as a composite key.
 
@@ -83,6 +84,23 @@ class OpenTAXIIPersistenceAPI(object):
         :rtype: :py:class:`opentaxii.taxii.entities.CollectionEntity`
         '''
         raise NotImplementedError()
+
+    def update_collection(self, collection_entity):
+        '''Update collection.
+
+        :param `opentaxii.taxii.entities.CollectionEntity` collection_entity:
+            collection entity object
+        :return: updated collection entity
+        :rtype: :py:class:`opentaxii.taxii.entities.CollectionEntity`
+        '''
+        raise NotImplementedError()
+
+    def delete_collection(self, collection_name):
+        '''Delete collection.
+
+        :param int collection_id: id of a collection object
+        '''
+        pass
 
     def create_inbox_message(self, inbox_message_entity):
         '''Create an inbox message.
