@@ -6,7 +6,7 @@ from opentaxii.taxii.entities import (
     CollectionEntity, deserialize_content_bindings)
 from opentaxii.entities import Account
 from opentaxii.cli import app
-from opentaxii.taxii.converters import blob_to_service_entity
+from opentaxii.taxii.converters import dict_to_service_entity
 
 log = structlog.getLogger(__name__)
 
@@ -61,7 +61,7 @@ def sync_services(services):
             log.info("sync_services.updated", id=existing.id)
             updated_counter += 1
         else:
-            service = blob_to_service_entity(service)
+            service = dict_to_service_entity(service)
             sobj = manager.create_service(service)
             log.info("sync_services.created", id=sobj.id)
             created_counter += 1
