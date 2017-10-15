@@ -3,15 +3,15 @@ import pytest
 
 import base64
 
+from libtaxii import messages_10 as tm10
+from libtaxii import messages_11 as tm11
 from libtaxii.constants import (
-    ST_UNAUTHORIZED, ST_BAD_MESSAGE, CB_STIX_XML_111)
+    ST_UNAUTHORIZED, ST_BAD_MESSAGE, CB_STIX_XML_111, RT_FULL)
 from opentaxii.taxii.http import HTTP_AUTHORIZATION
 from opentaxii.utils import sync_conf_dict_into_db
 
 from utils import prepare_headers, is_headers_valid, as_tm
 from fixtures import VID_TAXII_HTTP_10
-from services.test_poll import prepare_request
-from services.test_inbox import make_inbox_message, make_content
 
 
 INBOX_OPEN = dict(
@@ -58,6 +58,8 @@ POLL_OPEN = dict(
     authentication_required=False,  # <- open for all
     max_result_size=100,
     max_result_count=10)
+
+CONTENT = 'inbox-message-content'
 
 COLLECTIONS = [
     {'name': 'collection-1',
@@ -351,7 +353,7 @@ def test_collection_access_private_poll(client, version, https):
 
     # POLL_CLOSED collection allowed read access
     url, headers = prepare_url_headers(version, https, 'johnny', 'johnny')
-    request = prepare_request(
+    request = prepare_poll_request(
         'collection-1', version, bindings=[CB_STIX_XML_111])
 
     response = client.post(
@@ -366,7 +368,7 @@ def test_collection_access_private_poll(client, version, https):
 
     # POLL_CLOSED collection disallowed read access
     url, headers = prepare_url_headers(version, https, 'billy', 'billy')
-    request = prepare_request(
+    request = prepare_poll_request(
         'collection-2', version, bindings=[CB_STIX_XML_111])
 
     response = client.post(
@@ -381,7 +383,7 @@ def test_collection_access_private_poll(client, version, https):
 
     # POLL_CLOSED collection admin access
     url, headers = prepare_url_headers(version, https, 'wally', 'wally')
-    request = prepare_request(
+    request = prepare_poll_request(
         'collection-2', version, bindings=[CB_STIX_XML_111])
 
     response = client.post(
@@ -400,10 +402,10 @@ def test_collection_access_private_poll(client, version, https):
 def test_collection_access_private_inbox(client, version, https):
     # INBOX read-only collection access
     url, headers = prepare_url_headers(version, https, 'johnny', 'johnny')
-    request = make_inbox_message(
+    request = prepare_inbox_message(
         version,
         dest_collection='collection-1',
-        blocks=[make_content(version)])
+        blocks=[make_inbox_content(version)])
 
     response = client.post(
         INBOX_CLOSED['address'],
@@ -426,10 +428,10 @@ def test_collection_access_private_inbox(client, version, https):
         assert message.status_type == 'SUCCESS'
 
     # INBOX modify collection access
-    request = make_inbox_message(
+    request = prepare_inbox_message(
         version,
         dest_collection='collection-2',
-        blocks=[make_content(version)])
+        blocks=[make_inbox_content(version)])
 
     response = client.post(
         INBOX_CLOSED['address'],
@@ -444,10 +446,10 @@ def test_collection_access_private_inbox(client, version, https):
 
     # INBOX modify collection access
     url, headers = prepare_url_headers(version, https, 'wally', 'wally')
-    request = make_inbox_message(
+    request = prepare_inbox_message(
         version,
         dest_collection='collection-2',
-        blocks=[make_content(version)])
+        blocks=[make_inbox_content(version)])
 
     response = client.post(
         INBOX_CLOSED['address'],
@@ -459,3 +461,54 @@ def test_collection_access_private_inbox(client, version, https):
     message = as_tm(version).get_message_from_xml(response.data)
     assert message.message_type == 'Status_Message'
     assert message.status_type == 'SUCCESS'
+
+
+def prepare_poll_request(
+        collection_name, version, bindings=[], subscription_id=None):
+
+    if version == 11:
+        content_bindings = [tm11.ContentBinding(b) for b in bindings]
+        if subscription_id:
+            poll_parameters = None
+        else:
+            poll_parameters = tm11.PollParameters(
+                response_type=RT_FULL,
+                content_bindings=content_bindings)
+        return tm11.PollRequest(
+            message_id=MESSAGE_ID,
+            collection_name=collection_name,
+            subscription_id=subscription_id,
+            poll_parameters=poll_parameters)
+    elif version == 10:
+        content_bindings = bindings
+        return tm10.PollRequest(
+            message_id=MESSAGE_ID,
+            feed_name=collection_name,
+            content_bindings=content_bindings,
+            subscription_id=subscription_id)
+
+
+def make_inbox_content(
+        version, content_binding=CB_STIX_XML_111, content=CONTENT):
+    if version == 10:
+        return tm10.ContentBlock(content_binding, content)
+
+    elif version == 11:
+        return tm11.ContentBlock(
+            tm11.ContentBinding(content_binding), content)
+    else:
+        raise ValueError('Unknown TAXII message version: %s' % version)
+
+
+def prepare_inbox_message(version, blocks=None, dest_collection=None):
+    if version == 10:
+        inbox_message = tm10.InboxMessage(
+            message_id=MESSAGE_ID, content_blocks=blocks)
+    elif version == 11:
+        inbox_message = tm11.InboxMessage(
+            message_id=MESSAGE_ID, content_blocks=blocks)
+        if dest_collection:
+            inbox_message.destination_collection_names.append(dest_collection)
+    else:
+        raise ValueError('Unknown TAXII message version: %s' % version)
+    return inbox_message
