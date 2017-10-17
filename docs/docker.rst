@@ -41,7 +41,7 @@ Setting up  authentication is done with the following two variables:
 .. code-block:: shell
 
     $ export OPENTAXII_PASS="SomePassword"
-    $ docker -d -p 9000:9000 -e OPENTAXII_USER=myuser -e OPENTAXII_PASS eclecticiq/opentaxii
+    $ docker run -d -p 9000:9000 -e OPENTAXII_USER=myuser -e OPENTAXII_PASS eclecticiq/opentaxii
 
 ---------------------
 
