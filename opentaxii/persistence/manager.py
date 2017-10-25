@@ -51,6 +51,13 @@ class PersistenceManager(object):
         '''
         return self.api.delete_service(service_id)
 
+    def delete_collection(self, collection_name):
+        '''Delete cllection.
+
+        :param str collection_name: name of a collection to delete
+        '''
+        return self.api.delete_collection(collection_name)
+
     def set_collection_services(self, collection_id, service_ids):
         '''Set collection's services.
 
