@@ -324,24 +324,26 @@ class PersistenceManager(object):
         '''
         return self.api.get_domain(service_id)
 
-    def delete_content_blocks(self, collection_name, start_time,
-                              end_time=None):
+    def delete_content_blocks(
+            self, collection_name, start_time, end_time=None,
+            with_messages=False):
         '''Delete content blocks in a specified collection with
         timestamp label in a specified time frame.
 
         :param str collection_name: collection name
         :param datetime start_time: exclusive beginning of a timeframe
         :param datetime end_time: inclusive end of a timeframe
+        :param bool with_messages: delete related inbox messages
 
         :return: the count of rows deleted
         :rtype: int
         '''
         count = self.api.delete_content_blocks(
-            collection_name, start_time, end_time=end_time)
-
+            collection_name, start_time, end_time=end_time,
+            with_messages=with_messages)
         log.info(
             "collection.content_blocks.deleted",
+            with_messages=with_messages,
             collection=collection_name,
             count=count)
-
         return count

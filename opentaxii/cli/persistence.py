@@ -48,6 +48,11 @@ def delete_content_blocks():
         "-c", "--collection", action="append", dest="collection",
         help="Collection to remove content blocks from", required=True)
     parser.add_argument(
+        "-m", "--with-messages", dest="delete_inbox_messages",
+        action="store_true",
+        help=("delete inbox messages associated with deleted content blocks"),
+        required=False)
+    parser.add_argument(
         "--begin", dest="begin",
         help="exclusive beginning of time window as ISO8601 formatted date",
         required=True)
@@ -61,4 +66,7 @@ def delete_content_blocks():
         end_time = args.end
         for collection in args.collection:
             app.taxii_server.persistence.delete_content_blocks(
-                collection, start_time=start_time, end_time=end_time)
+                collection,
+                with_messages=args.delete_inbox_messages,
+                start_time=start_time,
+                end_time=end_time)

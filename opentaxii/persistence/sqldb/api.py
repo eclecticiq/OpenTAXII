@@ -377,28 +377,46 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
     def create_subscription(self, entity):
         return self.update_subscription(entity)
 
-    def delete_content_blocks(self, collection_name, start_time,
-                              end_time=None):
+    def delete_content_blocks(
+            self, collection_name, start_time, end_time=None,
+            with_messages=False):
 
-        collection = DataCollection.query.filter_by(name=collection_name).one()
+        collection = (
+            DataCollection.query
+            .filter_by(name=collection_name)
+            .one_or_none())
 
         if not collection:
-            raise ValueError("Collection with name '{}' does not exist"
-                             .format(collection_name))
+            raise ValueError(
+                "Collection with name '{}' does not exist"
+                .format(collection_name))
 
         content_blocks_query = (
-            self.db.session.query(ContentBlock.id)
-                           .join(DataCollection.content_blocks)
-                           .filter(DataCollection.id == collection.id)
-                           .filter(ContentBlock.timestamp_label > start_time))
+            self.db.session
+            .query(ContentBlock.id)
+            .join(DataCollection.content_blocks)
+            .filter(DataCollection.id == collection.id)
+            .filter(ContentBlock.timestamp_label > start_time))
 
         if end_time:
             content_blocks_query = content_blocks_query.filter(
                 ContentBlock.timestamp_label <= end_time)
 
+        inbox_messages_query = (
+            self.db.session
+            .query(InboxMessage.id)
+            .join(
+                ContentBlock, ContentBlock.inbox_message_id == InboxMessage.id)
+            .filter(ContentBlock.id.in_(content_blocks_query.subquery())))
+
+        if with_messages:
+            (InboxMessage.query
+                .filter(InboxMessage.id.in_(inbox_messages_query.subquery()))
+                .delete(synchronize_session=False))
+
         counter = (
-            ContentBlock.query.filter(
-                ContentBlock.id.in_(content_blocks_query.subquery()))
+            ContentBlock.query
+            .filter(ContentBlock.id.in_(content_blocks_query.subquery()))
             .delete(synchronize_session=False))
 
         collection.volume = (

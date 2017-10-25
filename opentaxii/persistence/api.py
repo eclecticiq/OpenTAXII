@@ -232,12 +232,13 @@ class OpenTAXIIPersistenceAPI(object):
         return None
 
     def delete_content_blocks(self, collection_name, start_time,
-                              end_time=None):
+                              end_time=None, with_messages=False):
         '''Delete content blocks in a specified collection with
         timestamp label in a specified time frame.
 
         :param str collection_name: collection name
         :param datetime start_time: exclusive beginning of a timeframe
         :param datetime end_time: inclusive end of a timeframe
+        :param bool with_messages: delete related inbox messages
         '''
         pass
