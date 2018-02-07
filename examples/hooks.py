@@ -6,18 +6,15 @@ from opentaxii.signals import (
 
 def post_create_content_block(manager, content_block, collection_ids,
                               service_id):
-    print('Content block id={} (collections={}, service_id={}) was created'
-          .format(content_block.id, ', '.join(map(str, collection_ids)),
-                  service_id))
+    pass
 
 
 def post_create_inbox_message(manager, inbox_message):
-    print('Inbox message id={} was created'.format(inbox_message.id))
+    pass
 
 
 def post_create_subscription(manager, subscription):
-    print('Subscription id={} (service_id={}) was created'
-          .format(subscription.id, subscription.service_id))
+    pass
 
 
 CONTENT_BLOCK_CREATED.connect(post_create_content_block)
