@@ -47,7 +47,6 @@ def initialize_api(api_config):
 
 
 def parse_basic_auth_token(token):
-    print("'{}'".format(token), len(token))
     try:
         value = base64.b64decode(token)
     except (TypeError, binascii.Error):
