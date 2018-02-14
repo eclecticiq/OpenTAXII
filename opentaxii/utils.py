@@ -163,9 +163,7 @@ def sync_services(server, services):
     deleted_counter = 0
     missing_ids = set(existing_by_id.keys()) - set(defined_by_id.keys())
     for missing_id in missing_ids:
-        manager.delete_service(missing_id)
-        deleted_counter += 1
-        log.info("sync_services.deleted", id=missing_id)
+        pass
 
     log.info(
         "sync_services.stats",
@@ -211,16 +209,7 @@ def sync_collections(server, collections, force_deletion=False):
     deleted_counter = 0
     missing_names = set(existing_by_name.keys()) - set(defined_by_name.keys())
     for name in missing_names:
-        if force_deletion:
-            manager.delete_collection(name)
-            deleted_counter += 1
-            log.info("sync_collections.deleted", name=name)
-        else:
-            collection = existing_by_name[name]
-            collection.available = False
-            manager.update_collection(cobj)
-            disabled_counter += 1
-            log.info("sync_collections.disabled", name=name)
+        pass
     log.info(
         "sync_collections.stats",
         updated=updated_counter,
@@ -260,9 +249,7 @@ def sync_accounts(server, accounts):
     missing_usernames = (
         set(existing_by_username.keys()) - set(defined_by_username.keys()))
     for username in missing_usernames:
-        manager.delete_account(username)
-        deleted_counter += 1
-        log.info("sync_accounts.deleted", username=username)
+        pass
 
     log.info(
         "sync_accounts.stats",
