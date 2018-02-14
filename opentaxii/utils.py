@@ -145,7 +145,7 @@ def sync_services(server, services):
     updated_counter = 0
 
     for service in services:
-        existing = True
+        existing =  existing_by_id.get(service['id'])
         if existing:
             properties = service.copy()
             properties.pop('id')
@@ -182,7 +182,7 @@ def sync_collections(server, collections, force_deletion=False):
     updated_counter = 0
 
     for collection in collections:
-        existing = True
+        existing = existing_by_name.get(collection['name'])
         collection_data = collection.copy()
         service_ids = collection_data.pop('service_ids')
         if existing:
@@ -227,7 +227,7 @@ def sync_accounts(server, accounts):
     created_counter = 0
     updated_counter = 0
     for account in accounts:
-        existing = True
+        existing = existing_by_username.get(account['username'])
         if existing:
             properties = account.copy()
             password = properties.pop('password')
