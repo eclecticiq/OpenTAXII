@@ -3,8 +3,7 @@ Docker
 
 OpenTAXII can also be run using docker. This guide assumes that you have access to a local or remote docker server, and won't go into the setup of docker.
 
-To get a default (development) instance using docker
-
+To get a default (development) instance using docker:
 
 .. code-block:: shell
 
@@ -127,7 +126,7 @@ And building the image is then done using:
 Full Example with Compose
 -------------------------
 
-To see a full example of running OpenTAXII against a "real" database, using the `docker-compose <https://docs.docker.com/compose/>`_ tool, checkout the configuration at: `examples/docker-compose.yml <https://raw.githubusercontent.com/EclecticIQ/OpenTAXII/master/examples/docker-compose.yml>`_
+To see a full example of running OpenTAXII against a "real" database, using the `docker-compose <https://docs.docker.com/compose/>`_ tool, checkout the configuration at: :github-file:`examples/docker-compose.yml <examples/docker-compose.yml>`.
 
 .. code-block:: yaml
 

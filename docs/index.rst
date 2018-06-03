@@ -2,10 +2,7 @@
 OpenTAXII
 =========
 
-Latest stable release is v0.1.9. (:doc:`Changelog <changes>`)
-
-..
-    Release v\ |version|. (:doc:`Changelog <changes>`)
+Current release is v\ |version|. (:doc:`Changelog <changes>`)
 
 OpenTAXII is a robust Python implementation of TAXII Services that delivers rich feature set and friendly pythonic API.
 

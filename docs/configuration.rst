@@ -4,21 +4,33 @@ Configuration
 
 .. highlight:: sh
 
-OpenTAXII can be configured using YAML configuration files, it ships with the following `default configuration <https://github.com/eclecticiq/OpenTAXII/blob/master/opentaxii/defaults.yml>`_:
+OpenTAXII can be configured using YAML configuration files.
 
-* Persistence API and Authentication API use SQL DB as a backend.
-* The sqlite3 databases and corresponding tables will automatically be created in ``/tmp/data.db`` and ``/tmp/auth.db``.
-* There are no services and collections configured by default.
-* No signal hooks are attached.
 
-Default configuration looks like this:
+Default configuration
+=====================
+
+OpenTAXII has default :github-file:`configuration file <opentaxii/defaults.yml>` built in.
+
+By default:
+    - Provided Persistence API and Authentication API implementations are for SQL DB backends and use sqlite3 backend.
+    - The sqlite3 database files will be automatically created in ``/tmp/data.db`` and ``/tmp/auth.db``.
+    - Services, collections and accounts are not configured automatically. This requires a manual operation (see below).
+    - No signal hooks are attached.
+
+
+Default configuration file looks like this:
 
 .. code-block:: yaml
 
     ---
     domain: "localhost:9000"
+
     support_basic_auth: yes
     save_raw_inbox_messages: yes
+    xml_parser_supports_huge_tree: yes
+    count_blocks_in_poll_responses: no
+    return_server_error_details: no
 
     persistence_api:
       class: opentaxii.persistence.sqldb.SQLDatabaseAPI
@@ -37,14 +49,12 @@ Default configuration looks like this:
       opentaxii: info
       root: info
 
-    xml_parser_supports_huge_tree: yes
-
     hooks: 
     
 .. note::
-  OpenTAXII uses a SQLite Database by default wich is intended only when running OpenTAXII in a development environment. Please change when running in a production environment.
+  OpenTAXII uses a SQLite Database by default wich is intended only when running OpenTAXII in a development environment. Please use different SQL DB backend for running in a production environment.
 
-An example of custom configuration that allows OpenTAXII to connect to production-ready database (PostgreSQL is our recommendation):
+An example of custom configuration that allows OpenTAXII to connect to production-ready PostgreSQL database:
 
 .. code-block:: yaml
 
@@ -62,6 +72,23 @@ An example of custom configuration that allows OpenTAXII to connect to productio
         create_tables: yes
         secret: SECRET-STRING-NEEDS-TO-BE-CHANGED
 
+
+Properties
+==========
+
+    - ``domain`` — domain that will be used in service URLs in TAXII responses.
+    - ``support_basic_auth`` — enable/disable Basic Authentication support. If disabled, only JWT authentication is allowed.
+    - ``save_raw_inbox_message`` — enable/disable storing of raw TAXII Inbox messages via Persistence API's ``create_inbox_message`` method. This is useful for bookkeeping but significantly increases storage requirements.
+    - ``xml_parser_supports_huge_tree`` — enable/disable security restrictions in `lxml <http://lxml.de/>`_ library to allow support for very deep trees and very long text content. If this is disabled, OpenTAXII will not be able to parse TAXII messages with content blocks larger than roughly 10MB.
+    - ``count_blocks_in_poll_responses`` — enable/disable total count in TAXII Poll responses. It is disabled by default since ``count`` operation might be `very slow <https://wiki.postgresql.org/wiki/Slow_Counting>`_ in some SQL DBs.
+    - ``return_server_error_details`` — allow OpenTAXII to return error details in error-status TAXII response.
+    - ``persistence_api`` — configuration properties for Persistence API implementation.
+    - ``auth_api`` — configuration properties for Authentication API implementation.
+    - ``logging`` — logging configuration.
+    - ``hooks`` - custom python module with signal subscriptions to import. See :ref:`documentation on custom signals<custom-signals>` and :github-file:`an example <examples/hooks.py>`.
+
+
+.. _custom-configuration:
 
 Custom configuration
 ====================
@@ -85,84 +112,87 @@ Example custom configuration:
     support_basic_auth: no
 
     persistence_api:
-      class: mypackage.opentaxii.PersistenceAPI
+      class: mypackage.opentaxii.CustomPersistenceAPI
       parameters:
-        rest_api: http://rest.mydomain.com
+        rest_api: http://rest.mydomain.com/api
 
     auth_api:
       class: opentaxii.auth.sqldb.SQLDatabaseAPI
       parameters:
         db_connection: postgresql://scott:tiger@localhost:5432/mydatabase
         create_tables: yes
-        secret: mueHenjitweridUnviapEasJocdiDrelHonsyorl
+        secret: aueHenjitweridUcviapEbsJocdiDrelHonsyorl
 
     xml_parser_supports_huge_tree: no
-    hooks: mypackage.opentaxii.hooks
+    hooks: mypackage.opentaxii.custom_hooks
 
-The built-in implementation of the Persistence and Authentication APIs support SQLite, PostgreSQL, MySQL, and other databases. Check `SQLAlchemy website <http://www.sqlalchemy.org/>`_
-to get the full list.
+The built-in implementation of the Persistence and Authentication APIs support SQLite, PostgreSQL, MySQL, and other SQL databases. Check `SQLAlchemy website <http://www.sqlalchemy.org/>`_ to get the full list.
 
 OpenTAXII CLI tools are implemented to call corresponding API methods and support any API implementation.
 
 
+Services, collections and accounts
+==================================
 
-Creating services and collections
-=================================
-
-Services and collections can be created with supplied CLI tools. It is also possible to directly create them in the DB, but this is out of scope for this guide.
+Services, collections and accounts can be created with CLI command ``opentaxii-sync-data`` or with custom code talking to a specific Persistent API implementation/backend.
 
 Step 1
 ------ 
-We will need to create YAML files with services and collections configurations. You can create your own file or use examples from `OpenTAXII git repo <https://github.com/eclecticiq/OpenTAXII>`_:
+Create YAML file with collections/services/accounts configuration. See provided example from `OpenTAXII git repo <https://github.com/eclecticiq/OpenTAXII>`_ — file :github-file:`examples/data-configuration.yml <examples/data-configuration.yml>` that contains:
 
-* `examples/services.yml <https://raw.githubusercontent.com/eclecticiq/OpenTAXII/master/examples/services.yml>`_
+Services:
+    * 2 Inbox Services (with ids ``inbox_a`` and ``inbox_b``), 
+    * 1 Discovery Service (with id ``discovery_a``),
+    * 1 Collection Management Service (with id ``collection_management_a``),
+    * 1 Poll Service (with id ``poll_a``).
 
-  Describes the following services:
-    * 2 Inbox Services (``inbox_a`` and ``inbox_b``), 
-    * Discovery Service (``discovery_a``),
-    * Collection Management Service (``collection_management_a``),
-    * and Poll Service (``poll_a``).
+.. note::
+    Services have relative path in the address field, which means OpenTAXII will prepend it with domain configured in server configuration file (``localhost:9000`` in `Default configuration`_).
 
-  Services have relative path in the address field, which means OpenTAXII will prepend it with domain configured in server configuration file (``localhost:9000`` in `default configuration`_).
-
-* `examples/collections.yml <https://raw.githubusercontent.com/eclecticiq/OpenTAXII/master/examples/collections.yml>`_
-
-  Lists 4 collections: 
-    * ``collection-A`` that accepts all content, with type ``DATA_SET`` and attached to services
+Collections:
+    * ``collection-a`` that has type ``DATA_SET``, accepts all content types and is attached to services
       ``inbox_a``, ``collection_management_a``, and ``poll_a``.
-    * ``collection-B`` that accepts only content specified in field ``content_bindings``.
-    * ``collection-C`` that accepts not only STIX v1.1.1 content but also custom content type ``urn:custom.bindings.com:json:0.0.1``
-    * ``collection-D`` that is marked as not available.
+    * ``collection-b`` that accepts only content types specified in field ``content_bindings`` and is attached to services ``inbox_a``, ``inbox_b``, ``collection_management_a`` and ``poll_a``.
+    * ``collection-c`` that accepts not only STIX v1.1.1 content type but also custom content type ``urn:custom.bindings.com:json:0.0.1``. It is attached to services ``inbox_a``, ``collection_management_a`` and ``poll_a``.
+    * ``col-not-available`` that is marked as not available, even though it is attached to ``inbox_b`` and ``collection_management_a``.
+
+Accounts:
+    * account with username ``test`` and password ``test``, with ability to modify collection ``collection-a``, read ``collection-b`` and ``coll-stix-and-custom``, and unknown permission ``some`` for non-existing collection ``collection-xyz``. Incorrect settings will be ignored during sync.
+    * account with username ``admin`` and password ``admin`` that has admin permissions because ``is_admin`` is set to ``yes``.
+
+.. note::
+	Without an account you can't access services with ``authentication_required`` enabled.
+
 
 Step 2
 ------
-We create the actual services and collections with the CLI tools.
+Use ``opentaxii-sync-data`` command to synchorize data configuration in provided file and in DB.
 
-To create the services run::
+Usage help::
 
-  (venv) $ opentaxii-create-services -c services.yml
+    (venv) $ opentaxii-sync-data --help
+    usage: opentaxii-sync-data [-h] [-f] config
 
-Next we create the collections (services should already exist!)::
+    Create services/collections/accounts
 
-  (venv) $ opentaxii-create-collections -c collections.yml
+    positional arguments:
+      config              YAML file with data configuration
 
-To create an account run::
+    optional arguments:
+      -h, --help          show this help message and exit
+      -f, --force-delete  force deletion of collections and their content blocks
+                          if collection is not defined in configuration file
+                          (default: False)
 
-  (venv) $ opentaxii-create-account -u username -p password
-  
+To sync data run::
+
+  (venv) $ opentaxii-sync-data examples/data-configuration.yml
+
 .. note::
-	Without an account you can't access services with `authentication_required: yes`  
+	To drop the databases, just delete sqlite3 files ``/tmp/data.db``, ``/tmp/auth.db`` and restart OpenTAXII server.
 
-.. important::
-    It is up to Persistence API implementation to control access to the entities. Built-in API implementation **does not** support any
-    access control.
-
-Now OpenTAXII has services and collections configured and can function as a TAXII server.
+Now OpenTAXII has services, collections and accounts configured and can function as a TAXII server.
 Check :doc:`Running OpenTAXII <running>` to see how to run it.
-
-.. note::
-	To drop the database, just delete sqlite3 database files ``/tmp/data.db``, ``/tmp/auth.db`` and restart OpenTAXII server.
-
 
 .. rubric:: Next steps
 

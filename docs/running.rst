@@ -19,11 +19,11 @@ This will start OpenTAXII in a development mode and bind it to ``localhost:9000`
 Production mode
 ===============
 
-To run OpenTAXII in production it is recommended to use one of the `standalone WSGI
-containers <http://flask.pocoo.org/docs/0.10/deploying/wsgi-standalone/>`_ that work with Flask. In this example we use `Gunicorn WSGI HTTP Server <http://gunicorn.org/>`_.
+To run OpenTAXII in production it is recommended to use `standalone WSGI
+container <http://flask.pocoo.org/docs/1.0/tutorial/deploy/#run-with-a-production-server>`_ that work with Flask. In this example we use `Gunicorn WSGI HTTP Server <http://gunicorn.org/>`_.
 
 .. note::
-	Run `pip install gunicorn` to install gunicorn. Yes it's that simple.
+	Run ``pip install gunicorn`` to install gunicorn. Yes, it's that simple.
 
 To run OpenTAXII with Gunicorn execute::
     
@@ -53,6 +53,19 @@ Example supervisord configuration file:
     autorestart = true
 
 
+Using SSL/TLS
+=============
+
+If you want to run OpenTAXII with SSL, you need to use a web server like `Nginx <https://nginx.org/en/>`_, that provides SSL/TLS layer. You can find details on how to run Nginx with SSL `here <https://nginx.org/en/docs/http/configuring_https_servers.html>`_.
+
+Make sure you configure your TAXII services in OpenTAXII with proper protocol bindings:
+
+    * use ``urn:taxii.mitre.org:protocol:https:1.0`` if you're planning on serving data via HTTPS.
+    * use ``urn:taxii.mitre.org:protocol:http:1.0`` if the server is going to support unsecure HTTP as well.
+      
+You can use multiple protocol bindings per service. That would tell OpenTAXII you want to advertise services over both HTTPs and HTTP. TAXII services create external URLs according to their protocol bindings, using ``http://`` or ``https://`` schemas.
+
+
 Sending requests to services
 ============================
 
@@ -69,42 +82,41 @@ Assuming OpenTAXII is running on ``http://localhost:9000``, to get the list of a
     
 You should see the following output::
 
-	2015-04-03 13:51:35,726 INFO: Sending Discovery_Request to http://localhost:9000/services/discovery-a
-	{"level": "info", "timestamp": "2015-04-03T11:51:35.788228Z", "event": "Processing message", "message_version": "urn:taxii.mitre.org:message:xml:1.1", "service_id": "discovery_a", "logger": "opentaxii.taxii.services.discovery.DiscoveryService", "message_type": "Discovery_Request", "message_id": "8b7d6fb8-7c74-46d5-a74f-71a9662f3cd9"}
-	2015-04-03 13:51:35,793 INFO: Response received for Discovery_Request from http://localhost:9000/services/discovery-a
-	2015-04-03 13:51:35,793 INFO: 7 services discovered
-	=== Service Instance ===
-	  Service Type: INBOX
-	  Service Version: urn:taxii.mitre.org:services:1.1
-	  Protocol Binding: urn:taxii.mitre.org:protocol:http:1.0
-	  Service Address: http://localhost:9000/services/inbox-a
-	  Message Binding: urn:taxii.mitre.org:message:xml:1.0
-	  Message Binding: urn:taxii.mitre.org:message:xml:1.1
-	  Inbox Service AC: []
-	  Available: True
-	  Message: Custom Inbox Service Description A
+    2018-06-03 21:26:32,188 INFO: Sending Discovery_Request to http://localhost:9000/services/discovery-a
+    2018-06-03 21:26:32,207 INFO: 7 services discovered
+    === Service Instance ===
+      Service Type: INBOX
+      Service Version: urn:taxii.mitre.org:services:1.1
+      Protocol Binding: urn:taxii.mitre.org:protocol:http:1.0
+      Service Address: http://localhost:9000/services/inbox-a
+      Message Binding: urn:taxii.mitre.org:message:xml:1.0
+      Message Binding: urn:taxii.mitre.org:message:xml:1.1
+      Inbox Service AC: []
+      Available: True
+      Message: Custom Inbox Service Description A
 
-	=== Service Instance ===
-	  Service Type: INBOX
-	  Service Version: urn:taxii.mitre.org:services:1.1
-	  Protocol Binding: urn:taxii.mitre.org:protocol:http:1.0
-	  Service Address: http://localhost:9000/services/inbox-b
-	  Message Binding: urn:taxii.mitre.org:message:xml:1.0
-	  Message Binding: urn:taxii.mitre.org:message:xml:1.1
-	  Inbox Service AC: ['urn:stix.mitre.org:xml:1.1.1', 'urn:custom.example.com:json:0.0.1']
-	  Available: True
-	  Message: Custom Inbox Service Description B
+    === Service Instance ===
+      Service Type: INBOX
+      Service Version: urn:taxii.mitre.org:services:1.1
+      Protocol Binding: urn:taxii.mitre.org:protocol:http:1.0
+      Service Address: http://localhost:9000/services/inbox-b
+      Message Binding: urn:taxii.mitre.org:message:xml:1.0
+      Message Binding: urn:taxii.mitre.org:message:xml:1.1
+      Inbox Service AC: ['urn:stix.mitre.org:xml:1.1.1', 'urn:custom.example.com:json:0.0.1']
+      Available: True
+      Message: Custom Inbox Service Description B
 
-	=== Service Instance ===
-	  Service Type: DISCOVERY
-	  Service Version: urn:taxii.mitre.org:services:1.1
-	  Protocol Binding: urn:taxii.mitre.org:protocol:http:1.0
-	  Service Address: http://localhost:9000/services/discovery-a
-	  Message Binding: urn:taxii.mitre.org:message:xml:1.0
-	  Message Binding: urn:taxii.mitre.org:message:xml:1.1
-	  Available: True
-	  Message: Custom Discovery Service description
-	..... snip .....
+    === Service Instance ===
+      Service Type: DISCOVERY
+      Service Version: urn:taxii.mitre.org:services:1.1
+      Protocol Binding: urn:taxii.mitre.org:protocol:http:1.0
+      Service Address: http://localhost:9000/services/discovery-a
+      Message Binding: urn:taxii.mitre.org:message:xml:1.0
+      Message Binding: urn:taxii.mitre.org:message:xml:1.1
+      Available: True
+      Message: Custom Discovery Service description
+
+    ..... snip .....
 
 One of the configured services is a Collection Management Service. To get the collections list, run::
 
@@ -112,76 +124,74 @@ One of the configured services is a Collection Management Service. To get the co
     
 You should see the following output::
 
-	2015-04-03 13:53:50,516 INFO: Sending Collection_Information_Request to http://localhost:9000/services/collection-management-a
-	{"level": "info", "timestamp": "2015-04-03T11:53:50.526007Z", "event": "Processing message", "message_version": "urn:taxii.mitre.org:message:xml:1.1", "service_id": "collection_management_a", "logger": "opentaxii.taxii.services.collection_management.CollectionManagementService", "message_type": "Collection_Information_Request", "message_id": "cf1fed62-51bb-470c-a4f1-52b512df7f10"}
-	2015-04-03 13:53:50,599 INFO: Response received for Collection_Information_Request from http://localhost:9000/services/collection-management-a
-	=== Data Collection Information ===
-	  Collection Name: collection-A
-	  Collection Type: DATA_SET
-	  Available: True
-	  Collection Description: None
-	  Supported Content: All
-	  === Polling Service Instance ===
-		Poll Protocol: urn:taxii.mitre.org:protocol:http:1.0
-		Poll Address: http://localhost:9000/services/poll-a
-		Message Binding: urn:taxii.mitre.org:message:xml:1.0
-		Message Binding: urn:taxii.mitre.org:message:xml:1.1
-	  === Subscription Service ===
-		Protocol Binding: urn:taxii.mitre.org:protocol:http:1.0
-		Address: http://localhost:9000/services/collection-management-a
-		Message Binding: urn:taxii.mitre.org:message:xml:1.0
-		Message Binding: urn:taxii.mitre.org:message:xml:1.1
-	  === Subscription Service ===
-		Protocol Binding: urn:taxii.mitre.org:protocol:https:1.0
-		Address: https://localhost:9000/services/collection-management-a
-		Message Binding: urn:taxii.mitre.org:message:xml:1.0
-		Message Binding: urn:taxii.mitre.org:message:xml:1.1
-	  === Receiving Inbox Service ===
-		Protocol Binding: urn:taxii.mitre.org:protocol:http:1.0
-		Address: http://localhost:9000/services/inbox-a
-		Message Binding: urn:taxii.mitre.org:message:xml:1.0
-		Message Binding: urn:taxii.mitre.org:message:xml:1.1
-		Supported Contents: All
-	==================================
+    2018-06-03 21:30:03,315 INFO: Sending Collection_Information_Request to http://localhost:9000/services/collection-management-a
+    === Data Collection Information ===
+      Collection Name: collection-a
+      Collection Type: DATA_SET
+      Available: True
+      Collection Description: None
+      Supported Content: All
+      === Polling Service Instance ===
+        Poll Protocol: urn:taxii.mitre.org:protocol:http:1.0
+        Poll Address: http://localhost:9000/services/poll-a
+        Message Binding: urn:taxii.mitre.org:message:xml:1.0
+        Message Binding: urn:taxii.mitre.org:message:xml:1.1
+      === Subscription Service ===
+        Protocol Binding: urn:taxii.mitre.org:protocol:http:1.0
+        Address: http://localhost:9000/services/collection-management-a
+        Message Binding: urn:taxii.mitre.org:message:xml:1.0
+        Message Binding: urn:taxii.mitre.org:message:xml:1.1
+      === Subscription Service ===
+        Protocol Binding: urn:taxii.mitre.org:protocol:https:1.0
+        Address: https://localhost:9000/services/collection-management-a
+        Message Binding: urn:taxii.mitre.org:message:xml:1.0
+        Message Binding: urn:taxii.mitre.org:message:xml:1.1
+      === Receiving Inbox Service ===
+        Protocol Binding: urn:taxii.mitre.org:protocol:http:1.0
+        Address: http://localhost:9000/services/inbox-a
+        Message Binding: urn:taxii.mitre.org:message:xml:1.0
+        Message Binding: urn:taxii.mitre.org:message:xml:1.1
+        Supported Contents: All
+    ==================================
 
 
-	=== Data Collection Information ===
-	  Collection Name: collection-B
-	  Collection Type: DATA_FEED
-	  Available: True
-	  Collection Description: None
-	  Supported Content:   urn:stix.mitre.org:xml:1.1.1
-	  === Polling Service Instance ===
-		Poll Protocol: urn:taxii.mitre.org:protocol:http:1.0
-		Poll Address: http://localhost:9000/services/poll-a
-		Message Binding: urn:taxii.mitre.org:message:xml:1.0
-		Message Binding: urn:taxii.mitre.org:message:xml:1.1
-	  === Subscription Service ===
-		Protocol Binding: urn:taxii.mitre.org:protocol:http:1.0
-		Address: http://localhost:9000/services/collection-management-a
-		Message Binding: urn:taxii.mitre.org:message:xml:1.0
-		Message Binding: urn:taxii.mitre.org:message:xml:1.1
-	  === Subscription Service ===
-		Protocol Binding: urn:taxii.mitre.org:protocol:https:1.0
-		Address: https://localhost:9000/services/collection-management-a
-		Message Binding: urn:taxii.mitre.org:message:xml:1.0
-		Message Binding: urn:taxii.mitre.org:message:xml:1.1
-	  === Receiving Inbox Service ===
-		Protocol Binding: urn:taxii.mitre.org:protocol:http:1.0
-		Address: http://localhost:9000/services/inbox-a
-		Message Binding: urn:taxii.mitre.org:message:xml:1.0
-		Message Binding: urn:taxii.mitre.org:message:xml:1.1
-		Supported Contents: All
-	  === Receiving Inbox Service ===
-		Protocol Binding: urn:taxii.mitre.org:protocol:http:1.0
-		Address: http://localhost:9000/services/inbox-b
-		Message Binding: urn:taxii.mitre.org:message:xml:1.0
-		Message Binding: urn:taxii.mitre.org:message:xml:1.1
-		Supported Content: urn:stix.mitre.org:xml:1.1.1
-		Supported Content: urn:custom.example.com:json:0.0.1
-	==================================
+    === Data Collection Information ===
+      Collection Name: collection-b
+      Collection Type: DATA_FEED
+      Available: True
+      Collection Description: None
+      Supported Content:   urn:stix.mitre.org:xml:1.1.1
+      === Polling Service Instance ===
+        Poll Protocol: urn:taxii.mitre.org:protocol:http:1.0
+        Poll Address: http://localhost:9000/services/poll-a
+        Message Binding: urn:taxii.mitre.org:message:xml:1.0
+        Message Binding: urn:taxii.mitre.org:message:xml:1.1
+      === Subscription Service ===
+        Protocol Binding: urn:taxii.mitre.org:protocol:http:1.0
+        Address: http://localhost:9000/services/collection-management-a
+        Message Binding: urn:taxii.mitre.org:message:xml:1.0
+        Message Binding: urn:taxii.mitre.org:message:xml:1.1
+      === Subscription Service ===
+        Protocol Binding: urn:taxii.mitre.org:protocol:https:1.0
+        Address: https://localhost:9000/services/collection-management-a
+        Message Binding: urn:taxii.mitre.org:message:xml:1.0
+        Message Binding: urn:taxii.mitre.org:message:xml:1.1
+      === Receiving Inbox Service ===
+        Protocol Binding: urn:taxii.mitre.org:protocol:http:1.0
+        Address: http://localhost:9000/services/inbox-a
+        Message Binding: urn:taxii.mitre.org:message:xml:1.0
+        Message Binding: urn:taxii.mitre.org:message:xml:1.1
+        Supported Contents: All
+      === Receiving Inbox Service ===
+        Protocol Binding: urn:taxii.mitre.org:protocol:http:1.0
+        Address: http://localhost:9000/services/inbox-b
+        Message Binding: urn:taxii.mitre.org:message:xml:1.0
+        Message Binding: urn:taxii.mitre.org:message:xml:1.1
+        Supported Content: urn:stix.mitre.org:xml:1.1.1
+        Supported Content: urn:custom.example.com:json:0.0.1
+    ==================================
 
-	.... snip .....
+    .... snip .....
 
 
 See `Cabby documentation <http://cabby.readthedocs.org>`_ for more examples.

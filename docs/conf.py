@@ -28,7 +28,8 @@ import os
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.coverage']
+extensions = [
+    'sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx.ext.extlinks']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -266,3 +267,12 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+# use "master" branch if version is alpha else use release value
+github_release = 'master' if 'a' in __version__ else __version__
+
+github_release_prefix = (
+    'https://github.com/eclecticiq/OpenTAXII/blob/{version}/%s'
+    .format(version=github_release))
+
+extlinks = {'github-file': (github_release_prefix, '')}
