@@ -58,17 +58,16 @@ services:
       - urn:taxii.mitre.org:protocol:http:1.0
 
 collections:
-  - name: collection-A
+  - name: collection-a
     available: true
     accept_all_content: true
     type: DATA_SET
-
     service_ids:
       - inbox_a
       - collection_management_a
       - poll_a
 
-  - name: collection-B
+  - name: collection-b
     available: true
     accept_all_content: false
     supported_content:
@@ -79,7 +78,7 @@ collections:
       - collection_management_a
       - poll_a
 
-  - name: collection-C
+  - name: collection-c
     available: true
     accept_all_content: false
     supported_content:
@@ -90,7 +89,7 @@ collections:
       - collection_management_a
       - poll_a
 
-  - name: collection-D
+  - name: col-not-available
     available: false
     service_ids:
       - inbox_b
@@ -100,10 +99,10 @@ accounts:
   - username: test
     password: test
     permissions:
-      collection-A: modify
-      collection-B: read
-      collection-C: read
-      collection-X: some
+      collection-a: modify
+      collection-b: read
+      collection-c: read
+      collection-xyz: some
   - username: admin
     password: admin
     is_admin: yes
