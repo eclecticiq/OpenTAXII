@@ -20,6 +20,8 @@ auth_api:
     db_connection: sqlite:////tmp/auth.db
     create_tables: yes
     secret: SECRET-STRING-NEEDS-TO-BE-CHANGED
+    token_ttl_secs: 3600
+
 
 logging:
   opentaxii: info

@@ -14,8 +14,6 @@ from .models import Base, Account
 __all__ = ['SQLDatabaseAPI']
 
 
-TOKEN_TTL = 60  # min
-
 log = structlog.getLogger(__name__)
 
 
@@ -27,11 +25,17 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
     :param str db_connection: a string that indicates database dialect and
                           connection arguments that will be passed directly
                           to :func:`~sqlalchemy.engine.create_engine` method.
-
     :param bool create_tables=False: if True, tables will be created in the DB.
+    :param str secret: secret string used for token generation
+    :param int token_ttl_secs: TTL for JWT token, in seconds.
     """
+    def __init__(
+            self,
+            db_connection,
+            create_tables=False,
+            secret=None,
+            token_ttl_secs=None):
 
-    def __init__(self, db_connection, create_tables=False, secret=None):
         self.db = SQLAlchemyDB(
             db_connection, Base, session_options={
                 'autocommit': False, 'autoflush': True})
@@ -41,6 +45,7 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
             raise ValueError('Secret is not defined for %s.%s' % (
                 self.__module__, self.__class__.__name__))
         self.secret = secret
+        self.token_ttl_secs = token_ttl_secs or 60 * 60  # 60min
 
     def init_app(self, app):
         self.db.init_app(app)
@@ -52,7 +57,7 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
             return
         if not account.is_password_valid(password):
             return
-        return self._generate_token(account.id, ttl=TOKEN_TTL)
+        return self._generate_token(account.id, ttl=self.token_ttl_secs)
 
     def get_account(self, token):
         account_id = self._get_account_id(token)
@@ -85,7 +90,8 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
         self.db.session.commit()
         return account_to_account_entity(account)
 
-    def _generate_token(self, account_id, ttl=TOKEN_TTL):
+    def _generate_token(self, account_id, ttl=None):
+        ttl = ttl or self.token_ttl_secs
         exp = datetime.utcnow() + timedelta(minutes=ttl)
         return jwt.encode(
             {'account_id': account_id, 'exp': exp},
