@@ -1,6 +1,15 @@
 Changelog
 =========
 
+0.1.10 (2018-06-03)
+------------------
+* Replace separate service/collection/account creation process with single `opentaxii-sync-data` CLI command.
+* Persistence and Auth APIs extended with missing CRUD methods, that are used by `opentaxii-sync-data`.
+* Read/modify collection level ACL added.
+* DB models for default implementation of Persistence API and Auth API were changed. No automatic migration code is provided (sorry!), so upgrading might require manual DB migration.
+* Drop python2.7 from testing scope.
+* Various bug fixes and improvements.
+
 0.1.9 (2017-06-19)
 ------------------
 * `libtaxii <https://github.com/TAXIIProject/libtaxii>`_ dependency upgraded to 1.1.111.
