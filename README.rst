@@ -33,7 +33,7 @@ OpenTAXII is guaranteed to be compatible with `Cabby <http://pypi.python.org/pyp
    :target: https://pypi.python.org/pypi/opentaxii/
 .. |license badge| image:: https://pypip.in/license/opentaxii/badge.svg?style=flat
    :target: https://pypi.python.org/pypi/opentaxii/
-.. |docs badge| image:: https://readthedocs.org/projects/opentaxii/badge/?version=latest
+.. |docs badge| image:: https://readthedocs.org/projects/opentaxii/badge/?version=stable
     :alt: Documentation Status
     :scale: 100%
     :target: https://readthedocs.org/projects/opentaxii/
@@ -43,7 +43,7 @@ OpenTAXII is guaranteed to be compatible with `Cabby <http://pypi.python.org/pyp
 
 Getting started
 ---------------
-See `the documentation <https://opentaxii.readthedocs.org/en/latest/installation.html>`_.
+See `the documentation <https://opentaxii.readthedocs.io/en/stable/installation.html>`_.
 
 Feedback
 --------

@@ -14,11 +14,11 @@ OpenTAXII is guaranteed to be compatible with [Cabby](https://github.com/Eclecti
 [![Build Status](https://travis-ci.org/EclecticIQ/OpenTAXII.svg?branch=move_docs)](https://travis-ci.org/EclecticIQ/OpenTAXII)
 [![Code Health](https://landscape.io/github/EclecticIQ/OpenTAXII/master/landscape.svg?style=flat)](https://landscape.io/github/EclecticIQ/OpenTAXII/master)
 [![Coverage Status](https://coveralls.io/repos/EclecticIQ/OpenTAXII/badge.svg)](https://coveralls.io/r/EclecticIQ/OpenTAXII)
-[![Documentation Status](https://readthedocs.org/projects/opentaxii/badge/?version=latest)](https://readthedocs.org/projects/opentaxii/)
+[![Documentation Status](https://readthedocs.org/projects/opentaxii/badge/?version=stable)](https://readthedocs.org/projects/opentaxii/)
 [![Requirements Status](https://requires.io/github/EclecticIQ/OpenTAXII/requirements.svg?branch=master)](https://requires.io/github/EclecticIQ/OpenTAXII/requirements/?branch=master)
 
 ## Getting started
-See [the documentation](https://opentaxii.readthedocs.org/en/latest/installation.html).
+See [the documentation](https://opentaxii.readthedocs.io/en/stable/installation.html).
 
 ## Getting started with OpenTAXII using Docker
 
@@ -34,11 +34,10 @@ $ docker run -d -p 9000:9000 eclecticiq/opentaxii
 
 > **NOTE:**
 > OpenTAXII is now accessible through port 9000, with data stored
-> locally in a SQLite database, and no authentication, using services defined
-> in [services.yml](https://raw.githubusercontent.com/EclecticIQ/OpenTAXII/master/examples/services.yml) 
-> and collections from [collections.yml](https://raw.githubusercontent.com/EclecticIQ/OpenTAXII/master/examples/collections.yml)
+> locally in a SQLite databases, and no authentication, using services/collections/accounts defined
+> in [data-configuration.yml](https://raw.githubusercontent.com/EclecticIQ/OpenTAXII/master/examples/data-configuration.yml)
 
-More documentation on running OpenTAXII in a container is found in the [OpenTAXII Docker Documentation](http://opentaxii.readthedocs.org/en/latest/docker.html).
+More documentation on running OpenTAXII in a container is found in the [OpenTAXII Docker Documentation](https://opentaxii.readthedocs.io/en/stable/docker.html).
 
 ## Feedback
 
