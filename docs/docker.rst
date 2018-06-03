@@ -28,19 +28,8 @@ Common configuration parameters are:
 
 Setting up  authentication is done with the following two variables:
 
-``OPENTAXII_USER`` : (optional)
-      If the OpenTAXII user and password are not set, no authentication is required
-
-``OPENTAXII_PASS`` : (optional)
-      If you don't want to specify the password on the command line, it is possible to leave the definition empty, and Docker will pick up the value from the environment.
-
 ``OPENTAXII_SECRET`` : (optional)
     This is the secret with which the generated token is encoded.
-
-.. code-block:: shell
-
-    $ export OPENTAXII_PASS="SomePassword"
-    $ docker run -d -p 9000:9000 -e OPENTAXII_USER=myuser -e OPENTAXII_PASS eclecticiq/opentaxii
 
 ---------------------
 
@@ -51,12 +40,6 @@ If you want to use a PostgreSQL database, instead of the included SQLite databas
 
 ``DATABASE_PORT`` : (optional)
     Default is ``5432``
-
-``DATABASE_USER`` : (optional)
-    If not set, the default ``postgres`` is used.
-
-``DATABASE_PASS`` : (optional)
-    If not set, the database can be accessed by all containers on the same host!
 
 ``DATABASE_NAME`` : (optional)
     The database to use, by default uses ``postgres``
@@ -88,18 +71,20 @@ This docker container exposes two volumes, which can be attached to a running in
     This volume will contain the SQLite databases used by the default instance.
 
 ``/input``
-    If you want to pre-load the running instance with `services.yml`, `collections.yml` or have your own `opentaxii.yml` configuration used for the running system, create a folder with these documents present.
+    If you want to pre-load the running instance with services/collections/accounts,
+    put provided :github-file:`data-configuration.yml <examples/data-configuration.yml>` or custom configuration file
+    in ``/input`` folder.
 
 .. code-block:: shell
 
     $ pwd
     /some/path/examples
     $ ls /some/path/examples
-    collections.yml services.yml
+    data-configuration.yml
     $ docker run -d -p 9000:9000 -v /some/path/examples:/input eclecticiq/opentaxii
 
 .. note::
-    Make sure your naming is correct. It will only execute actions when any of the files with names: ``services.yml``, ``collections.yml``, or ``opentaxii.yml`` are present.
+    Make sure your naming is correct. It will only execute actions when files ``data-configuration.yml`` or ``opentaxii.yml`` are present.
 
 Extending
 ---------
@@ -142,8 +127,6 @@ To see a full example of running OpenTAXII against a "real" database, using the 
       environment:
         OPENTAXII_AUTH_SECRET: secret
         OPENTAXII_DOMAIN: 192.168.59.103:9000
-        OPENTAXII_USER: user1
-        OPENTAXII_PASS: pass1
         DATABASE_HOST: db
         DATABASE_NAME: opentaxii
         DATABASE_USER: user
@@ -155,7 +138,7 @@ To see a full example of running OpenTAXII against a "real" database, using the 
       links:
         - db:db
 
-This configuration starts two containers: ``opentaxii`` and ``db``, creates the given collections and services, and adds a user for authentication.
+This configuration starts two containers: ``opentaxii`` and ``db``, and creates the given services/collections/accounts.
 
 
 .. rubric:: Next steps

@@ -18,8 +18,6 @@ function wait_for_port() {
 : ${OPENTAXII_DOMAIN:=localhost:9000}
 : ${OPENTAXII_AUTH_SECRET:=notVerySecret}
 : ${OPENTAXII_CONFIG:=/opentaxii.yml}
-: ${OPENTAXII_USER:=""}
-: ${OPENTAXII_PASS:=""}
 
 # Database Defaults
 P_URL="sqlite:////data/data.db"
@@ -98,13 +96,7 @@ cat /opentaxii.yml
 [ "$DATABASE_HOST" ] && wait_for_port $DATABASE_HOST ${DATABASE_PORT-5432}
 [ "$AUTH_DATABASE_HOST" ] && wait_for_port $AUTH_DATABASE_HOST ${AUTH_DATABASE_PORT-5432}
 
-# Create services if file is present
-[ -f /input/services.yml ] && OPENTAXII_CONFIG=$OPENTAXII_CONFIG opentaxii-create-services -c /input/services.yml 2>/dev/null
-
-# Create collections if file is present.
-[ -f /input/collections.yml ] &&  OPENTAXII_CONFIG=$OPENTAXII_CONFIG  opentaxii-create-collections -c /input/collections.yml 2>/dev/null
-
-## Create initial user if credentials are set.
-[ "$OPENTAXII_USER" -a "$OPENTAXII_PASS" ]  && OPENTAXII_CONFIG=$OPENTAXII_CONFIG  opentaxii-create-account -u "$OPENTAXII_USER" -p "$OPENTAXII_PASS" 2>/dev/null
+# Sync data configuration if it is present
+[ -f /input/data-configuration.yml ] && OPENTAXII_CONFIG=$OPENTAXII_CONFIG opentaxii-sync-data -f /input/data-configuration.yml 2>/dev/null
 
 exec "$@"
