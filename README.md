@@ -33,7 +33,7 @@ $ docker run -d -p 9000:9000 eclecticiq/opentaxii
 
 > **NOTE:**
 > OpenTAXII is now accessible through port 9000, with data stored
-> locally in a SQLite databases, and no authentication, using services/collections/accounts defined
+> locally in a SQLite databases using services/collections/accounts defined
 > in [data-configuration.yml](https://raw.githubusercontent.com/EclecticIQ/OpenTAXII/master/examples/data-configuration.yml)
 
 More documentation on running OpenTAXII in a container is found in the [OpenTAXII Docker Documentation](https://opentaxii.readthedocs.io/en/stable/docker.html).
