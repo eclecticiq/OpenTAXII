@@ -1,8 +1,12 @@
 Changelog
 =========
 
+0.1.11 (TBD)
+------------
+* Make JSON logging consistent when the application is run via Gunicorn.
+
 0.1.10 (2018-06-03)
-------------------
+-------------------
 * Replace separate service/collection/account creation process with single `opentaxii-sync-data` CLI command.
 * Persistence and Auth APIs extended with missing CRUD methods, that are used by `opentaxii-sync-data`.
 * Read/modify collection level ACL added.
