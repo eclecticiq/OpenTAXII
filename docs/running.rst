@@ -1,6 +1,6 @@
-==================
+=================
 Running OpenTAXII
-==================
+=================
 
 .. highlight:: sh
 
@@ -20,14 +20,19 @@ Production mode
 ===============
 
 To run OpenTAXII in production it is recommended to use `standalone WSGI
-container <http://flask.pocoo.org/docs/1.0/tutorial/deploy/#run-with-a-production-server>`_ that work with Flask. In this example we use `Gunicorn WSGI HTTP Server <http://gunicorn.org/>`_.
+container
+<http://flask.pocoo.org/docs/1.0/tutorial/deploy/#run-with-a-production-server>`_
+that works with Flask. In this example we use `Gunicorn WSGI HTTP Server
+<http://gunicorn.org/>`_. For complete logging configuration we recommend
+Gunicorn 19.8 and above.
 
 .. note::
 	Run ``pip install gunicorn`` to install gunicorn. Yes, it's that simple.
 
 To run OpenTAXII with Gunicorn execute::
-    
-    (venv) $ gunicorn opentaxii.http:app --bind localhost:9000
+
+    (venv) $ gunicorn opentaxii.http:app \
+      --bind localhost:9000 --config python:opentaxii.http
 
 Common practice is to wrap gunicorn execution into `supervisord <http://supervisord.org>`_, to be able to monitor, start, and stop it easily.
 
@@ -44,6 +49,7 @@ Example supervisord configuration file:
             --log-file -
             --timeout 300
             --bind localhost:9000
+            --config python:opentaxii.http
     environment =
         OPENTAXII_CONFIG="/opt/eclecticiq/custom-opentaxii-configuration.yml"
 
@@ -62,7 +68,7 @@ Make sure you configure your TAXII services in OpenTAXII with proper protocol bi
 
     * use ``urn:taxii.mitre.org:protocol:https:1.0`` if you're planning on serving data via HTTPS.
     * use ``urn:taxii.mitre.org:protocol:http:1.0`` if the server is going to support unsecure HTTP as well.
-      
+
 You can use multiple protocol bindings per service. That would tell OpenTAXII you want to advertise services over both HTTPs and HTTP. TAXII services create external URLs according to their protocol bindings, using ``http://`` or ``https://`` schemas.
 
 
@@ -79,7 +85,7 @@ be able to communicate with the services.
 Assuming OpenTAXII is running on ``http://localhost:9000``, to get the list of advertised services, run::
 
     (venv) $ taxii-discovery --path http://localhost:9000/services/discovery-a
-    
+
 You should see the following output::
 
     2018-06-03 21:26:32,188 INFO: Sending Discovery_Request to http://localhost:9000/services/discovery-a
@@ -121,7 +127,7 @@ You should see the following output::
 One of the configured services is a Collection Management Service. To get the collections list, run::
 
     (venv) $ taxii-collections --path http://localhost:9000/services/collection-management-a
-    
+
 You should see the following output::
 
     2018-06-03 21:30:03,315 INFO: Sending Collection_Information_Request to http://localhost:9000/services/collection-management-a
@@ -201,7 +207,7 @@ Health check
 
 OpenTAXII has an endpoint that can be used to check health of the service::
 
-    $ curl http://localhost:9000/management/health 
+    $ curl http://localhost:9000/management/health
     {
       "alive": true
     }
