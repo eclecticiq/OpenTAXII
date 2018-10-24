@@ -24,9 +24,9 @@ class SQLAlchemyDB(object):
     Allows the code to use a session bind to Flask context.
     '''
 
-    def __init__(self, db_connection, base_model, session_options=None):
+    def __init__(self, db_connection, base_model, session_options=None, **kwargs):
 
-        self.engine = engine.create_engine(db_connection, convert_unicode=True)
+        self.engine = engine.create_engine(db_connection, convert_unicode=True, **kwargs)
 
         self.Query = orm.Query
         self.session = self.create_scoped_session(session_options)
