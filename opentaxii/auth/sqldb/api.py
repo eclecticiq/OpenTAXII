@@ -28,17 +28,20 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
     :param bool create_tables=False: if True, tables will be created in the DB.
     :param str secret: secret string used for token generation
     :param int token_ttl_secs: TTL for JWT token, in seconds.
+    :param engine_parameters=None: if defined, these arguments would be passed to sqlalchemy.create_engine
     """
     def __init__(
             self,
             db_connection,
             create_tables=False,
             secret=None,
-            token_ttl_secs=None):
+            token_ttl_secs=None,
+            **engine_parameters):
 
         self.db = SQLAlchemyDB(
             db_connection, Base, session_options={
-                'autocommit': False, 'autoflush': True})
+                'autocommit': False, 'autoflush': True},
+            **engine_parameters)
         if create_tables:
             self.db.create_all_tables()
         if not secret:
