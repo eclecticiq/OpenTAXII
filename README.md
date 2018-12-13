@@ -6,14 +6,13 @@ OpenTAXII is a robust Python implementation of TAXII Services that
 delivers rich feature set and friendly pythonic API built on top of well
 designed application.
 
-OpenTAXII is guaranteed to be compatible with [Cabby](https://github.com/EclecticIQ/cabby), TAXII client library.
+OpenTAXII is guaranteed to be compatible with [Cabby](https://github.com/eclecticiq/cabby), TAXII client library.
 
-[Source](https://github.com/EclecticIQ/OpenTAXII) | [Documentation](http://opentaxii.readthedocs.org) | [Information](http://www.eclecticiq.com) | [Download](https://pypi.python.org/pypi/opentaxii/)
+[Source](https://github.com/eclecticiq/OpenTAXII) | [Documentation](http://opentaxii.readthedocs.org) | [Information](http://www.eclecticiq.com) | [Download](https://pypi.python.org/pypi/opentaxii/)
 
 
 [![Build Status](https://travis-ci.org/eclecticiq/OpenTAXII.svg?branch=move_docs)](https://travis-ci.org/eclecticiq/OpenTAXII)
-[![Code Health](https://landscape.io/github/EclecticIQ/OpenTAXII/master/landscape.svg?style=flat)](https://landscape.io/github/EclecticIQ/OpenTAXII/master)
-[![Coverage Status](https://coveralls.io/repos/EclecticIQ/OpenTAXII/badge.svg)](https://coveralls.io/r/EclecticIQ/OpenTAXII)
+[![Coverage Status](https://coveralls.io/repos/eclecticiq/OpenTAXII/badge.svg)](https://coveralls.io/r/eclecticiq/OpenTAXII)
 [![Documentation Status](https://readthedocs.org/projects/opentaxii/badge/?version=stable)](https://readthedocs.org/projects/opentaxii/)
 
 ## Getting started
