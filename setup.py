@@ -21,7 +21,8 @@ install_requires = get_file_contents('requirements.txt').split()
 setup(
     name='opentaxii',
     description='TAXII server implementation in Python from EclecticIQ',
-    long_description=get_file_contents('README.rst'),
+    long_description=get_file_contents('README.md'),
+    long_description_content_type='text/markdown',
     url='https://github.com/EclecticIQ/OpenTAXII',
     author='EclecticIQ',
     author_email='opentaxii@eclecticiq.com',
