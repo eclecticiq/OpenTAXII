@@ -1,42 +1,29 @@
-# Set the base image to Python
-FROM python:2.7.9
-MAINTAINER EclecticIQ <opentaxii@eclecticiq.com>
+FROM python:3.6-stretch AS build
+LABEL maintainer="EclecticIQ <opentaxii@eclecticiq.com>"
 
-# Create the working dir and set the working directory
-WORKDIR /
+RUN python3 -m venv /venv && /venv/bin/pip install -U pip setuptools
 
-# Install dependencies
-COPY ./requirements.txt /requirements.txt
-RUN pip install -r requirements.txt \
-    && pip install supervisor \
-    && pip install gunicorn \
-    && pip install psycopg2 \
-    && rm -f /requirements.txt
+RUN /venv/bin/pip install gunicorn psycopg2-binary
+COPY ./requirements.txt /opentaxii/requirements.txt
+RUN /venv/bin/pip install -r /opentaxii/requirements.txt
+
+COPY . /opentaxii
+RUN /venv/bin/pip install /opentaxii
 
 
-# Create directories
-RUN mkdir /opentaxii \
-    && mkdir /data \
-    && mkdir /input
+FROM python:3.6-slim-stretch AS prod
+LABEL maintainer="EclecticIQ <opentaxii@eclecticiq.com>"
+COPY --from=build /venv /venv
 
-# Setup OpenTAXII
-COPY ./ /opentaxii/
-RUN cd  /opentaxii \
-    && python setup.py install \
-    && rm -rf /opentaxii
+RUN mkdir /data /input
+VOLUME ["/data", "/input"]
 
-# Setup default config
-COPY opentaxii/defaults.yml /opentaxii.yml
+COPY ./docker/entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
 
-# Volume for exposing data and possible input
-VOLUME [ "/data", "/input" ]
-
-# Setup the entrypoint
-COPY docker/entrypoint.sh /entrypoint.sh
-ENTRYPOINT [ "/entrypoint.sh" ]
-
-# Expose and Run using supervisor
-COPY docker/supervisord.conf /supervisord.conf
 EXPOSE 9000
-CMD ["supervisord","-c","/supervisord.conf"]
-
+ENV PATH "/venv/bin:${PATH}"
+ENV PYTHONDONTWRITEBYTECODE "1"
+CMD ["/venv/bin/gunicorn", "opentaxii.http:app", "--workers=2", \
+     "--log-level=info", "--log-file=-", "--timeout=300", \
+     "--config=python:opentaxii.http", "--bind=0.0.0.0:9000"]
