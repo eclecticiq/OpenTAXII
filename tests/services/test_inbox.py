@@ -62,11 +62,13 @@ def prepare_server(server, services):
             if coll.name not in names:
                 coll = server.persistence.create_collection(coll)
                 names.add(coll.name)
+                service_ids = [service]
             else:
                 coll = DataCollection.query.filter_by(name=coll.name).one()
+                service_ids = {s.id for s in coll.services} | {service}
 
             server.persistence.set_collection_services(
-                coll.id, service_ids=[service])
+                coll.id, service_ids=service_ids)
 
 
 @pytest.mark.parametrize("https", [True, False])
