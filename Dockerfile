@@ -3,9 +3,8 @@ LABEL maintainer="EclecticIQ <opentaxii@eclecticiq.com>"
 
 RUN python3 -m venv /venv && /venv/bin/pip install -U pip setuptools
 
-RUN /venv/bin/pip install gunicorn psycopg2-binary
-COPY ./requirements.txt /opentaxii/requirements.txt
-RUN /venv/bin/pip install -r /opentaxii/requirements.txt
+COPY ./requirements.txt ./requirements-docker.txt /opentaxii/
+RUN /venv/bin/pip install -r /opentaxii/requirements.txt -r /opentaxii/requirements-docker.txt
 
 COPY . /opentaxii
 RUN /venv/bin/pip install /opentaxii
