@@ -18,6 +18,8 @@ function wait_for_port() {
 : ${OPENTAXII_DOMAIN:=localhost:9000}
 : ${OPENTAXII_AUTH_SECRET:=notVerySecret}
 : ${OPENTAXII_CONFIG:=/opentaxii.yml}
+# make sure this env var is available to the main process and subprocesses!
+export OPENTAXII_CONFIG
 
 # Database Defaults
 P_URL="sqlite:////data/data.db"
@@ -97,9 +99,6 @@ cat /opentaxii.yml
 [ "$AUTH_DATABASE_HOST" ] && wait_for_port $AUTH_DATABASE_HOST ${AUTH_DATABASE_PORT-5432}
 
 # Sync data configuration if it is present
-[ -f /input/data-configuration.yml ] && OPENTAXII_CONFIG=$OPENTAXII_CONFIG opentaxii-sync-data -f /input/data-configuration.yml 2>/dev/null
-
-# make sure this env var is available to the main process!
-export OPENTAXII_CONFIG
+[ -f /input/data-configuration.yml ] && opentaxii-sync-data -f /input/data-configuration.yml 2>/dev/null
 
 exec "$@"
