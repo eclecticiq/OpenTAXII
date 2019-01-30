@@ -99,4 +99,7 @@ cat /opentaxii.yml
 # Sync data configuration if it is present
 [ -f /input/data-configuration.yml ] && OPENTAXII_CONFIG=$OPENTAXII_CONFIG opentaxii-sync-data -f /input/data-configuration.yml 2>/dev/null
 
+# make sure this env var is available to the main process!
+export OPENTAXII_CONFIG
+
 exec "$@"
