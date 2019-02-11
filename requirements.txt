@@ -1,5 +1,6 @@
 pytz>=2017.2
 libtaxii>=1.1.111
+lxml>=4.3.1
 pyyaml>=3.11
 flask>=0.10.1
 sqlalchemy>=1.1.2
