@@ -1,18 +1,18 @@
 Changelog
 =========
 
-0.1.11 (2018-02-13)
+0.1.11 (2019-02-13)
 ------------
 * Make JSON logging consistent when the application is run via Gunicorn.
-* Set `acceptable_destination` key in status details instead of extended headers
-* Allow passing `engine_parameters` to `SQLDatabaseAPI` for those who want to customize SQLAlchemy engine parameters.
-* Require recent version of `lxml` for security reasons.
+* Set ``acceptable_destination`` key in status details instead of extended headers
+* Allow passing ``engine_parameters`` to ``SQLDatabaseAPI`` for those who want to customize SQLAlchemy engine parameters.
+* Require recent version of ``lxml`` for security reasons.
 * Various test and Docker infrastructure improvements.
 
 0.1.10 (2018-06-03)
 -------------------
-* Replace separate service/collection/account creation process with single `opentaxii-sync-data` CLI command.
-* Persistence and Auth APIs extended with missing CRUD methods, that are used by `opentaxii-sync-data`.
+* Replace separate service/collection/account creation process with single ``opentaxii-sync-data`` CLI command.
+* Persistence and Auth APIs extended with missing CRUD methods, that are used by ``opentaxii-sync-data``.
 * Read/modify collection level ACL added.
 * DB models for default implementation of Persistence API and Auth API were changed. No automatic migration code is provided (sorry!), so upgrading might require manual DB migration.
 * Drop python2.7 from testing scope.
@@ -25,7 +25,7 @@ Changelog
 
 0.1.8 (2017-02-21)
 ------------------
-* Ability to enable/disable "huge trees" support in XML parser. Configuration property `xml_parser_supports_huge_tree` set to `yes` or `true` will disable security restrictions and force XML parser to support very deep trees and very long text content.
+* Ability to enable/disable "huge trees" support in XML parser. Configuration property ``xml_parser_supports_huge_tree`` set to ``yes`` or ``true`` will disable security restrictions and force XML parser to support very deep trees and very long text content.
 * Adjust SQL Persistence API implemetation so it works smoothly with MySQL backend.
 * Use Python 3.5 instead of Python 3.4 for tests.
 
