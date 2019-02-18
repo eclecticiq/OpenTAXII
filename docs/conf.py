@@ -46,7 +46,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'OpenTAXII'
-copyright = u'2016-%s, EclecticIQ' % datetime.date.now().year
+copyright = u'2016-%s, EclecticIQ' % datetime.date.today().year
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
