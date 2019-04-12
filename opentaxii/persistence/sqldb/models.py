@@ -11,6 +11,7 @@ __all__ = ['Base', 'ContentBlock', 'DataCollection', 'Service',
 
 Base = declarative_base(name='Model')
 
+MYSQL_MEDIUMBLOB = mysql.MEDIUMBLOB()
 
 class AbstractModel(Base):
     __abstract__ = True
@@ -53,7 +54,7 @@ class ContentBlock(AbstractModel):
         nullable=True)
 
     content_type = types.LargeBinary()
-    content_type = content_type.with_variant(mysql.MEDIUMBLOB(), 'mysql')
+    content_type = content_type.with_variant(MYSQL_MEDIUMBLOB, 'mysql')
     content = schema.Column(content_type, nullable=False)
 
     binding_id = schema.Column(types.String(300), index=True)
@@ -161,9 +162,9 @@ class InboxMessage(AbstractModel):
         types.DateTime(timezone=True), nullable=True)
 
     original_message_type = types.LargeBinary()
-    original_message_type = original_message_type.with_variant(mysql.MEDIUMBLOB(), 'mysql')
+    original_message_type = original_message_type.with_variant(MYSQL_MEDIUMBLOB, 'mysql')
     original_message = schema.Column(original_message_type, nullable=False)
-
+    
     content_block_count = schema.Column(types.Integer)
 
     # FIXME: should be a proper reference ID

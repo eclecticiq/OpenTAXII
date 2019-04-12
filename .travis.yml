@@ -1,13 +1,19 @@
+branches:
+  - master
+
 language: python
+dist: xenial
 python:
   - "2.7"
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-install: 
-  - pip install -r requirements-dev.txt
-  - pip install coveralls
-# command to run tests, e.g. python setup.py test
-script: 
-  PYTHONPATH=.:$PYTHONPATH py.test --cov opentaxii
-#  coverage run --source=opentaxii setup.py test
+  - "3.5"
+  - "3.6"
+  - "3.7"
+
+install:
+  - pip install coveralls -r requirements-dev.txt
+
+script:
+  - pytest --cov opentaxii
+
 after_success:
-  coveralls
+  - coveralls
