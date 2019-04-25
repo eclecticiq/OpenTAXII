@@ -11,7 +11,7 @@ __all__ = ['Base', 'ContentBlock', 'DataCollection', 'Service',
 
 Base = declarative_base(name='Model')
 
-MYSQL_MEDIUMBLOB = mysql.MEDIUMBLOB()
+MYSQL_LARGE_BINARY = mysql.MEDIUMBLOB()
 
 class AbstractModel(Base):
     __abstract__ = True
@@ -160,7 +160,7 @@ class InboxMessage(AbstractModel):
     inclusive_end_timestamp_label = schema.Column(
         types.DateTime(timezone=True), nullable=True)
 
-    original_message_type = types.LargeBinary().with_variant(MYSQL_MEDIUMBLOB, 'mysql')
+    original_message_type = types.LargeBinary().with_variant(MYSQL_LARGE_BINARY, 'mysql')
     original_message = schema.Column(original_message_type, nullable=False)
     
     content_block_count = schema.Column(types.Integer)
