@@ -53,8 +53,7 @@ class ContentBlock(AbstractModel):
             'inbox_messages.id', onupdate='CASCADE', ondelete='CASCADE'),
         nullable=True)
 
-    content_type = types.LargeBinary()
-    content_type = content_type.with_variant(MYSQL_MEDIUMBLOB, 'mysql')
+    content_type = types.LargeBinary().with_variant(MYSQL_LARGE_BINARY, 'mysql')
     content = schema.Column(content_type, nullable=False)
 
     binding_id = schema.Column(types.String(300), index=True)
@@ -161,8 +160,7 @@ class InboxMessage(AbstractModel):
     inclusive_end_timestamp_label = schema.Column(
         types.DateTime(timezone=True), nullable=True)
 
-    original_message_type = types.LargeBinary()
-    original_message_type = original_message_type.with_variant(MYSQL_MEDIUMBLOB, 'mysql')
+    original_message_type = types.LargeBinary().with_variant(MYSQL_MEDIUMBLOB, 'mysql')
     original_message = schema.Column(original_message_type, nullable=False)
     
     content_block_count = schema.Column(types.Integer)
