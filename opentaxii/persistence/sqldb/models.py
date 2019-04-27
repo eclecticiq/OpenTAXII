@@ -4,12 +4,14 @@ from datetime import datetime
 from sqlalchemy import schema, types
 from sqlalchemy.orm import relationship, validates
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.dialects import mysql
 
 __all__ = ['Base', 'ContentBlock', 'DataCollection', 'Service',
            'InboxMessage', 'ResultSet', 'Subscription']
 
 Base = declarative_base(name='Model')
 
+MYSQL_LARGE_BINARY = mysql.MEDIUMBLOB()
 
 class AbstractModel(Base):
     __abstract__ = True
@@ -51,7 +53,8 @@ class ContentBlock(AbstractModel):
             'inbox_messages.id', onupdate='CASCADE', ondelete='CASCADE'),
         nullable=True)
 
-    content = schema.Column(types.LargeBinary, nullable=False)
+    content_type = types.LargeBinary().with_variant(MYSQL_LARGE_BINARY, 'mysql')
+    content = schema.Column(content_type, nullable=False)
 
     binding_id = schema.Column(types.String(300), index=True)
     binding_subtype = schema.Column(types.String(300), index=True)
@@ -157,7 +160,9 @@ class InboxMessage(AbstractModel):
     inclusive_end_timestamp_label = schema.Column(
         types.DateTime(timezone=True), nullable=True)
 
-    original_message = schema.Column(types.LargeBinary, nullable=False)
+    original_message_type = types.LargeBinary().with_variant(MYSQL_LARGE_BINARY, 'mysql')
+    original_message = schema.Column(original_message_type, nullable=False)
+    
     content_block_count = schema.Column(types.Integer)
 
     # FIXME: should be a proper reference ID
