@@ -20,7 +20,8 @@ after_success:
 
 matrix:
   include:
-    - install:
+    - name: flake8
+      install:
       - pip install flake8
-    - script:
+      script:
       - flake8
