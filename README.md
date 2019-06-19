@@ -21,7 +21,7 @@ See [the documentation](https://opentaxii.readthedocs.io/en/stable/installation.
 ## Getting started with OpenTAXII using Docker
 
 OpenTAXII can also be run using docker. This guide assumes that you have
-access to a local or remote docker server, and won’t go into the setup
+access to a local or remote docker server, and won't go into the setup
 of docker.
 
 To get a default (development) instance using docker
