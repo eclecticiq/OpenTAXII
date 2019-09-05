@@ -1,4 +1,5 @@
 import json
+import pytz
 from datetime import datetime
 
 from sqlalchemy import schema, types
@@ -13,11 +14,15 @@ Base = declarative_base(name='Model')
 
 MYSQL_LARGE_BINARY = mysql.MEDIUMBLOB()
 
+def get_utc_now():
+    return datetime.utcnow().replace(tzinfo=pytz.UTC)
+
+
 class AbstractModel(Base):
     __abstract__ = True
 
     date_created = schema.Column(
-        types.DateTime(timezone=True), default=datetime.utcnow)
+        types.DateTime(timezone=True), default=get_utc_now)
 
 
 collection_to_content_block = schema.Table(
@@ -45,7 +50,7 @@ class ContentBlock(AbstractModel):
 
     timestamp_label = schema.Column(
         types.DateTime(timezone=True),
-        default=datetime.utcnow, index=True)
+        default=get_utc_now, index=True)
 
     inbox_message_id = schema.Column(
         types.Integer,
@@ -109,7 +114,7 @@ class Service(AbstractModel):
         backref='services')
 
     date_updated = schema.Column(
-        types.DateTime(timezone=True), default=datetime.utcnow)
+        types.DateTime(timezone=True), default=get_utc_now)
 
     @property
     def properties(self):
