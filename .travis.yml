@@ -17,3 +17,13 @@ script:
 
 after_success:
   - coveralls
+
+matrix:
+  include:
+    - name: flake8
+      install:
+        - pip install flake8
+      script:
+        - flake8
+      after_success:
+        - true  # don't run coveralls for flake8
