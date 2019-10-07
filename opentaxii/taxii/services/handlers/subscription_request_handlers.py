@@ -29,7 +29,7 @@ def action_subscribe(request, service, collection, version, **kwargs):
         params = request.subscription_parameters
         response_type = params.response_type
 
-        if len(params.content_bindings) == 0:
+        if not params.content_bindings:
             supported_contents = []
         else:
             requested_bindings = parse_content_bindings(
