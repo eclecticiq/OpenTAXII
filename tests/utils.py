@@ -3,8 +3,8 @@ from libtaxii import messages_11 as tm11
 
 from opentaxii.taxii import entities
 from opentaxii.taxii.http import (
-    TAXII_10_HTTPS_Headers, TAXII_10_HTTP_Headers, TAXII_11_HTTPS_Headers,
-    TAXII_11_HTTP_Headers
+    TAXII_10_HTTPS_Headers, TAXII_10_HTTP_HEADERS, TAXII_11_HTTPS_Headers,
+    TAXII_11_HTTP_HEADERS
 )
 from opentaxii.taxii.http import (
     HTTP_ACCEPT, HTTP_CONTENT_XML)
@@ -30,12 +30,12 @@ def prepare_headers(version, https):
         if https:
             headers.update(TAXII_10_HTTPS_Headers)
         else:
-            headers.update(TAXII_10_HTTP_Headers)
+            headers.update(TAXII_10_HTTP_HEADERS)
     elif version == 11:
         if https:
             headers.update(TAXII_11_HTTPS_Headers)
         else:
-            headers.update(TAXII_11_HTTP_Headers)
+            headers.update(TAXII_11_HTTP_HEADERS)
     else:
         raise ValueError('Unknown TAXII message version: %s' % version)
 
@@ -101,11 +101,11 @@ def is_headers_valid(headers, version, https):
         if https:
             return includes(headers, TAXII_10_HTTPS_Headers)
         else:
-            return includes(headers, TAXII_10_HTTP_Headers)
+            return includes(headers, TAXII_10_HTTP_HEADERS)
     elif version == 11:
         if https:
             return includes(headers, TAXII_11_HTTPS_Headers)
         else:
-            return includes(headers, TAXII_11_HTTP_Headers)
+            return includes(headers, TAXII_11_HTTP_HEADERS)
     else:
         raise ValueError('Unknown TAXII message version: %s' % version)

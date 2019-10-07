@@ -38,7 +38,7 @@ TAXII_11_HTTPS_Headers = {
     HTTP_X_TAXII_SERVICES: VID_TAXII_SERVICES_11
 }
 
-TAXII_11_HTTP_Headers = {
+TAXII_11_HTTP_HEADERS = {
     HTTP_CONTENT_TYPE: HTTP_CONTENT_XML,
     HTTP_X_TAXII_CONTENT_TYPE: VID_TAXII_XML_11,
     HTTP_X_TAXII_PROTOCOL: VID_TAXII_HTTP_10,
@@ -52,7 +52,7 @@ TAXII_10_HTTPS_Headers = {
     HTTP_X_TAXII_SERVICES: VID_TAXII_SERVICES_10
 }
 
-TAXII_10_HTTP_Headers = {
+TAXII_10_HTTP_HEADERS = {
     HTTP_CONTENT_TYPE: HTTP_CONTENT_XML,
     HTTP_X_TAXII_CONTENT_TYPE: VID_TAXII_XML_10,
     HTTP_X_TAXII_PROTOCOL: VID_TAXII_HTTP_10,
@@ -73,12 +73,12 @@ def get_http_headers(version, is_secure):
         if is_secure:
             return TAXII_11_HTTPS_Headers
         else:
-            return TAXII_11_HTTP_Headers
+            return TAXII_11_HTTP_HEADERS
     elif version in taxii_10:
         if is_secure:
             return TAXII_10_HTTPS_Headers
         else:
-            return TAXII_10_HTTP_Headers
+            return TAXII_10_HTTP_HEADERS
 
     # FIXME: should raise a custom error
     raise ValueError(
