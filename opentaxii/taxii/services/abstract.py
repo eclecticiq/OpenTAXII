@@ -5,7 +5,7 @@ from libtaxii.constants import (
     VID_TAXII_XML_10, VID_TAXII_XML_11
 )
 
-from ..exceptions import StatusMessageException, raise_failure
+from ..exceptions import raise_failure
 from ..bindings import PROTOCOL_TO_SCHEME
 from ..converters import service_to_service_instances
 
@@ -79,11 +79,7 @@ class TAXIIService(object):
         handler.validate_headers(headers, in_response_to=message.message_id)
         handler.verify_message_is_supported(message)
 
-        try:
-            response_message = handler.handle_message(self, message)
-        except StatusMessageException:
-            raise
-
+        response_message = handler.handle_message(self, message)
         if not response_message:
             raise_failure(
                 "The message handler {} did not return a TAXII Message"
