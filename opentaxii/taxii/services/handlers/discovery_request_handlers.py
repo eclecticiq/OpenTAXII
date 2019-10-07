@@ -48,8 +48,9 @@ class DiscoveryRequestHandler(BaseMessageHandler):
 
         if isinstance(request, tm10.DiscoveryRequest):
             return DiscoveryRequest10Handler.handle_message(service, request)
-        elif isinstance(request, tm11.DiscoveryRequest):
+        if isinstance(request, tm11.DiscoveryRequest):
             return DiscoveryRequest11Handler.handle_message(service, request)
-        else:
-            raise_failure("TAXII Message not supported by message handler",
-                          request.message_id)
+        raise_failure(
+            "TAXII Message not supported by message handler",
+            request.message_id,
+        )

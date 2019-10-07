@@ -67,18 +67,16 @@ def get_content_type(headers):
 def get_http_headers(version, is_secure):
 
     taxii_11 = [VID_TAXII_XML_11, VID_TAXII_SERVICES_11]
-    taxii_10 = [VID_TAXII_XML_10, VID_TAXII_SERVICES_10]
-
     if version in taxii_11:
         if is_secure:
             return TAXII_11_HTTPS_Headers
-        else:
-            return TAXII_11_HTTP_Headers
-    elif version in taxii_10:
+        return TAXII_11_HTTP_Headers
+
+    taxii_10 = [VID_TAXII_XML_10, VID_TAXII_SERVICES_10]
+    if version in taxii_10:
         if is_secure:
             return TAXII_10_HTTPS_Headers
-        else:
-            return TAXII_10_HTTP_Headers
+        return TAXII_10_HTTP_Headers
 
     # FIXME: should raise a custom error
     raise ValueError(

@@ -18,11 +18,9 @@ log = structlog.getLogger(__name__)
 
 def get_path_and_address(domain, address):
     parsed = urllib.parse.urlparse(address)
-
     if parsed.scheme:
         return None, address
-    else:
-        return address, domain + address
+    return address, domain + address
 
 
 def import_class(module_class_name):
