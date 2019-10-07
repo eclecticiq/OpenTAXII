@@ -45,7 +45,7 @@ class InboxMessage11Handler(BaseMessageHandler):
                 c for c in collections
                 if c.is_content_supported(content_block.content_binding)]
 
-            if len(correct_binding_collections) == 0:
+            if not correct_binding_collections:
                 # There's nothing to add this content block to
                 log.warning(
                     "No accessible collection that support "
