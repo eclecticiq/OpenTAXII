@@ -73,7 +73,9 @@ def _server_wrapper(server):
             if service:
                 if (service.authentication_required
                         and context.account is None):
-                    raise UnauthorizedException()
+                    raise UnauthorizedException(
+                        status_type=server.config['unauthorized_status'],
+                    )
 
                 if not service.authentication_required:
                     # if service is not protected, full access
@@ -111,7 +113,9 @@ def _authenticate(server, headers):
     if auth_type == 'basic':
 
         if not server.is_basic_auth_supported():
-            raise UnauthorizedException()
+            raise UnauthorizedException(
+                status_type=server.config['unauthorized_status'],
+            )
 
         try:
             username, password = parse_basic_auth_token(raw_token)
@@ -125,15 +129,21 @@ def _authenticate(server, headers):
     elif auth_type == 'bearer':
         token = raw_token
     else:
-        raise UnauthorizedException()
+        raise UnauthorizedException(
+            status_type=server.config['unauthorized_status'],
+        )
 
     if not token:
-        raise UnauthorizedException()
+        raise UnauthorizedException(
+            status_type=server.config['unauthorized_status'],
+        )
 
     account = server.auth.get_account(token)
 
     if not account:
-        raise UnauthorizedException()
+        raise UnauthorizedException(
+            status_type=server.config['unauthorized_status'],
+        )
 
     return account
 
