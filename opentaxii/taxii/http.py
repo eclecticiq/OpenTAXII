@@ -31,7 +31,7 @@ REQUIRED_RESPONSE_HEADERS = (
     HTTP_CONTENT_TYPE, HTTP_X_TAXII_CONTENT_TYPE,
     HTTP_X_TAXII_PROTOCOL, HTTP_X_TAXII_SERVICES)
 
-TAXII_11_HTTPS_Headers = {
+TAXII_11_HTTPS_HEADERS = {
     HTTP_CONTENT_TYPE: HTTP_CONTENT_XML,
     HTTP_X_TAXII_CONTENT_TYPE: VID_TAXII_XML_11,
     HTTP_X_TAXII_PROTOCOL: VID_TAXII_HTTPS_10,
@@ -45,7 +45,7 @@ TAXII_11_HTTP_HEADERS = {
     HTTP_X_TAXII_SERVICES: VID_TAXII_SERVICES_11
 }
 
-TAXII_10_HTTPS_Headers = {
+TAXII_10_HTTPS_HEADERS = {
     HTTP_CONTENT_TYPE: HTTP_CONTENT_XML,
     HTTP_X_TAXII_CONTENT_TYPE: VID_TAXII_XML_10,
     HTTP_X_TAXII_PROTOCOL: VID_TAXII_HTTPS_10,
@@ -69,13 +69,13 @@ def get_http_headers(version, is_secure):
     taxii_11 = [VID_TAXII_XML_11, VID_TAXII_SERVICES_11]
     if version in taxii_11:
         if is_secure:
-            return TAXII_11_HTTPS_Headers
+            return TAXII_11_HTTPS_HEADERS
         return TAXII_11_HTTP_HEADERS
 
     taxii_10 = [VID_TAXII_XML_10, VID_TAXII_SERVICES_10]
     if version in taxii_10:
         if is_secure:
-            return TAXII_10_HTTPS_Headers
+            return TAXII_10_HTTPS_HEADERS
         return TAXII_10_HTTP_HEADERS
 
     # FIXME: should raise a custom error
