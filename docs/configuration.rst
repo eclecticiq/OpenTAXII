@@ -31,6 +31,7 @@ Default configuration file looks like this:
     xml_parser_supports_huge_tree: yes
     count_blocks_in_poll_responses: no
     return_server_error_details: no
+    unauthorized_status: UNAUTHORIZED
 
     persistence_api:
       class: opentaxii.persistence.sqldb.SQLDatabaseAPI
@@ -49,8 +50,8 @@ Default configuration file looks like this:
       opentaxii: info
       root: info
 
-    hooks: 
-    
+    hooks:
+
 .. note::
   OpenTAXII uses a SQLite Database by default wich is intended only when running OpenTAXII in a development environment. Please use different SQL DB backend for running in a production environment.
 
@@ -82,6 +83,7 @@ Properties
     - ``xml_parser_supports_huge_tree`` — enable/disable security restrictions in `lxml <http://lxml.de/>`_ library to allow support for very deep trees and very long text content. If this is disabled, OpenTAXII will not be able to parse TAXII messages with content blocks larger than roughly 10MB.
     - ``count_blocks_in_poll_responses`` — enable/disable total count in TAXII Poll responses. It is disabled by default since ``count`` operation might be `very slow <https://wiki.postgresql.org/wiki/Slow_Counting>`_ in some SQL DBs.
     - ``return_server_error_details`` — allow OpenTAXII to return error details in error-status TAXII response.
+    - ``unauthorized_status`` — TAXII status type for authorization error. "UNAUTHORIZED" by default. see `libtaxii.constants.ST_TYPES_11 <https://libtaxii.readthedocs.io/en/stable/api/constants.html#libtaxii.constants.ST_TYPES_11>`_ for the list of available values.
     - ``persistence_api`` — configuration properties for Persistence API implementation.
     - ``auth_api`` — configuration properties for Authentication API implementation.
     - ``logging`` — logging configuration.
@@ -97,8 +99,8 @@ To pass custom configuration to OpenTAXII server, specify an absolute path to yo
 configuration file in environment variable ``OPENTAXII_CONFIG``.::
 
 	$ export OPENTAXII_CONFIG=/path/to/configuration/file.yml
-	
-	
+
+
 This configuration file may fully or partially override default settings.
 
 Example custom configuration:
@@ -137,11 +139,11 @@ Services, collections and accounts
 Services, collections and accounts can be created with CLI command ``opentaxii-sync-data`` or with custom code talking to a specific Persistent API implementation/backend.
 
 Step 1
------- 
+------
 Create YAML file with collections/services/accounts configuration. See provided example from `OpenTAXII git repo <https://github.com/eclecticiq/OpenTAXII>`_ — file :github-file:`examples/data-configuration.yml <examples/data-configuration.yml>` that contains:
 
 Services:
-    * 2 Inbox Services (with ids ``inbox_a`` and ``inbox_b``), 
+    * 2 Inbox Services (with ids ``inbox_a`` and ``inbox_b``),
     * 1 Discovery Service (with id ``discovery_a``),
     * 1 Collection Management Service (with id ``collection_management_a``),
     * 1 Poll Service (with id ``poll_a``).

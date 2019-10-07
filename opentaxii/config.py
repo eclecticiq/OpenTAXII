@@ -1,5 +1,6 @@
 import os
 import anyconfig
+from libtaxii.constants import ST_TYPES_10, ST_TYPES_11
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -36,5 +37,8 @@ class ServerConfig(dict):
         options = anyconfig.load(
             config_paths, ac_parser='yaml',
             ignore_missing=False, ac_merge=anyconfig.MS_REPLACE)
+
+        if options['unauthorized_status'] not in ST_TYPES_10 + ST_TYPES_11:
+            raise ValueError('invalid value for unauthorized_status field')
 
         super(ServerConfig, self).__init__(options)
