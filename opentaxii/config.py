@@ -37,4 +37,4 @@ class ServerConfig(dict):
             config_paths, ac_parser='yaml',
             ignore_missing=False, ac_merge=anyconfig.MS_REPLACE)
 
-        self.update(options)
+        super().__init__(options)
