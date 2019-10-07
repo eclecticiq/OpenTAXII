@@ -119,8 +119,9 @@ class InboxMessageHandler(BaseMessageHandler):
     def handle_message(cls, service, request):
         if isinstance(request, tm10.InboxMessage):
             return InboxMessage10Handler.handle_message(service, request)
-        elif isinstance(request, tm11.InboxMessage):
+        if isinstance(request, tm11.InboxMessage):
             return InboxMessage11Handler.handle_message(service, request)
-        else:
-            raise_failure("TAXII Message not supported by message handler",
-                          request.message_id)
+        raise_failure(
+            "TAXII Message not supported by message handler",
+            request.message_id,
+        )
