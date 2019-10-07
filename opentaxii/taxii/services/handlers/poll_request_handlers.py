@@ -298,8 +298,9 @@ class PollRequestHandler(BaseMessageHandler):
     def handle_message(cls, service, request):
         if isinstance(request, tm10.PollRequest):
             return PollRequest10Handler.handle_message(service, request)
-        elif isinstance(request, tm11.PollRequest):
+        if isinstance(request, tm11.PollRequest):
             return PollRequest11Handler.handle_message(service, request)
-        else:
-            raise_failure("TAXII Message not supported by message handler",
-                          request.message_id)
+        raise_failure(
+            "TAXII Message not supported by message handler",
+            request.message_id,
+        )

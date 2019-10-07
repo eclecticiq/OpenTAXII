@@ -56,8 +56,9 @@ class PollFulfilmentRequestHandler(BaseMessageHandler):
     @classmethod
     def handle_message(cls, service, request):
         if isinstance(request, tm11.PollFulfillmentRequest):
-            return PollFulfilmentRequest11Handler.handle_message(service,
-                                                                 request)
-        else:
-            raise_failure("TAXII Message not supported by message handler",
-                          request.message_id)
+            return PollFulfilmentRequest11Handler.handle_message(
+                service=service,
+                request=request,
+            )
+        raise_failure("TAXII Message not supported by message handler",
+                      request.message_id)

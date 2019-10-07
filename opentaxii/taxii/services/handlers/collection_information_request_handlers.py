@@ -59,10 +59,9 @@ class CollectionInformationRequestHandler(BaseMessageHandler):
         if isinstance(request, tm10.FeedInformationRequest):
             return FeedInformationRequest10Handler.handle_message(
                 service, request)
-        elif isinstance(request, tm11.CollectionInformationRequest):
+        if isinstance(request, tm11.CollectionInformationRequest):
             return CollectionInformationRequest11Handler.handle_message(
                 service, request)
-        else:
-            raise_failure(
-                "TAXII Message not supported by message handler",
-                request.message_id)
+        raise_failure(
+            "TAXII Message not supported by message handler",
+            request.message_id)

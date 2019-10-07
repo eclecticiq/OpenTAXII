@@ -13,6 +13,7 @@ Base = declarative_base(name='Model')
 
 MYSQL_LARGE_BINARY = mysql.MEDIUMBLOB()
 
+
 class AbstractModel(Base):
     __abstract__ = True
 
@@ -162,7 +163,7 @@ class InboxMessage(AbstractModel):
 
     original_message_type = types.LargeBinary().with_variant(MYSQL_LARGE_BINARY, 'mysql')
     original_message = schema.Column(original_message_type, nullable=False)
-    
+
     content_block_count = schema.Column(types.Integer)
 
     # FIXME: should be a proper reference ID

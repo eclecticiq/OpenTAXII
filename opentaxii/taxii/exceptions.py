@@ -36,8 +36,10 @@ class FailureStatus(StatusMessageException):
 
 class UnauthorizedStatus(StatusMessageException):
 
-    def __init__(self, **kwargs):
-        super(UnauthorizedStatus, self).__init__(ST_UNAUTHORIZED, **kwargs)
+    def __init__(self, status_type=ST_UNAUTHORIZED, **kwargs):
+        super(UnauthorizedStatus, self).__init__(
+            status_type=status_type.upper(),
+            **kwargs)
 
 
 def raise_failure(message, in_response_to='0'):
