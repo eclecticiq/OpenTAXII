@@ -83,7 +83,7 @@ Properties
     - ``xml_parser_supports_huge_tree`` — enable/disable security restrictions in `lxml <http://lxml.de/>`_ library to allow support for very deep trees and very long text content. If this is disabled, OpenTAXII will not be able to parse TAXII messages with content blocks larger than roughly 10MB.
     - ``count_blocks_in_poll_responses`` — enable/disable total count in TAXII Poll responses. It is disabled by default since ``count`` operation might be `very slow <https://wiki.postgresql.org/wiki/Slow_Counting>`_ in some SQL DBs.
     - ``return_server_error_details`` — allow OpenTAXII to return error details in error-status TAXII response.
-    - ``unauthorized_status`` — TAXII status type for authorization error. "UNAUTHORIZED" by default.
+    - ``unauthorized_status`` — TAXII status type for authorization error. "UNAUTHORIZED" by default. see `libtaxii.constants.ST_TYPES_11 <https://libtaxii.readthedocs.io/en/stable/api/constants.html#libtaxii.constants.ST_TYPES_11>`_ for the list of available values.
     - ``persistence_api`` — configuration properties for Persistence API implementation.
     - ``auth_api`` — configuration properties for Authentication API implementation.
     - ``logging`` — logging configuration.
