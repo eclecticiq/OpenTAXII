@@ -41,4 +41,4 @@ class ServerConfig(dict):
         if options['unauthorized_status'] not in ST_TYPES_10 + ST_TYPES_11:
             raise ValueError('invalid value for unauthorized_status field')
 
-        self.update(options)
+        super(ServerConfig, self).__init__(options)

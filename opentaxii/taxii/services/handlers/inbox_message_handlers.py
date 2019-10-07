@@ -45,7 +45,7 @@ class InboxMessage11Handler(BaseMessageHandler):
                 c for c in collections
                 if c.is_content_supported(content_block.content_binding)]
 
-            if len(correct_binding_collections) == 0:
+            if not correct_binding_collections:
                 # There's nothing to add this content block to
                 log.warning(
                     "No accessible collection that support "
@@ -119,8 +119,9 @@ class InboxMessageHandler(BaseMessageHandler):
     def handle_message(cls, service, request):
         if isinstance(request, tm10.InboxMessage):
             return InboxMessage10Handler.handle_message(service, request)
-        elif isinstance(request, tm11.InboxMessage):
+        if isinstance(request, tm11.InboxMessage):
             return InboxMessage11Handler.handle_message(service, request)
-        else:
-            raise_failure("TAXII Message not supported by message handler",
-                          request.message_id)
+        raise_failure(
+            "TAXII Message not supported by message handler",
+            request.message_id,
+        )

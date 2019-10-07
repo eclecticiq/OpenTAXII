@@ -83,9 +83,10 @@ def _server_wrapper(server):
 
                 if not service.available:
                     raise_failure("The service is not available")
+
                 if request.method == 'POST':
                     return _process_with_service(service)
-                elif request.method == 'OPTIONS':
+                if request.method == 'OPTIONS':
                     return _process_options_request(service)
         finally:
             release_context()

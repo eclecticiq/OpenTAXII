@@ -18,10 +18,11 @@ def parse_content_binding(raw_content_binding, version):
         return ContentBindingEntity(
             binding=raw_content_binding,
             subtypes=None)
-    elif version == 11:
+    if version == 11:
         return ContentBindingEntity(
             binding=raw_content_binding.binding_id,
             subtypes=raw_content_binding.subtype_ids)
+    raise ValueError('invalid version')
 
 
 def parse_content_bindings(bindings, version):
@@ -31,10 +32,11 @@ def parse_content_bindings(bindings, version):
 def content_binding_entity_to_content_binding(content_binding, version):
     if version == 10:
         return content_binding.binding
-    elif version == 11:
+    if version == 11:
         return tm11.ContentBinding(
             binding_id=content_binding.binding,
             subtype_ids=content_binding.subtypes)
+    raise ValueError('invalid version')
 
 
 def content_binding_entities_to_content_bindings(content_bindings, version):
@@ -74,6 +76,8 @@ def service_to_service_instances(service, version):
                 message_bindings=service.supported_message_bindings,
                 message=service.description
             )
+        else:
+            raise ValueError('invalid version')
         service_instances.append(instance)
 
     return service_instances
@@ -176,8 +180,8 @@ def collection_to_feedcollection_information(service, collection, version):
             collection_type=collection.type,
             receiving_inbox_services=inbox_instances
         )
-    else:
 
+    if version == 10:
         return tm10.FeedInformation(
             feed_name=collection.name,
             feed_description=collection.description,
@@ -190,6 +194,8 @@ def collection_to_feedcollection_information(service, collection, version):
             # collection_volume, collection_type, and
             # receiving_inbox_services are not supported in TAXII 1.0
         )
+
+    raise ValueError('invalid version')
 
 
 def subscription_to_subscription_instance(subscription, polling_services,
@@ -206,6 +212,10 @@ def subscription_to_subscription_instance(subscription, polling_services,
         subscription_id=subscription.subscription_id,
         poll_instances=polling_instances,
     )
+
+    if version == 10:
+        params['delivery_parameters'] = None
+        return tm10.SubscriptionInstance(**params)
 
     if version == 11:
         push_params = None
@@ -225,9 +235,8 @@ def subscription_to_subscription_instance(subscription, polling_services,
             )
 
         return tm11.SubscriptionInstance(**params)
-    else:
-        params['delivery_parameters'] = None
-        return tm10.SubscriptionInstance(**params)
+
+    raise ValueError('invalid version')
 
 
 def inbox_message_to_inbox_message_entity(inbox_message, service_id, version):
@@ -242,7 +251,6 @@ def inbox_message_to_inbox_message_entity(inbox_message, service_id, version):
     )
 
     if version == 10:
-
         if inbox_message.subscription_information:
             si = inbox_message.subscription_information
             begin = si.inclusive_begin_timestamp_label
@@ -255,34 +263,31 @@ def inbox_message_to_inbox_message_entity(inbox_message, service_id, version):
                 exclusive_begin_timestamp_label=begin,
                 inclusive_end_timestamp_label=end
             ))
+        return InboxMessageEntity(**params)
 
-    elif version == 11:
-
+    if version == 11:
         params.update(dict(
             result_id=inbox_message.result_id,
             destination_collections=inbox_message.destination_collection_names,
         ))
-
         if inbox_message.record_count:
             params.update(dict(
                 record_count=inbox_message.record_count.record_count,
                 partial_count=inbox_message.record_count.partial_count
             ))
-
         if inbox_message.subscription_information:
             si = inbox_message.subscription_information
-
             begin = si.exclusive_begin_timestamp_label
             end = si.inclusive_end_timestamp_label
-
             params.update(dict(
                 subscription_collection_name=si.collection_name,
                 subscription_id=si.subscription_id,
                 exclusive_begin_timestamp_label=begin,
                 inclusive_end_timestamp_label=end
             ))
+        return InboxMessageEntity(**params)
 
-    return InboxMessageEntity(**params)
+    raise ValueError('invalid version')
 
 
 def content_block_to_content_block_entity(content_block, version,
@@ -322,13 +327,13 @@ def content_block_entity_to_content_block(entity, version):
             content_binding=content_bindings,
             content=content,
             timestamp_label=entity.timestamp_label)
-
-    elif version == 11:
+    if version == 11:
         return tm11.ContentBlock(
             content_binding=content_bindings,
             content=content,
             timestamp_label=entity.timestamp_label,
             message=entity.message)
+    raise ValueError('invalid version')
 
 
 def dict_to_service_entity(blob):
