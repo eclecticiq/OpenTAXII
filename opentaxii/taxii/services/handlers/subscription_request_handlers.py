@@ -29,7 +29,7 @@ def action_subscribe(request, service, collection, version, **kwargs):
         params = request.subscription_parameters
         response_type = params.response_type
 
-        if len(params.content_bindings) == 0:
+        if not params.content_bindings:
             supported_contents = []
         else:
             requested_bindings = parse_content_bindings(
@@ -72,21 +72,19 @@ def action_unsubscribe(request, service, subscription, **kwargs):
     if subscription:
         subscription.status = SubscriptionEntity.UNSUBSCRIBED
         return service.update_subscription(subscription)
-    else:
-        # Spec says that unsubscribe should be successful even
-        # if subscription doesn't exist
-        return SubscriptionEntity(
-            collection_id=None,
-            service_id=service.id,
-            subscription_id=request.subscription_id,
-            status=SubscriptionEntity.UNSUBSCRIBED)
+    # Spec says that unsubscribe should be successful even
+    # if subscription doesn't exist
+    return SubscriptionEntity(
+        collection_id=None,
+        service_id=service.id,
+        subscription_id=request.subscription_id,
+        status=SubscriptionEntity.UNSUBSCRIBED)
 
 
 def action_status(service, subscription, **kwargs):
     if subscription:
         return subscription
-    else:
-        return service.get_subscriptions()
+    return service.get_subscriptions()
 
 
 def action_pause(service, subscription, **kwargs):
@@ -276,10 +274,9 @@ class SubscriptionRequestHandler(BaseMessageHandler):
         if isinstance(request, tm10.ManageFeedSubscriptionRequest):
             return SubscriptionRequest10Handler.handle_message(
                 service, request)
-        elif isinstance(request, tm11.ManageCollectionSubscriptionRequest):
+        if isinstance(request, tm11.ManageCollectionSubscriptionRequest):
             return SubscriptionRequest11Handler.handle_message(
                 service, request)
-        else:
-            raise_failure(
-                "TAXII Message not supported by message handler",
-                request.message_id)
+        raise_failure(
+            "TAXII Message not supported by message handler",
+            request.message_id)

@@ -7,6 +7,7 @@ save_raw_inbox_messages: yes
 xml_parser_supports_huge_tree: yes
 count_blocks_in_poll_responses: no
 return_server_error_details: no
+unauthorized_status: UNAUTHORIZED
 
 persistence_api:
   class: opentaxii.persistence.sqldb.SQLDatabaseAPI
@@ -28,4 +29,3 @@ logging:
   root: info
 
 hooks:
-

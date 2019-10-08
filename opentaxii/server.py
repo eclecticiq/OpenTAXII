@@ -100,7 +100,8 @@ class TAXIIServer(object):
                 :py:class:`opentaxii.taxii.services.abstract.TAXIIService`
         '''
 
-        if service_ids is not None and len(service_ids) == 0:
+        # early return for filtering by empty list of ids
+        if service_ids is not None and not service_ids:
             return []
 
         service_entities = self.persistence.get_services()
