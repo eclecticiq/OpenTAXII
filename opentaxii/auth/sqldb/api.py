@@ -62,6 +62,13 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
             return
         return self._generate_token(account.id, ttl=self.token_ttl_secs)
 
+    def create_account(self, username, password, is_admin=False):
+        account = Account(username=username, is_admin=is_admin)
+        account.set_password(password)
+        self.db.session.add(account)
+        self.db.session.commit()
+        return account_to_account_entity(account)
+
     def get_account(self, token):
         account_id = self._get_account_id(token)
         if not account_id:

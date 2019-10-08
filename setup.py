@@ -36,10 +36,9 @@ setup(
     entry_points={
         'console_scripts': [
             'opentaxii-run-dev = opentaxii.cli.run:run_in_dev_mode',
-            ('opentaxii-sync-data = '
-             'opentaxii.cli.persistence:sync_data_configuration'),
-            ('opentaxii-delete-blocks = '
-             'opentaxii.cli.persistence:delete_content_blocks'),
+            'opentaxii-create-account = opentaxii.cli.auth:create_account',
+            'opentaxii-sync-data = opentaxii.cli.persistence:sync_data_configuration',
+            'opentaxii-delete-blocks = opentaxii.cli.persistence:delete_content_blocks',
         ]
     },
     install_requires=install_requires,
