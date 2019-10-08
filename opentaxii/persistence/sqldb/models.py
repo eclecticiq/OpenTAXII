@@ -14,6 +14,7 @@ Base = declarative_base(name='Model')
 
 MYSQL_LARGE_BINARY = mysql.MEDIUMBLOB()
 
+
 def get_utc_now():
     return datetime.utcnow().replace(tzinfo=pytz.UTC)
 
