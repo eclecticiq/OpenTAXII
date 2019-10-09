@@ -89,12 +89,13 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
             account_to_account_entity(account)
             for account in Account.query.all()]
 
-    def update_account(self, obj, password):
+    def update_account(self, obj, password=None):
         account = Account.query.filter_by(username=obj.username).one_or_none()
         if not account:
             account = Account(username=obj.username)
             self.db.session.add(account)
-        account.set_password(password)
+        if password is not None:
+            account.set_password(password)
         account.permissions = obj.permissions
         account.is_admin = obj.is_admin
         self.db.session.commit()
