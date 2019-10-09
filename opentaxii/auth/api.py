@@ -30,11 +30,23 @@ class OpenTAXIIAuthAPI(object):
         '''
         raise NotImplementedError()
 
-    def update_account(self, account, password):
+    def create_account(self, account, password):
         '''Create an account.
 
         :param str username: username
         :param str password: password
+        :param cool is_admin: is a new user admin?
+
+        :return: an account entity
+        :rtype: `opentaxii.entities.Account`
+        '''
+        raise NotImplementedError()
+
+    def update_account(self, obj, password=None):
+        '''Update an account.
+
+        :param AccountEntity obj: an ipdated user entity (old one matched by username)
+        :param str password: a new password
 
         :return: an account entity
         :rtype: `opentaxii.entities.Account`
