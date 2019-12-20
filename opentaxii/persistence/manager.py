@@ -99,7 +99,11 @@ class PersistenceManager(object):
         :rtype: list of :py:class:`opentaxii.taxii.entities.ServiceEntity`
         '''
         if context.account.can_read(collection.name):
-            return self.api.get_services(collection_id=collection.id)
+            services = self.api.get_services(collection_id=collection.id)
+            if context.account.can_modify(collection.name):
+                return services
+            else:
+                return list(filter(lambda s: s.type != 'inbox', services))
 
     def get_collections(self, service_id=None):
         '''Get the collections. If `service_id` is provided, return collection
