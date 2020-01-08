@@ -10,7 +10,7 @@ def here(*path):
 
 
 def get_file_contents(filename):
-    with open(here(filename)) as fp:
+    with open(here(filename), encoding='utf8') as fp:
         return fp.read()
 
 
