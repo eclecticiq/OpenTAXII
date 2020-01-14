@@ -54,12 +54,12 @@ class ServerConfig(dict):
         super(ServerConfig, self).__init__(options)
 
     @staticmethod
-    def _get_env_config(self, env=os.environ):
+    def _get_env_config(env=os.environ):
         result = _infinite_dict()
         for key, value in env.items():
             if not key.startswith(ENV_VAR_PREFIX):
                 continue
-            key = key[len(ENV_VAR_PREFIX):]
+            key = key[len(ENV_VAR_PREFIX):].lower()
             value = yaml.loads(value)
 
             container = result
@@ -78,16 +78,5 @@ class ServerConfig(dict):
             if not isinstance(config, dict):
                 with open(config) as stream:
                     config = yaml.safe_load(stream=stream)
-            result = cls._merge_configs(result, config)
-        return result
-
-    @classmethod
-    def _merge_configs(cls, *configs):
-        result = dict()
-        for config in configs:
-            for k, v in config.items():
-                if isinstance(v, dict) and k in result:
-                    result[k] = cls._merge_configs(result[k], v)
-                else:
-                    result[k] = v
+            result.update(config)
         return result
