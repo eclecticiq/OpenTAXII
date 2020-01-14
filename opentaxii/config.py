@@ -5,12 +5,6 @@ import yaml
 from libtaxii.constants import ST_TYPES_10, ST_TYPES_11
 
 
-try:
-    from functools import reduce
-except ImportError:
-    pass
-
-
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
 ENV_VAR_PREFIX = 'OPENTAXII_'
@@ -59,8 +53,8 @@ class ServerConfig(dict):
         for key, value in env.items():
             if not key.startswith(ENV_VAR_PREFIX):
                 continue
-            key = key[len(ENV_VAR_PREFIX):].lower()
-            value = yaml.loads(value)
+            key = key[len(ENV_VAR_PREFIX):].lstrip('_').lower()
+            value = yaml.safe_load(value)
 
             container = result
             parts = key.split('__')
