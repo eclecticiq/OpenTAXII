@@ -34,8 +34,8 @@ class ServerConfig(dict):
     def __init__(self, optional_env_var=CONFIG_ENV_VAR, extra_configs=None):
 
         configs = [DEFAULT_CONFIG]
-        configs.append(self._get_env_config())
         configs.extend(extra_configs or [])
+        configs.append(self._get_env_config())
 
         env_var_path = os.environ.get(optional_env_var)
         if env_var_path:

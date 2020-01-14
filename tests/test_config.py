@@ -44,10 +44,11 @@ def test_env_vars_config():
         OPENTAXII_DOMAIN='hostname:1337',
         OPENTAXII__SUPPORT_BASIC_AUTH='yes',
         OPENTAXII__PERSISTENCE_API__CLASS='something.Else',
+        OPENTAXII__PERSISTENCE_API__OTHER='1',
     )
     expected = dict(
         domain='hostname:1337',
         support_basic_auth=True,
-        persistence_api={'class': 'something.Else'},
+        persistence_api={'class': 'something.Else', 'other': 1},
     )
     assert ServerConfig._get_env_config(env=vars) == expected
