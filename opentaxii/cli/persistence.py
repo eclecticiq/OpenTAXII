@@ -1,6 +1,6 @@
-import anyconfig
 import argparse
 import structlog
+import yaml
 
 from opentaxii.entities import Account
 from opentaxii.cli import app
@@ -26,7 +26,8 @@ def sync_data_configuration():
               "if collection is not defined in configuration file"),
         required=False)
     args = parser.parse_args()
-    config = anyconfig.load(args.config, forced_type="yaml")
+    with open(args.config) as stream:
+        config = yaml.safe_load(stream=stream)
 
     with app.app_context():
         # run as admin with full access
