@@ -91,9 +91,6 @@ cp -f $tmpConfig /opentaxii.yml
 # Lets see if there is an override
 [ -f /input/opentaxii.yml ] && cp -f /input/opentaxii.yml /opentaxii.yml
 
-echo "Using config: "
-cat /opentaxii.yml
-
 # Wait for port to become available in case of SQL
 [ "$DATABASE_HOST" ] && wait_for_port $DATABASE_HOST ${DATABASE_PORT-5432}
 [ "$AUTH_DATABASE_HOST" ] && wait_for_port $AUTH_DATABASE_HOST ${AUTH_DATABASE_PORT-5432}
