@@ -33,13 +33,16 @@ class ServerConfig(dict):
 
     def __init__(self, optional_env_var=CONFIG_ENV_VAR, extra_configs=None):
 
+        # 4. default config
         configs = [DEFAULT_CONFIG]
+        # 3. explicit configs
         configs.extend(extra_configs or [])
-        configs.append(self._get_env_config())
-
+        # 2. config from OPENTAXII_CONFIG env var path
         env_var_path = os.environ.get(optional_env_var)
         if env_var_path:
             configs.append(env_var_path)
+        # 1. config built from env vars
+        configs.append(self._get_env_config())
 
         options = self._load_configs(*configs)
         if options['unauthorized_status'] not in ST_TYPES_10 + ST_TYPES_11:
