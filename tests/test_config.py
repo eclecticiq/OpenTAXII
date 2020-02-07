@@ -37,3 +37,18 @@ def test_custom_config_file(config_file_name):
 
     assert config['auth_api']['class'] == 'other.test.AuthClass'
     assert config['auth_api']['parameters'] == {'c': 3}
+
+
+def test_env_vars_config():
+    vars = dict(
+        OPENTAXII_DOMAIN='hostname:1337',
+        OPENTAXII__SUPPORT_BASIC_AUTH='yes',
+        OPENTAXII__PERSISTENCE_API__CLASS='something.Else',
+        OPENTAXII__PERSISTENCE_API__OTHER='1',
+    )
+    expected = dict(
+        domain='hostname:1337',
+        support_basic_auth=True,
+        persistence_api={'class': 'something.Else', 'other': 1},
+    )
+    assert ServerConfig._get_env_config(env=vars) == expected

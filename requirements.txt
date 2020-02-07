@@ -6,6 +6,5 @@ flask>=0.10.1
 sqlalchemy>=1.1.2
 structlog>=18.1.0
 blinker>=1.4
-anyconfig>=0.9.3
 pyjwt>=1.4.0
 six>=1.10.0

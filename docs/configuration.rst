@@ -132,6 +132,18 @@ The built-in implementation of the Persistence and Authentication APIs support S
 
 OpenTAXII CLI tools are implemented to call corresponding API methods and support any API implementation.
 
+Environment variables configuration
+===================================
+
+You can (re)define any configuration option with environment variables. Start variable name with ``OPENTAXII_``. Use ``__`` to separate parts of the config path. Use uppercase. Specify values in YAML syntax.
+
+.. code-block:: bash
+    export OPENTAXII_DOMAIN='taxii.mydomain.com'
+    export OPENTAXII_SUPPORT_BASIC_AUTH='no'
+    export OPENTAXII__PERSISTENCE_API__CLASS='mypackage.opentaxii.CustomPersistenceAPI'
+    export OPENTAXII__AUTH_API__PARAMETERS__SECRET='aueHenjitweridUcviapEbsJocdiDrelHonsyorl'
+
+Environment variables applied after all other configs and can be used to redefine any option.
 
 Services, collections and accounts
 ==================================
