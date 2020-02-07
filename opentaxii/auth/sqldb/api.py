@@ -62,6 +62,13 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
             return
         return self._generate_token(account.id, ttl=self.token_ttl_secs)
 
+    def create_account(self, username, password, is_admin=False):
+        account = Account(username=username, is_admin=is_admin)
+        account.set_password(password)
+        self.db.session.add(account)
+        self.db.session.commit()
+        return account_to_account_entity(account)
+
     def get_account(self, token):
         account_id = self._get_account_id(token)
         if not account_id:
@@ -82,12 +89,13 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
             account_to_account_entity(account)
             for account in Account.query.all()]
 
-    def update_account(self, obj, password):
+    def update_account(self, obj, password=None):
         account = Account.query.filter_by(username=obj.username).one_or_none()
         if not account:
             account = Account(username=obj.username)
             self.db.session.add(account)
-        account.set_password(password)
+        if password is not None:
+            account.set_password(password)
         account.permissions = obj.permissions
         account.is_admin = obj.is_admin
         self.db.session.commit()
