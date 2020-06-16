@@ -14,6 +14,7 @@ from .utils import configure_logging
 logconfig_dict = {
     'version': 1,
     'disable_existing_loggers': False,
+    'root': {},
     'loggers': {
         'gunicorn.error': {
             'level': 'INFO',
