@@ -4,8 +4,8 @@ Changelog
 0.2.0 (2020-06-30)
 ------------------
 * Enforce UTC usage in datetime fields in SQL DB Persistence API.
-* `Fix for #114 <https://github.com/eclecticiq/OpenTAXII/issues/114>`: reintroduce ``opentaxii-create-account`` CLI command.
-* `Fix for #153 <https://github.com/eclecticiq/OpenTAXII/issues/152>`: check if user can modify a collection before advertising it over inbox service.
+* `Fix for #114 <https://github.com/eclecticiq/OpenTAXII/issues/114>`_: reintroduce ``opentaxii-create-account`` CLI command.
+* `Fix for #153 <https://github.com/eclecticiq/OpenTAXII/issues/152>`_: check if user can modify a collection before advertising it over inbox service.
 * Multiple coding style fixes.
 * Various documentation updates.
 
