@@ -1,6 +1,6 @@
 -r requirements.txt
-pytest
 pytest-cov
+pytest>=4.6
 pytest-pythonpath
 flake8
 ipdb
