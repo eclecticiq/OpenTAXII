@@ -15,6 +15,10 @@ OpenTAXII is guaranteed to be compatible with [Cabby](https://github.com/eclecti
 [![Coverage Status](https://coveralls.io/repos/eclecticiq/OpenTAXII/badge.svg)](https://coveralls.io/r/eclecticiq/OpenTAXII)
 [![Documentation Status](https://readthedocs.org/projects/opentaxii/badge/?version=stable)](https://readthedocs.org/projects/opentaxii/)
 
+## State of the project
+
+We have made the decision to consider this project **feature-complete**. It means we still maintain it, however we focus only on bug fixes. Still, we’re very open to external contributions - if you know how to fix an issue and you can open a PR, we will be very grateful.
+
 ## Getting started
 See [the documentation](https://opentaxii.readthedocs.io/en/stable/installation.html).
 
