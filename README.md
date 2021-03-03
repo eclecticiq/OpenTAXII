@@ -17,7 +17,7 @@ OpenTAXII is guaranteed to be compatible with [Cabby](https://github.com/eclecti
 
 ## State of the project
 
-We have recently made a decision to consider this project **feature-complete**. It means we still maintain it, however we focus only on bug fixes. Still, we’re very open to external contributions - if you know how to fix an issue and you can open a PR, we will be very grateful.
+We have made the decision to consider this project **feature-complete**. It means we still maintain it, however we focus only on bug fixes. Still, we’re very open to external contributions - if you know how to fix an issue and you can open a PR, we will be very grateful.
 
 ## Getting started
 See [the documentation](https://opentaxii.readthedocs.io/en/stable/installation.html).
