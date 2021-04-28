@@ -106,11 +106,11 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
         exp = datetime.utcnow() + timedelta(minutes=ttl)
         return jwt.encode(
             {'account_id': account_id, 'exp': exp},
-            self.secret)
+            self.secret,'HS256')
 
     def _get_account_id(self, token):
         try:
-            payload = jwt.decode(token, self.secret)
+            payload = jwt.decode(token, self.secret, ["HS256"])
         except jwt.ExpiredSignatureError:
             log.warning('Invalid token used', token=token)
             return
