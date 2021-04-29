@@ -20,7 +20,7 @@ def auth():
     if not token:
         abort(401)
 
-    return jsonify(token=token.decode('utf-8'))
+    return jsonify(token=token)
 
 
 @management.route('/health', methods=['GET'])
