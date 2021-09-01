@@ -98,8 +98,8 @@ def test_inbox_request_all_content(server, version, https):
     assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
-    blocks = server.persistence.get_content_blocks(None)
-    assert len(blocks) == len(blocks)
+    db_blocks = server.persistence.get_content_blocks(None)
+    assert len(db_blocks) == len(blocks)
 
 
 @pytest.mark.parametrize("https", [True, False])

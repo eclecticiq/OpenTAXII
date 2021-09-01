@@ -78,8 +78,10 @@ class InboxService(TAXIIService):
                 in_response_to=in_response_to,
                 status_details=details)
 
+        # If we reach this point and name_list is empty,
+        # self.destination_collection_required must be False
         if not name_list:
-            return []
+            name_list = [c.name for c in self.get_destination_collections()]
 
         collections = []
         destinations_map = {
