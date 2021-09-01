@@ -9,6 +9,8 @@ To get a default (development) instance using docker:
 
     $ docker run -d -p 9000:9000 eclecticiq/opentaxii
 
+To have the instance preloaded with example data, see :ref:`volumes`
+
 .. note::
 
     OpenTAXII is now accessible through port 9000, with data stored locally in a SQLite database.
@@ -61,6 +63,8 @@ If you would like to use a different Database for authentication, you can also s
 ``AUTH_DATABASE_NAME`` : (optional)
     The database to use, by default uses ``postgres``
 
+
+.. _volumes:
 
 Volumes
 -------
