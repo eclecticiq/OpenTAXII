@@ -27,6 +27,10 @@ OpenTAXII repository has the following layout:
 * ``opentaxii/`` - OpenTAXII source;
 * ``tests/`` - opentaxii tests.
 
+Database schema
+===============
+.. image:: db_schema_diagram.png
+  :width: 1000
 
 Compiling from source
 =====================
