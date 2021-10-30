@@ -1,6 +1,5 @@
 from flask import _app_ctx_stack
-
-from sqlalchemy import orm, engine
+from sqlalchemy import engine, orm
 from sqlalchemy.orm.exc import UnmappedClassError
 
 
@@ -26,7 +25,11 @@ class SQLAlchemyDB(object):
 
     def __init__(self, db_connection, base_model, session_options=None, **kwargs):
 
-        self.engine = engine.create_engine(db_connection, convert_unicode=True, **kwargs)
+        if isinstance(db_connection, str):
+            self.engine = engine.create_engine(db_connection, convert_unicode=True, **kwargs)
+            self.connection = self.engine.connect()
+        else:
+            self.connection = db_connection
 
         self.Query = orm.Query
         self.session = self.create_scoped_session(session_options)
@@ -54,10 +57,10 @@ class SQLAlchemyDB(object):
             self.create_session(options), scopefunc=scopefunc)
 
     def create_session(self, options):
-        return orm.sessionmaker(bind=self.engine, **options)
+        return orm.sessionmaker(bind=self.connection, **options)
 
     def create_all_tables(self):
-        self.metadata.create_all(bind=self.engine)
+        self.metadata.create_all(bind=self.connection)
 
     def init_app(self, app):
         @app.teardown_appcontext
