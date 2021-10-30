@@ -19,7 +19,7 @@ if DBTYPE == "sqlite":
         yield "sqlite://"
 
 
-elif DBTYPE == "mysql":
+elif DBTYPE in ("mysql", "mariadb"):
     import MySQLdb
     from sqlalchemy.orm import sessionmaker
 
@@ -29,10 +29,15 @@ elif DBTYPE == "mysql":
     def dbconn():
         # drop db if exists to provide clean state at beginning
         dbname = "test"
+        if DBTYPE == "mysql":
+            port = 3306
+        elif DBTYPE == "mariadb":
+            port = 3307
         connection_kwargs = {
             "host": "127.0.0.1",
             "user": "root",
             "passwd": "",
+            "port": port,
         }
         mysql_conn: MySQLdb.Connection = MySQLdb.connect(**connection_kwargs)
         mysql_conn.query(f"DROP DATABASE IF EXISTS {dbname}")
@@ -43,7 +48,7 @@ elif DBTYPE == "mysql":
         )
         mysql_conn.close()
         engine = create_engine(
-            "mysql+mysqldb://root:@127.0.0.1:3306/test?charset=utf8",
+            f"mysql+mysqldb://root:@127.0.0.1:{port}/test?charset=utf8",
             convert_unicode=True,
         )
         connection = engine.connect()
@@ -93,7 +98,7 @@ def anonymous_user():
 
 @pytest.fixture()
 def app(dbconn):
-    if DBTYPE == "mysql":
+    if DBTYPE in ("mysql", "mariadb"):
         # run mysql tests in nested transaction/savepoint setup to ensure atomic tests
         transaction = dbconn.begin()
         session = Session(bind=dbconn)
@@ -114,7 +119,7 @@ def app(dbconn):
     app = create_app(context.server)
     app.config["TESTING"] = True
     yield app
-    if DBTYPE == "mysql":
+    if DBTYPE in ("mysql", "mariadb"):
         session.close()
         transaction.rollback()
 

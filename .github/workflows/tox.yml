@@ -10,11 +10,19 @@ jobs:
       matrix:
         python-version: [3.6, 3.7, 3.8, 3.9]
     services:
-      mysql:
+      mariadb:
         image: mariadb
         env:
           MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: yes
           MARIADB_DATABASE: test
+        ports:
+          - 3307:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+      mysql:
+        image: mysql
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: test
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
@@ -30,6 +38,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install tox tox-gh-actions
     - name: Verify MariaDB connection
+      run: |
+        while ! mysqladmin ping -h"127.0.0.1" -P"3307" --silent; do
+          sleep 1
+        done
+    - name: Verify mysql connection
       run: |
         while ! mysqladmin ping -h"127.0.0.1" -P"3306" --silent; do
           sleep 1
