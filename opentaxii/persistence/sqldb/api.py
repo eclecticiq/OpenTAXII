@@ -1,18 +1,16 @@
 import json
-import structlog
-import six
-from sqlalchemy import func, and_, or_
 
+import six
+import structlog
 from opentaxii.persistence import OpenTAXIIPersistenceAPI
 from opentaxii.sqldb_helper import SQLAlchemyDB
+from sqlalchemy import and_, func, or_
 
 from . import converters as conv
+from .models import (Base, ContentBlock, DataCollection, InboxMessage,
+                     ResultSet, Service, Subscription)
 
-from .models import (
-    Base, Service, ResultSet, ContentBlock,
-    DataCollection, InboxMessage, Subscription)
-
-__all__ = ['SQLDatabaseAPI']
+__all__ = ["SQLDatabaseAPI"]
 
 log = structlog.getLogger(__name__)
 
@@ -39,9 +37,14 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
     def __init__(self, db_connection, create_tables=False, **engine_parameters):
 
         self.db = SQLAlchemyDB(
-            db_connection, Base, session_options={
-                'autocommit': False, 'autoflush': True,
-            }, **engine_parameters)
+            db_connection,
+            Base,
+            session_options={
+                "autocommit": False,
+                "autoflush": True,
+            },
+            **engine_parameters
+        )
         if create_tables:
             self.db.create_all_tables()
 
@@ -65,9 +68,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
             service.type = obj.type
             service.properties = obj.properties
         else:
-            service = Service(
-                id=obj.id, type=obj.type,
-                properties=obj.properties)
+            service = Service(id=obj.id, type=obj.type, properties=obj.properties)
         self.db.session.add(service)
         self.db.session.commit()
         return conv.to_service_entity(service)
@@ -86,14 +87,15 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
     def get_collection(self, name, service_id=None):
         if service_id:
             collection = (
-                DataCollection.query
-                .join(Service.collections)
+                DataCollection.query.join(Service.collections)
                 .filter(Service.id == service_id)
-                .filter(DataCollection.name == name).one_or_none())
+                .filter(DataCollection.name == name)
+                .one_or_none()
+            )
         else:
-            collection = (
-                DataCollection.query
-                .filter(DataCollection.name == name).one_or_none())
+            collection = DataCollection.query.filter(
+                DataCollection.name == name
+            ).one_or_none()
         if collection:
             return conv.to_collection_entity(collection)
 
@@ -101,8 +103,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         _bindings = conv.serialize_content_bindings(entity.supported_content)
         collection = DataCollection.query.get(entity.id)
         if not collection:
-            raise ValueError(
-                "DataCollection with id {} is not found".format(entity.id))
+            raise ValueError("DataCollection with id {} is not found".format(entity.id))
         collection.name = entity.name
         collection.type = entity.type
         collection.description = entity.description
@@ -113,9 +114,9 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         return conv.to_collection_entity(collection)
 
     def delete_collection(self, collection_name):
-        collection = (
-            DataCollection.query.filter(
-                DataCollection.name == collection_name).one())
+        collection = DataCollection.query.filter(
+            DataCollection.name == collection_name
+        ).one()
         self.db.session.delete(collection)
         self.db.session.commit()
 
@@ -124,21 +125,26 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         self.db.session.delete(service)
         self.db.session.commit()
 
-    def _get_content_query(self, collection_id=None, start_time=None,
-                           end_time=None, bindings=None, count=False):
+    def _get_content_query(
+        self,
+        collection_id=None,
+        start_time=None,
+        end_time=None,
+        bindings=None,
+        count=False,
+    ):
         if count:
             query = self.db.session.query(func.count(ContentBlock.id))
         else:
-            query = (ContentBlock
-                     .query.order_by(ContentBlock.timestamp_label.asc()))
+            query = ContentBlock.query.order_by(ContentBlock.timestamp_label.asc())
 
         if collection_id:
-            query = (query.join(ContentBlock.collections)
-                          .filter(DataCollection.id == collection_id))
+            query = query.join(ContentBlock.collections).filter(
+                DataCollection.id == collection_id
+            )
 
         if start_time:
-            query = query.filter(
-                ContentBlock.timestamp_label > start_time)
+            query = query.filter(ContentBlock.timestamp_label > start_time)
 
         if end_time:
             query = query.filter(ContentBlock.timestamp_label <= end_time)
@@ -149,7 +155,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
                 if binding.subtypes:
                     criterion = and_(
                         ContentBlock.binding_id == binding.binding,
-                        ContentBlock.binding_subtype.in_(binding.subtypes)
+                        ContentBlock.binding_subtype.in_(binding.subtypes),
                     )
                 else:
                     criterion = ContentBlock.binding_id == binding.binding
@@ -159,34 +165,44 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
         return query
 
-    def get_content_blocks_count(self, collection_id=None, start_time=None,
-                                 end_time=None, bindings=None):
+    def get_content_blocks_count(
+        self, collection_id=None, start_time=None, end_time=None, bindings=None
+    ):
 
         query = self._get_content_query(
             collection_id=collection_id,
             start_time=start_time,
             end_time=end_time,
             bindings=bindings,
-            count=True)
+            count=True,
+        )
 
         return query.scalar()
 
-    def get_content_blocks(self, collection_id=None, start_time=None,
-                           end_time=None, bindings=None, offset=0, limit=None):
+    def get_content_blocks(
+        self,
+        collection_id=None,
+        start_time=None,
+        end_time=None,
+        bindings=None,
+        offset=0,
+        limit=None,
+    ):
 
         query = self._get_content_query(
             collection_id=collection_id,
             start_time=start_time,
             end_time=end_time,
-            bindings=bindings)
+            bindings=bindings,
+        )
 
         query = query.offset(offset)
         if limit:
             query = query.limit(limit)
 
         return [
-            conv.to_block_entity(block)
-            for block in query.yield_per(YIELD_PER_SIZE)]
+            conv.to_block_entity(block) for block in query.yield_per(YIELD_PER_SIZE)
+        ]
 
     def create_collection(self, entity):
 
@@ -198,7 +214,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
             description=entity.description,
             available=entity.available,
             accept_all_content=entity.accept_all_content,
-            bindings=_bindings
+            bindings=_bindings,
         )
 
         self.db.session.add(collection)
@@ -210,19 +226,27 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         collection = DataCollection.query.get(collection_id)
         if not collection:
             raise ValueError(
-                "Collection with id {} does not exist".format(collection_id))
+                "Collection with id {} does not exist".format(collection_id)
+            )
         services = (
             Service.query.filter(Service.id.in_(service_ids)).all()
-            if service_ids else [])
+            if service_ids
+            else []
+        )
         missing_services = set(service_ids) - {s.id for s in services}
         if missing_services:
             raise ValueError(
-                "Services with ids {} do not exist".format(missing_services))
+                "Services with ids {} do not exist".format(missing_services)
+            )
         collection.services = services
         self.db.session.add(collection)
         self.db.session.commit()
-        log.debug("collection.services_set", id=collection.id,
-                  name=collection.name, services=service_ids)
+        log.debug(
+            "collection.services_set",
+            id=collection.id,
+            name=collection.name,
+            services=service_ids,
+        )
 
     def create_inbox_message(self, entity):
 
@@ -235,9 +259,10 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         end = entity.inclusive_end_timestamp_label
 
         content = (
-            entity.original_message.encode('utf-8')
+            entity.original_message.encode("utf-8")
             if isinstance(entity.original_message, six.string_types)
-            else entity.original_message)
+            else entity.original_message
+        )
 
         message = InboxMessage(
             message_id=entity.message_id,
@@ -251,35 +276,40 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
             subscription_collection_name=entity.subscription_collection_name,
             subscription_id=entity.subscription_id,
             exclusive_begin_timestamp_label=begin,
-            inclusive_end_timestamp_label=end)
+            inclusive_end_timestamp_label=end,
+        )
 
         self.db.session.add(message)
         self.db.session.commit()
 
         return conv.to_inbox_message_entity(message)
 
-    def create_content_block(self, entity, collection_ids=None,
-                             service_id=None):
+    def create_content_block(self, entity, collection_ids=None, service_id=None):
 
         if entity.content_binding:
             binding = entity.content_binding.binding
-            subtype = (entity.content_binding.subtypes[0]
-                       if entity.content_binding.subtypes else None)
+            subtype = (
+                entity.content_binding.subtypes[0]
+                if entity.content_binding.subtypes
+                else None
+            )
         else:
             binding = None
             subtype = None
 
         content = (
-            entity.content.encode('utf-8')
+            entity.content.encode("utf-8")
             if isinstance(entity.content, six.string_types)
-            else entity.content)
+            else entity.content
+        )
 
         content = ContentBlock(
             timestamp_label=entity.timestamp_label,
             inbox_message_id=entity.inbox_message_id,
             content=content,
             binding_id=binding,
-            binding_subtype=subtype)
+            binding_subtype=subtype,
+        )
 
         self.db.session.add(content)
         self.db.session.commit()
@@ -301,9 +331,11 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
         self.db.session.add(content_block)
 
-        log.debug("Content block added to collections",
-                  content_block=content_block.id,
-                  collections=new_collections.count())
+        log.debug(
+            "Content block added to collections",
+            content_block=content_block.id,
+            collections=new_collections.count(),
+        )
 
         self.db.session.commit()
 
@@ -316,7 +348,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
             collection_id=entity.collection_id,
             bindings=_bindings,
             begin_time=entity.timeframe[0],
-            end_time=entity.timeframe[1]
+            end_time=entity.timeframe[1],
         )
 
         self.db.session.add(result_set)
@@ -334,8 +366,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
     def get_subscriptions(self, service_id):
         service = Service.query.get(service_id)
-        return [
-            conv.to_subscription_entity(s) for s in service.subscriptions]
+        return [conv.to_subscription_entity(s) for s in service.subscriptions]
 
     def update_subscription(self, entity):
 
@@ -343,14 +374,17 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
             params = dict(
                 response_type=entity.params.response_type,
                 content_bindings=conv.serialize_content_bindings(
-                    entity.params.content_bindings)
+                    entity.params.content_bindings
+                ),
             )
         else:
             params = {}
 
         subscription = (
             Subscription.query.get(entity.subscription_id)
-            if entity.subscription_id else None)
+            if entity.subscription_id
+            else None
+        )
 
         if subscription:
             subscription.collection_id = entity.collection_id
@@ -363,16 +397,18 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
                 collection_id=entity.collection_id,
                 params=json.dumps(params),
                 status=entity.status,
-                service_id=entity.service_id
+                service_id=entity.service_id,
             )
 
         self.db.session.add(subscription)
         self.db.session.commit()
 
-        log.debug("subscription.updated",
-                  subscription=subscription.id,
-                  collection=subscription.collection_id,
-                  status=subscription.status)
+        log.debug(
+            "subscription.updated",
+            subscription=subscription.id,
+            collection=subscription.collection_id,
+            status=subscription.status,
+        )
 
         return conv.to_subscription_entity(subscription)
 
@@ -380,52 +416,50 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         return self.update_subscription(entity)
 
     def delete_content_blocks(
-            self, collection_name, start_time, end_time=None,
-            with_messages=False):
+        self, collection_name, start_time, end_time=None, with_messages=False
+    ):
 
-        collection = (
-            DataCollection.query
-            .filter_by(name=collection_name)
-            .one_or_none())
+        collection = DataCollection.query.filter_by(name=collection_name).one_or_none()
 
         if not collection:
             raise ValueError(
-                "Collection with name '{}' does not exist"
-                .format(collection_name))
+                "Collection with name '{}' does not exist".format(collection_name)
+            )
 
         content_blocks_query = (
-            self.db.session
-            .query(ContentBlock.id)
+            self.db.session.query(ContentBlock.id)
             .join(DataCollection.content_blocks)
             .filter(DataCollection.id == collection.id)
-            .filter(ContentBlock.timestamp_label > start_time))
+            .filter(ContentBlock.timestamp_label > start_time)
+        )
 
         if end_time:
             content_blocks_query = content_blocks_query.filter(
-                ContentBlock.timestamp_label <= end_time)
+                ContentBlock.timestamp_label <= end_time
+            )
 
         inbox_messages_query = (
-            self.db.session
-            .query(InboxMessage.id)
-            .join(
-                ContentBlock, ContentBlock.inbox_message_id == InboxMessage.id)
-            .filter(ContentBlock.id.in_(content_blocks_query.subquery())))
+            self.db.session.query(InboxMessage.id)
+            .join(ContentBlock, ContentBlock.inbox_message_id == InboxMessage.id)
+            .filter(ContentBlock.id.in_(content_blocks_query.subquery()))
+        )
 
         if with_messages:
-            (InboxMessage.query
-                .filter(InboxMessage.id.in_(inbox_messages_query.subquery()))
-                .delete(synchronize_session=False))
+            (
+                InboxMessage.query.filter(
+                    InboxMessage.id.in_(inbox_messages_query.subquery())
+                ).delete(synchronize_session=False)
+            )
 
-        counter = (
-            ContentBlock.query
-            .filter(ContentBlock.id.in_(content_blocks_query.subquery()))
-            .delete(synchronize_session=False))
+        counter = ContentBlock.query.filter(
+            ContentBlock.id.in_(content_blocks_query.subquery())
+        ).delete(synchronize_session=False)
 
         collection.volume = (
-            self.db.session
-            .query(func.count(ContentBlock.id))
+            self.db.session.query(func.count(ContentBlock.id))
             .join(ContentBlock.collections)
-            .filter(DataCollection.id == collection.id)).scalar()
+            .filter(DataCollection.id == collection.id)
+        ).scalar()
 
         self.db.session.commit()
 
