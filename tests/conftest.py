@@ -11,7 +11,7 @@ from sqlalchemy import create_engine, event
 
 from fixtures import DOMAIN, SERVICES
 
-DBTYPE = os.getenv("DBTYPE", "sqlite")
+DBTYPE = os.getenv("DBTYPE", "postgres")
 if DBTYPE == "sqlite":
 
     @pytest.fixture(scope="session")
@@ -49,6 +49,47 @@ elif DBTYPE in ("mysql", "mariadb"):
         mysql_conn.close()
         engine = create_engine(
             f"mysql+mysqldb://root:@127.0.0.1:{port}/test?charset=utf8",
+            convert_unicode=True,
+        )
+        connection = engine.connect()
+        yield connection
+        connection.close()
+
+
+elif DBTYPE == "postgres":
+    import platform
+
+    if platform.python_implementation() == "PyPy":
+        from psycopg2cffi import compat
+
+        compat.register()
+    import psycopg2
+    from sqlalchemy.orm import sessionmaker
+
+    Session = sessionmaker()
+
+    @pytest.fixture(scope="session")
+    def dbconn():
+        # drop public schema to provide clean state at beginning
+        dbname = "test"
+        pg_conn = psycopg2.connect(
+            dbname=dbname,
+            user="test",
+            password="test",
+            host="127.0.0.1",
+            port="5432",
+        )
+        pg_cur = pg_conn.cursor()
+        pg_cur.execute(
+            "DROP SCHEMA public CASCADE;"
+            "CREATE SCHEMA public;"
+            "GRANT ALL ON SCHEMA public TO test;"
+            "GRANT ALL ON SCHEMA public TO public;"
+        )
+        pg_cur.close()
+        pg_conn.close()
+        engine = create_engine(
+            f"postgresql+psycopg2://test:test@127.0.0.1:5432/{dbname}",
             convert_unicode=True,
         )
         connection = engine.connect()
@@ -98,8 +139,8 @@ def anonymous_user():
 
 @pytest.fixture()
 def app(dbconn):
-    if DBTYPE in ("mysql", "mariadb"):
-        # run mysql tests in nested transaction/savepoint setup to ensure atomic tests
+    if DBTYPE != "sqlite":
+        # run non-sqlite tests in nested transaction/savepoint setup to ensure atomic tests
         transaction = dbconn.begin()
         session = Session(bind=dbconn)
         session.begin_nested()
@@ -119,7 +160,7 @@ def app(dbconn):
     app = create_app(context.server)
     app.config["TESTING"] = True
     yield app
-    if DBTYPE in ("mysql", "mariadb"):
+    if DBTYPE != "sqlite":
         session.close()
         transaction.rollback()
 
