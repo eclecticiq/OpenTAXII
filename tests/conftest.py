@@ -11,7 +11,7 @@ from sqlalchemy import create_engine, event
 
 from fixtures import DOMAIN, SERVICES
 
-DBTYPE = os.getenv("DBTYPE", "postgres")
+DBTYPE = os.getenv("DBTYPE", "sqlite")
 if DBTYPE == "sqlite":
 
     @pytest.fixture(scope="session")
