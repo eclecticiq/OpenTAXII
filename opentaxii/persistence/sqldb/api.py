@@ -447,12 +447,16 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         if with_messages:
             (
                 InboxMessage.query.filter(
-                    InboxMessage.id.in_(inbox_messages_query.subquery())
+                    InboxMessage.id.in_(
+                        self.db.session.query(inbox_messages_query.subquery(name="ids"))
+                    )
                 ).delete(synchronize_session=False)
             )
 
         counter = ContentBlock.query.filter(
-            ContentBlock.id.in_(content_blocks_query.subquery())
+            ContentBlock.id.in_(
+                self.db.session.query(content_blocks_query.subquery(name="ids"))
+            )
         ).delete(synchronize_session=False)
 
         collection.volume = (
