@@ -1,5 +1,8 @@
-FROM python:3.6-stretch AS build
+FROM python:3.9 AS build
 LABEL maintainer="EclecticIQ <opentaxii@eclecticiq.com>"
+
+RUN apt-get update \
+ && apt-get install -y libmariadb-dev-compat
 
 RUN python3 -m venv /venv && /venv/bin/pip install -U pip setuptools
 
@@ -10,12 +13,15 @@ COPY . /opentaxii
 RUN /venv/bin/pip install /opentaxii
 
 
+
+
 FROM python:3.9-slim AS prod
 LABEL maintainer="EclecticIQ <opentaxii@eclecticiq.com>"
 COPY --from=build /venv /venv
 
 RUN apt-get update \
  && apt-get upgrade -y \
+ && apt-get install -y mariadb-client postgresql-client \
  && apt-get autoremove \
  && apt-get autoclean \
  && mkdir /data /input
