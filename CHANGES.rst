@@ -1,6 +1,16 @@
 Changelog
 =========
 
+0.2.1 (2021-11-03)
+------------------
+* Add tests for python 3.6, 3.7, 3.8, 3.9, pypy
+* Add tests for sqlite, mysql, mariadb, postgresql
+* Fix bug that broke ``delete_content_blocks`` when using mysql on sqlalchemy 1.3
+* Docs: Add db schema diagram
+* Docs: Clarify how to get default data in a default (development) docker instance
+* Fix implicit routing in TAXII 1.1 Inboxes
+* Update jwt usage to pyjwt >= 2.0 (thanks `@SanyaKapoor <https://github.com/SanyaKapoor>`_)
+
 0.2.0 (2020-06-30)
 ------------------
 * Enforce UTC usage in datetime fields in SQL DB Persistence API.
