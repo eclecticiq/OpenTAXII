@@ -10,11 +10,15 @@ COPY . /opentaxii
 RUN /venv/bin/pip install /opentaxii
 
 
-FROM python:3.6-slim-stretch AS prod
+FROM python:3.9-slim AS prod
 LABEL maintainer="EclecticIQ <opentaxii@eclecticiq.com>"
 COPY --from=build /venv /venv
 
-RUN mkdir /data /input
+RUN apt-get update \
+ && apt-get upgrade -y \
+ && apt-get autoremove \
+ && apt-get autoclean \
+ && mkdir /data /input
 VOLUME ["/data", "/input"]
 
 COPY ./docker/entrypoint.sh /entrypoint.sh
