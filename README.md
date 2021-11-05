@@ -11,7 +11,7 @@ OpenTAXII is guaranteed to be compatible with [Cabby](https://github.com/eclecti
 [Source](https://github.com/eclecticiq/OpenTAXII) | [Documentation](http://opentaxii.readthedocs.org) | [Information](http://www.eclecticiq.com) | [Download](https://pypi.python.org/pypi/opentaxii/)
 
 
-[![Build Status](https://travis-ci.org/eclecticiq/OpenTAXII.svg)](https://travis-ci.org/eclecticiq/OpenTAXII)
+[![Build status](https://github.com/eclecticiq/OpenTAXII/actions/workflows/tox.yml/badge.svg?branch=master)](https://github.com/eclecticiq/OpenTAXII/actions/workflows/tox.yml?query=branch%3Amaster+)
 [![Coverage Status](https://coveralls.io/repos/eclecticiq/OpenTAXII/badge.svg)](https://coveralls.io/r/eclecticiq/OpenTAXII)
 [![Documentation Status](https://readthedocs.org/projects/opentaxii/badge/?version=stable)](https://readthedocs.org/projects/opentaxii/)
 
