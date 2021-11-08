@@ -73,7 +73,7 @@ def _server_wrapper(server):
                 if (service.authentication_required
                         and context.account is None):
                     raise UnauthorizedException(
-                        status_type=server.config['unauthorized_status'],
+                        status_type=server.config['taxii1']['unauthorized_status'],
                     )
 
                 if not service.authentication_required:
@@ -114,7 +114,7 @@ def _authenticate(server, headers):
 
         if not server.is_basic_auth_supported():
             raise UnauthorizedException(
-                status_type=server.config['unauthorized_status'],
+                status_type=server.config['taxii1']['unauthorized_status'],
             )
 
         try:
@@ -130,7 +130,7 @@ def _authenticate(server, headers):
         token = raw_token
     else:
         raise UnauthorizedException(
-            status_type=server.config['unauthorized_status'],
+            status_type=server.config['taxii1']['unauthorized_status'],
         )
 
     if not token:

@@ -1,5 +1,6 @@
 import os
 from collections import defaultdict
+from warnings import warn
 
 import yaml
 from libtaxii.constants import ST_TYPES_10, ST_TYPES_11
@@ -16,6 +17,15 @@ def _infinite_dict():
     return defaultdict(_infinite_dict)
 
 
+def merge(d1, d2):
+    for k in d2:
+        if k in d1 and isinstance(d1[k], dict) and isinstance(d2[k], dict):
+            d1[k] = merge(d1[k], d2[k])
+        else:
+            d1[k] = d2[k]
+    return d1
+
+
 class ServerConfig(dict):
     """Class responsible for loading configuration files.
 
@@ -29,6 +39,28 @@ class ServerConfig(dict):
     :param str optional_env_var: name of the enviromental variable
     :param list extra_configs: list of additional config filenames
     """
+
+    VALID_BASE_OPTIONS = (
+        "domain",
+        "support_basic_auth",
+        "return_server_error_details",
+        "logging",
+        "taxii1",
+        "taxii2",
+    )
+    VALID_TAXII_OPTIONS = (
+        "persistence_api",
+        "auth_api",
+    )
+    VALID_TAXII1_OPTIONS = (
+        "save_raw_inbox_messages",
+        "xml_parser_supports_huge_tree",
+        "count_blocks_in_poll_responses",
+        "unauthorized_status",
+        "hooks",
+    )
+    VALID_TAXII2_OPTIONS = ("max_content_length",)
+    ALL_VALID_OPTIONS = VALID_BASE_OPTIONS + VALID_TAXII_OPTIONS + VALID_TAXII1_OPTIONS
 
     def __init__(self, optional_env_var=CONFIG_ENV_VAR, extra_configs=None):
 
@@ -44,7 +76,12 @@ class ServerConfig(dict):
         configs.append(self._get_env_config())
 
         options = self._load_configs(*configs)
-        if options["unauthorized_status"] not in ST_TYPES_10 + ST_TYPES_11:
+        options = self._clean_options(options)
+        if (
+            options["taxii1"]
+            and options["taxii1"]["unauthorized_status"]
+            not in ST_TYPES_10 + ST_TYPES_11
+        ):
             raise ValueError("invalid value for unauthorized_status field")
 
         super(ServerConfig, self).__init__(options)
@@ -74,5 +111,43 @@ class ServerConfig(dict):
             if not isinstance(config, dict):
                 with open(config) as stream:
                     config = yaml.safe_load(stream=stream)
-            result.update(config)
+            result = merge(result, config)
         return result
+
+    @classmethod
+    def _clean_options(cls, options: dict) -> dict:
+        # Put taxii and taxii2 keys that are in base level inside taxii1
+        # structure for backwards compatibility
+        for key in cls.VALID_TAXII1_OPTIONS + cls.VALID_TAXII_OPTIONS:
+            if key in options:
+                taxii1_dict = options.setdefault("taxii1", {})
+                if taxii1_dict is None:
+                    # taxii1 explicitly disabled -> taxii2-only mode
+                    # drop taxii1 default values
+                    warn(
+                        f"Running in taxii2-only mode. Dropping deprecated top level taxii1 attribute '{key}'.",
+                        DeprecationWarning,
+                    )
+                    del options[key]
+                else:
+                    warn(
+                        f"Setting taxii1 attributes at top level is deprecated. Please nest '{key}' inside 'taxii1'.",
+                        DeprecationWarning,
+                    )
+                    if key in taxii1_dict and isinstance(taxii1_dict[key], dict):
+                        taxii1_dict[key] = merge(taxii1_dict[key], options.pop(key))
+                    else:
+                        taxii1_dict[key] = options.pop(key)
+        # Warn user of invalid keys and remove from dict
+        for key in [key for key in options if key not in cls.ALL_VALID_OPTIONS]:
+            warn(f"Ignoring invalid configuration item '{key}'.")
+            del options[key]
+        if "taxii1" in options and options["taxii1"]:
+            for key in [key for key in options["taxii1"] if key not in cls.VALID_TAXII_OPTIONS + cls.VALID_TAXII1_OPTIONS]:
+                warn(f"Ignoring invalid taxii1 configuration item '{key}'.")
+                del options["taxii1"][key]
+        if "taxii2" in options and options["taxii2"]:
+            for key in [key for key in options["taxii2"] if key not in cls.VALID_TAXII_OPTIONS + cls.VALID_TAXII2_OPTIONS]:
+                warn(f"Ignoring invalid taxii2 configuration item '{key}'.")
+                del options["taxii2"][key]
+        return options

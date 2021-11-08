@@ -65,7 +65,7 @@ def prepare_fulfilment_request(collection_name, result_id, part_number):
 ])
 def test_poll_empty_response(server, version, https, count_blocks):
 
-    server.config['count_blocks_in_poll_responses'] = count_blocks
+    server.config['taxii1']['count_blocks_in_poll_responses'] = count_blocks
 
     service = server.get_service('poll-A')
 
@@ -89,7 +89,7 @@ def test_poll_empty_response(server, version, https, count_blocks):
         with pytest.raises(exceptions.StatusMessageException):
             response = service.process(headers, request)
 
-    server.config['count_blocks_in_poll_responses'] = True
+    server.config['taxii1']['count_blocks_in_poll_responses'] = True
 
 
 @pytest.mark.parametrize(
@@ -158,7 +158,7 @@ def test_poll_get_content(server, version, https):
     [(True, True), (False, True), (True, False), (False, False)])
 def test_poll_get_content_count(server, https, count_blocks):
     version = 11
-    server.config['count_blocks_in_poll_responses'] = count_blocks
+    server.config['taxii1']['count_blocks_in_poll_responses'] = count_blocks
     service = server.get_service('poll-A')
 
     blocks_amount = 10
@@ -181,7 +181,7 @@ def test_poll_get_content_count(server, https, count_blocks):
         assert len(response.content_blocks) == 0
     else:
         assert response.record_count is None
-    server.config['count_blocks_in_poll_responses'] = True
+    server.config['taxii1']['count_blocks_in_poll_responses'] = True
 
 
 @pytest.mark.parametrize(
@@ -190,7 +190,7 @@ def test_poll_get_content_count(server, https, count_blocks):
 def test_poll_max_count_max_size(server, https, count_blocks):
 
     version = 11
-    server.config['count_blocks_in_poll_responses'] = count_blocks
+    server.config['taxii1']['count_blocks_in_poll_responses'] = count_blocks
 
     service = server.get_service('poll-A')
 
@@ -228,14 +228,14 @@ def test_poll_max_count_max_size(server, https, count_blocks):
 
     assert response.more is True
     assert response.result_id
-    server.config['count_blocks_in_poll_responses'] = True
+    server.config['taxii1']['count_blocks_in_poll_responses'] = True
 
 
 @pytest.mark.parametrize(
     ("https", "count_blocks"),
     [(True, True), (False, True), (True, False), (False, False)])
 def test_poll_fulfilment_request(server, https, count_blocks):
-    server.config['count_blocks_in_poll_responses'] = count_blocks
+    server.config['taxii1']['count_blocks_in_poll_responses'] = count_blocks
     version = 11
     service = server.get_service('poll-A')
 
@@ -300,14 +300,14 @@ def test_poll_fulfilment_request(server, https, count_blocks):
 
     assert not response.more
     assert response.result_id == result_id
-    server.config['count_blocks_in_poll_responses'] = True
+    server.config['taxii1']['count_blocks_in_poll_responses'] = True
 
 
 @pytest.mark.parametrize("https", [True, False])
 @pytest.mark.parametrize("version", [11, 10])
 def test_subscribe_and_poll(server, version, https):
 
-    server.config['count_blocks_in_poll_responses'] = True
+    server.config['taxii1']['count_blocks_in_poll_responses'] = True
 
     subs_service = server.get_service('collection-management-A')
     poll_service = server.get_service('poll-A')

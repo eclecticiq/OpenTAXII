@@ -107,24 +107,31 @@ def setup_logging():
 
 
 def prepare_test_config(dbconnection):
-    config = ServerConfig()
-    config.update(
-        {
-            "persistence_api": {
-                "class": "opentaxii.persistence.sqldb.SQLDatabaseAPI",
-                "parameters": {"db_connection": dbconnection, "create_tables": True},
-            },
-            "auth_api": {
-                "class": "opentaxii.auth.sqldb.SQLDatabaseAPI",
-                "parameters": {
-                    "db_connection": dbconnection,
-                    "create_tables": True,
-                    "secret": "dummy-secret-string-for-tests",
+    config = ServerConfig(
+        extra_configs=[
+            {
+                "taxii1": {
+                    "persistence_api": {
+                        "class": "opentaxii.persistence.sqldb.SQLDatabaseAPI",
+                        "parameters": {
+                            "db_connection": dbconnection,
+                            "create_tables": True,
+                        },
+                    },
+                    "auth_api": {
+                        "class": "opentaxii.auth.sqldb.SQLDatabaseAPI",
+                        "parameters": {
+                            "db_connection": dbconnection,
+                            "create_tables": True,
+                            "secret": "dummy-secret-string-for-tests",
+                        },
+                    },
+                    "max_content_length": 1024,
                 },
-            },
-        }
+                "domain": DOMAIN,
+            }
+        ]
     )
-    config["domain"] = DOMAIN
     return config
 
 

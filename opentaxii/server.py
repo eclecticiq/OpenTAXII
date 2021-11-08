@@ -32,17 +32,19 @@ class TAXIIServer(object):
     def __init__(self, config):
         self.config = config
         self.persistence = PersistenceManager(
-            server=self, api=initialize_api(config["persistence_api"])
+            server=self, api=initialize_api(config["taxii1"]["persistence_api"])
         )
 
-        self.auth = AuthManager(server=self, api=initialize_api(config["auth_api"]))
+        self.auth = AuthManager(
+            server=self, api=initialize_api(config["taxii1"]["auth_api"])
+        )
 
-        signal_hooks = config["hooks"]
+        signal_hooks = config["taxii1"]["hooks"]
         if signal_hooks:
             importlib.import_module(signal_hooks)
             log.info("signal_hooks.imported", hooks=signal_hooks)
 
-        configure_libtaxii_xml_parser(config["xml_parser_supports_huge_tree"])
+        configure_libtaxii_xml_parser(config["taxii1"]["xml_parser_supports_huge_tree"])
         log.info("opentaxii.server_configured")
 
     def init_app(self, app):

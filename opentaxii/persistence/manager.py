@@ -159,7 +159,7 @@ class PersistenceManager(object):
         :rtype: :py:class:`opentaxii.taxii.entities.InboxMessageEntity`
         '''
 
-        if self.server.config['save_raw_inbox_messages']:
+        if self.server.config['taxii1']['save_raw_inbox_messages']:
             entity = self.api.create_inbox_message(entity)
             INBOX_MESSAGE_CREATED.send(self, inbox_message=entity)
 
