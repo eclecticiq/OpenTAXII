@@ -1,17 +1,16 @@
-import sys
-import logging
-import structlog
-import importlib
 import base64
 import binascii
+import importlib
+import logging
+import sys
 
+import structlog
 from six.moves import urllib
 
 from .entities import Account
-from .taxii.entities import (
-    CollectionEntity, deserialize_content_bindings)
-from .taxii.converters import dict_to_service_entity
 from .exceptions import InvalidAuthHeader
+from .taxii.converters import dict_to_service_entity
+from .taxii.entities import CollectionEntity, deserialize_content_bindings
 
 log = structlog.getLogger(__name__)
 

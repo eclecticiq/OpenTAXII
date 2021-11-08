@@ -1,5 +1,4 @@
 import pytest
-
 from opentaxii.taxii.converters import dict_to_service_entity
 
 from fixtures import DOMAIN

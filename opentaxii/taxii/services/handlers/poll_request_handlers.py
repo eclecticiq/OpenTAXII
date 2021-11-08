@@ -1,24 +1,19 @@
+import libtaxii.messages_10 as tm10
+import libtaxii.messages_11 as tm11
 import structlog
-
+from libtaxii.constants import (RT_FULL, SD_ESTIMATED_WAIT, SD_ITEM,
+                                SD_RESULT_ID, SD_SUPPORTED_CONTENT,
+                                SD_WILL_PUSH, ST_DENIED, ST_NOT_FOUND,
+                                ST_PENDING, ST_UNSUPPORTED_CONTENT_BINDING)
 from opentaxii.local import context
 
-import libtaxii.messages_11 as tm11
-import libtaxii.messages_10 as tm10
-from libtaxii.constants import (
-    SD_ITEM, ST_NOT_FOUND, ST_DENIED,
-    SD_SUPPORTED_CONTENT, ST_UNSUPPORTED_CONTENT_BINDING,
-    RT_FULL,
-    ST_PENDING, SD_ESTIMATED_WAIT, SD_RESULT_ID, SD_WILL_PUSH
-)
-
-from .base_handlers import BaseMessageHandler
-from ...exceptions import StatusMessageException, raise_failure, FailureStatus
 from ....persistence.exceptions import ResultsNotReady
-from ...converters import (
-    content_block_entity_to_content_block, parse_content_bindings,
-    content_binding_entities_to_content_bindings
-)
+from ...converters import (content_binding_entities_to_content_bindings,
+                           content_block_entity_to_content_block,
+                           parse_content_bindings)
+from ...exceptions import FailureStatus, StatusMessageException, raise_failure
 from ...utils import get_utc_now
+from .base_handlers import BaseMessageHandler
 
 log = structlog.getLogger(__name__)
 

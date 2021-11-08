@@ -1,7 +1,6 @@
 import pytest
-
-from opentaxii.taxii.http import HTTP_X_TAXII_CONTENT_TYPES
 from opentaxii.taxii.converters import dict_to_service_entity
+from opentaxii.taxii.http import HTTP_X_TAXII_CONTENT_TYPES
 
 DISCOVERY = dict(
     id='discovery-A',

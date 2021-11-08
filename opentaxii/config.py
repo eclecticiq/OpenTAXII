@@ -4,12 +4,11 @@ from collections import defaultdict
 import yaml
 from libtaxii.constants import ST_TYPES_10, ST_TYPES_11
 
-
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
-ENV_VAR_PREFIX = 'OPENTAXII_'
-CONFIG_ENV_VAR = 'OPENTAXII_CONFIG'
-DEFAULT_CONFIG_NAME = 'defaults.yml'
+ENV_VAR_PREFIX = "OPENTAXII_"
+CONFIG_ENV_VAR = "OPENTAXII_CONFIG"
+DEFAULT_CONFIG_NAME = "defaults.yml"
 DEFAULT_CONFIG = os.path.join(current_dir, DEFAULT_CONFIG_NAME)
 
 
@@ -18,7 +17,7 @@ def _infinite_dict():
 
 
 class ServerConfig(dict):
-    '''Class responsible for loading configuration files.
+    """Class responsible for loading configuration files.
 
     This class will load default configuration file (shipped with OpenTAXII)
     and apply user specified configuration file on top of default one.
@@ -29,7 +28,7 @@ class ServerConfig(dict):
 
     :param str optional_env_var: name of the enviromental variable
     :param list extra_configs: list of additional config filenames
-    '''
+    """
 
     def __init__(self, optional_env_var=CONFIG_ENV_VAR, extra_configs=None):
 
@@ -45,8 +44,8 @@ class ServerConfig(dict):
         configs.append(self._get_env_config())
 
         options = self._load_configs(*configs)
-        if options['unauthorized_status'] not in ST_TYPES_10 + ST_TYPES_11:
-            raise ValueError('invalid value for unauthorized_status field')
+        if options["unauthorized_status"] not in ST_TYPES_10 + ST_TYPES_11:
+            raise ValueError("invalid value for unauthorized_status field")
 
         super(ServerConfig, self).__init__(options)
 
@@ -56,11 +55,11 @@ class ServerConfig(dict):
         for key, value in env.items():
             if not key.startswith(ENV_VAR_PREFIX):
                 continue
-            key = key[len(ENV_VAR_PREFIX):].lstrip('_').lower()
+            key = key[len(ENV_VAR_PREFIX):].lstrip("_").lower()
             value = yaml.safe_load(value)
 
             container = result
-            parts = key.split('__')
+            parts = key.split("__")
             for part in parts[:-1]:
                 container = container[part]
             container[parts[-1]] = value

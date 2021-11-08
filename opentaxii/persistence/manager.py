@@ -1,8 +1,7 @@
 import structlog
 from opentaxii.local import context
-from opentaxii.signals import (
-    CONTENT_BLOCK_CREATED, INBOX_MESSAGE_CREATED,
-    SUBSCRIPTION_CREATED)
+from opentaxii.signals import (CONTENT_BLOCK_CREATED, INBOX_MESSAGE_CREATED,
+                               SUBSCRIPTION_CREATED)
 
 log = structlog.getLogger(__name__)
 

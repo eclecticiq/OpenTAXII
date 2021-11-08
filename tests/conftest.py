@@ -128,7 +128,7 @@ def prepare_test_config(dbconnection):
     return config
 
 
-@pytest.yield_fixture()
+@pytest.fixture
 def anonymous_user():
     from opentaxii.middleware import anonymous_full_access
 

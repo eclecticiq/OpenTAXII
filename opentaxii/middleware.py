@@ -1,25 +1,24 @@
-import structlog
 import functools
-from flask import Flask, request, make_response, abort
 
-from .taxii.exceptions import (
-    raise_failure, StatusMessageException, FailureStatus
-)
-from .taxii.utils import parse_message
-from .taxii.status import process_status_exception
-from .taxii.bindings import (
-    MESSAGE_BINDINGS, SERVICE_BINDINGS, ALL_PROTOCOL_BINDINGS
-)
-from .taxii.http import (
-    get_http_headers, get_content_type, validate_request_headers_post_parse,
-    validate_request_headers, validate_response_headers,
-    HTTP_X_TAXII_CONTENT_TYPES, HTTP_ALLOW, HTTP_AUTHORIZATION
-)
-from .exceptions import UnauthorizedException, InvalidAuthHeader
-from .utils import parse_basic_auth_token
+import structlog
+from flask import Flask, abort, make_response, request
+
 from .entities import Account
+from .exceptions import InvalidAuthHeader, UnauthorizedException
+from .local import context, release_context
 from .management import management
-from .local import release_context, context
+from .taxii.bindings import (ALL_PROTOCOL_BINDINGS, MESSAGE_BINDINGS,
+                             SERVICE_BINDINGS)
+from .taxii.exceptions import (FailureStatus, StatusMessageException,
+                               raise_failure)
+from .taxii.http import (HTTP_ALLOW, HTTP_AUTHORIZATION,
+                         HTTP_X_TAXII_CONTENT_TYPES, get_content_type,
+                         get_http_headers, validate_request_headers,
+                         validate_request_headers_post_parse,
+                         validate_response_headers)
+from .taxii.status import process_status_exception
+from .taxii.utils import parse_message
+from .utils import parse_basic_auth_token
 
 log = structlog.get_logger(__name__)
 
