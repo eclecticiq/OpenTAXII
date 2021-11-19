@@ -45,13 +45,11 @@ class ServerConfig(dict):
         "support_basic_auth",
         "return_server_error_details",
         "logging",
+        "auth_api",
         "taxii1",
         "taxii2",
     )
-    VALID_TAXII_OPTIONS = (
-        "persistence_api",
-        "auth_api",
-    )
+    VALID_TAXII_OPTIONS = ("persistence_api",)
     VALID_TAXII1_OPTIONS = (
         "save_raw_inbox_messages",
         "xml_parser_supports_huge_tree",
@@ -143,11 +141,19 @@ class ServerConfig(dict):
             warn(f"Ignoring invalid configuration item '{key}'.")
             del options[key]
         if "taxii1" in options and options["taxii1"]:
-            for key in [key for key in options["taxii1"] if key not in cls.VALID_TAXII_OPTIONS + cls.VALID_TAXII1_OPTIONS]:
+            for key in [
+                key
+                for key in options["taxii1"]
+                if key not in cls.VALID_TAXII_OPTIONS + cls.VALID_TAXII1_OPTIONS
+            ]:
                 warn(f"Ignoring invalid taxii1 configuration item '{key}'.")
                 del options["taxii1"][key]
         if "taxii2" in options and options["taxii2"]:
-            for key in [key for key in options["taxii2"] if key not in cls.VALID_TAXII_OPTIONS + cls.VALID_TAXII2_OPTIONS]:
+            for key in [
+                key
+                for key in options["taxii2"]
+                if key not in cls.VALID_TAXII_OPTIONS + cls.VALID_TAXII2_OPTIONS
+            ]:
                 warn(f"Ignoring invalid taxii2 configuration item '{key}'.")
                 del options["taxii2"][key]
         return options

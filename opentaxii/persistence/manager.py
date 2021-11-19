@@ -6,7 +6,11 @@ from opentaxii.signals import (CONTENT_BLOCK_CREATED, INBOX_MESSAGE_CREATED,
 log = structlog.getLogger(__name__)
 
 
-class PersistenceManager(object):
+class BasePersistenceManager(object):
+    pass
+
+
+class Taxii1PersistenceManager(BasePersistenceManager):
     '''Manager responsible for persisting and retrieving data.
 
     Manager uses API instance ``api`` for basic data CRUD operations and
@@ -159,7 +163,7 @@ class PersistenceManager(object):
         :rtype: :py:class:`opentaxii.taxii.entities.InboxMessageEntity`
         '''
 
-        if self.server.config['taxii1']['save_raw_inbox_messages']:
+        if self.server.config['save_raw_inbox_messages']:
             entity = self.api.create_inbox_message(entity)
             INBOX_MESSAGE_CREATED.send(self, inbox_message=entity)
 
@@ -350,3 +354,18 @@ class PersistenceManager(object):
             collection=collection_name,
             count=count)
         return count
+
+
+class Taxii2PersistenceManager(BasePersistenceManager):
+    '''Manager responsible for persisting and retrieving data.
+
+    Manager uses API instance ``api`` for basic data CRUD operations and
+    provides additional logic on top.
+
+    :param `opentaxii.persistence.api.OpenTAXII2PersistenceAPI` api:
+        instance of persistence API class
+    '''
+
+    def __init__(self, server, api):
+        self.server = server
+        self.api = api

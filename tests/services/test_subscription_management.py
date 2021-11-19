@@ -14,8 +14,8 @@ ASSIGNED_SERVICES = ['collection-management-A', 'poll-A']
 @pytest.fixture(autouse=True)
 def prepare_server(server, services):
     for coll in COLLECTIONS_B:
-        coll = server.persistence.create_collection(coll)
-        server.persistence.set_collection_services(
+        coll = server.servers.taxii1.persistence.create_collection(coll)
+        server.servers.taxii1.persistence.set_collection_services(
             coll.id, service_ids=ASSIGNED_SERVICES)
     return server
 
@@ -24,8 +24,8 @@ def prepare_server(server, services):
 @pytest.mark.parametrize("version", [11, 10])
 def test_subscribe(server, version, https):
 
-    service = server.get_service('collection-management-A')
-    poll_service = server.get_service('poll-A')
+    service = server.servers.taxii1.get_service('collection-management-A')
+    poll_service = server.servers.taxii1.get_service('poll-A')
 
     headers = prepare_headers(version, https)
 
@@ -83,7 +83,7 @@ def test_subscribe_pause_resume(server, https):
 
     version = 11
 
-    service = server.get_service('collection-management-A')
+    service = server.servers.taxii1.get_service('collection-management-A')
 
     headers = prepare_headers(version, https)
 
@@ -110,7 +110,7 @@ def test_subscribe_pause_resume(server, https):
 
     assert subs.status == SS_ACTIVE
     assert (
-        server.persistence.get_subscription(subs.subscription_id).status ==
+        server.servers.taxii1.persistence.get_subscription(subs.subscription_id).status ==
         SS_ACTIVE)
 
     # Pausing
@@ -132,7 +132,7 @@ def test_subscribe_pause_resume(server, https):
     assert subs.subscription_id
     assert subs.status == SS_PAUSED
     assert (
-        server.persistence.get_subscription(subs.subscription_id).status ==
+        server.servers.taxii1.persistence.get_subscription(subs.subscription_id).status ==
         SS_PAUSED)
 
     # Resume
@@ -154,7 +154,7 @@ def test_subscribe_pause_resume(server, https):
     assert subs.subscription_id
     assert subs.status == SS_ACTIVE
     assert (
-        server.persistence.get_subscription(subs.subscription_id).status ==
+        server.servers.taxii1.persistence.get_subscription(subs.subscription_id).status ==
         SS_ACTIVE)
 
 
@@ -162,7 +162,7 @@ def test_subscribe_pause_resume(server, https):
 def test_pause_resume_wrong_id(server, https):
 
     version = 11
-    service = server.get_service('collection-management-A')
+    service = server.servers.taxii1.get_service('collection-management-A')
 
     headers = prepare_headers(version, https)
 
@@ -202,7 +202,7 @@ def test_pause_resume_wrong_id(server, https):
 @pytest.mark.parametrize("version", [11, 10])
 def test_unsubscribe(server, version, https):
 
-    service = server.get_service('collection-management-A')
+    service = server.servers.taxii1.get_service('collection-management-A')
     headers = prepare_headers(version, https)
 
     params = dict(
@@ -250,5 +250,5 @@ def test_unsubscribe(server, version, https):
         assert subs.status == SS_UNSUBSCRIBED
 
     assert (
-        server.persistence.get_subscription(subscription_id).status ==
+        server.servers.taxii1.persistence.get_subscription(subscription_id).status ==
         SS_UNSUBSCRIBED)

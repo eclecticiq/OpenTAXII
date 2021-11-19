@@ -106,8 +106,8 @@ def auth_fixtures(server):
             'collections': COLLECTIONS,
             'accounts': ACCOUNTS})
 
-    assert len(server.persistence.get_services()) == 4
-    assert len(server.persistence.get_collections()) == len(COLLECTIONS)
+    assert len(server.servers.taxii1.persistence.get_services()) == 4
+    assert len(server.servers.taxii1.persistence.get_collections()) == len(COLLECTIONS)
 
 
 @pytest.fixture()

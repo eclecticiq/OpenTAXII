@@ -55,14 +55,14 @@ def prepare_server(server, services):
     for service, collections in coll_mapping.items():
         for coll in collections:
             if coll.name not in names:
-                coll = server.persistence.create_collection(coll)
+                coll = server.servers.taxii1.persistence.create_collection(coll)
                 names.add(coll.name)
                 service_ids = [service]
             else:
                 coll = DataCollection.query.filter_by(name=coll.name).one()
                 service_ids = {s.id for s in coll.services} | {service}
 
-            server.persistence.set_collection_services(
+            server.servers.taxii1.persistence.set_collection_services(
                 coll.id, service_ids=service_ids)
 
 
@@ -70,7 +70,7 @@ def prepare_server(server, services):
 @pytest.mark.parametrize("version", [11, 10])
 def test_inbox_request_all_content(server, version, https):
 
-    inbox_a = server.get_service('inbox-A')
+    inbox_a = server.servers.taxii1.get_service('inbox-A')
 
     headers = prepare_headers(version, https)
 
@@ -93,7 +93,7 @@ def test_inbox_request_all_content(server, version, https):
     assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
-    db_blocks = server.persistence.get_content_blocks(None)
+    db_blocks = server.servers.taxii1.persistence.get_content_blocks(None)
     assert len(db_blocks) == len(blocks)
 
 
@@ -105,14 +105,14 @@ def test_inbox_request_destination_collection(server, https):
         version, blocks=[make_content(version)], dest_collection=None)
     headers = prepare_headers(version, https)
 
-    inbox = server.get_service('inbox-A')
+    inbox = server.servers.taxii1.get_service('inbox-A')
     # destination collection is not required for inbox-A
     response = inbox.process(headers, inbox_message)
 
     assert isinstance(response, as_tm(version).StatusMessage)
     assert response.status_type == ST_SUCCESS
 
-    inbox = server.get_service('inbox-B')
+    inbox = server.servers.taxii1.get_service('inbox-B')
     # destination collection is required for inbox-B
     with pytest.raises(exceptions.StatusMessageException):
         response = inbox.process(headers, inbox_message)
@@ -122,7 +122,7 @@ def test_inbox_request_destination_collection(server, https):
 @pytest.mark.parametrize("version", [11, 10])
 def test_inbox_request_inbox_valid_content_binding(server, version, https):
 
-    inbox = server.get_service('inbox-B')
+    inbox = server.servers.taxii1.get_service('inbox-B')
 
     blocks = [
         make_content(
@@ -145,7 +145,7 @@ def test_inbox_request_inbox_valid_content_binding(server, version, https):
     assert response.in_response_to == MESSAGE_ID
 
     # all blocks
-    blocks = server.persistence.get_content_blocks(collection_id=None)
+    blocks = server.servers.taxii1.persistence.get_content_blocks(collection_id=None)
     assert len(blocks) == len(blocks)
 
 
@@ -153,7 +153,7 @@ def test_inbox_request_inbox_valid_content_binding(server, version, https):
 @pytest.mark.parametrize("version", [11, 10])
 def test_inbox_req_inbox_invalid_inbox_content_binding(server, version, https):
 
-    inbox = server.get_service('inbox-B')
+    inbox = server.servers.taxii1.get_service('inbox-B')
 
     content = make_content(version, content_binding=INVALID_CONTENT_BINDING)
     inbox_message = make_inbox_message(
@@ -167,7 +167,7 @@ def test_inbox_req_inbox_invalid_inbox_content_binding(server, version, https):
     assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
-    blocks = server.persistence.get_content_blocks(None)
+    blocks = server.servers.taxii1.persistence.get_content_blocks(None)
 
     # Content blocks with invalid content should be ignored
     assert len(blocks) == 0
@@ -177,7 +177,7 @@ def test_inbox_req_inbox_invalid_inbox_content_binding(server, version, https):
 @pytest.mark.parametrize("version", [11, 10])
 def test_inbox_req_coll_content_bindings_filtering(server, version, https):
 
-    inbox = server.get_service('inbox-B')
+    inbox = server.servers.taxii1.get_service('inbox-B')
     headers = prepare_headers(version, https)
 
     blocks = [
@@ -194,7 +194,7 @@ def test_inbox_req_coll_content_bindings_filtering(server, version, https):
     assert response.status_type == ST_SUCCESS
     assert response.in_response_to == MESSAGE_ID
 
-    blocks = server.persistence.get_content_blocks(None)
+    blocks = server.servers.taxii1.persistence.get_content_blocks(None)
 
     # Content blocks with invalid content should be ignored
     assert len(blocks) == 1

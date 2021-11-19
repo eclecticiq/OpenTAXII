@@ -44,7 +44,7 @@ MESSAGE_ID = '123'
 @pytest.fixture(autouse=True)
 def local_services(server):
     for service in SERVICES:
-        server.persistence.update_service(dict_to_service_entity(service))
+        server.servers.taxii1.persistence.update_service(dict_to_service_entity(service))
 
 
 def test_root_get(client):

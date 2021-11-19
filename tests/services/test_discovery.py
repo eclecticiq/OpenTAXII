@@ -14,7 +14,7 @@ def server_with_services(server, services):
 def test_discovery_request(server, version, https):
 
     request = as_tm(version).DiscoveryRequest(message_id=MESSAGE_ID)
-    service = server.get_service('discovery-A')
+    service = server.servers.taxii1.get_service('discovery-A')
 
     headers = prepare_headers(version, https)
     response = service.process(headers, request)
@@ -30,7 +30,7 @@ def test_discovery_request(server, version, https):
 def test_content_bindings_present(server, version, https):
 
     request = as_tm(version).DiscoveryRequest(message_id=MESSAGE_ID)
-    service = server.get_service('discovery-A')
+    service = server.servers.taxii1.get_service('discovery-A')
 
     headers = prepare_headers(version, https)
     response = service.process(headers, request)

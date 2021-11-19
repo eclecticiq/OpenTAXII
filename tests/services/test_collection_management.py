@@ -21,8 +21,8 @@ ASSIGNED_SUBSCTRIPTION_INSTANCES = sum(
 @pytest.fixture(autouse=True)
 def prepare_server(server, services):
     for coll in COLLECTIONS_B:
-        coll = server.persistence.create_collection(coll)
-        server.persistence.set_collection_services(
+        coll = server.servers.taxii1.persistence.create_collection(coll)
+        server.servers.taxii1.persistence.set_collection_services(
             coll.id, service_ids=ASSIGNED_SERVICES)
 
 
@@ -38,7 +38,7 @@ def prepare_request(version):
 @pytest.mark.parametrize("version", [11, 10])
 def test_collections(server, version, https):
 
-    service = server.get_service('collection-management-A')
+    service = server.servers.taxii1.get_service('collection-management-A')
 
     headers = prepare_headers(version, https)
     request = prepare_request(version)
@@ -66,7 +66,7 @@ def test_collections(server, version, https):
 def test_collections_inboxes(server, https):
 
     version = 11
-    service = server.get_service('collection-management-A')
+    service = server.servers.taxii1.get_service('collection-management-A')
 
     headers = prepare_headers(version, https)
     request = prepare_request(version)
@@ -82,7 +82,7 @@ def test_collections_inboxes(server, https):
 @pytest.mark.parametrize("version", [11, 10])
 def test_collections_subscribe_instances(server, version, https):
 
-    service = server.get_service('collection-management-A')
+    service = server.servers.taxii1.get_service('collection-management-A')
 
     headers = prepare_headers(version, https)
     request = prepare_request(version)
@@ -101,7 +101,7 @@ def test_collections_subscribe_instances(server, version, https):
 @pytest.mark.parametrize("version", [11, 10])
 def test_collection_supported_content(server, version, https):
 
-    service = server.get_service('collection-management-A')
+    service = server.servers.taxii1.get_service('collection-management-A')
 
     headers = prepare_headers(version, https)
     request = prepare_request(version)
@@ -137,7 +137,7 @@ def test_collections_volume(server, https):
 
     version = 11
 
-    service = server.get_service('collection-management-A')
+    service = server.servers.taxii1.get_service('collection-management-A')
 
     headers = prepare_headers(version, https)
     request = prepare_request(version)
@@ -154,7 +154,7 @@ def test_collections_volume(server, https):
     blocks_amount = 10
 
     for i in range(blocks_amount):
-        persist_content(server.persistence, COLLECTION_OPEN, service.id)
+        persist_content(server.servers.taxii1.persistence, COLLECTION_OPEN, service.id)
 
     # querying filled collection
     response = service.process(headers, request)
@@ -170,7 +170,7 @@ def test_collections_volume(server, https):
 @pytest.mark.parametrize("version", [11, 10])
 def test_collections_defined_supported_content(server, version, https):
 
-    service = server.get_service('collection-management-A')
+    service = server.servers.taxii1.get_service('collection-management-A')
 
     headers = prepare_headers(version, https)
     request = prepare_request(version)

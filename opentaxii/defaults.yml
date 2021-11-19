@@ -5,6 +5,14 @@ domain: "localhost:9000"
 support_basic_auth: yes
 return_server_error_details: no
 
+auth_api:
+  class: opentaxii.auth.sqldb.SQLDatabaseAPI
+  parameters:
+    db_connection: sqlite:////tmp/auth.db
+    create_tables: yes
+    secret: SECRET-STRING-NEEDS-TO-BE-CHANGED
+    token_ttl_secs: 3600
+
 taxii1:
   save_raw_inbox_messages: yes
   xml_parser_supports_huge_tree: yes
@@ -17,16 +25,7 @@ taxii1:
       db_connection: sqlite:////tmp/data.db
       create_tables: yes
 
-  auth_api:
-    class: opentaxii.auth.sqldb.SQLDatabaseAPI
-    parameters:
-      db_connection: sqlite:////tmp/auth.db
-      create_tables: yes
-      secret: SECRET-STRING-NEEDS-TO-BE-CHANGED
-      token_ttl_secs: 3600
-
 taxii2:
-
 
 logging:
   opentaxii: info

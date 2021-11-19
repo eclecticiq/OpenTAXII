@@ -242,3 +242,12 @@ class OpenTAXIIPersistenceAPI(object):
         :param bool with_messages: delete related inbox messages
         '''
         pass
+
+
+class OpenTAXII2PersistenceAPI(object):
+    """
+    Abstract class that represents OpenTAXII Persistence API.
+
+    Stub, pending implementation.
+    """
+    pass

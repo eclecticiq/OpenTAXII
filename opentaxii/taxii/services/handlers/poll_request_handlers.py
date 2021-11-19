@@ -163,7 +163,7 @@ class PollRequest11Handler(BaseMessageHandler):
         # https://github.com/TAXIIProject/libtaxii/issues/191
         result_part = int(result_part)
 
-        if context.server.config['taxii1']['count_blocks_in_poll_responses']:
+        if context.server.servers.taxii1.config['count_blocks_in_poll_responses']:
             # dividing instead of multiplying to be safe from overflow
             total_count = service.get_content_blocks_count(
                 collection, timeframe=timeframe,

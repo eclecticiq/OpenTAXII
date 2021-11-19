@@ -110,6 +110,14 @@ def prepare_test_config(dbconnection):
     config = ServerConfig(
         extra_configs=[
             {
+                "auth_api": {
+                    "class": "opentaxii.auth.sqldb.SQLDatabaseAPI",
+                    "parameters": {
+                        "db_connection": dbconnection,
+                        "create_tables": True,
+                        "secret": "dummy-secret-string-for-tests",
+                    },
+                },
                 "taxii1": {
                     "persistence_api": {
                         "class": "opentaxii.persistence.sqldb.SQLDatabaseAPI",
@@ -118,12 +126,13 @@ def prepare_test_config(dbconnection):
                             "create_tables": True,
                         },
                     },
-                    "auth_api": {
-                        "class": "opentaxii.auth.sqldb.SQLDatabaseAPI",
+                },
+                "taxii2": {
+                    "persistence_api": {
+                        "class": "opentaxii.persistence.sqldb.Taxii2SQLDatabaseAPI",
                         "parameters": {
                             "db_connection": dbconnection,
                             "create_tables": True,
-                            "secret": "dummy-secret-string-for-tests",
                         },
                     },
                     "max_content_length": 1024,
@@ -137,7 +146,7 @@ def prepare_test_config(dbconnection):
 
 @pytest.fixture
 def anonymous_user():
-    from opentaxii.middleware import anonymous_full_access
+    from opentaxii.server import anonymous_full_access
 
     context.account = anonymous_full_access
     yield
@@ -186,4 +195,6 @@ def client(app):
 @pytest.fixture()
 def services(server):
     for service in SERVICES:
-        server.persistence.update_service(dict_to_service_entity(service))
+        server.servers.taxii1.persistence.update_service(
+            dict_to_service_entity(service)
+        )

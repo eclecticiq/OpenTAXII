@@ -20,26 +20,22 @@ auth_api:
 COMBINED_CONFIG = """
 ---
 dummy: some
+auth_api:
+  class: other.test.AuthClass
+  parameters:
+    c: 3
 taxii1:
   persistence_api:
     class: some.test.PersistenceClass
     parameters:
       a: 1
       b: 2
-  auth_api:
-    class: other.test.AuthClass
-    parameters:
-      c: 3
 taxii2:
   persistence_api:
     class: some.test.Taxii2PersistenceClass
     parameters:
       a: 1
       b: 2
-  auth_api:
-    class: other.test.Taxii2AuthClass
-    parameters:
-      c: 3
   max_content_length: 1024
 """
 TAXII2_CONFIG = """
@@ -47,6 +43,10 @@ TAXII2_CONFIG = """
 dummy: some
 persistence_api:
   class: some.test.PersistenceClass
+auth_api:
+  class: other.test.AuthClass
+  parameters:
+    c: 3
 taxii1:
 taxii2:
   persistence_api:
@@ -54,10 +54,6 @@ taxii2:
     parameters:
       a: 1
       b: 2
-  auth_api:
-    class: other.test.Taxii2AuthClass
-    parameters:
-      c: 3
   max_content_length: 1024
 """
 DEFAULT_BASE_VALUES = {
@@ -65,6 +61,16 @@ DEFAULT_BASE_VALUES = {
     "support_basic_auth": True,
     "return_server_error_details": False,
     "logging": {"opentaxii": "info", "root": "info"},
+    "auth_api": {
+        "class": "other.test.AuthClass",
+        "parameters": {
+            "c": 3,
+            "create_tables": True,
+            "db_connection": "sqlite:////tmp/auth.db",
+            "secret": "SECRET-STRING-NEEDS-TO-BE-CHANGED",
+            "token_ttl_secs": 3600,
+        },
+    },
 }
 DEFAULT_TAXII1_VALUES = {
     "save_raw_inbox_messages": True,
@@ -83,16 +89,6 @@ TAXII1_VALUES = {
             "db_connection": "sqlite:////tmp/data.db",
         },
     },
-    "auth_api": {
-        "class": "other.test.AuthClass",
-        "parameters": {
-            "c": 3,
-            "create_tables": True,
-            "db_connection": "sqlite:////tmp/auth.db",
-            "secret": "SECRET-STRING-NEEDS-TO-BE-CHANGED",
-            "token_ttl_secs": 3600,
-        },
-    },
 }
 TAXII2_VALUES = {
     "persistence_api": {
@@ -100,12 +96,6 @@ TAXII2_VALUES = {
         "parameters": {
             "a": 1,
             "b": 2,
-        },
-    },
-    "auth_api": {
-        "class": "other.test.Taxii2AuthClass",
-        "parameters": {
-            "c": 3,
         },
     },
     "max_content_length": 1024,
@@ -179,7 +169,7 @@ def test_custom_config_file(config_file_name_expected_value):
     if deprecation_warning:
         expected_warnings |= {
             f"Setting taxii1 attributes at top level is deprecated. Please nest '{key}' inside 'taxii1'."
-            for key in ["persistence_api", "auth_api"]
+            for key in ["persistence_api"]
         }
     if taxii2_only_warning:
         expected_warnings |= {

@@ -16,7 +16,7 @@ DISCOVERY = dict(
 @pytest.fixture(autouse=True)
 def local_services(server):
     for service in [DISCOVERY]:
-        server.persistence.update_service(dict_to_service_entity(service))
+        server.servers.taxii1.persistence.update_service(dict_to_service_entity(service))
 
 
 @pytest.mark.parametrize("https", [True, False])
@@ -37,7 +37,7 @@ def test_options_request(server, client, version, https):
 
     versions = value.split(',')
 
-    service = server.get_service(DISCOVERY['id'])
+    service = server.servers.taxii1.get_service(DISCOVERY['id'])
     service_bindings = service.supported_message_bindings
 
     assert len(versions) == len(service_bindings)
