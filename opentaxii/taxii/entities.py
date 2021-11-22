@@ -1,20 +1,9 @@
 import six
-from libtaxii.constants import (
-    CT_DATA_FEED, CT_DATA_SET,
-    SS_ACTIVE, SS_PAUSED, SS_UNSUBSCRIBED,
-    RT_FULL, RT_COUNT_ONLY
-)
+from libtaxii.constants import (CT_DATA_FEED, CT_DATA_SET, RT_COUNT_ONLY,
+                                RT_FULL, SS_ACTIVE, SS_PAUSED, SS_UNSUBSCRIBED)
+from opentaxii.common.entities import Entity
 
 from .utils import is_content_supported
-
-
-class Entity(object):
-    '''Abstract TAXII entity class.
-    '''
-
-    def __repr__(self):
-        pairs = ["%s=%s" % (k, v) for k, v in sorted(self.__dict__.items())]
-        return "%s(%s)" % (self.__class__.__name__, ", ".join(pairs))
 
 
 class ServiceEntity(Entity):

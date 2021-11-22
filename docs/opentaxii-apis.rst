@@ -45,8 +45,8 @@ HTTP layer
 .. autofunction:: opentaxii.middleware.create_app
 
 
-Version agnostic TAXII entities
-===============================
+Version agnostic TAXII1 entities
+================================
 
 .. automodule:: opentaxii.taxii.entities
     :members:
@@ -78,6 +78,15 @@ TAXII services
     :show-inheritance:
 
 .. automodule:: opentaxii.taxii.services.collection_management
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+TAXII2 entities
+===============
+
+.. automodule:: opentaxii.taxii2.entities
     :members:
     :undoc-members:
     :show-inheritance:
