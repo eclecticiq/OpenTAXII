@@ -90,3 +90,12 @@ TAXII2 entities
     :members:
     :undoc-members:
     :show-inheritance:
+
+
+TAXII2 validation
+=================
+
+.. automodule:: opentaxii.taxii2.validation
+    :members:
+    :undoc-members:
+    :show-inheritance:
