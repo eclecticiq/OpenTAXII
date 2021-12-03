@@ -9,7 +9,7 @@ from ...http import (
     HTTP_X_TAXII_CONTENT_TYPE, HTTP_X_TAXII_SERVICES, HTTP_X_TAXII_ACCEPT)
 
 
-class BaseMessageHandler(object):
+class BaseMessageHandler:
 
     supported_request_messages = []
 

@@ -6,7 +6,7 @@ from opentaxii.signals import (CONTENT_BLOCK_CREATED, INBOX_MESSAGE_CREATED,
 log = structlog.getLogger(__name__)
 
 
-class BasePersistenceManager(object):
+class BasePersistenceManager:
     pass
 
 

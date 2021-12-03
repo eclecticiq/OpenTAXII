@@ -57,7 +57,7 @@ def parse_basic_auth_token(token):
         raise InvalidAuthHeader("Invalid Basic Auth header value")
 
 
-class PlainRenderer(object):
+class PlainRenderer:
 
     def __call__(self, logger, name, event_dict):
         details = event_dict.copy()

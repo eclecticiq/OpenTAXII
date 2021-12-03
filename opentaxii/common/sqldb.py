@@ -8,7 +8,7 @@ except ImportError:
     from sqlalchemy.ext.declarative import DeclarativeMeta
 
 
-class BaseSQLDatabaseAPI(object):
+class BaseSQLDatabaseAPI:
     BASEMODEL: ClassVar[Type[DeclarativeMeta]]
 
     def __init__(self, db_connection, create_tables=False, **engine_parameters):

@@ -10,7 +10,7 @@ from ..bindings import PROTOCOL_TO_SCHEME
 from ..converters import service_to_service_instances
 
 
-class TAXIIService(object):
+class TAXIIService:
     '''Generic TAXII Service class.
 
     This class implements common methods for all TAXII services.

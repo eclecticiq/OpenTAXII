@@ -1,5 +1,5 @@
 
-class OpenTAXIIPersistenceAPI(object):
+class OpenTAXIIPersistenceAPI:
     '''Abstract class that represents OpenTAXII Persistence API.
 
     This class defines required methods that need to exist in
@@ -244,7 +244,7 @@ class OpenTAXIIPersistenceAPI(object):
         pass
 
 
-class OpenTAXII2PersistenceAPI(object):
+class OpenTAXII2PersistenceAPI:
     """
     Abstract class that represents OpenTAXII Persistence API.
 

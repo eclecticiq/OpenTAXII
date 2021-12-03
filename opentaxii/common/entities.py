@@ -1,5 +1,5 @@
 
-class Entity(object):
+class Entity:
     '''Abstract TAXII entity class.
     '''
 

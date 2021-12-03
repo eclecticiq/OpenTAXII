@@ -1,5 +1,5 @@
 
-class Account(object):
+class Account:
     '''Represents Account entity.
 
     This class holds user-specific information and is used

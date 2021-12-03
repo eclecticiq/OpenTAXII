@@ -33,7 +33,7 @@ log = structlog.get_logger(__name__)
 anonymous_full_access = Account(id=None, username=None, permissions={}, is_admin=True)
 
 
-class BaseTAXIIServer(object):
+class BaseTAXIIServer:
     """
     Base class for common functionality in taxii* servers.
     """
@@ -346,7 +346,7 @@ class ServerMapping(NamedTuple):
     taxii2: TAXII2Server
 
 
-class TAXIIServer(object):
+class TAXIIServer:
     """
     TAXII Server class.
 

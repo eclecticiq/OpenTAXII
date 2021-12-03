@@ -3,7 +3,7 @@ import structlog
 log = structlog.getLogger(__name__)
 
 
-class AuthManager(object):
+class AuthManager:
     '''Manager responsible for authentication.
 
     Manager uses API instance ``api`` for basic auth operations and

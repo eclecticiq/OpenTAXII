@@ -111,7 +111,7 @@ def is_headers_valid(headers, version, https):
         raise ValueError('Unknown TAXII message version: %s' % version)
 
 
-class conditional(object):
+class conditional:
     """
     Wrap another context manager and enter it only if condition is true.
     """
