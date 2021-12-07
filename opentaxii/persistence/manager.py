@@ -1,13 +1,16 @@
 import structlog
 from opentaxii.local import context
-from opentaxii.signals import (
-    CONTENT_BLOCK_CREATED, INBOX_MESSAGE_CREATED,
-    SUBSCRIPTION_CREATED)
+from opentaxii.signals import (CONTENT_BLOCK_CREATED, INBOX_MESSAGE_CREATED,
+                               SUBSCRIPTION_CREATED)
 
 log = structlog.getLogger(__name__)
 
 
-class PersistenceManager(object):
+class BasePersistenceManager:
+    pass
+
+
+class Taxii1PersistenceManager(BasePersistenceManager):
     '''Manager responsible for persisting and retrieving data.
 
     Manager uses API instance ``api`` for basic data CRUD operations and
@@ -351,3 +354,18 @@ class PersistenceManager(object):
             collection=collection_name,
             count=count)
         return count
+
+
+class Taxii2PersistenceManager(BasePersistenceManager):
+    '''Manager responsible for persisting and retrieving data.
+
+    Manager uses API instance ``api`` for basic data CRUD operations and
+    provides additional logic on top.
+
+    :param `opentaxii.persistence.api.OpenTAXII2PersistenceAPI` api:
+        instance of persistence API class
+    '''
+
+    def __init__(self, server, api):
+        self.server = server
+        self.api = api

@@ -2,13 +2,15 @@ import json
 
 import six
 import structlog
-from opentaxii.persistence import OpenTAXIIPersistenceAPI
-from opentaxii.sqldb_helper import SQLAlchemyDB
+from opentaxii.common.sqldb import BaseSQLDatabaseAPI
+from opentaxii.persistence import (OpenTAXII2PersistenceAPI,
+                                   OpenTAXIIPersistenceAPI)
 from sqlalchemy import and_, func, or_
 
 from . import converters as conv
 from .models import (Base, ContentBlock, DataCollection, InboxMessage,
                      ResultSet, Service, Subscription)
+from .taxii2models import Base as Taxii2Base
 
 __all__ = ["SQLDatabaseAPI"]
 
@@ -17,7 +19,7 @@ log = structlog.getLogger(__name__)
 YIELD_PER_SIZE = 100
 
 
-class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
+class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
     """SQL database implementation of OpenTAXII Persistence API.
 
     Implementation will work with any DB supported by SQLAlchemy package.
@@ -33,23 +35,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
 
     :param engine_parameters=None: if defined, these arguments would be passed to sqlalchemy.create_engine
     """
-
-    def __init__(self, db_connection, create_tables=False, **engine_parameters):
-
-        self.db = SQLAlchemyDB(
-            db_connection,
-            Base,
-            session_options={
-                "autocommit": False,
-                "autoflush": True,
-            },
-            **engine_parameters
-        )
-        if create_tables:
-            self.db.create_all_tables()
-
-    def init_app(self, app):
-        self.db.init_app(app)
+    BASEMODEL = Base
 
     def get_services(self, collection_id=None):
         if collection_id:
@@ -468,3 +454,7 @@ class SQLDatabaseAPI(OpenTAXIIPersistenceAPI):
         self.db.session.commit()
 
         return counter
+
+
+class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
+    BASEMODEL = Taxii2Base

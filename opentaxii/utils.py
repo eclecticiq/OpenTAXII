@@ -1,17 +1,16 @@
-import sys
-import logging
-import structlog
-import importlib
 import base64
 import binascii
+import importlib
+import logging
+import sys
 
+import structlog
 from six.moves import urllib
 
 from .entities import Account
-from .taxii.entities import (
-    CollectionEntity, deserialize_content_bindings)
-from .taxii.converters import dict_to_service_entity
 from .exceptions import InvalidAuthHeader
+from .taxii.converters import dict_to_service_entity
+from .taxii.entities import CollectionEntity, deserialize_content_bindings
 
 log = structlog.getLogger(__name__)
 
@@ -58,7 +57,7 @@ def parse_basic_auth_token(token):
         raise InvalidAuthHeader("Invalid Basic Auth header value")
 
 
-class PlainRenderer(object):
+class PlainRenderer:
 
     def __call__(self, logger, name, event_dict):
         details = event_dict.copy()
@@ -163,10 +162,10 @@ class AtomicStreamHandler(logging.StreamHandler):
 
 def sync_conf_dict_into_db(server, config, force_collection_deletion=False):
     services = config.get('services', [])
-    sync_services(server, services)
+    sync_services(server.servers.taxii1, services)
     collections = config.get('collections', [])
     sync_collections(
-        server, collections, force_deletion=force_collection_deletion)
+        server.servers.taxii1, collections, force_deletion=force_collection_deletion)
     accounts = config.get('accounts', [])
     sync_accounts(server, accounts)
 

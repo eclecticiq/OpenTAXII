@@ -1,18 +1,12 @@
 import pytest
-
-from libtaxii.constants import (
-    RT_FULL, CB_STIX_XML_111, ACT_PAUSE, ACT_RESUME, ACT_UNSUBSCRIBE,
-    ACT_SUBSCRIBE, SS_ACTIVE, SS_PAUSED, SS_UNSUBSCRIBED)
-
+from fixtures import (COLLECTION_OPEN, COLLECTIONS_B, CUSTOM_CONTENT_BINDING,
+                      SUBSCRIPTION_MESSAGE)
+from libtaxii.constants import (ACT_PAUSE, ACT_RESUME, ACT_SUBSCRIBE,
+                                ACT_UNSUBSCRIBE, CB_STIX_XML_111, RT_FULL,
+                                SS_ACTIVE, SS_PAUSED, SS_UNSUBSCRIBED)
 from opentaxii.taxii import exceptions
-
-from utils import (
-    prepare_headers, as_tm,
-    prepare_subscription_request as prepare_request)
-
-from fixtures import (
-    CUSTOM_CONTENT_BINDING, COLLECTION_OPEN, SUBSCRIPTION_MESSAGE,
-    COLLECTIONS_B)
+from utils import as_tm, prepare_headers
+from utils import prepare_subscription_request as prepare_request
 
 ASSIGNED_SERVICES = ['collection-management-A', 'poll-A']
 
@@ -20,8 +14,8 @@ ASSIGNED_SERVICES = ['collection-management-A', 'poll-A']
 @pytest.fixture(autouse=True)
 def prepare_server(server, services):
     for coll in COLLECTIONS_B:
-        coll = server.persistence.create_collection(coll)
-        server.persistence.set_collection_services(
+        coll = server.servers.taxii1.persistence.create_collection(coll)
+        server.servers.taxii1.persistence.set_collection_services(
             coll.id, service_ids=ASSIGNED_SERVICES)
     return server
 
@@ -30,8 +24,8 @@ def prepare_server(server, services):
 @pytest.mark.parametrize("version", [11, 10])
 def test_subscribe(server, version, https):
 
-    service = server.get_service('collection-management-A')
-    poll_service = server.get_service('poll-A')
+    service = server.servers.taxii1.get_service('collection-management-A')
+    poll_service = server.servers.taxii1.get_service('poll-A')
 
     headers = prepare_headers(version, https)
 
@@ -89,7 +83,7 @@ def test_subscribe_pause_resume(server, https):
 
     version = 11
 
-    service = server.get_service('collection-management-A')
+    service = server.servers.taxii1.get_service('collection-management-A')
 
     headers = prepare_headers(version, https)
 
@@ -116,7 +110,7 @@ def test_subscribe_pause_resume(server, https):
 
     assert subs.status == SS_ACTIVE
     assert (
-        server.persistence.get_subscription(subs.subscription_id).status ==
+        server.servers.taxii1.persistence.get_subscription(subs.subscription_id).status ==
         SS_ACTIVE)
 
     # Pausing
@@ -138,7 +132,7 @@ def test_subscribe_pause_resume(server, https):
     assert subs.subscription_id
     assert subs.status == SS_PAUSED
     assert (
-        server.persistence.get_subscription(subs.subscription_id).status ==
+        server.servers.taxii1.persistence.get_subscription(subs.subscription_id).status ==
         SS_PAUSED)
 
     # Resume
@@ -160,7 +154,7 @@ def test_subscribe_pause_resume(server, https):
     assert subs.subscription_id
     assert subs.status == SS_ACTIVE
     assert (
-        server.persistence.get_subscription(subs.subscription_id).status ==
+        server.servers.taxii1.persistence.get_subscription(subs.subscription_id).status ==
         SS_ACTIVE)
 
 
@@ -168,7 +162,7 @@ def test_subscribe_pause_resume(server, https):
 def test_pause_resume_wrong_id(server, https):
 
     version = 11
-    service = server.get_service('collection-management-A')
+    service = server.servers.taxii1.get_service('collection-management-A')
 
     headers = prepare_headers(version, https)
 
@@ -208,7 +202,7 @@ def test_pause_resume_wrong_id(server, https):
 @pytest.mark.parametrize("version", [11, 10])
 def test_unsubscribe(server, version, https):
 
-    service = server.get_service('collection-management-A')
+    service = server.servers.taxii1.get_service('collection-management-A')
     headers = prepare_headers(version, https)
 
     params = dict(
@@ -256,5 +250,5 @@ def test_unsubscribe(server, version, https):
         assert subs.status == SS_UNSUBSCRIBED
 
     assert (
-        server.persistence.get_subscription(subscription_id).status ==
+        server.servers.taxii1.persistence.get_subscription(subscription_id).status ==
         SS_UNSUBSCRIBED)

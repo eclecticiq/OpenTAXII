@@ -1,15 +1,13 @@
-import jwt
-import structlog
-
 from datetime import datetime, timedelta
 
+import jwt
+import structlog
+from opentaxii.auth import OpenTAXIIAuthAPI
+from opentaxii.common.sqldb import BaseSQLDatabaseAPI
+from opentaxii.entities import Account as AccountEntity
 from sqlalchemy.orm import exc
 
-from opentaxii.auth import OpenTAXIIAuthAPI
-from opentaxii.entities import Account as AccountEntity
-from opentaxii.sqldb_helper import SQLAlchemyDB
-
-from .models import Base, Account
+from .models import Account, Base
 
 __all__ = ['SQLDatabaseAPI']
 
@@ -17,7 +15,7 @@ __all__ = ['SQLDatabaseAPI']
 log = structlog.getLogger(__name__)
 
 
-class SQLDatabaseAPI(OpenTAXIIAuthAPI):
+class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIAuthAPI):
     """Naive SQL database implementation of OpenTAXII Auth API.
 
     Implementation will work with any DB supported by SQLAlchemy package.
@@ -30,6 +28,9 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
     :param int token_ttl_secs: TTL for JWT token, in seconds.
     :param engine_parameters=None: if defined, these arguments would be passed to sqlalchemy.create_engine
     """
+
+    BASEMODEL = Base
+
     def __init__(
             self,
             db_connection,
@@ -37,21 +38,12 @@ class SQLDatabaseAPI(OpenTAXIIAuthAPI):
             secret=None,
             token_ttl_secs=None,
             **engine_parameters):
-
-        self.db = SQLAlchemyDB(
-            db_connection, Base, session_options={
-                'autocommit': False, 'autoflush': True},
-            **engine_parameters)
-        if create_tables:
-            self.db.create_all_tables()
+        super().__init__(db_connection, create_tables, **engine_parameters)
         if not secret:
             raise ValueError('Secret is not defined for %s.%s' % (
                 self.__module__, self.__class__.__name__))
         self.secret = secret
         self.token_ttl_secs = token_ttl_secs or 60 * 60  # 60min
-
-    def init_app(self, app):
-        self.db.init_app(app)
 
     def authenticate(self, username, password):
         try:

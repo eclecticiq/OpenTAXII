@@ -1,5 +1,5 @@
 
-class OpenTAXIIAuthAPI(object):
+class OpenTAXIIAuthAPI:
     '''Abstract class that represents OpenTAXII Authentication API.
 
     This class defines required methods that need to exist in

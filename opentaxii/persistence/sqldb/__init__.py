@@ -1,2 +1,2 @@
 # flake8: noqa
-from .api import SQLDatabaseAPI
+from .api import SQLDatabaseAPI, Taxii2SQLDatabaseAPI

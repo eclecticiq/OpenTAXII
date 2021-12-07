@@ -1,5 +1,5 @@
 
-class OpenTAXIIPersistenceAPI(object):
+class OpenTAXIIPersistenceAPI:
     '''Abstract class that represents OpenTAXII Persistence API.
 
     This class defines required methods that need to exist in
@@ -242,3 +242,12 @@ class OpenTAXIIPersistenceAPI(object):
         :param bool with_messages: delete related inbox messages
         '''
         pass
+
+
+class OpenTAXII2PersistenceAPI:
+    """
+    Abstract class that represents OpenTAXII Persistence API.
+
+    Stub, pending implementation.
+    """
+    pass

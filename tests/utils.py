@@ -109,3 +109,21 @@ def is_headers_valid(headers, version, https):
             return includes(headers, TAXII_11_HTTP_HEADERS)
     else:
         raise ValueError('Unknown TAXII message version: %s' % version)
+
+
+class conditional:
+    """
+    Wrap another context manager and enter it only if condition is true.
+    """
+
+    def __init__(self, condition, contextmanager):
+        self.condition = condition
+        self.contextmanager = contextmanager
+
+    def __enter__(self):
+        if self.condition:
+            return self.contextmanager.__enter__()
+
+    def __exit__(self, *args):
+        if self.condition:
+            return self.contextmanager.__exit__(*args)

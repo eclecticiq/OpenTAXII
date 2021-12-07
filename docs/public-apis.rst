@@ -21,7 +21,7 @@ Custom API implementations
 It is possible to attach custom API implementations to OpenTAXII.
 
 Custom API class should inherit base class
-(:py:class:`opentaxii.persistence.api.OpenTAXIIPersistenceAPI` for Persistence API and 
+(:py:class:`opentaxii.persistence.api.OpenTAXIIPersistenceAPI` for Persistence API and
 :py:class:`opentaxii.auth.api.OpenTAXIIAuthAPI` for Authentication API) and implement all defined methods.
 
 Class constructor can accept any parameters. These parameters (as well as API class full name)
@@ -58,6 +58,13 @@ custom implementation of Persistence API.
     :undoc-members:
     :show-inheritance:
 
+The persistence API is backed by the sqldb api.
+
+.. automodule:: opentaxii.persistence.sqldb.api
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Authentication API
 ==================
@@ -72,6 +79,13 @@ custom implementation of Authentication API.
     :undoc-members:
     :show-inheritance:
 
+The authentication API is backed by the sqldb api.
+
+.. automodule:: opentaxii.auth.sqldb.api
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 .. _opentaxii-signals:
 
@@ -79,7 +93,7 @@ Signals
 =======
 
 Signals provide the ability for the user's code to receive asynchronous notification
-for predefined signals. 
+for predefined signals.
 
 See :ref:`Custom signal listeners <custom-signals>` chapter for the details about how to attach
 listeners for the signals.
@@ -94,4 +108,3 @@ listeners for the signals.
     :annotation: = Instance of a signal singleton. Signal emitted when new inbox message is created.
 .. autodata:: SUBSCRIPTION_CREATED
     :annotation: = Instance of a signal singleton. Signal emitted when new subscription is created.
-

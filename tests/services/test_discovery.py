@@ -1,11 +1,7 @@
 import pytest
-
+from fixtures import INBOX_A, INBOX_B, INSTANCES_CONFIGURED, MESSAGE_ID
 from libtaxii.constants import SVC_INBOX
-
-from utils import prepare_headers, as_tm
-from fixtures import (
-    MESSAGE_ID, INSTANCES_CONFIGURED,
-    INBOX_A, INBOX_B)
+from utils import as_tm, prepare_headers
 
 
 @pytest.fixture(autouse=True)
@@ -18,7 +14,7 @@ def server_with_services(server, services):
 def test_discovery_request(server, version, https):
 
     request = as_tm(version).DiscoveryRequest(message_id=MESSAGE_ID)
-    service = server.get_service('discovery-A')
+    service = server.servers.taxii1.get_service('discovery-A')
 
     headers = prepare_headers(version, https)
     response = service.process(headers, request)
@@ -34,7 +30,7 @@ def test_discovery_request(server, version, https):
 def test_content_bindings_present(server, version, https):
 
     request = as_tm(version).DiscoveryRequest(message_id=MESSAGE_ID)
-    service = server.get_service('discovery-A')
+    service = server.servers.taxii1.get_service('discovery-A')
 
     headers = prepare_headers(version, https)
     response = service.process(headers, request)

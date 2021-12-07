@@ -1,28 +1,23 @@
 import pytest
-
+from fixtures import (COLLECTION_DISABLED, COLLECTION_ONLY_STIX,
+                      COLLECTION_OPEN, COLLECTION_STIX_AND_CUSTOM,
+                      COLLECTIONS_B, CUSTOM_CONTENT_BINDING, MESSAGE_ID,
+                      POLL_MAX_COUNT, POLL_RESULT_SIZE)
 from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
-from libtaxii.constants import (
-    RT_COUNT_ONLY, RT_FULL, CB_STIX_XML_111, ACT_SUBSCRIBE)
-
+from libtaxii.constants import (ACT_SUBSCRIBE, CB_STIX_XML_111, RT_COUNT_ONLY,
+                                RT_FULL)
 from opentaxii.taxii import exceptions
-
-from utils import (
-    prepare_headers, as_tm, persist_content, prepare_subscription_request)
-
-from fixtures import (
-    COLLECTIONS_B, MESSAGE_ID, COLLECTION_OPEN,
-    COLLECTION_DISABLED, COLLECTION_ONLY_STIX,
-    COLLECTION_STIX_AND_CUSTOM, CUSTOM_CONTENT_BINDING,
-    POLL_MAX_COUNT, POLL_RESULT_SIZE)
+from utils import (as_tm, persist_content, prepare_headers,
+                   prepare_subscription_request)
 
 
 @pytest.fixture(autouse=True)
 def prepare_server(server, services):
     services = ['poll-A', 'collection-management-A']
     for coll in COLLECTIONS_B:
-        coll = server.persistence.create_collection(coll)
-        server.persistence.set_collection_services(
+        coll = server.servers.taxii1.persistence.create_collection(coll)
+        server.servers.taxii1.persistence.set_collection_services(
             coll.id, service_ids=services)
     return server
 
@@ -70,9 +65,9 @@ def prepare_fulfilment_request(collection_name, result_id, part_number):
 ])
 def test_poll_empty_response(server, version, https, count_blocks):
 
-    server.config['count_blocks_in_poll_responses'] = count_blocks
+    server.servers.taxii1.config['count_blocks_in_poll_responses'] = count_blocks
 
-    service = server.get_service('poll-A')
+    service = server.servers.taxii1.get_service('poll-A')
 
     headers = prepare_headers(version, https)
     request = prepare_request(
@@ -94,7 +89,7 @@ def test_poll_empty_response(server, version, https, count_blocks):
         with pytest.raises(exceptions.StatusMessageException):
             response = service.process(headers, request)
 
-    server.config['count_blocks_in_poll_responses'] = True
+    server.servers.taxii1.config['count_blocks_in_poll_responses'] = True
 
 
 @pytest.mark.parametrize(
@@ -102,7 +97,7 @@ def test_poll_empty_response(server, version, https, count_blocks):
     [(True, 11), (False, 11), (True, 10), (False, 10)])
 def test_poll_collection_not_available(server, version, https):
 
-    service = server.get_service('poll-A')
+    service = server.servers.taxii1.get_service('poll-A')
 
     headers = prepare_headers(version, https)
     request = prepare_request(
@@ -116,9 +111,9 @@ def test_poll_collection_not_available(server, version, https):
 @pytest.mark.parametrize("version", [11, 10])
 def test_poll_get_content(server, version, https):
 
-    service = server.get_service('poll-A')
+    service = server.servers.taxii1.get_service('poll-A')
     original = persist_content(
-        server.persistence, COLLECTION_ONLY_STIX,
+        server.servers.taxii1.persistence, COLLECTION_ONLY_STIX,
         service.id, binding=CB_STIX_XML_111)
 
     # wrong collection
@@ -163,13 +158,13 @@ def test_poll_get_content(server, version, https):
     [(True, True), (False, True), (True, False), (False, False)])
 def test_poll_get_content_count(server, https, count_blocks):
     version = 11
-    server.config['count_blocks_in_poll_responses'] = count_blocks
-    service = server.get_service('poll-A')
+    server.servers.taxii1.config['count_blocks_in_poll_responses'] = count_blocks
+    service = server.servers.taxii1.get_service('poll-A')
 
     blocks_amount = 10
 
     for i in range(blocks_amount):
-        persist_content(server.persistence, COLLECTION_OPEN, service.id)
+        persist_content(server.servers.taxii1.persistence, COLLECTION_OPEN, service.id)
 
     headers = prepare_headers(version, https)
 
@@ -186,7 +181,7 @@ def test_poll_get_content_count(server, https, count_blocks):
         assert len(response.content_blocks) == 0
     else:
         assert response.record_count is None
-    server.config['count_blocks_in_poll_responses'] = True
+    server.servers.taxii1.config['count_blocks_in_poll_responses'] = True
 
 
 @pytest.mark.parametrize(
@@ -195,14 +190,14 @@ def test_poll_get_content_count(server, https, count_blocks):
 def test_poll_max_count_max_size(server, https, count_blocks):
 
     version = 11
-    server.config['count_blocks_in_poll_responses'] = count_blocks
+    server.servers.taxii1.config['count_blocks_in_poll_responses'] = count_blocks
 
-    service = server.get_service('poll-A')
+    service = server.servers.taxii1.get_service('poll-A')
 
     blocks_amount = 30
 
     for i in range(blocks_amount):
-        persist_content(server.persistence, COLLECTION_OPEN, service.id)
+        persist_content(server.servers.taxii1.persistence, COLLECTION_OPEN, service.id)
 
     headers = prepare_headers(version, https)
 
@@ -233,21 +228,21 @@ def test_poll_max_count_max_size(server, https, count_blocks):
 
     assert response.more is True
     assert response.result_id
-    server.config['count_blocks_in_poll_responses'] = True
+    server.servers.taxii1.config['count_blocks_in_poll_responses'] = True
 
 
 @pytest.mark.parametrize(
     ("https", "count_blocks"),
     [(True, True), (False, True), (True, False), (False, False)])
 def test_poll_fulfilment_request(server, https, count_blocks):
-    server.config['count_blocks_in_poll_responses'] = count_blocks
+    server.servers.taxii1.config['count_blocks_in_poll_responses'] = count_blocks
     version = 11
-    service = server.get_service('poll-A')
+    service = server.servers.taxii1.get_service('poll-A')
 
     blocks_amount = 30
 
     for i in range(blocks_amount):
-        persist_content(server.persistence, COLLECTION_OPEN, service.id)
+        persist_content(server.servers.taxii1.persistence, COLLECTION_OPEN, service.id)
 
     headers = prepare_headers(version, https)
 
@@ -305,23 +300,23 @@ def test_poll_fulfilment_request(server, https, count_blocks):
 
     assert not response.more
     assert response.result_id == result_id
-    server.config['count_blocks_in_poll_responses'] = True
+    server.servers.taxii1.config['count_blocks_in_poll_responses'] = True
 
 
 @pytest.mark.parametrize("https", [True, False])
 @pytest.mark.parametrize("version", [11, 10])
 def test_subscribe_and_poll(server, version, https):
 
-    server.config['count_blocks_in_poll_responses'] = True
+    server.servers.taxii1.config['count_blocks_in_poll_responses'] = True
 
-    subs_service = server.get_service('collection-management-A')
-    poll_service = server.get_service('poll-A')
+    subs_service = server.servers.taxii1.get_service('collection-management-A')
+    poll_service = server.servers.taxii1.get_service('poll-A')
 
     collection = COLLECTION_ONLY_STIX
 
     blocks_amount = 10
     for i in range(blocks_amount):
-        persist_content(server.persistence, collection, poll_service.id)
+        persist_content(server.servers.taxii1.persistence, collection, poll_service.id)
 
     headers = prepare_headers(version, https)
 

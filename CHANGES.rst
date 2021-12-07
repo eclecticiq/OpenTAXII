@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.3.0a0
+-------
+* Enablement for future taxii2 implementation
+
 0.2.2 (2021-11-05)
 ------------------
 * Fix readthedocs build

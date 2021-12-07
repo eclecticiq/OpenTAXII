@@ -3,7 +3,7 @@ from sqlalchemy import engine, orm
 from sqlalchemy.orm.exc import UnmappedClassError
 
 
-class _QueryProperty(object):
+class _QueryProperty:
     def __init__(self, sa):
         self.sa = sa
 
@@ -16,7 +16,7 @@ class _QueryProperty(object):
             return None
 
 
-class SQLAlchemyDB(object):
+class SQLAlchemyDB:
     '''
     Simple SQLAlchemy helper inspired by Flask-SQLAlchemy code.
 

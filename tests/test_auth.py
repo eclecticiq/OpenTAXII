@@ -1,18 +1,16 @@
-import json
-import pytest
-
 import base64
+import json
 
+import pytest
 from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
-from libtaxii.constants import (
-    ST_UNAUTHORIZED, ST_BAD_MESSAGE, CB_STIX_XML_111, RT_FULL)
+from libtaxii.constants import (CB_STIX_XML_111, RT_FULL, ST_BAD_MESSAGE,
+                                ST_UNAUTHORIZED)
 from opentaxii.taxii.http import HTTP_AUTHORIZATION
 from opentaxii.utils import sync_conf_dict_into_db
 
-from utils import prepare_headers, is_headers_valid, as_tm
 from fixtures import VID_TAXII_HTTP_10
-
+from utils import as_tm, is_headers_valid, prepare_headers
 
 INBOX_OPEN = dict(
     id='inbox-A',
@@ -108,8 +106,8 @@ def auth_fixtures(server):
             'collections': COLLECTIONS,
             'accounts': ACCOUNTS})
 
-    assert len(server.persistence.get_services()) == 4
-    assert len(server.persistence.get_collections()) == len(COLLECTIONS)
+    assert len(server.servers.taxii1.persistence.get_services()) == 4
+    assert len(server.servers.taxii1.persistence.get_collections()) == len(COLLECTIONS)
 
 
 @pytest.fixture()

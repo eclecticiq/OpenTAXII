@@ -1,9 +1,7 @@
-
-from libtaxii.constants import (
-    VID_TAXII_XML_11, VID_TAXII_XML_10,
-    VID_TAXII_HTTP_10, VID_TAXII_HTTPS_10,
-    VID_TAXII_SERVICES_10, VID_TAXII_SERVICES_11
-)
+from flask import Response, make_response
+from libtaxii.constants import (VID_TAXII_HTTP_10, VID_TAXII_HTTPS_10,
+                                VID_TAXII_SERVICES_10, VID_TAXII_SERVICES_11,
+                                VID_TAXII_XML_10, VID_TAXII_XML_11)
 
 from .exceptions import raise_failure
 
@@ -136,3 +134,15 @@ def validate_response_headers(headers):
         if h not in headers:
             raise ValueError(
                 "Required response header not specified: {}".format(h))
+
+
+def make_taxii_response(taxii_xml, taxii_headers) -> Response:
+
+    validate_response_headers(taxii_headers)
+    response = make_response(taxii_xml)
+
+    h = response.headers
+    for header, value in taxii_headers.items():
+        h[header] = value
+
+    return response

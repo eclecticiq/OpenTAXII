@@ -3,7 +3,7 @@ import structlog
 log = structlog.getLogger(__name__)
 
 
-class AuthManager(object):
+class AuthManager:
     '''Manager responsible for authentication.
 
     Manager uses API instance ``api`` for basic auth operations and
@@ -45,7 +45,7 @@ class AuthManager(object):
         shipped with OpenTAXII.
         '''
         for colname, permission in list(account.permissions.items()):
-            collection = self.server.persistence.get_collection(colname)
+            collection = self.server.servers.taxii1.persistence.get_collection(colname)
             if not collection:
                 log.warning(
                     "update_account.unknown_collection",

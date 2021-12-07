@@ -1,10 +1,9 @@
 import pytest
-
-from libtaxii.constants import ST_FAILURE, ST_BAD_MESSAGE
-from opentaxii.taxii.http import HTTP_X_TAXII_SERVICES
+from libtaxii.constants import ST_BAD_MESSAGE, ST_FAILURE
 from opentaxii.taxii.converters import dict_to_service_entity
+from opentaxii.taxii.http import HTTP_X_TAXII_SERVICES
 
-from utils import prepare_headers, is_headers_valid, as_tm
+from utils import as_tm, is_headers_valid, prepare_headers
 
 INBOX = dict(
     id='inbox-A',
@@ -45,7 +44,7 @@ MESSAGE_ID = '123'
 @pytest.fixture(autouse=True)
 def local_services(server):
     for service in SERVICES:
-        server.persistence.update_service(dict_to_service_entity(service))
+        server.servers.taxii1.persistence.update_service(dict_to_service_entity(service))
 
 
 def test_root_get(client):

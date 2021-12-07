@@ -107,30 +107,46 @@ def setup_logging():
 
 
 def prepare_test_config(dbconnection):
-    config = ServerConfig()
-    config.update(
-        {
-            "persistence_api": {
-                "class": "opentaxii.persistence.sqldb.SQLDatabaseAPI",
-                "parameters": {"db_connection": dbconnection, "create_tables": True},
-            },
-            "auth_api": {
-                "class": "opentaxii.auth.sqldb.SQLDatabaseAPI",
-                "parameters": {
-                    "db_connection": dbconnection,
-                    "create_tables": True,
-                    "secret": "dummy-secret-string-for-tests",
+    config = ServerConfig(
+        extra_configs=[
+            {
+                "auth_api": {
+                    "class": "opentaxii.auth.sqldb.SQLDatabaseAPI",
+                    "parameters": {
+                        "db_connection": dbconnection,
+                        "create_tables": True,
+                        "secret": "dummy-secret-string-for-tests",
+                    },
                 },
-            },
-        }
+                "taxii1": {
+                    "persistence_api": {
+                        "class": "opentaxii.persistence.sqldb.SQLDatabaseAPI",
+                        "parameters": {
+                            "db_connection": dbconnection,
+                            "create_tables": True,
+                        },
+                    },
+                },
+                "taxii2": {
+                    "persistence_api": {
+                        "class": "opentaxii.persistence.sqldb.Taxii2SQLDatabaseAPI",
+                        "parameters": {
+                            "db_connection": dbconnection,
+                            "create_tables": True,
+                        },
+                    },
+                    "max_content_length": 1024,
+                },
+                "domain": DOMAIN,
+            }
+        ]
     )
-    config["domain"] = DOMAIN
     return config
 
 
-@pytest.yield_fixture()
+@pytest.fixture
 def anonymous_user():
-    from opentaxii.middleware import anonymous_full_access
+    from opentaxii.server import anonymous_full_access
 
     context.account = anonymous_full_access
     yield
@@ -179,4 +195,6 @@ def client(app):
 @pytest.fixture()
 def services(server):
     for service in SERVICES:
-        server.persistence.update_service(dict_to_service_entity(service))
+        server.servers.taxii1.persistence.update_service(
+            dict_to_service_entity(service)
+        )
