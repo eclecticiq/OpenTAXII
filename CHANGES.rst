@@ -4,6 +4,7 @@ Changelog
 0.3.0a0
 -------
 * Enablement for future taxii2 implementation
+* Fix documentation build issues
 
 0.2.2 (2021-11-05)
 ------------------
