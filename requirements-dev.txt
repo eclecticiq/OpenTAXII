@@ -5,3 +5,4 @@ pytest-pythonpath
 flake8
 ipdb
 git+https://github.com/eclecticiq/sqla-graphs.git@py3
+-r requirements-interrogate.txt

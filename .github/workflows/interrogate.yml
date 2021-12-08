@@ -1,0 +1,17 @@
+name: Check docstring coverage
+
+on:
+  - pull_request
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - name: Install interrogate
+      run: pip install -r requirements-interrogate.txt
+    - name: Run interrogate
+      run: interrogate
