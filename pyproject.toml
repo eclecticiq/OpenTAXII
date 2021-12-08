@@ -1,0 +1,13 @@
+[tool.interrogate]
+ignore-init-method = true
+ignore-init-module = true
+ignore-magic = true
+ignore-module = true
+ignore-nested-functions = true
+ignore-nested-classes = true
+ignore-private = true
+ignore-semiprivate = true
+omit-covered-files = true
+verbose = 2
+fail-under = 32.7
+exclude = ["tests"]
