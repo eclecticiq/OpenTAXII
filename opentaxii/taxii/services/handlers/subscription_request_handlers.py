@@ -24,7 +24,12 @@ log = structlog.getLogger(__name__)
 
 
 def action_subscribe(request, service, collection, version, **kwargs):
+    """
+    Handle SUBSCRIBE action.
 
+    taxii 1.0: create or update description
+    taxii 1.1: first validate message, then create or update description
+    """
     if version == 11:
         params = request.subscription_parameters
         response_type = params.response_type
@@ -69,6 +74,11 @@ def action_subscribe(request, service, collection, version, **kwargs):
 
 
 def action_unsubscribe(request, service, subscription, **kwargs):
+    """
+    Handle UNSUBSCRIBE action.
+
+    Update subscription to unsubscribed status, if it exists.
+    """
     if subscription:
         subscription.status = SubscriptionEntity.UNSUBSCRIBED
         return service.update_subscription(subscription)
@@ -82,12 +92,22 @@ def action_unsubscribe(request, service, subscription, **kwargs):
 
 
 def action_status(service, subscription, **kwargs):
+    """
+    Handle STATUS action.
+
+    Return status of single subscription or all subscriptions for service.
+    """
     if subscription:
         return subscription
     return service.get_subscriptions()
 
 
 def action_pause(service, subscription, **kwargs):
+    """
+    Handle PAUSE action.
+
+    Update subscription to paused status, if it exists.
+    """
     if subscription.status == SubscriptionEntity.PAUSED:
         return subscription
     subscription.status = SubscriptionEntity.PAUSED
@@ -95,6 +115,11 @@ def action_pause(service, subscription, **kwargs):
 
 
 def action_resume(service, subscription, **kwargs):
+    """
+    Handle RESUME action.
+
+    Update subscriptoin to active status, if it exists.
+    """
     if subscription.status != SubscriptionEntity.PAUSED:
         return subscription
     subscription.status = SubscriptionEntity.ACTIVE
