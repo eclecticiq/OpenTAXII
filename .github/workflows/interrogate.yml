@@ -22,6 +22,6 @@ jobs:
     - name: Install interrogate
       run: pip install -r head/requirements-interrogate.txt
     - name: Run interrogate on base branch for baseline
-      run: echo "old_cov=$(head/.github/workflows/interrogate.sh base)" >> $GITHUB_ENV
+      run: echo "old_cov=$(head/.github/workflows/interrogate.sh base/opentaxii)" >> $GITHUB_ENV
     - name: Run interrogate on head branch to check coverage didn't drop
-      run: interrogate --fail-under=${{ env.old_cov }} head
+      run: interrogate --fail-under=${{ env.old_cov }} head/opentaxii
