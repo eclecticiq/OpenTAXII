@@ -7,13 +7,12 @@ Installation
 Install Python
 --------------
 
-OpenTAXII works with Python version 2.7 and version 3.4. You can download Python `here <http://www.python.org/download/>`_ or install it with your operating system’s package manager. 
+OpenTAXII works with Python versions 3.6 - 3.10. You can download Python `here <http://www.python.org/download/>`_ or install it with your operating system’s package manager.
 
 You can verify that Python is installed by typing ``python`` or ``python3`` in your shell. You should see something like::
 
     $ python3
-    Python 3.4.3 (default, Mar 23 2015, 04:19:36)
-    [GCC 4.2.1 Compatible Apple LLVM 6.0 (clang-600.0.57)] on darwin
+    Python 3.10.1 (main, Dec 11 2021, 17:22:55) [GCC 11.1.0] on linux
     Type "help", "copyright", "credits" or "license" for more information.
     >>>
 
@@ -31,10 +30,10 @@ Activate this environment::
 
    $ . venv/bin/activate
    (venv) $
-   
+
 Now install the latest OpenTAXII release from the `Python
-Package Index <http://pypi.python.org/>`_ (PyPI) using ``pip``::  
- 
+Package Index <http://pypi.python.org/>`_ (PyPI) using ``pip``::
+
    (venv) $ pip install opentaxii
 
 Without the virtual environment it's just::
