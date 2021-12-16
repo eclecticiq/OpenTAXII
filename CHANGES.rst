@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.3.0a1
+-------
+* Add python 3.10 support
+
 0.3.0a0
 -------
 * Enablement for future taxii2 implementation
