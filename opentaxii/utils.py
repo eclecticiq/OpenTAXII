@@ -1,17 +1,16 @@
-import sys
-import logging
-import structlog
-import importlib
 import base64
 import binascii
+import importlib
+import logging
+import sys
 
+import structlog
 from six.moves import urllib
 
 from .entities import Account
-from .taxii.entities import (
-    CollectionEntity, deserialize_content_bindings)
-from .taxii.converters import dict_to_service_entity
 from .exceptions import InvalidAuthHeader
+from .taxii.converters import dict_to_service_entity
+from .taxii.entities import CollectionEntity, deserialize_content_bindings
 
 log = structlog.getLogger(__name__)
 
@@ -254,7 +253,7 @@ def sync_collections(server, collections, force_deletion=False):
         else:
             collection = existing_by_name[name]
             collection.available = False
-            manager.update_collection(cobj)
+            manager.update_collection(collection)
             disabled_counter += 1
             log.info("sync_collections.disabled", name=name)
     log.info(
