@@ -1,4 +1,5 @@
 import os
+from tempfile import mkstemp
 
 import pytest
 from opentaxii.config import ServerConfig
@@ -7,7 +8,6 @@ from opentaxii.middleware import create_app
 from opentaxii.server import TAXIIServer
 from opentaxii.taxii.converters import dict_to_service_entity
 from opentaxii.utils import configure_logging
-from sqlalchemy import create_engine, event
 
 from fixtures import DOMAIN, SERVICES
 
@@ -16,44 +16,27 @@ if DBTYPE == "sqlite":
 
     @pytest.fixture(scope="session")
     def dbconn():
-        yield "sqlite://"
-
+        filehandle, filename = mkstemp(suffix='.db')
+        os.close(filehandle)
+        try:
+            yield f"sqlite:///{filename}"
+        finally:
+            try:
+                os.remove(filename)
+            except FileNotFoundError:
+                pass
 
 elif DBTYPE in ("mysql", "mariadb"):
     import MySQLdb
-    from sqlalchemy.orm import sessionmaker
-
-    Session = sessionmaker()
 
     @pytest.fixture(scope="session")
     def dbconn():
         # drop db if exists to provide clean state at beginning
-        dbname = "test"
         if DBTYPE == "mysql":
             port = 3306
         elif DBTYPE == "mariadb":
             port = 3307
-        connection_kwargs = {
-            "host": "127.0.0.1",
-            "user": "root",
-            "passwd": "",
-            "port": port,
-        }
-        mysql_conn: MySQLdb.Connection = MySQLdb.connect(**connection_kwargs)
-        mysql_conn.query(f"DROP DATABASE IF EXISTS {dbname}")
-        mysql_conn.query(
-            f"CREATE DATABASE {dbname} "
-            f"DEFAULT CHARACTER SET utf8 "
-            f"DEFAULT COLLATE utf8_general_ci"
-        )
-        mysql_conn.close()
-        engine = create_engine(
-            f"mysql+mysqldb://root:@127.0.0.1:{port}/test?charset=utf8",
-            convert_unicode=True,
-        )
-        connection = engine.connect()
-        yield connection
-        connection.close()
+        yield f"mysql+mysqldb://root:@127.0.0.1:{port}/test?charset=utf8"
 
 
 elif DBTYPE == "postgres":
@@ -64,37 +47,10 @@ elif DBTYPE == "postgres":
 
         compat.register()
     import psycopg2
-    from sqlalchemy.orm import sessionmaker
-
-    Session = sessionmaker()
 
     @pytest.fixture(scope="session")
     def dbconn():
-        # drop public schema to provide clean state at beginning
-        dbname = "test"
-        pg_conn = psycopg2.connect(
-            dbname=dbname,
-            user="test",
-            password="test",
-            host="127.0.0.1",
-            port="5432",
-        )
-        pg_cur = pg_conn.cursor()
-        pg_cur.execute(
-            "DROP SCHEMA public CASCADE;"
-            "CREATE SCHEMA public;"
-            "GRANT ALL ON SCHEMA public TO test;"
-            "GRANT ALL ON SCHEMA public TO public;"
-        )
-        pg_cur.close()
-        pg_conn.close()
-        engine = create_engine(
-            f"postgresql+psycopg2://test:test@127.0.0.1:5432/{dbname}",
-            convert_unicode=True,
-        )
-        connection = engine.connect()
-        yield connection
-        connection.close()
+        yield "postgresql+psycopg2://test:test@127.0.0.1:5432/test"
 
 
 else:
@@ -153,32 +109,59 @@ def anonymous_user():
     release_context()
 
 
+def clean_db(dbconn):
+    # drop and recreate db to provide clean state at beginning
+    if DBTYPE == "sqlite":
+        filename = dbconn[len("sqlite:///"):]
+        os.remove(filename)
+    elif DBTYPE == "postgres":
+        with psycopg2.connect(
+            dbname="test",
+            user="test",
+            password="test",
+            host="127.0.0.1",
+            port="5432",
+        ) as pg_conn:
+            with pg_conn.cursor() as pg_cur:
+                pg_cur.execute(
+                    "DROP SCHEMA public CASCADE;"
+                    "CREATE SCHEMA public;"
+                    "GRANT ALL ON SCHEMA public TO test;"
+                    "GRANT ALL ON SCHEMA public TO public;"
+                )
+        pg_conn.close()  # pypy + psycopg2cffi needs this, doesn't close conn otherwise
+    elif DBTYPE in ("mysql", "mariadb"):
+        dbname = "test"
+        if DBTYPE == "mysql":
+            port = 3306
+        elif DBTYPE == "mariadb":
+            port = 3307
+        connection_kwargs = {
+            "host": "127.0.0.1",
+            "user": "root",
+            "passwd": "",
+            "port": port,
+        }
+        with MySQLdb.connect(**connection_kwargs) as mysql_conn:
+            mysql_conn.query(f"DROP DATABASE IF EXISTS {dbname}")
+            mysql_conn.query(
+                f"CREATE DATABASE {dbname} "
+                f"DEFAULT CHARACTER SET utf8 "
+                f"DEFAULT COLLATE utf8_general_ci"
+            )
+
+
 @pytest.fixture()
 def app(dbconn):
-    if DBTYPE != "sqlite":
-        # run non-sqlite tests in nested transaction/savepoint setup to ensure atomic tests
-        transaction = dbconn.begin()
-        session = Session(bind=dbconn)
-        session.begin_nested()
-
-        @event.listens_for(session, "after_transaction_end")
-        def restart_savepoint(session, transaction):
-            if transaction.nested and not transaction._parent.nested:
-
-                # ensure that state is expired the way
-                # session.commit() at the top level normally does
-                # (optional step)
-                session.expire_all()
-
-                session.begin_nested()
-
-    context.server = TAXIIServer(prepare_test_config(dbconn))
+    clean_db(dbconn)
+    server = TAXIIServer(prepare_test_config(dbconn))
+    context.server = server
     app = create_app(context.server)
     app.config["TESTING"] = True
     yield app
-    if DBTYPE != "sqlite":
-        session.close()
-        transaction.rollback()
+    for part in [server.auth] + [subserver.persistence for subserver in server.servers]:
+        part.api.db.session.commit()
+        part.api.db.engine.dispose()
 
 
 @pytest.fixture()

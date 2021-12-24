@@ -24,13 +24,7 @@ class SQLAlchemyDB:
     '''
 
     def __init__(self, db_connection, base_model, session_options=None, **kwargs):
-
-        if isinstance(db_connection, str):
-            self.engine = engine.create_engine(db_connection, convert_unicode=True, **kwargs)
-            self.connection = self.engine.connect()
-        else:
-            self.connection = db_connection
-
+        self.engine = engine.create_engine(db_connection, convert_unicode=True, **kwargs)
         self.Query = orm.Query
         self.session = self.create_scoped_session(session_options)
         self.Model = self.extend_base_model(base_model)
@@ -57,10 +51,10 @@ class SQLAlchemyDB:
             self.create_session(options), scopefunc=scopefunc)
 
     def create_session(self, options):
-        return orm.sessionmaker(bind=self.connection, **options)
+        return orm.sessionmaker(bind=self.engine, **options)
 
     def create_all_tables(self):
-        self.metadata.create_all(bind=self.connection)
+        self.metadata.create_all(bind=self.engine)
 
     def init_app(self, app):
         @app.teardown_appcontext
