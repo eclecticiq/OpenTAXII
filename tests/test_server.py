@@ -1,5 +1,6 @@
-import pytest
+import concurrent.futures
 
+import pytest
 from opentaxii.taxii.converters import dict_to_service_entity
 
 from fixtures import DOMAIN
@@ -53,3 +54,15 @@ def test_services_configured(server):
     assert len(with_paths) == len(INTERNAL_SERVICES)
     assert all([
         p.address.startswith(DOMAIN) for p in with_paths])
+
+
+def test_multithreaded_access(server):
+
+    def testfunc():
+        server.get_services()
+        server.persistence.api.db.session.commit()
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        results = [executor.submit(testfunc) for _ in range(2)]
+        for result in concurrent.futures.as_completed(results):
+            assert not result.exception(timeout=5)
