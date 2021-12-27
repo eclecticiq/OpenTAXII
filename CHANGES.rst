@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.3.0a2 (2021-12-27)
+-------
+* Merge changes from 0.2.3 maintenance release
+
 0.3.0a1
 -------
 * Add python 3.10 support
@@ -9,6 +13,10 @@ Changelog
 -------
 * Enablement for future taxii2 implementation
 * Fix documentation build issues
+
+0.2.3 (2021-12-22)
+------------------
+* Fix bug in multithreaded use of sqlite (`#210 <https://github.com/eclecticiq/OpenTAXII/issues/114>`_ thanks `@rohits144 <https://github.com/rohits144>`_ for the report)
 
 0.2.2 (2021-11-05)
 ------------------

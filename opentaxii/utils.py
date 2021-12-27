@@ -253,7 +253,7 @@ def sync_collections(server, collections, force_deletion=False):
         else:
             collection = existing_by_name[name]
             collection.available = False
-            manager.update_collection(cobj)
+            manager.update_collection(collection)
             disabled_counter += 1
             log.info("sync_collections.disabled", name=name)
     log.info(

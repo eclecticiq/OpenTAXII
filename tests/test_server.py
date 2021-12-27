@@ -1,3 +1,5 @@
+import concurrent.futures
+
 import pytest
 from opentaxii.persistence import (OpenTAXII2PersistenceAPI,
                                    Taxii2PersistenceManager)
@@ -73,3 +75,15 @@ def test_taxii2_configured(server):
         server.servers.taxii2.persistence.api,
         OpenTAXII2PersistenceAPI,
     )
+
+
+def test_multithreaded_access(server):
+
+    def testfunc():
+        server.servers.taxii1.get_services()
+        server.servers.taxii1.persistence.api.db.session.commit()
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        results = [executor.submit(testfunc) for _ in range(2)]
+        for result in concurrent.futures.as_completed(results):
+            assert not result.exception(timeout=5)
