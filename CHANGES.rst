@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.3.0a2 (2021-12-27)
+-------
+* Merge changes from 0.2.3 maintenance release
+
 0.3.0a1
 -------
 * Add python 3.10 support
