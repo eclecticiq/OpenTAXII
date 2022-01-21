@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.3.0a3 (2022-01-21)
+--------------------
+* Fix bug that prevented booting with only taxii1 config (`#217 <https://github.com/eclecticiq/OpenTAXII/issues/217>`_ thanks `@azurekid <https://github.com/azurekid>`_ for the report)
+
 0.3.0a2 (2021-12-27)
 --------------------
 * Merge changes from 0.2.3 maintenance release
