@@ -24,7 +24,7 @@ class SQLAlchemyDB:
     '''
 
     def __init__(self, db_connection, base_model, session_options=None, **kwargs):
-        self.engine = engine.create_engine(db_connection, convert_unicode=True, **kwargs)
+        self.engine = engine.create_engine(db_connection, **kwargs)
         self.Query = orm.Query
         self.session = self.create_scoped_session(session_options)
         self.Model = self.extend_base_model(base_model)
