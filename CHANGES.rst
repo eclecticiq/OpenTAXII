@@ -1,8 +1,12 @@
 Changelog
 =========
 
+0.3.0a3 (2022-01-21)
+--------------------
+* Fix bug that prevented booting with only taxii1 config (`#217 <https://github.com/eclecticiq/OpenTAXII/issues/217>`_ thanks `@azurekid <https://github.com/azurekid>`_ for the report)
+
 0.3.0a2 (2021-12-27)
--------
+--------------------
 * Merge changes from 0.2.3 maintenance release
 
 0.3.0a1
@@ -16,7 +20,7 @@ Changelog
 
 0.2.3 (2021-12-22)
 ------------------
-* Fix bug in multithreaded use of sqlite (`#210 <https://github.com/eclecticiq/OpenTAXII/issues/114>`_ thanks `@rohits144 <https://github.com/rohits144>`_ for the report)
+* Fix bug in multithreaded use of sqlite (`#210 <https://github.com/eclecticiq/OpenTAXII/issues/210>`_ thanks `@rohits144 <https://github.com/rohits144>`_ for the report)
 
 0.2.2 (2021-11-05)
 ------------------

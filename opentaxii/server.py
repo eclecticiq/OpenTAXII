@@ -342,8 +342,8 @@ class TAXII2Server(BaseTAXIIServer):
 
 
 class ServerMapping(NamedTuple):
-    taxii1: TAXII1Server
-    taxii2: TAXII2Server
+    taxii1: Optional[TAXII1Server]
+    taxii2: Optional[TAXII2Server]
 
 
 class TAXIIServer:
@@ -364,7 +364,10 @@ class TAXIIServer:
 
     def __init__(self, config: ServerConfig):
         self.config = config
-        servers_kwargs = {}
+        servers_kwargs = {
+            "taxii1": None,
+            "taxii2": None,
+        }
         if "taxii1" in config and config["taxii1"]:
             servers_kwargs["taxii1"] = TAXII1Server(
                 {**config["taxii1"], "domain": config.get("domain")}
@@ -382,7 +385,8 @@ class TAXIIServer:
         """Connect taxii1, taxii2 and auth to flask."""
         self.app = app
         for server in self.servers:
-            server.init_app(app)
+            if server is not None:
+                server.init_app(app)
         self.auth.api.init_app(app)
 
     def is_basic_auth_supported(self):
