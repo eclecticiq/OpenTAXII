@@ -16,7 +16,7 @@ if DBTYPE == "sqlite":
 
     @pytest.fixture(scope="session")
     def dbconn():
-        filehandle, filename = mkstemp(suffix='.db')
+        filehandle, filename = mkstemp(suffix=".db")
         os.close(filehandle)
         try:
             yield f"sqlite:///{filename}"
@@ -25,6 +25,7 @@ if DBTYPE == "sqlite":
                 os.remove(filename)
             except FileNotFoundError:
                 pass
+
 
 elif DBTYPE in ("mysql", "mariadb"):
     import MySQLdb

@@ -35,6 +35,7 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
 
     :param engine_parameters=None: if defined, these arguments would be passed to sqlalchemy.create_engine
     """
+
     BASEMODEL = Base
 
     def get_services(self, collection_id=None):
@@ -436,14 +437,16 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
                     InboxMessage.id.in_(
                         self.db.session.query(inbox_messages_query.subquery(name="ids"))
                     )
-                ).delete(synchronize_session=False)
+                )
+                .delete(synchronize_session=False)
             )
 
         counter = ContentBlock.query.filter(
             ContentBlock.id.in_(
                 self.db.session.query(content_blocks_query.subquery(name="ids"))
             )
-        ).delete(synchronize_session=False)
+            .delete(synchronize_session=False)
+        )
 
         collection.volume = (
             self.db.session.query(func.count(ContentBlock.id))

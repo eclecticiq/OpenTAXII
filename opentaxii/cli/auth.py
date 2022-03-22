@@ -1,6 +1,5 @@
-import sys
-
 import argparse
+import sys
 
 from opentaxii.cli import app
 
