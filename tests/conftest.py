@@ -152,17 +152,51 @@ def clean_db(dbconn):
             )
 
 
-@pytest.fixture()
-def app(dbconn):
+@pytest.fixture(scope="session")
+def session_taxiiserver(dbconn):
     clean_db(dbconn)
-    server = TAXIIServer(prepare_test_config(dbconn))
-    context.server = server
+    yield TAXIIServer(prepare_test_config(dbconn))
+
+
+@pytest.fixture()
+def app(request, dbconn, session_taxiiserver):
+    truncate = request.node.get_closest_marker("truncate") or DBTYPE == "sqlite"
+    if truncate:
+        yield from truncate_app(dbconn)
+    else:
+        yield from transaction_app(dbconn, session_taxiiserver)
+
+
+def transaction_app(dbconn, taxiiserver):
+    context.server = taxiiserver
+    app = create_app(context.server)
+    app.config["TESTING"] = True
+    managers = [taxiiserver.auth] + [subserver.persistence for subserver in taxiiserver.servers]
+    transactions = []
+    connections = []
+    sessions = []
+    for manager in managers:
+        connection = manager.api.db.engine.connect()
+        transaction = connection.begin()
+        manager.api.db.session_options["bind"] = connection
+        transactions.append(transaction)
+        connections.append(connection)
+        sessions.append(manager.api.db.session)
+    yield app
+    for (transaction, connection, session, manager) in zip(transactions, connections, sessions, managers):
+        transaction.rollback()
+        connection.close()
+        session.remove()
+        manager.api.db._session = None
+
+
+def truncate_app(dbconn):
+    clean_db(dbconn)
+    taxiiserver = TAXIIServer(prepare_test_config(dbconn))
+    context.server = taxiiserver
     app = create_app(context.server)
     app.config["TESTING"] = True
     yield app
-    for part in [server.auth] + [subserver.persistence for subserver in server.servers]:
-        part.api.db.session.commit()
-        part.api.db.engine.dispose()
 
 
 @pytest.fixture()
