@@ -55,7 +55,7 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIAuthAPI):
         return self._generate_token(account.id, ttl=self.token_ttl_secs)
 
     def create_account(self, username, password, is_admin=False):
-        account = Account(username=username, is_admin=is_admin)
+        account = Account(username=username, is_admin=is_admin, permissions={})
         account.set_password(password)
         self.db.session.add(account)
         self.db.session.commit()

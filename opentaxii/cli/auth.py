@@ -60,7 +60,7 @@ def update_account(argv=None):
                 return
             if args.field == 'admin':
                 account.is_admin = is_truely(args.value)
-                app.taxii_server.auth.update_account(account)
+                account = app.taxii_server.auth.update_account(account, None)
                 if account.is_admin:
                     print('now user is admin')
                 else:
