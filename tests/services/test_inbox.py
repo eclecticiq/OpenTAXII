@@ -55,7 +55,13 @@ def prepare_server(server, services):
                 names.add(coll.name)
                 service_ids = [service]
             else:
-                coll = DataCollection.query.filter_by(name=coll.name).one()
+                coll = (
+                    server.servers.taxii1.persistence.api.db.session.query(
+                        DataCollection
+                    )
+                    .filter_by(name=coll.name)
+                    .one()
+                )
                 service_ids = {s.id for s in coll.services} | {service}
 
             server.servers.taxii1.persistence.set_collection_services(

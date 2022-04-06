@@ -47,7 +47,7 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIAuthAPI):
 
     def authenticate(self, username, password):
         try:
-            account = Account.query.filter_by(username=username).one()
+            account = self.db.session.query(Account).filter_by(username=username).one()
         except exc.NoResultFound:
             return
         if not account.is_password_valid(password):
@@ -65,13 +65,13 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIAuthAPI):
         account_id = self._get_account_id(token)
         if not account_id:
             return
-        account = Account.query.get(account_id)
+        account = self.db.session.query(Account).get(account_id)
         if not account:
             return
         return account_to_account_entity(account)
 
     def delete_account(self, username):
-        account = Account.query.filter_by(username=username).one_or_none()
+        account = self.db.session.query(Account).filter_by(username=username).one_or_none()
         if account:
             self.db.session.delete(account)
             self.db.session.commit()
@@ -79,10 +79,10 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIAuthAPI):
     def get_accounts(self):
         return [
             account_to_account_entity(account)
-            for account in Account.query.all()]
+            for account in self.db.session.query(Account).all()]
 
     def update_account(self, obj, password=None):
-        account = Account.query.filter_by(username=obj.username).one_or_none()
+        account = self.db.session.query(Account).filter_by(username=obj.username).one_or_none()
         if not account:
             account = Account(username=obj.username)
             self.db.session.add(account)

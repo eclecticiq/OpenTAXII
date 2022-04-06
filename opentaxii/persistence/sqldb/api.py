@@ -40,17 +40,17 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
 
     def get_services(self, collection_id=None):
         if collection_id:
-            collection = DataCollection.query.get(collection_id)
+            collection = self.db.session.query(DataCollection).get(collection_id)
             services = collection.services
         else:
-            services = Service.query.all()
+            services = self.db.session.query(Service).all()
         return [conv.to_service_entity(s) for s in services]
 
     def get_service(self, service_id):
-        return conv.to_service_entity(Service.query.get(service_id))
+        return conv.to_service_entity(self.db.session.query(Service).get(service_id))
 
     def update_service(self, obj):
-        service = Service.query.get(obj.id) if obj.id else None
+        service = self.db.session.query(Service).get(obj.id) if obj.id else None
         if service:
             service.type = obj.type
             service.properties = obj.properties
@@ -65,30 +65,33 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
 
     def get_collections(self, service_id=None):
         if service_id:
-            service = Service.query.get(service_id)
+            service = self.db.session.query(Service).get(service_id)
             collections = service.collections
         else:
-            collections = DataCollection.query.all()
+            collections = self.db.session.query(DataCollection).all()
         return [conv.to_collection_entity(c) for c in collections]
 
     def get_collection(self, name, service_id=None):
         if service_id:
             collection = (
-                DataCollection.query.join(Service.collections)
+                self.db.session.query(DataCollection)
+                .join(Service.collections)
                 .filter(Service.id == service_id)
                 .filter(DataCollection.name == name)
                 .one_or_none()
             )
         else:
-            collection = DataCollection.query.filter(
-                DataCollection.name == name
-            ).one_or_none()
+            collection = (
+                self.db.session.query(DataCollection)
+                .filter(DataCollection.name == name)
+                .one_or_none()
+            )
         if collection:
             return conv.to_collection_entity(collection)
 
     def update_collection(self, entity):
         _bindings = conv.serialize_content_bindings(entity.supported_content)
-        collection = DataCollection.query.get(entity.id)
+        collection = self.db.session.query(DataCollection).get(entity.id)
         if not collection:
             raise ValueError("DataCollection with id {} is not found".format(entity.id))
         collection.name = entity.name
@@ -101,14 +104,16 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
         return conv.to_collection_entity(collection)
 
     def delete_collection(self, collection_name):
-        collection = DataCollection.query.filter(
-            DataCollection.name == collection_name
-        ).one()
+        collection = (
+            self.db.session.query(DataCollection)
+            .filter(DataCollection.name == collection_name)
+            .one()
+        )
         self.db.session.delete(collection)
         self.db.session.commit()
 
     def delete_service(self, service_id):
-        service = Service.query.get(service_id)
+        service = self.db.session.query(Service).get(service_id)
         self.db.session.delete(service)
         self.db.session.commit()
 
@@ -123,7 +128,9 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
         if count:
             query = self.db.session.query(func.count(ContentBlock.id))
         else:
-            query = ContentBlock.query.order_by(ContentBlock.timestamp_label.asc())
+            query = self.db.session.query(ContentBlock).order_by(
+                ContentBlock.timestamp_label.asc()
+            )
 
         if collection_id:
             query = query.join(ContentBlock.collections).filter(
@@ -210,13 +217,13 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
         return conv.to_collection_entity(collection)
 
     def set_collection_services(self, collection_id, service_ids):
-        collection = DataCollection.query.get(collection_id)
+        collection = self.db.session.query(DataCollection).get(collection_id)
         if not collection:
             raise ValueError(
                 "Collection with id {} does not exist".format(collection_id)
             )
         services = (
-            Service.query.filter(Service.id.in_(service_ids)).all()
+            self.db.session.query(Service).filter(Service.id.in_(service_ids)).all()
             if service_ids
             else []
         )
@@ -312,7 +319,7 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
             return
 
         criteria = DataCollection.id.in_(collection_ids)
-        new_collections = DataCollection.query.filter(criteria)
+        new_collections = self.db.session.query(DataCollection).filter(criteria)
 
         content_block.collections.extend(new_collections)
 
@@ -344,15 +351,15 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
         return conv.to_result_set_entity(result_set)
 
     def get_result_set(self, result_set_id):
-        result_set = ResultSet.query.get(result_set_id)
+        result_set = self.db.session.query(ResultSet).get(result_set_id)
         return conv.to_result_set_entity(result_set)
 
     def get_subscription(self, subscription_id):
-        s = Subscription.query.get(subscription_id)
+        s = self.db.session.query(Subscription).get(subscription_id)
         return conv.to_subscription_entity(s)
 
     def get_subscriptions(self, service_id):
-        service = Service.query.get(service_id)
+        service = self.db.session.query(Service).get(service_id)
         return [conv.to_subscription_entity(s) for s in service.subscriptions]
 
     def update_subscription(self, entity):
@@ -368,7 +375,7 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
             params = {}
 
         subscription = (
-            Subscription.query.get(entity.subscription_id)
+            self.db.session.query(Subscription).get(entity.subscription_id)
             if entity.subscription_id
             else None
         )
@@ -406,7 +413,11 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
         self, collection_name, start_time, end_time=None, with_messages=False
     ):
 
-        collection = DataCollection.query.filter_by(name=collection_name).one_or_none()
+        collection = (
+            self.db.session.query(DataCollection)
+            .filter_by(name=collection_name)
+            .one_or_none()
+        )
 
         if not collection:
             raise ValueError(
@@ -433,7 +444,8 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
 
         if with_messages:
             (
-                InboxMessage.query.filter(
+                self.db.session.query(InboxMessage)
+                .filter(
                     InboxMessage.id.in_(
                         self.db.session.query(inbox_messages_query.subquery(name="ids"))
                     )
@@ -441,9 +453,12 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
                 .delete(synchronize_session=False)
             )
 
-        counter = ContentBlock.query.filter(
-            ContentBlock.id.in_(
-                self.db.session.query(content_blocks_query.subquery(name="ids"))
+        counter = (
+            self.db.session.query(ContentBlock)
+            .filter(
+                ContentBlock.id.in_(
+                    self.db.session.query(content_blocks_query.subquery(name="ids"))
+                )
             )
             .delete(synchronize_session=False)
         )
