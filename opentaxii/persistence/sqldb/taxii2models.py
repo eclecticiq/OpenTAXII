@@ -19,7 +19,7 @@ class ApiRoot(Base):
 
     id = sqlalchemy.Column(GUID, primary_key=True, default=uuid.uuid4)
     default = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
-    title = sqlalchemy.Column(sqlalchemy.Text, nullable=False)
+    title = sqlalchemy.Column(sqlalchemy.String(100), nullable=False, index=True)
     description = sqlalchemy.Column(sqlalchemy.Text)
 
     collections = relationship("Collection", back_populates="api_root")
@@ -56,6 +56,10 @@ class Job(Base):
 
     details = relationship("JobDetail", back_populates="job")
 
+    __table_args__ = (
+        sqlalchemy.Index('ix_opentaxii_job_api_root_id_id', api_root_id, id),
+    )
+
     @classmethod
     def cleanup(cls, session: sqlalchemy.orm.Session) -> int:
         """
@@ -85,9 +89,9 @@ class JobDetail(Base):
 
     id = sqlalchemy.Column(GUID, primary_key=True, default=uuid.uuid4)
     job_id = sqlalchemy.Column(
-        GUID, sqlalchemy.ForeignKey("opentaxii_job.id", ondelete="CASCADE")
+        GUID, sqlalchemy.ForeignKey("opentaxii_job.id", ondelete="CASCADE"), index=True
     )
-    stix_id = sqlalchemy.Column(sqlalchemy.Text)
+    stix_id = sqlalchemy.Column(sqlalchemy.String(100), index=True)
     version = sqlalchemy.Column(UTCDateTime)
     message = sqlalchemy.Column(sqlalchemy.Text)
     status = sqlalchemy.Column(
@@ -106,18 +110,19 @@ class Collection(Base):
     """Database equivalent of `entities.Collection`."""
 
     __tablename__ = "opentaxii_collection"
-    __table_args__ = (sqlalchemy.UniqueConstraint("api_root_id", "alias"),)
 
     id = sqlalchemy.Column(GUID, primary_key=True, default=uuid.uuid4)
     api_root_id = sqlalchemy.Column(
         GUID, sqlalchemy.ForeignKey("opentaxii_api_root.id", ondelete="CASCADE")
     )
-    title = sqlalchemy.Column(sqlalchemy.Text, nullable=False)
+    title = sqlalchemy.Column(sqlalchemy.String(100), nullable=False, index=True)
     description = sqlalchemy.Column(sqlalchemy.Text)
     alias = sqlalchemy.Column(sqlalchemy.String(100), nullable=True)
 
     api_root = relationship("ApiRoot", back_populates="collections")
     objects = relationship("STIXObject", back_populates="collection")
+
+    __table_args__ = (sqlalchemy.UniqueConstraint(api_root_id, alias),)
 
     @classmethod
     def from_entity(cls, entity: entities.Collection):
@@ -129,20 +134,24 @@ class STIXObject(Base):
     """Database equivalent of `entities.STIXObject`."""
 
     __tablename__ = "opentaxii_stixobject"
-    __table_args__ = (sqlalchemy.UniqueConstraint("collection_id", "id", "version"),)
 
     pk = sqlalchemy.Column(GUID, primary_key=True, default=uuid.uuid4)
-    id = sqlalchemy.Column(sqlalchemy.String(100))
+    id = sqlalchemy.Column(sqlalchemy.String(100), index=True)
     collection_id = sqlalchemy.Column(
-        GUID, sqlalchemy.ForeignKey("opentaxii_collection.id", ondelete="CASCADE")
+        GUID, sqlalchemy.ForeignKey("opentaxii_collection.id", ondelete="CASCADE"), index=True,
     )
-    type = sqlalchemy.Column(sqlalchemy.Text)
-    spec_version = sqlalchemy.Column(sqlalchemy.Text)  # STIX version
-    date_added = sqlalchemy.Column(UTCDateTime)
-    version = sqlalchemy.Column(UTCDateTime)
+    type = sqlalchemy.Column(sqlalchemy.String(50), index=True)
+    spec_version = sqlalchemy.Column(sqlalchemy.String(10), index=True)  # STIX version
+    date_added = sqlalchemy.Column(UTCDateTime, index=True)
+    version = sqlalchemy.Column(UTCDateTime, index=True)
     serialized_data = sqlalchemy.Column(sqlalchemy.JSON)
 
     collection = relationship("Collection", back_populates="objects")
+
+    __table_args__ = (
+        sqlalchemy.UniqueConstraint(collection_id, id, version),
+        sqlalchemy.Index("ix_opentaxii_stixobject_date_added_id", date_added, id),
+    )
 
     @classmethod
     def from_entity(cls, entity: entities.STIXObject):
