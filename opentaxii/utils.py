@@ -1,8 +1,11 @@
 import base64
 import binascii
+import functools
 import importlib
 import logging
+import re
 import sys
+from typing import Optional, Tuple
 
 import structlog
 from six.moves import urllib
@@ -305,3 +308,42 @@ def sync_accounts(server, accounts):
         created=created_counter,
         deleted=deleted_counter,
     )
+
+
+def register_handler(
+    url_re: str,
+    valid_methods: Optional[Tuple[str]] = None,
+    valid_accept_mimetypes: Optional[Tuple[str]] = None,
+    valid_content_types: Optional[Tuple[str]] = None,
+):
+    """
+    Register decorated method as handler function for `url_re`.
+
+    :param str url_re: The regex to trigger the handler on
+    :param list valid_methods: The list of methods to accept for this handler, defaults to ("GET",)
+    :param list valid_accept_mimetypes:
+        The list of accepted mimetypes to accept for this handler, defaults to
+        ("application/taxii+json;version=2.1",)
+    :param list valid_content_types:
+        The list of content types to accept for this handler, defaults to
+        ("application/json",)
+    """
+    if valid_methods is None:
+        valid_methods = ("GET",)
+    if valid_accept_mimetypes is None:
+        valid_accept_mimetypes = ("application/taxii+json;version=2.1",)
+    if valid_content_types is None:
+        valid_content_types = ("application/json",)
+
+    def inner_decorator(method):
+        @functools.wraps(method)
+        def inner(*args, **kwargs):
+            return method(*args, **kwargs)
+
+        inner.registered_url_re = re.compile(url_re)
+        inner.registered_valid_methods = valid_methods
+        inner.registered_valid_accept_mimetypes = valid_accept_mimetypes
+        inner.registered_valid_content_types = valid_content_types
+        return inner
+
+    return inner_decorator

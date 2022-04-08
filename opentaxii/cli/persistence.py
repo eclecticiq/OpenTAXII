@@ -83,9 +83,69 @@ def delete_content_blocks():
         start_time = args.begin
         end_time = args.end
         for collection in args.collection:
-            app.taxii_server.persistence.delete_content_blocks(
+            app.taxii_server.servers.taxii1.persistence.delete_content_blocks(
                 collection,
                 with_messages=args.delete_inbox_messages,
                 start_time=start_time,
                 end_time=end_time,
             )
+
+
+def add_api_root():
+    """CLI command to add taxii2 api root to database."""
+    parser = argparse.ArgumentParser(
+        description=("Add a new taxii2 ApiRoot object."),
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument("-t", "--title", required=True, help="Title of the api root")
+    parser.add_argument(
+        "-d", "--description", required=False, help="Description of the api root"
+    )
+    parser.add_argument(
+        "--default", action="store_true", help="Set as default api root"
+    )
+
+    args = parser.parse_args()
+    with app.app_context():
+        app.taxii_server.servers.taxii2.persistence.api.add_api_root(
+            title=args.title, description=args.description, default=args.default
+        )
+
+
+def add_collection():
+    """CLI command to add taxii2 collection to database."""
+    existing_api_root_ids = [
+        str(api_root.id)
+        for api_root in app.taxii_server.servers.taxii2.persistence.api.get_api_roots()
+    ]
+    parser = argparse.ArgumentParser(
+        description=("Add a new taxii2 Collection object."),
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "-r",
+        "--rootid",
+        choices=existing_api_root_ids,
+        required=True,
+        help="Api root id of the collection",
+    )
+    parser.add_argument("-t", "--title", required=True, help="Title of the collection")
+    parser.add_argument(
+        "-d", "--description", required=False, help="Description of the collection"
+    )
+    parser.add_argument("-a", "--alias", required=False, help="alias of the collection")
+
+    args = parser.parse_args()
+    with app.app_context():
+        app.taxii_server.servers.taxii2.persistence.api.add_collection(
+            api_root_id=args.rootid,
+            title=args.title,
+            description=args.description,
+            alias=args.alias,
+        )
+
+
+def job_cleanup():
+    """CLI command to clean up taxii2 job logs that are >24h old."""
+    number_removed = app.taxii_server.servers.taxii2.persistence.api.job_cleanup()
+    print(f"{number_removed} removed")

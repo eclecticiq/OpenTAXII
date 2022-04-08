@@ -1,16 +1,23 @@
+import datetime
 import json
+import uuid
+from functools import reduce
+from typing import Dict, List, Optional, Tuple
 
 import six
 import structlog
 from opentaxii.common.sqldb import BaseSQLDatabaseAPI
 from opentaxii.persistence import (OpenTAXII2PersistenceAPI,
                                    OpenTAXIIPersistenceAPI)
-from sqlalchemy import and_, func, or_
+from opentaxii.persistence.sqldb import taxii2models
+from opentaxii.taxii2 import entities
+from opentaxii.taxii2.utils import DATETIMEFORMAT
+from sqlalchemy import and_, func, literal, or_
+from sqlalchemy.orm import Query, load_only
 
 from . import converters as conv
 from .models import (Base, ContentBlock, DataCollection, InboxMessage,
                      ResultSet, Service, Subscription)
-from .taxii2models import Base as Taxii2Base
 
 __all__ = ["SQLDatabaseAPI"]
 
@@ -475,4 +482,617 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
 
 
 class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
-    BASEMODEL = Taxii2Base
+    BASEMODEL = taxii2models.Base
+
+    def get_api_roots(self) -> List[entities.ApiRoot]:
+        query = self.db.session.query(taxii2models.ApiRoot).order_by("title")
+        return [
+            entities.ApiRoot(
+                id=obj.id,
+                default=obj.default,
+                title=obj.title,
+                description=obj.description,
+            )
+            for obj in query.all()
+        ]
+
+    def get_api_root(self, api_root_id: str) -> Optional[entities.ApiRoot]:
+        api_root = (
+            self.db.session.query(taxii2models.ApiRoot)
+            .filter(taxii2models.ApiRoot.id == api_root_id)
+            .one_or_none()
+        )
+        if api_root:
+            return entities.ApiRoot(
+                id=api_root.id,
+                default=api_root.default,
+                title=api_root.title,
+                description=api_root.description,
+            )
+        else:
+            return None
+
+    def add_api_root(
+        self,
+        title: str,
+        description: Optional[str] = None,
+        default: Optional[bool] = False,
+    ) -> entities.ApiRoot:
+        """
+        Add a new api root.
+
+        :param str title: Title of the new api root
+        :param str description: [Optional] Description of the new api root
+        :param bool default: [Optional, False] If the new api should be the default
+
+        :return: The added ApiRoot entity.
+        """
+        api_root = taxii2models.ApiRoot(
+            title=title, description=description, default=False
+        )
+        self.db.session.add(api_root)
+        self.db.session.commit()
+        if default:
+            api_root.set_default(self.db.session)
+        return entities.ApiRoot(
+            id=api_root.id,
+            default=api_root.default,
+            title=api_root.title,
+            description=api_root.description,
+        )
+
+    def get_job_and_details(
+        self, api_root_id: str, job_id: str
+    ) -> Tuple[Optional[entities.Job], List[entities.JobDetail]]:
+        job = (
+            self.db.session.query(taxii2models.Job)
+            .filter(
+                taxii2models.Job.api_root_id == api_root_id,
+                taxii2models.Job.id == job_id,
+            )
+            .one_or_none()
+        )
+        if job is None:
+            return None, []
+        job_details = (
+            self.db.session.query(taxii2models.JobDetail)
+            .filter(
+                taxii2models.JobDetail.job_id == job_id,
+            )
+            .order_by(taxii2models.JobDetail.stix_id)
+            .all()
+        )
+        return (
+            entities.Job(
+                id=job.id,
+                api_root_id=job.api_root_id,
+                status=job.status,
+                request_timestamp=job.request_timestamp,
+                completed_timestamp=job.completed_timestamp,
+            ),
+            [
+                entities.JobDetail(
+                    id=job_detail.id,
+                    job_id=job_detail.job_id,
+                    stix_id=job_detail.stix_id,
+                    version=job_detail.version,
+                    message=job_detail.message,
+                    status=job_detail.status,
+                )
+                for job_detail in job_details
+            ],
+        )
+
+    def job_cleanup(self) -> int:
+        """
+        Remove jobs that are >24h old.
+
+        :return: The number of removed jobs.
+        """
+        return taxii2models.Job.cleanup(self.db.session)
+
+    def get_collections(self, api_root_id: str) -> List[entities.Collection]:
+        query = (
+            self.db.session.query(taxii2models.Collection)
+            .filter(taxii2models.Collection.api_root_id == api_root_id)
+            .order_by(taxii2models.Collection.title)
+        )
+        return [
+            entities.Collection(
+                id=obj.id,
+                api_root_id=obj.api_root_id,
+                title=obj.title,
+                description=obj.description,
+                alias=obj.alias,
+            )
+            for obj in query.all()
+        ]
+
+    def get_collection(
+        self, api_root_id: str, collection_id_or_alias: str
+    ) -> Optional[entities.Collection]:
+        id_or_alias_filter = taxii2models.Collection.alias == collection_id_or_alias
+        try:
+            uuid.UUID(collection_id_or_alias)
+        except ValueError:
+            pass
+        else:
+            id_or_alias_filter |= taxii2models.Collection.id == collection_id_or_alias
+        obj = (
+            self.db.session.query(taxii2models.Collection)
+            .filter(
+                taxii2models.Collection.api_root_id == api_root_id,
+                id_or_alias_filter,
+            )
+            .one_or_none()
+        )
+        if obj is None:
+            return None
+        return entities.Collection(
+            id=obj.id,
+            api_root_id=obj.api_root_id,
+            title=obj.title,
+            description=obj.description,
+            alias=obj.alias,
+        )
+
+    def add_collection(
+        self,
+        api_root_id: str,
+        title: str,
+        description: Optional[str] = None,
+        alias: Optional[str] = None,
+    ) -> entities.Collection:
+        """
+        Add a new collection.
+
+        :param str api_root_id: ID of the api root the new collection is part of
+        :param str title: Title of the new collection
+        :param str description: [Optional] Description of the new collection
+        :param str alias: [Optional] Alias of the new collection
+
+        :return: The added Collection entity.
+        """
+        collection = taxii2models.Collection(
+            api_root_id=api_root_id, title=title, description=description, alias=alias
+        )
+        self.db.session.add(collection)
+        self.db.session.commit()
+
+        return entities.Collection(
+            id=collection.id,
+            api_root_id=collection.api_root_id,
+            title=collection.title,
+            description=collection.description,
+            alias=collection.alias,
+        )
+
+    def _objects_query(self, collection_id: str, ordered: bool) -> Query:
+        query = self.db.session.query(taxii2models.STIXObject).filter(
+            taxii2models.STIXObject.collection_id == collection_id,
+        )
+        if ordered:
+            query = query.order_by(
+                taxii2models.STIXObject.date_added, taxii2models.STIXObject.id
+            )
+        return query
+
+    def _apply_added_after(
+        self, query: Query, added_after: Optional[datetime.datetime] = None
+    ) -> Query:
+        if added_after is not None:
+            query = query.filter(taxii2models.STIXObject.date_added > added_after)
+        return query
+
+    def _apply_next_kwargs(
+        self, query: Query, next_kwargs: Optional[Dict] = None
+    ) -> Query:
+        if next_kwargs is not None:
+            query = query.filter(
+                (taxii2models.STIXObject.date_added > next_kwargs["date_added"])
+                | (
+                    (taxii2models.STIXObject.date_added == next_kwargs["date_added"])
+                    & (taxii2models.STIXObject.id > next_kwargs["id"])
+                )
+            )
+        return query
+
+    def _apply_match_id(
+        self, query: Query, match_id: Optional[List[str]] = None
+    ) -> Query:
+        if match_id is not None:
+            query = query.filter(taxii2models.STIXObject.id.in_(match_id))
+        return query
+
+    def _apply_match_type(
+        self, query: Query, match_type: Optional[List[str]] = None
+    ) -> Query:
+        if match_type is not None:
+            query = query.filter(taxii2models.STIXObject.type.in_(match_type))
+        return query
+
+    def _apply_match_version(
+        self,
+        query: Query,
+        collection_id: str,
+        match_version: Optional[List[str]] = None,
+    ) -> Query:
+        if match_version is None:
+            match_version = ["last"]
+        if "all" in match_version:
+            return query
+        version_filters = []
+        for value in match_version:
+            if value == "first":
+                min_versions_subq = (
+                    self.db.session.query(
+                        taxii2models.STIXObject.id,
+                        func.min(taxii2models.STIXObject.version).label("min_version"),
+                    )
+                    .filter(
+                        taxii2models.STIXObject.collection_id == collection_id,
+                    )
+                    .group_by(taxii2models.STIXObject.id)
+                    .subquery()
+                )
+                min_version_pks = (
+                    self.db.session.query(taxii2models.STIXObject.pk)
+                    .select_from(taxii2models.STIXObject)
+                    .join(
+                        min_versions_subq,
+                        (
+                            (taxii2models.STIXObject.id == min_versions_subq.c.id)
+                            & (
+                                taxii2models.STIXObject.version
+                                == min_versions_subq.c.min_version
+                            )
+                        ),
+                    )
+                )
+                version_filters.append(taxii2models.STIXObject.pk.in_(min_version_pks))
+            elif value == "last":
+                max_versions_subq = (
+                    self.db.session.query(
+                        taxii2models.STIXObject.id,
+                        func.max(taxii2models.STIXObject.version).label("max_version"),
+                    )
+                    .filter(
+                        taxii2models.STIXObject.collection_id == collection_id,
+                    )
+                    .group_by(taxii2models.STIXObject.id)
+                    .subquery()
+                )
+                max_version_pks = (
+                    self.db.session.query(taxii2models.STIXObject.pk)
+                    .select_from(taxii2models.STIXObject)
+                    .join(
+                        max_versions_subq,
+                        (
+                            (taxii2models.STIXObject.id == max_versions_subq.c.id)
+                            & (
+                                taxii2models.STIXObject.version
+                                == max_versions_subq.c.max_version
+                            )
+                        ),
+                    )
+                )
+                version_filters.append(taxii2models.STIXObject.pk.in_(max_version_pks))
+            else:
+                version_filters.append(taxii2models.STIXObject.version == value)
+        query = query.filter(reduce(or_, version_filters))
+        return query
+
+    def _apply_match_spec_version(
+        self, query: Query, match_spec_version: Optional[List[str]] = None
+    ) -> Query:
+        if match_spec_version is not None:
+            query = query.filter(
+                taxii2models.STIXObject.spec_version.in_(match_spec_version)
+            )
+        return query
+
+    def _apply_limit(
+        self, query: Query, limit: Optional[int] = None
+    ) -> Tuple[Query, bool]:
+        if limit is not None:
+            more = limit < query.count()
+            query = query.limit(limit)
+        else:
+            more = False
+        return query, more
+
+    def _filtered_objects_query(
+        self,
+        collection_id: str,
+        limit: Optional[int] = None,
+        added_after: Optional[datetime.datetime] = None,
+        next_kwargs: Optional[Dict] = None,
+        match_id: Optional[List[str]] = None,
+        match_type: Optional[List[str]] = None,
+        match_version: Optional[List[str]] = None,
+        match_spec_version: Optional[List[str]] = None,
+        ordered: Optional[bool] = True,
+    ) -> Tuple[Query, bool]:
+        query = self._objects_query(collection_id, ordered)
+        query = self._apply_added_after(query, added_after)
+        query = self._apply_next_kwargs(query, next_kwargs)
+        query = self._apply_match_id(query, match_id)
+        query = self._apply_match_type(query, match_type)
+        query = self._apply_match_version(query, collection_id, match_version)
+        query = self._apply_match_spec_version(query, match_spec_version)
+        query, more = self._apply_limit(query, limit)
+        return query, more
+
+    def get_manifest(
+        self,
+        collection_id: str,
+        limit: Optional[int] = None,
+        added_after: Optional[datetime.datetime] = None,
+        next_kwargs: Optional[Dict] = None,
+        match_id: Optional[List[str]] = None,
+        match_type: Optional[List[str]] = None,
+        match_version: Optional[List[str]] = None,
+        match_spec_version: Optional[List[str]] = None,
+    ) -> Tuple[List[entities.ManifestRecord], bool]:
+        query, more = self._filtered_objects_query(
+            collection_id=collection_id,
+            limit=limit,
+            added_after=added_after,
+            next_kwargs=next_kwargs,
+            match_id=match_id,
+            match_type=match_type,
+            match_version=match_version,
+            match_spec_version=match_spec_version,
+        )
+        query = query.options(
+            load_only(
+                taxii2models.STIXObject.id,
+                taxii2models.STIXObject.date_added,
+                taxii2models.STIXObject.version,
+                taxii2models.STIXObject.spec_version,
+            )
+        )
+        return (
+            [
+                entities.ManifestRecord(
+                    id=obj.id,
+                    date_added=obj.date_added,
+                    version=obj.version,
+                    spec_version=obj.spec_version,
+                )
+                for obj in query.all()
+            ],
+            more,
+        )
+
+    def get_objects(
+        self,
+        collection_id: str,
+        limit: Optional[int] = None,
+        added_after: Optional[datetime.datetime] = None,
+        next_kwargs: Optional[Dict] = None,
+        match_id: Optional[List[str]] = None,
+        match_type: Optional[List[str]] = None,
+        match_version: Optional[List[str]] = None,
+        match_spec_version: Optional[List[str]] = None,
+    ) -> Tuple[List[entities.STIXObject], bool]:
+        query, more = self._filtered_objects_query(
+            collection_id=collection_id,
+            limit=limit,
+            added_after=added_after,
+            next_kwargs=next_kwargs,
+            match_id=match_id,
+            match_type=match_type,
+            match_version=match_version,
+            match_spec_version=match_spec_version,
+        )
+        return (
+            [
+                entities.STIXObject(
+                    id=obj.id,
+                    collection_id=collection_id,
+                    type=obj.type,
+                    spec_version=obj.spec_version,
+                    date_added=obj.date_added,
+                    version=obj.version,
+                    serialized_data=obj.serialized_data,
+                )
+                for obj in query.all()
+            ],
+            more,
+        )
+
+    def add_objects(
+        self, api_root_id: str, collection_id: str, objects: List[Dict]
+    ) -> Tuple[entities.Job, List[entities.JobDetail]]:
+        job = taxii2models.Job(
+            api_root_id=api_root_id,
+            status="pending",
+            request_timestamp=datetime.datetime.now(datetime.timezone.utc),
+        )
+        self.db.session.add(job)
+        self.db.session.commit()
+        job_details = []
+        for obj in objects:
+            version = datetime.datetime.strptime(
+                obj["modified"], DATETIMEFORMAT
+            ).replace(tzinfo=datetime.timezone.utc)
+            if (
+                not self.db.session.query(literal(True))
+                .filter(
+                    self.db.session.query(taxii2models.STIXObject)
+                    .filter(
+                        taxii2models.STIXObject.id == obj["id"],
+                        taxii2models.STIXObject.collection_id == collection_id,
+                        taxii2models.STIXObject.version == version,
+                    )
+                    .exists()
+                )
+                .scalar()
+            ):
+                self.db.session.add(
+                    taxii2models.STIXObject(
+                        id=obj["id"],
+                        collection_id=collection_id,
+                        type=obj["id"].split("--")[0],
+                        spec_version=obj["spec_version"],
+                        date_added=datetime.datetime.now(datetime.timezone.utc),
+                        version=version,
+                        serialized_data={
+                            key: value
+                            for (key, value) in obj.items()
+                            if key not in ["id", "type", "spec_version"]
+                        },
+                    )
+                )
+            job_detail = taxii2models.JobDetail(
+                job_id=job.id,
+                stix_id=obj["id"],
+                version=version,
+                message="",
+                status="success",
+            )
+            job_details.append(job_detail)
+            self.db.session.add(job_detail)
+        job.status = "complete"
+        job.completed_timestamp = datetime.datetime.now(datetime.timezone.utc)
+        self.db.session.commit()
+        return (
+            entities.Job(
+                id=job.id,
+                api_root_id=job.api_root_id,
+                status=job.status,
+                request_timestamp=job.request_timestamp,
+                completed_timestamp=job.completed_timestamp,
+            ),
+            [
+                entities.JobDetail(
+                    id=job_detail.id,
+                    job_id=job_detail.job_id,
+                    stix_id=job_detail.stix_id,
+                    version=job_detail.version,
+                    message=job_detail.message,
+                    status=job_detail.status,
+                )
+                for job_detail in job_details
+            ],
+        )
+
+    def get_object(
+        self,
+        collection_id: str,
+        object_id: str,
+        limit: Optional[int] = None,
+        added_after: Optional[datetime.datetime] = None,
+        next_kwargs: Optional[Dict] = None,
+        match_version: Optional[List[str]] = None,
+        match_spec_version: Optional[List[str]] = None,
+    ) -> Tuple[Optional[List[entities.STIXObject]], bool]:
+        """
+        Get all versions of single object from database.
+
+        Should return `None` when object matching object_id doesn't exist.
+        """
+        if (
+            not self.db.session.query(literal(True))
+            .filter(
+                self.db.session.query(taxii2models.STIXObject)
+                .filter(
+                    taxii2models.STIXObject.id == object_id,
+                    taxii2models.STIXObject.collection_id == collection_id,
+                )
+                .exists()
+            )
+            .scalar()
+        ):
+            return (None, False)
+        query, more = self._filtered_objects_query(
+            collection_id=collection_id,
+            limit=limit,
+            added_after=added_after,
+            next_kwargs=next_kwargs,
+            match_id=[object_id],
+            match_version=match_version,
+            match_spec_version=match_spec_version,
+        )
+        return (
+            [
+                entities.STIXObject(
+                    id=obj.id,
+                    collection_id=collection_id,
+                    type=obj.type,
+                    spec_version=obj.spec_version,
+                    date_added=obj.date_added,
+                    version=obj.version,
+                    serialized_data=obj.serialized_data,
+                )
+                for obj in query.all()
+            ],
+            more,
+        )
+
+    def delete_object(
+        self,
+        collection_id: str,
+        object_id: str,
+        match_version: Optional[List[str]] = None,
+        match_spec_version: Optional[List[str]] = None,
+    ) -> None:
+        if match_version is None:
+            match_version = ["all"]
+        query, _ = self._filtered_objects_query(
+            collection_id=collection_id,
+            match_id=[object_id],
+            match_version=match_version,
+            match_spec_version=match_spec_version,
+            ordered=False,
+        )
+        query.delete("fetch")
+
+    def get_versions(
+        self,
+        collection_id: str,
+        object_id: str,
+        limit: Optional[int] = None,
+        added_after: Optional[datetime.datetime] = None,
+        next_kwargs: Optional[Dict] = None,
+        match_spec_version: Optional[List[str]] = None,
+    ) -> Tuple[List[entities.VersionRecord], bool]:
+        if (
+            not self.db.session.query(literal(True))
+            .filter(
+                self.db.session.query(taxii2models.STIXObject)
+                .filter(
+                    taxii2models.STIXObject.id == object_id,
+                    taxii2models.STIXObject.collection_id == collection_id,
+                )
+                .exists()
+            )
+            .scalar()
+        ):
+            return (None, False)
+        query, more = self._filtered_objects_query(
+            collection_id=collection_id,
+            limit=limit,
+            added_after=added_after,
+            next_kwargs=next_kwargs,
+            match_id=[object_id],
+            match_version=["all"],
+            match_spec_version=match_spec_version,
+        )
+        query = query.options(
+            load_only(
+                taxii2models.STIXObject.date_added,
+                taxii2models.STIXObject.version,
+            )
+        )
+        return (
+            [
+                entities.VersionRecord(
+                    date_added=obj.date_added,
+                    version=obj.version,
+                )
+                for obj in query.all()
+            ],
+            more,
+        )

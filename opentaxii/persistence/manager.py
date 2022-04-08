@@ -1,7 +1,17 @@
+import datetime
+from typing import Dict, List, NamedTuple, Optional, Tuple
+
 import structlog
 from opentaxii.local import context
+from opentaxii.persistence.exceptions import (DoesNotExistError,
+                                              NoReadNoWritePermission,
+                                              NoReadPermission,
+                                              NoWritePermission)
 from opentaxii.signals import (CONTENT_BLOCK_CREATED, INBOX_MESSAGE_CREATED,
                                SUBSCRIPTION_CREATED)
+from opentaxii.taxii2.entities import (ApiRoot, Collection, Job, JobDetail,
+                                       ManifestRecord, STIXObject,
+                                       VersionRecord)
 
 log = structlog.getLogger(__name__)
 
@@ -374,6 +384,13 @@ class Taxii1PersistenceManager(BasePersistenceManager):
         return count
 
 
+class JobDetailsResponse(NamedTuple):
+    total_count: int
+    success: List[JobDetail]
+    failure: List[JobDetail]
+    pending: List[JobDetail]
+
+
 class Taxii2PersistenceManager(BasePersistenceManager):
     """Manager responsible for persisting and retrieving data.
 
@@ -387,3 +404,220 @@ class Taxii2PersistenceManager(BasePersistenceManager):
     def __init__(self, server, api):
         self.server = server
         self.api = api
+
+    def get_api_roots(self) -> Tuple[Optional[ApiRoot], List[ApiRoot]]:
+        """
+        Get (optional) default api root and list of all api roots.
+
+        :return: Tuple of (default_api_root, all_api_roots)
+        """
+        api_roots = self.api.get_api_roots()
+        if not api_roots:
+            return None, []
+        default_api_root = None
+        for api_root in api_roots:
+            if api_root.default:
+                default_api_root = api_root
+                break
+        return (default_api_root, api_roots)
+
+    def get_api_root(self, api_root_id: str) -> ApiRoot:
+        api_root = self.api.get_api_root(api_root_id=api_root_id)
+        if api_root is None:
+            raise DoesNotExistError()
+        return api_root
+
+    def _get_job_details_response(
+        self, job_details: List[JobDetail]
+    ) -> JobDetailsResponse:
+        job_details_response = JobDetailsResponse(
+            total_count=len(job_details), success=[], failure=[], pending=[]
+        )
+        for job_detail in job_details:
+            getattr(job_details_response, job_detail.status).append(job_detail)
+        return job_details_response
+
+    def get_job_and_details(
+        self, api_root_id: str, job_id: str
+    ) -> Tuple[Job, JobDetailsResponse]:
+        job, job_details = self.api.get_job_and_details(
+            api_root_id=api_root_id, job_id=job_id
+        )
+        if job is None:
+            raise DoesNotExistError()
+        job_details_response = self._get_job_details_response(job_details)
+        return (job, job_details_response)
+
+    def get_collections(self, api_root_id: str) -> List[Collection]:
+        return self.api.get_collections(api_root_id=api_root_id)
+
+    def get_collection(
+        self, api_root_id: str, collection_id_or_alias: str
+    ) -> Collection:
+        collection = self.api.get_collection(
+            api_root_id=api_root_id, collection_id_or_alias=collection_id_or_alias
+        )
+        if collection is None:
+            raise DoesNotExistError()
+        return collection
+
+    def get_manifest(
+        self,
+        api_root_id: str,
+        collection_id_or_alias: str,
+        limit: Optional[int] = None,
+        added_after: Optional[datetime.datetime] = None,
+        next_kwargs: Optional[Dict] = None,
+        match_id: Optional[List[str]] = None,
+        match_type: Optional[List[str]] = None,
+        match_version: Optional[List[str]] = None,
+        match_spec_version: Optional[List[str]] = None,
+    ) -> Tuple[List[ManifestRecord], bool]:
+        collection = self.get_collection(
+            api_root_id=api_root_id, collection_id_or_alias=collection_id_or_alias
+        )
+        if not collection.can_read(context.account):
+            raise NoReadPermission()
+        return self.api.get_manifest(
+            collection_id=collection.id,
+            limit=limit,
+            added_after=added_after,
+            next_kwargs=next_kwargs,
+            match_id=match_id,
+            match_type=match_type,
+            match_version=match_version,
+            match_spec_version=match_spec_version,
+        )
+
+    def get_objects(
+        self,
+        api_root_id: str,
+        collection_id_or_alias: str,
+        limit: Optional[int] = None,
+        added_after: Optional[datetime.datetime] = None,
+        next_kwargs: Optional[Dict] = None,
+        match_id: Optional[List[str]] = None,
+        match_type: Optional[List[str]] = None,
+        match_version: Optional[List[str]] = None,
+        match_spec_version: Optional[List[str]] = None,
+    ) -> Tuple[List[STIXObject], bool]:
+        collection = self.get_collection(
+            api_root_id=api_root_id, collection_id_or_alias=collection_id_or_alias
+        )
+        if not collection.can_read(context.account):
+            raise NoReadPermission()
+        return self.api.get_objects(
+            collection_id=collection.id,
+            limit=limit,
+            added_after=added_after,
+            next_kwargs=next_kwargs,
+            match_id=match_id,
+            match_type=match_type,
+            match_version=match_version,
+            match_spec_version=match_spec_version,
+        )
+
+    def add_objects(
+        self,
+        api_root_id: str,
+        collection_id_or_alias: str,
+        data: Dict,
+    ) -> Tuple[Job, JobDetailsResponse]:
+        collection = self.get_collection(
+            api_root_id=api_root_id, collection_id_or_alias=collection_id_or_alias
+        )
+        if not collection.can_write(context.account):
+            raise NoWritePermission()
+        job, job_details = self.api.add_objects(
+            api_root_id=api_root_id,
+            collection_id=collection.id,
+            objects=data["objects"],
+        )
+        job_details_response = self._get_job_details_response(job_details)
+        return (job, job_details_response)
+
+    def get_object(
+        self,
+        api_root_id: str,
+        collection_id_or_alias: str,
+        object_id: str,
+        limit: Optional[int] = None,
+        added_after: Optional[datetime.datetime] = None,
+        next_kwargs: Optional[Dict] = None,
+        match_version: Optional[List[str]] = None,
+        match_spec_version: Optional[List[str]] = None,
+    ) -> Tuple[List[STIXObject], bool]:
+        collection = self.get_collection(
+            api_root_id=api_root_id, collection_id_or_alias=collection_id_or_alias
+        )
+        if not collection.can_read(context.account):
+            raise NoReadPermission()
+        versions, more = self.api.get_object(
+            collection_id=collection.id,
+            object_id=object_id,
+            limit=limit,
+            added_after=added_after,
+            next_kwargs=next_kwargs,
+            match_version=match_version,
+            match_spec_version=match_spec_version,
+        )
+        if versions is None:
+            raise DoesNotExistError()
+        return (versions, more)
+
+    def delete_object(
+        self,
+        api_root_id: str,
+        collection_id_or_alias: str,
+        object_id: str,
+        match_version: Optional[List[str]] = None,
+        match_spec_version: Optional[List[str]] = None,
+    ) -> None:
+        collection = self.get_collection(
+            api_root_id=api_root_id, collection_id_or_alias=collection_id_or_alias
+        )
+        if not collection:
+            raise DoesNotExistError()
+        if not collection.can_read(context.account) and not collection.can_write(
+            context.account
+        ):
+            raise NoReadNoWritePermission
+        if not collection.can_read(context.account):
+            raise NoReadPermission
+        if not collection.can_write(context.account):
+            raise NoWritePermission
+        return self.api.delete_object(
+            collection_id=collection.id,
+            object_id=object_id,
+            match_version=match_version,
+            match_spec_version=match_spec_version,
+        )
+
+    def get_versions(
+        self,
+        api_root_id: str,
+        collection_id_or_alias: str,
+        object_id: str,
+        limit: Optional[int] = None,
+        added_after: Optional[datetime.datetime] = None,
+        next_kwargs: Optional[Dict] = None,
+        match_spec_version: Optional[List[str]] = None,
+    ) -> Tuple[List[VersionRecord], bool]:
+        collection = self.get_collection(
+            api_root_id=api_root_id, collection_id_or_alias=collection_id_or_alias
+        )
+        if not collection:
+            raise DoesNotExistError()
+        if not collection.can_read(context.account):
+            raise NoReadPermission
+        versions, more = self.api.get_versions(
+            collection_id=collection.id,
+            object_id=object_id,
+            limit=limit,
+            added_after=added_after,
+            next_kwargs=next_kwargs,
+            match_spec_version=match_spec_version,
+        )
+        if versions is None:
+            raise DoesNotExistError()
+        return (versions, more)

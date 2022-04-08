@@ -1,0 +1,267 @@
+import json
+from unittest.mock import patch
+from uuid import uuid4
+
+import pytest
+from opentaxii.persistence.sqldb import taxii2models
+from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, GET_API_ROOT_MOCK,
+                                GET_COLLECTION_MOCK)
+
+
+@pytest.mark.parametrize(
+    "method,headers,api_root_id,collection_id,expected_status,expected_headers,expected_content",
+    [
+        pytest.param(
+            "get",
+            {"Accept": "application/taxii+json;version=2.1"},
+            API_ROOTS[0].id,
+            COLLECTIONS[0].id,
+            200,
+            {"Content-Type": "application/taxii+json;version=2.1"},
+            {
+                "id": COLLECTIONS[0].id,
+                "title": "0Read only",
+                "description": "Read only description",
+                "can_read": True,
+                "can_write": False,
+                "media_types": ["application/stix+json;version=2.1"],
+            },
+            id="good",
+        ),
+        pytest.param(
+            "get",
+            {"Accept": "application/taxii+json;version=2.1"},
+            API_ROOTS[0].id,
+            COLLECTIONS[4].id,
+            200,
+            {"Content-Type": "application/taxii+json;version=2.1"},
+            {
+                "id": COLLECTIONS[4].id,
+                "title": "4No description",
+                "can_read": True,
+                "can_write": True,
+                "media_types": ["application/stix+json;version=2.1"],
+            },
+            id="good, no description",
+        ),
+        pytest.param(
+            "get",
+            {"Accept": "application/taxii+json;version=2.1"},
+            API_ROOTS[0].id,
+            COLLECTIONS[5].id,
+            200,
+            {"Content-Type": "application/taxii+json;version=2.1"},
+            {
+                "id": COLLECTIONS[5].id,
+                "title": "5With alias",
+                "description": "With alias description",
+                "alias": "this-is-an-alias",
+                "can_read": False,
+                "can_write": True,
+                "media_types": ["application/stix+json;version=2.1"],
+            },
+            id="good, with description",
+        ),
+        pytest.param(
+            "get",
+            {"Accept": "application/taxii+json;version=2.1"},
+            API_ROOTS[0].id,
+            COLLECTIONS[5].alias,
+            200,
+            {"Content-Type": "application/taxii+json;version=2.1"},
+            {
+                "id": COLLECTIONS[5].id,
+                "title": "5With alias",
+                "description": "With alias description",
+                "alias": "this-is-an-alias",
+                "can_read": False,
+                "can_write": True,
+                "media_types": ["application/stix+json;version=2.1"],
+            },
+            id="good, by alias",
+        ),
+        pytest.param(
+            "get",
+            {"Accept": "application/taxii+json;version=2.1"},
+            API_ROOTS[1].id,
+            COLLECTIONS[0].id,
+            404,
+            {"Content-Type": "application/taxii+json;version=2.1"},
+            {
+                "code": 404,
+                "description": "The requested URL was not found on the server. If you entered "
+                "the URL manually please check your spelling and try again.",
+                "name": "Not Found",
+            },
+            id="wrong api root",
+        ),
+        pytest.param(
+            "get",
+            {"Accept": "application/taxii+json;version=2.1"},
+            str(uuid4()),
+            COLLECTIONS[0].id,
+            404,
+            {"Content-Type": "application/taxii+json;version=2.1"},
+            {
+                "code": 404,
+                "description": "The requested URL was not found on the server. If you entered "
+                "the URL manually please check your spelling and try again.",
+                "name": "Not Found",
+            },
+            id="unknown api root",
+        ),
+        pytest.param(
+            "get",
+            {"Accept": "application/taxii+json;version=2.1"},
+            API_ROOTS[0].id,
+            str(uuid4()),
+            404,
+            {"Content-Type": "application/taxii+json;version=2.1"},
+            {
+                "code": 404,
+                "description": "The requested URL was not found on the server. If you entered "
+                "the URL manually please check your spelling and try again.",
+                "name": "Not Found",
+            },
+            id="unknown collection",
+        ),
+        pytest.param(
+            "get",
+            {"Accept": "xml"},
+            API_ROOTS[0].id,
+            COLLECTIONS[0].id,
+            406,
+            {"Content-Type": "application/taxii+json;version=2.1"},
+            {
+                "code": 406,
+                "name": "Not Acceptable",
+                "description": (
+                    "The resource identified by the request is only capable of generating response entities which"
+                    " have content characteristics not acceptable according to the accept headers sent in the"
+                    " request."
+                ),
+            },
+            id="wrong accept header",
+        ),
+        pytest.param(
+            "post",
+            {"Accept": "application/taxii+json;version=2.1"},
+            API_ROOTS[0].id,
+            COLLECTIONS[0].id,
+            405,
+            {"Content-Type": "application/taxii+json;version=2.1"},
+            {
+                "code": 405,
+                "description": "The method is not allowed for the requested URL.",
+                "name": "Method Not Allowed",
+            },
+            id="wrong method",
+        ),
+    ],
+)
+def test_collection(
+    authenticated_client,
+    method,
+    api_root_id,
+    collection_id,
+    headers,
+    expected_status,
+    expected_headers,
+    expected_content,
+):
+    with patch.object(
+        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+        "get_api_root",
+        side_effect=GET_API_ROOT_MOCK,
+    ), patch.object(
+        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+        "get_collection",
+        side_effect=GET_COLLECTION_MOCK,
+    ), patch.object(
+        authenticated_client.account,
+        "permissions",
+        {
+            COLLECTIONS[0].id: ["read"],
+            COLLECTIONS[1].id: ["write"],
+            COLLECTIONS[2].id: ["read", "write"],
+            COLLECTIONS[4].id: ["read", "write"],
+            COLLECTIONS[5].id: ["write"],
+        },
+    ):
+        func = getattr(authenticated_client, method)
+        response = func(f"/{api_root_id}/collections/{collection_id}/", headers=headers)
+    assert response.status_code == expected_status
+    assert {
+        key: response.headers.get(key) for key in expected_headers
+    } == expected_headers
+    if (
+        response.headers.get("Content-Type", "application/taxii+json;version=2.1")
+        == "application/taxii+json;version=2.1"
+    ):
+        content = json.loads(response.data)
+    else:
+        content = response.data
+    assert content == expected_content
+
+
+@pytest.mark.parametrize("method", ["get", "post", "delete"])
+def test_collection_unauthenticated(
+    client,
+    method,
+):
+    func = getattr(client, method)
+    response = func(f"/{API_ROOTS[0].id}/collections/{COLLECTIONS[0].id}/")
+    assert response.status_code == 401
+
+
+@pytest.mark.parametrize(
+    ["api_root_id", "title", "description", "alias"],
+    [
+        pytest.param(
+            API_ROOTS[0].id,  # api_root_id
+            "my new collection",  # title
+            None,  # description
+            None,  # alias
+            id="api_root_id, title",
+        ),
+        pytest.param(
+            API_ROOTS[0].id,  # api_root_id
+            "my new collection",  # title
+            "my description",  # description
+            None,  # alias
+            id="api_root_id, title, description",
+        ),
+        pytest.param(
+            API_ROOTS[0].id,  # api_root_id
+            "my new collection",  # title
+            "my description",  # description
+            "my-alias",  # alias
+            id="api_root_id, title, description, alias",
+        ),
+    ],
+)
+def test_add_collection(
+    app, api_root_id, title, description, alias, db_api_roots, db_collections
+):
+    collection = app.taxii_server.servers.taxii2.persistence.api.add_collection(
+        api_root_id=api_root_id,
+        title=title,
+        description=description,
+        alias=alias,
+    )
+    assert collection.id is not None
+    assert str(collection.api_root_id) == api_root_id
+    assert collection.title == title
+    assert collection.description == description
+    assert collection.alias == alias
+    db_collection = (
+        app.taxii_server.servers.taxii2.persistence.api.db.session.query(
+            taxii2models.Collection
+        )
+        .filter(taxii2models.Collection.id == collection.id)
+        .one()
+    )
+    assert str(db_collection.api_root_id) == api_root_id
+    assert db_collection.title == title
+    assert db_collection.description == description
+    assert db_collection.alias == alias

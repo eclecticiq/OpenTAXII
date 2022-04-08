@@ -1,15 +1,38 @@
+import base64
 import os
 from tempfile import mkstemp
+from unittest.mock import patch
 
 import pytest
+from flask.testing import FlaskClient
 from opentaxii.config import ServerConfig
 from opentaxii.local import context, release_context
 from opentaxii.middleware import create_app
+from opentaxii.persistence.sqldb.taxii2models import (ApiRoot, Collection, Job,
+                                                      JobDetail, STIXObject)
 from opentaxii.server import TAXIIServer
 from opentaxii.taxii.converters import dict_to_service_entity
+from opentaxii.taxii.http import HTTP_AUTHORIZATION
 from opentaxii.utils import configure_logging
 
-from fixtures import DOMAIN, SERVICES
+from tests.fixtures import (ACCOUNT, COLLECTIONS_B, DOMAIN, PASSWORD, SERVICES,
+                            USERNAME, VALID_TOKEN)
+from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, JOB_DETAILS, JOBS,
+                                STIX_OBJECTS)
+
+
+class CustomClient(FlaskClient):
+    def __init__(self, *args, **kwargs):
+        self.headers = kwargs.pop("headers", {})
+        super().__init__(*args, **kwargs)
+
+    def open(self, *args, **kwargs):
+        headers = kwargs.pop("headers", {})
+        new_headers = {**self.headers, **headers}
+        if new_headers:
+            kwargs["headers"] = new_headers
+        return super().open(*args, **kwargs)
+
 
 DBTYPE = os.getenv("DBTYPE", "sqlite")
 if DBTYPE == "sqlite":
@@ -200,6 +223,11 @@ def truncate_app(dbconn):
 
 
 @pytest.fixture()
+def taxii2_sqldb_api(app):
+    yield app.taxii_server.servers.taxii2.persistence.api
+
+
+@pytest.fixture()
 def server(app, anonymous_user):
     yield app.taxii_server
     release_context()
@@ -207,7 +235,46 @@ def server(app, anonymous_user):
 
 @pytest.fixture()
 def client(app):
+    app.test_client_class = CustomClient
     return app.test_client()
+
+
+def basic_auth_token(username, password):
+    return base64.b64encode("{}:{}".format(username, password).encode("utf-8"))
+
+
+def MOCK_AUTHENTICATE(username, password):
+    if username == USERNAME and password == PASSWORD:
+        return VALID_TOKEN
+    return None
+
+
+def MOCK_GET_ACCOUNT(token):
+    if token == VALID_TOKEN:
+        return ACCOUNT
+    return None
+
+
+@pytest.fixture()
+def authenticated_client(client):
+    basic_auth_header = "Basic {}".format(
+        basic_auth_token(USERNAME, PASSWORD).decode("utf-8")
+    )
+    headers = {
+        HTTP_AUTHORIZATION: basic_auth_header,
+    }
+    client.headers = headers
+    client.account = ACCOUNT
+    with patch.object(
+        client.application.taxii_server.auth.api,
+        "authenticate",
+        side_effect=MOCK_AUTHENTICATE,
+    ), patch.object(
+        client.application.taxii_server.auth.api,
+        "get_account",
+        side_effect=MOCK_GET_ACCOUNT,
+    ):
+        yield client
 
 
 @pytest.fixture()
@@ -216,3 +283,64 @@ def services(server):
         server.servers.taxii1.persistence.update_service(
             dict_to_service_entity(service)
         )
+
+
+@pytest.fixture()
+def collections(server):
+    for collection in COLLECTIONS_B:
+        server.servers.taxii1.persistence.create_collection(collection)
+
+
+@pytest.fixture()
+def account(server):
+    server.auth.api.create_account(ACCOUNT.username, "mypass")
+
+
+@pytest.fixture(scope="function")
+def db_api_roots(request, taxii2_sqldb_api):
+    try:
+        api_roots = request.param
+    except AttributeError:
+        api_roots = API_ROOTS
+    for api_root in api_roots:
+        taxii2_sqldb_api.db.session.add(ApiRoot.from_entity(api_root))
+    taxii2_sqldb_api.db.session.commit()
+    yield api_roots
+
+
+@pytest.fixture(scope="function")
+def db_jobs(request, taxii2_sqldb_api, db_api_roots):
+    try:
+        (jobs, job_details) = request.param
+    except AttributeError:
+        (jobs, job_details) = (JOBS, JOB_DETAILS)
+    for job in jobs:
+        taxii2_sqldb_api.db.session.add(Job.from_entity(job))
+    for job_detail in job_details:
+        taxii2_sqldb_api.db.session.add(JobDetail.from_entity(job_detail))
+    taxii2_sqldb_api.db.session.commit()
+    yield (jobs, job_details)
+
+
+@pytest.fixture(scope="function")
+def db_collections(request, taxii2_sqldb_api, db_api_roots):
+    try:
+        collections = request.param
+    except AttributeError:
+        collections = COLLECTIONS
+    for collection in collections:
+        taxii2_sqldb_api.db.session.add(Collection.from_entity(collection))
+    taxii2_sqldb_api.db.session.commit()
+    yield collections
+
+
+@pytest.fixture(scope="function")
+def db_stix_objects(request, taxii2_sqldb_api, db_collections):
+    try:
+        stix_objects = request.param
+    except AttributeError:
+        stix_objects = STIX_OBJECTS
+    for stix_object in stix_objects:
+        taxii2_sqldb_api.db.session.add(STIXObject.from_entity(stix_object))
+    taxii2_sqldb_api.db.session.commit()
+    yield stix_objects

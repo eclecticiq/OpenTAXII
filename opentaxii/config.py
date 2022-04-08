@@ -57,7 +57,12 @@ class ServerConfig(dict):
         "unauthorized_status",
         "hooks",
     )
-    VALID_TAXII2_OPTIONS = ("max_content_length",)
+    VALID_TAXII2_OPTIONS = (
+        "contact",
+        "description",
+        "max_content_length",
+        "title",
+    )
     ALL_VALID_OPTIONS = VALID_BASE_OPTIONS + VALID_TAXII_OPTIONS + VALID_TAXII1_OPTIONS
 
     def __init__(self, optional_env_var=CONFIG_ENV_VAR, extra_configs=None):

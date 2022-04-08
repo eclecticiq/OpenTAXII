@@ -1,7 +1,8 @@
-from libtaxii.constants import (
-    VID_TAXII_HTTP_10, VID_TAXII_HTTPS_10,
-    CB_STIX_XML_111)
+from uuid import uuid4
 
+from libtaxii.constants import (CB_STIX_XML_111, VID_TAXII_HTTP_10,
+                                VID_TAXII_HTTPS_10)
+from opentaxii.entities import Account
 from opentaxii.taxii import entities
 
 PROTOCOL_BINDINGS = [VID_TAXII_HTTP_10, VID_TAXII_HTTPS_10]
@@ -128,3 +129,8 @@ COLLECTIONS_B = [
         'available': False
     }]
 ]
+
+USERNAME = "some-username"
+PASSWORD = "some-password"
+ACCOUNT = Account(str(uuid4()), USERNAME, {})
+VALID_TOKEN = "valid-token"

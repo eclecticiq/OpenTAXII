@@ -1,9 +1,31 @@
 import functools
 import importlib
-from typing import Callable, ClassVar, NamedTuple, Optional, Type
+import json
+
+try:
+    from re import Pattern
+except ImportError:
+    from typing.re import Pattern
+
+from typing import Callable, ClassVar, NamedTuple, Optional, Tuple, Type
 
 import structlog
-from flask import Flask, Response, abort, request
+from flask import Flask, Response, request
+from werkzeug.exceptions import (Forbidden, MethodNotAllowed, NotAcceptable,
+                                 NotFound, RequestEntityTooLarge, Unauthorized,
+                                 UnsupportedMediaType)
+
+from opentaxii.persistence.exceptions import (DoesNotExistError,
+                                              NoReadNoWritePermission,
+                                              NoReadPermission,
+                                              NoWritePermission)
+from opentaxii.taxii2.utils import get_next_param, taxii2_datetimeformat
+from opentaxii.taxii2.validation import (validate_delete_filter_params,
+                                         validate_envelope,
+                                         validate_list_filter_params,
+                                         validate_object_filter_params,
+                                         validate_versions_filter_params)
+from opentaxii.utils import register_handler
 
 from .auth import AuthManager
 from .config import ServerConfig
@@ -12,6 +34,7 @@ from .exceptions import UnauthorizedException
 from .local import context
 from .persistence import (BasePersistenceManager, Taxii1PersistenceManager,
                           Taxii2PersistenceManager)
+from .taxii2.http import make_taxii2_response
 from .taxii.bindings import (ALL_PROTOCOL_BINDINGS, MESSAGE_BINDINGS,
                              SERVICE_BINDINGS)
 from .taxii.exceptions import (FailureStatus, StatusMessageException,
@@ -39,6 +62,7 @@ class BaseTAXIIServer:
     """
 
     PERSISTENCE_MANAGER_CLASS: ClassVar[Type[BasePersistenceManager]]
+    ENDPOINT_MAPPING: Tuple[(Pattern, Callable[[], Response])]
     app: Flask
     config: dict
 
@@ -47,6 +71,16 @@ class BaseTAXIIServer:
         self.persistence = self.PERSISTENCE_MANAGER_CLASS(
             server=self, api=initialize_api(config["persistence_api"])
         )
+        self.setup_endpoint_mapping()
+
+    def setup_endpoint_mapping(self):
+        mapping = []
+        for attr_name in self.__dir__():
+            attr = getattr(self, attr_name)
+            if hasattr(attr, "registered_url_re"):
+                mapping.append((attr.registered_url_re, attr))
+        if mapping:
+            self.ENDPOINT_MAPPING = tuple(mapping)
 
     def init_app(self, app: Flask):
         """Connect server and persistence to flask."""
@@ -74,6 +108,17 @@ class BaseTAXIIServer:
     def handle_status_exception(self, error):
         """
         Handle status exception and return appropriate response.
+
+        Placeholder for subclasses to implement.
+        """
+        return
+
+    def handle_http_exception(self, error):
+        return error.get_response()
+
+    def handle_validation_exception(self, error):
+        """
+        Handle validation exception and return appropriate response.
 
         Placeholder for subclasses to implement.
         """
@@ -148,6 +193,11 @@ class TAXII1Server(BaseTAXIIServer):
 
         return services
 
+    def check_allowed_methods(self):
+        valid_methods = ["POST", "OPTIONS"]
+        if request.method not in valid_methods:
+            raise MethodNotAllowed(valid_methods=valid_methods)
+
     def get_endpoint(self, relative_path: str) -> Optional[Callable[[], Response]]:
         """Get first endpoint matching relative_path."""
         for endpoint in self.get_services():
@@ -221,6 +271,7 @@ class TAXII1Server(BaseTAXIIServer):
 
         Process :class:`TAXIIService` with either :meth:`_process_with_service` or :meth:`_process_options_request`.
         """
+        self.check_allowed_methods()
         if endpoint.authentication_required and context.account is None:
             raise UnauthorizedException(
                 status_type=self.config["unauthorized_status"],
@@ -340,6 +391,422 @@ class TAXII2Server(BaseTAXIIServer):
 
     PERSISTENCE_MANAGER_CLASS = Taxii2PersistenceManager
 
+    def handle_http_exception(self, error):
+        """Return JSON instead of HTML for HTTP errors."""
+        # start with the correct headers and status code from the error
+        response = error.get_response()
+        # replace the body with JSON
+        response.data = json.dumps(
+            {
+                "code": error.code,
+                "name": error.name,
+                "description": error.description,
+            }
+        )
+        response.content_type = "application/taxii+json;version=2.1"
+        return response
+
+    def handle_validation_exception(self, error):
+        """
+        Handle validation exception and return appropriate response.
+        """
+        response = {
+            "code": 400,
+            "name": "validation error",
+            "description": error.messages,
+        }
+        return make_taxii2_response(response, status=400)
+
+    def get_endpoint(self, relative_path: str) -> Optional[Callable[[], Response]]:
+        endpoint = None
+        for regex, handler in self.ENDPOINT_MAPPING:
+            match = regex.match(relative_path)
+            if match:
+                endpoint = functools.partial(handler, **match.groupdict())
+                break
+        if endpoint:
+            return functools.partial(self.handle_request, endpoint)
+
+    def check_authentication(self):
+        if context.account is None:
+            raise Unauthorized()
+
+    def check_content_length(self):
+        if (request.content_length or 0) > self.config["max_content_length"] or len(
+            request.data
+        ) > self.config[
+            "max_content_length"
+        ]:  # untestable with flask
+            raise RequestEntityTooLarge()
+
+    def check_headers(self, endpoint: Callable[[], Response]):
+        if not any(
+            [
+                valid_accept_mimetype in request.accept_mimetypes
+                for valid_accept_mimetype in endpoint.func.registered_valid_accept_mimetypes
+            ]
+        ):
+            raise NotAcceptable()
+        if (
+            request.method == "POST"
+            and request.content_type not in endpoint.func.registered_valid_content_types
+        ):
+            raise UnsupportedMediaType()
+
+    def check_allowed_methods(self, endpoint: Callable[[], Response]):
+        if request.method not in endpoint.func.registered_valid_methods:
+            raise MethodNotAllowed(valid_methods=endpoint.func.registered_valid_methods)
+
+    def handle_request(self, endpoint: Callable[[], Response]):
+        self.check_authentication()
+        self.check_content_length()
+        self.check_allowed_methods(endpoint)
+        self.check_headers(endpoint)
+        return endpoint()
+
+    @register_handler(r"^/taxii2/$")
+    def discovery_handler(self):
+        response = {
+            "title": self.config["title"],
+        }
+        for key in ["description", "contact"]:
+            if self.config.get(key):
+                response[key] = self.config.get(key)
+        default_api_root, api_roots = self.persistence.get_api_roots()
+        if default_api_root:
+            response["default"] = f"/{default_api_root.id}/"
+        response["api_roots"] = [f"/{api_root.id}/" for api_root in api_roots]
+        return make_taxii2_response(response)
+
+    @register_handler(r"^/(?P<api_root_id>[^/]+)/$")
+    def api_root_handler(self, api_root_id):
+        try:
+            api_root = self.persistence.get_api_root(api_root_id=api_root_id)
+        except DoesNotExistError:
+            raise NotFound()
+        response = {
+            "title": api_root.title,
+            "versions": ["application/taxii+json;version=2.1"],
+            "max_content_length": self.config["max_content_length"],
+        }
+        if api_root.description:
+            response["description"] = api_root.description
+        return make_taxii2_response(response)
+
+    @register_handler(r"^/(?P<api_root_id>[^/]+)/status/(?P<job_id>[^/]+)/$")
+    def job_handler(self, api_root_id, job_id):
+        try:
+            job, job_details = self.persistence.get_job_and_details(
+                api_root_id=api_root_id, job_id=job_id
+            )
+        except DoesNotExistError:
+            raise NotFound()
+        response = {
+            "id": job.id,
+            "status": job.status,
+            "request_timestamp": taxii2_datetimeformat(job.request_timestamp),
+            "total_count": job_details.total_count,
+            "success_count": len(job_details.success),
+            "successes": [
+                job_detail.as_taxii2_dict() for job_detail in job_details.success
+            ],
+            "failure_count": len(job_details.failure),
+            "failures": [
+                job_detail.as_taxii2_dict() for job_detail in job_details.failure
+            ],
+            "pending_count": len(job_details.pending),
+            "pendings": [
+                job_detail.as_taxii2_dict() for job_detail in job_details.pending
+            ],
+        }
+        return make_taxii2_response(response)
+
+    @register_handler(r"^/(?P<api_root_id>[^/]+)/collections/$")
+    def collections_handler(self, api_root_id):
+        try:
+            self.persistence.get_api_root(api_root_id=api_root_id)
+        except DoesNotExistError:
+            raise NotFound()
+        collections = self.persistence.get_collections(api_root_id=api_root_id)
+        response = {}
+        if collections:
+            response["collections"] = []
+            for collection in collections:
+                data = {
+                    "id": collection.id,
+                    "title": collection.title,
+                    "can_read": collection.can_read(context.account),
+                    "can_write": collection.can_write(context.account),
+                    "media_types": ["application/stix+json;version=2.1"],
+                }
+                for key in ["description", "alias"]:
+                    value = getattr(collection, key, None)
+                    if value:
+                        data[key] = value
+                response["collections"].append(data)
+        return make_taxii2_response(response)
+
+    @register_handler(
+        r"^/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/$"
+    )
+    def collection_handler(self, api_root_id, collection_id_or_alias):
+        try:
+            collection = self.persistence.get_collection(
+                api_root_id=api_root_id, collection_id_or_alias=collection_id_or_alias
+            )
+        except DoesNotExistError:
+            raise NotFound()
+        response = {
+            "id": collection.id,
+            "title": collection.title,
+            "can_read": collection.can_read(context.account),
+            "can_write": collection.can_write(context.account),
+            "media_types": ["application/stix+json;version=2.1"],
+        }
+        for key in ["description", "alias"]:
+            value = getattr(collection, key, None)
+            if value:
+                response[key] = value
+        return make_taxii2_response(response)
+
+    @register_handler(
+        r"^/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/manifest/$"
+    )
+    def manifest_handler(self, api_root_id, collection_id_or_alias):
+        filter_params = validate_list_filter_params(request.args)
+        try:
+            manifest, more = self.persistence.get_manifest(
+                api_root_id=api_root_id,
+                collection_id_or_alias=collection_id_or_alias,
+                **filter_params,
+            )
+        except (DoesNotExistError, NoReadPermission):
+            raise NotFound()
+        if manifest:
+            response = {
+                "more": more,
+                "objects": [
+                    {
+                        "id": obj.id,
+                        "date_added": taxii2_datetimeformat(obj.date_added),
+                        "version": taxii2_datetimeformat(obj.version),
+                        "media_type": f"application/stix+json;version={obj.spec_version}",
+                    }
+                    for obj in manifest
+                ],
+            }
+            headers = {
+                "X-TAXII-Date-Added-First": min(
+                    obj["date_added"] for obj in response["objects"]
+                ),
+                "X-TAXII-Date-Added-Last": max(
+                    obj["date_added"] for obj in response["objects"]
+                ),
+            }
+        else:
+            response = {}
+            headers = {}
+        return make_taxii2_response(
+            response,
+            extra_headers=headers,
+        )
+
+    @register_handler(
+        r"^/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/objects/$",
+        ("GET", "POST"),
+        valid_content_types=("application/taxii+json;version=2.1",),
+    )
+    def objects_handler(self, api_root_id, collection_id_or_alias):
+        if request.method == "GET":
+            return self.objects_get_handler(api_root_id, collection_id_or_alias)
+        if request.method == "POST":
+            return self.objects_post_handler(api_root_id, collection_id_or_alias)
+
+    def objects_get_handler(self, api_root_id, collection_id_or_alias):
+        filter_params = validate_list_filter_params(request.args)
+        try:
+            objects, more = self.persistence.get_objects(
+                api_root_id=api_root_id,
+                collection_id_or_alias=collection_id_or_alias,
+                **filter_params,
+            )
+        except (DoesNotExistError, NoReadPermission):
+            raise NotFound()
+        if objects:
+            response = {
+                "more": more,
+                "objects": [
+                    {
+                        "id": obj.id,
+                        "type": obj.type,
+                        "spec_version": obj.type,
+                        **obj.serialized_data,
+                    }
+                    for obj in objects
+                ],
+            }
+            headers = {
+                "X-TAXII-Date-Added-First": taxii2_datetimeformat(
+                    min(obj.date_added for obj in objects)
+                ),
+                "X-TAXII-Date-Added-Last": taxii2_datetimeformat(
+                    max(obj.date_added for obj in objects)
+                ),
+            }
+            if more:
+                response["next"] = get_next_param(objects[-1]).decode()
+        else:
+            response = {}
+            headers = {}
+        return make_taxii2_response(
+            response,
+            extra_headers=headers,
+        )
+
+    def objects_post_handler(self, api_root_id, collection_id_or_alias):
+        validate_envelope(request.data)
+        try:
+            job, job_details = self.persistence.add_objects(
+                api_root_id=api_root_id,
+                collection_id_or_alias=collection_id_or_alias,
+                data=request.get_json(),
+            )
+        except (DoesNotExistError, NoWritePermission):
+            raise NotFound()
+        response = {
+            "id": job.id,
+            "status": job.status,
+            "request_timestamp": taxii2_datetimeformat(job.request_timestamp),
+            "total_count": job_details.total_count,
+            "success_count": len(job_details.success),
+            "successes": [
+                job_detail.as_taxii2_dict() for job_detail in job_details.success
+            ],
+            "failure_count": len(job_details.failure),
+            "failures": [
+                job_detail.as_taxii2_dict() for job_detail in job_details.failure
+            ],
+            "pending_count": len(job_details.pending),
+            "pendings": [
+                job_detail.as_taxii2_dict() for job_detail in job_details.pending
+            ],
+        }
+        headers = {}
+        return make_taxii2_response(
+            response,
+            202,
+            extra_headers=headers,
+        )
+
+    @register_handler(
+        r"^/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/objects/(?P<object_id>[^/]+)/$",
+        ("GET", "DELETE"),
+    )
+    def object_handler(self, api_root_id, collection_id_or_alias, object_id):
+        if request.method == "GET":
+            return self.object_get_handler(
+                api_root_id, collection_id_or_alias, object_id
+            )
+        if request.method == "DELETE":
+            return self.object_delete_handler(
+                api_root_id, collection_id_or_alias, object_id
+            )
+
+    def object_get_handler(self, api_root_id, collection_id_or_alias, object_id):
+        filter_params = validate_object_filter_params(request.args)
+        try:
+            versions, more = self.persistence.get_object(
+                api_root_id=api_root_id,
+                collection_id_or_alias=collection_id_or_alias,
+                object_id=object_id,
+                **filter_params,
+            )
+        except (DoesNotExistError, NoReadPermission):
+            raise NotFound()
+        if versions:
+            response = {
+                "more": more,
+                "objects": [
+                    {
+                        "id": obj.id,
+                        "type": obj.type,
+                        "spec_version": obj.type,
+                        **obj.serialized_data,
+                    }
+                    for obj in versions
+                ],
+            }
+            headers = {
+                "X-TAXII-Date-Added-First": taxii2_datetimeformat(
+                    min(obj.date_added for obj in versions)
+                ),
+                "X-TAXII-Date-Added-Last": taxii2_datetimeformat(
+                    max(obj.date_added for obj in versions)
+                ),
+            }
+            if more:
+                response["next"] = get_next_param(versions[-1]).decode()
+        else:
+            response = {}
+            headers = {}
+        return make_taxii2_response(
+            response,
+            extra_headers=headers,
+        )
+
+    def object_delete_handler(self, api_root_id, collection_id_or_alias, object_id):
+        filter_params = validate_delete_filter_params(request.args)
+        try:
+            self.persistence.delete_object(
+                api_root_id=api_root_id,
+                collection_id_or_alias=collection_id_or_alias,
+                object_id=object_id,
+                **filter_params,
+            )
+        except (DoesNotExistError, NoReadNoWritePermission):
+            raise NotFound()
+        except (NoReadPermission, NoWritePermission):
+            raise Forbidden()
+        return make_taxii2_response("")
+
+    @register_handler(
+        (
+            r"^/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)"
+            r"/objects/(?P<object_id>[^/]+)/versions/$"
+        ),
+    )
+    def versions_handler(self, api_root_id, collection_id_or_alias, object_id):
+        filter_params = validate_versions_filter_params(request.args)
+        try:
+            versions, more = self.persistence.get_versions(
+                api_root_id=api_root_id,
+                collection_id_or_alias=collection_id_or_alias,
+                object_id=object_id,
+                **filter_params,
+            )
+        except (DoesNotExistError, NoReadPermission):
+            raise NotFound()
+        if versions:
+            response = {
+                "more": more,
+                "versions": [taxii2_datetimeformat(obj.version) for obj in versions],
+            }
+            headers = {
+                "X-TAXII-Date-Added-First": taxii2_datetimeformat(
+                    min(obj.date_added for obj in versions)
+                ),
+                "X-TAXII-Date-Added-Last": taxii2_datetimeformat(
+                    max(obj.date_added for obj in versions)
+                ),
+            }
+        else:
+            response = {}
+            headers = {}
+        return make_taxii2_response(
+            response,
+            extra_headers=headers,
+        )
+
 
 class ServerMapping(NamedTuple):
     taxii1: Optional[TAXII1Server]
@@ -381,12 +848,26 @@ class TAXIIServer:
             server=self, api=initialize_api(config["auth_api"])
         )
 
+    @property
+    def real_servers(self):
+        return [server for server in self.servers if server is not None]
+
+    @property
+    def current_server(self):
+        try:
+            server = context.taxiiserver
+        except AttributeError:
+            if len(self.real_servers) == 1:
+                server = self.real_servers[0]
+            else:
+                server = None
+        return server
+
     def init_app(self, app: Flask):
         """Connect taxii1, taxii2 and auth to flask."""
         self.app = app
-        for server in self.servers:
-            if server is not None:
-                server.init_app(app)
+        for server in self.real_servers:
+            server.init_app(app)
         self.auth.api.init_app(app)
 
     def is_basic_auth_supported(self):
@@ -395,7 +876,7 @@ class TAXIIServer:
 
     def get_endpoint(self, relative_path: str) -> Optional[Callable[[], Response]]:
         """Get first endpoint matching relative_path."""
-        for server in self.servers:
+        for server in self.real_servers:
             endpoint = server.get_endpoint(relative_path)
             if endpoint:
                 endpoint.server = server
@@ -406,7 +887,7 @@ class TAXIIServer:
         relative_path = "/" + relative_path
         endpoint = self.get_endpoint(relative_path)
         if not endpoint:
-            abort(404)
+            raise NotFound()
         context.taxiiserver = endpoint.server
         return endpoint()
 
@@ -418,6 +899,22 @@ class TAXIIServer:
         """Dispatch status exception handling to appropriate taxii* server."""
         return context.taxiiserver.handle_status_exception(error)
 
+    def handle_http_exception(self, error):
+        """Dispatch http exception handling to appropriate taxii* server."""
+        server = self.current_server
+        if server:
+            return server.handle_http_exception(error)
+        else:
+            return error.get_response()
+
+    def handle_validation_exception(self, error):
+        """Dispatch validation exception handling to appropriate taxii* server."""
+        server = self.current_server
+        if server:
+            return server.handle_validation_exception(error)
+        else:
+            return error.get_response()
+
     def raise_unauthorized(self):
         """Dispatch unauthorized handling to appropriate taxii* server."""
         endpoint = self.get_endpoint(request.path)
@@ -426,4 +923,4 @@ class TAXIIServer:
         else:
             server = self.servers.taxii1
         context.taxiiserver = server
-        server.raise_unauthorized()
+        return server.raise_unauthorized()

@@ -4,4 +4,5 @@ pytest>=4.6
 pytest-pythonpath
 flake8
 ipdb
+factory-boy>=3.2.1
 -r requirements-interrogate.txt

@@ -1,3 +1,10 @@
+import datetime
+from typing import Dict, List, Optional, Tuple
+
+from opentaxii.taxii2.entities import (ApiRoot, Collection, Job, JobDetail,
+                                       ManifestRecord, STIXObject,
+                                       VersionRecord)
+
 
 class OpenTAXIIPersistenceAPI:
     """Abstract class that represents OpenTAXII Persistence API.
@@ -260,4 +267,88 @@ class OpenTAXII2PersistenceAPI:
 
     Stub, pending implementation.
     """
-    pass
+
+    def get_api_roots(self) -> List[ApiRoot]:
+        raise NotImplementedError
+
+    def get_api_root(self, api_root_id: str) -> Optional[ApiRoot]:
+        raise NotImplementedError
+
+    def get_job_and_details(
+        self, api_root_id: str, job_id: str
+    ) -> Tuple[Optional[Job], List[JobDetail]]:
+        raise NotImplementedError
+
+    def get_collections(self, api_root_id: str) -> List[Collection]:
+        raise NotImplementedError
+
+    def get_collection(
+        self, api_root_id: str, collection_id_or_alias: str
+    ) -> Optional[Collection]:
+        raise NotImplementedError
+
+    def get_manifest(
+        self,
+        collection_id: str,
+        limit: Optional[int] = None,
+        added_after: Optional[datetime.datetime] = None,
+        next_kwargs: Optional[Dict] = None,
+        match_id: Optional[List[str]] = None,
+        match_type: Optional[List[str]] = None,
+        match_version: Optional[List[str]] = None,
+        match_spec_version: Optional[List[str]] = None,
+    ) -> Tuple[List[ManifestRecord], bool]:
+        raise NotImplementedError
+
+    def get_objects(
+        self,
+        collection_id: str,
+        limit: Optional[int] = None,
+        added_after: Optional[datetime.datetime] = None,
+        next_kwargs: Optional[Dict] = None,
+        match_id: Optional[List[str]] = None,
+        match_type: Optional[List[str]] = None,
+        match_version: Optional[List[str]] = None,
+        match_spec_version: Optional[List[str]] = None,
+    ) -> Tuple[List[STIXObject], bool]:
+        raise NotImplementedError
+
+    def add_objects(self, api_root_id: str, collection_id: str, objects: List[Dict]) -> Tuple[Job, List[JobDetail]]:
+        raise NotImplementedError
+
+    def get_object(
+        self,
+        collection_id: str,
+        object_id: str,
+        limit: Optional[int] = None,
+        added_after: Optional[datetime.datetime] = None,
+        next_kwargs: Optional[Dict] = None,
+        match_version: Optional[List[str]] = None,
+        match_spec_version: Optional[List[str]] = None,
+    ) -> Tuple[Optional[List[STIXObject]], bool]:
+        """
+        Get all versions of single object from database.
+
+        Should return `None` when object matching object_id doesn't exist.
+        """
+        raise NotImplementedError
+
+    def delete_object(
+        self,
+        collection_id: str,
+        object_id: str,
+        match_version: Optional[List[str]] = None,
+        match_spec_version: Optional[List[str]] = None,
+    ) -> None:
+        raise NotImplementedError
+
+    def get_versions(
+        self,
+        collection_id: str,
+        object_id: str,
+        limit: Optional[int] = None,
+        added_after: Optional[datetime.datetime] = None,
+        next_kwargs: Optional[Dict] = None,
+        match_spec_version: Optional[List[str]] = None,
+    ) -> Tuple[List[VersionRecord], bool]:
+        raise NotImplementedError

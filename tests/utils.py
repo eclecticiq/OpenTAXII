@@ -1,3 +1,6 @@
+import re
+
+import pytest
 from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
 from opentaxii.taxii import entities
@@ -9,6 +12,8 @@ from opentaxii.taxii.http import (HTTP_ACCEPT, HTTP_CONTENT_XML,
 from opentaxii.taxii.utils import get_utc_now
 
 from fixtures import CB_STIX_XML_111, CONTENT, MESSAGE, MESSAGE_ID
+
+JWT_RE = re.compile(r'[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*')
 
 
 def as_tm(version):
@@ -133,3 +138,25 @@ class conditional:
     def __exit__(self, *args):
         if self.condition:
             return self.contextmanager.__exit__(*args)
+
+
+class conditional_raises(conditional):
+    """
+    Assert if wrapped code raises, but only when given an exception class
+    """
+
+    def __init__(self, condition):
+        if condition:
+            contextmanager = pytest.raises(condition)
+        else:
+            contextmanager = None
+        super().__init__(condition, contextmanager)
+
+
+def assert_str_equal_no_formatting(str1, str2):
+    if "JWT_TOKEN" in str2:
+        jwt_token = JWT_RE.findall(str1)[0]
+        str2 = str2.replace("JWT_TOKEN", jwt_token)
+    assert "".join([part.strip() for part in str1.split()]) == "".join(
+        [part.strip() for part in str2.split()]
+    )
