@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, abort
+from flask import Blueprint, abort, jsonify, request
 
 from .local import context
 
@@ -7,7 +7,7 @@ management = Blueprint('management', __name__)
 
 @management.route('/auth', methods=['POST'])
 def auth():
-    data = request.get_json() or request.form
+    data = request.get_json(silent=True) or request.form
 
     username = data.get('username')
     password = data.get('password')
