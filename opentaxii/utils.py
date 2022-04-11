@@ -2,6 +2,7 @@ import base64
 import binascii
 import functools
 import importlib
+import inspect
 import logging
 import re
 import sys
@@ -36,7 +37,7 @@ def initialize_api(api_config):
     cls = import_class(class_name)
     params = api_config.get("parameters", None)
 
-    if params:
+    if params and inspect.signature(cls).parameters:
         instance = cls(**params)
     else:
         instance = cls()
