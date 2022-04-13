@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.3.0a4 (2022-04-13)
+--------------------
+* Merge changes from 0.2.4 maintenance release
+
 0.3.0a3 (2022-01-21)
 --------------------
 * Fix bug that prevented booting with only taxii1 config (`#217 <https://github.com/eclecticiq/OpenTAXII/issues/217>`_ thanks `@azurekid <https://github.com/azurekid>`_ for the report)
@@ -17,6 +21,10 @@ Changelog
 -------
 * Enablement for future taxii2 implementation
 * Fix documentation build issues
+
+0.2.4 (2022-04-13)
+------------------
+* Make sure werkzeug <2.1 and >=2.1 work correctly with auth system
 
 0.2.3 (2021-12-22)
 ------------------
