@@ -57,7 +57,12 @@ class ServerConfig(dict):
         "unauthorized_status",
         "hooks",
     )
-    VALID_TAXII2_OPTIONS = ("max_content_length",)
+    VALID_TAXII2_OPTIONS = (
+        "contact",
+        "description",
+        "max_content_length",
+        "title",
+    )
     ALL_VALID_OPTIONS = VALID_BASE_OPTIONS + VALID_TAXII_OPTIONS + VALID_TAXII1_OPTIONS
 
     def __init__(self, optional_env_var=CONFIG_ENV_VAR, extra_configs=None):
@@ -71,7 +76,7 @@ class ServerConfig(dict):
         if env_var_path:
             configs.append(env_var_path)
         # 1. config built from env vars
-        configs.append(self._get_env_config())
+        configs.append(self._get_env_config(optional_env_var=optional_env_var))
 
         options = self._load_configs(*configs)
         options = self._clean_options(options)
@@ -85,10 +90,12 @@ class ServerConfig(dict):
         super(ServerConfig, self).__init__(options)
 
     @staticmethod
-    def _get_env_config(env=os.environ):
+    def _get_env_config(env=os.environ, optional_env_var=None):
         result = _infinite_dict()
         for key, value in env.items():
             if not key.startswith(ENV_VAR_PREFIX):
+                continue
+            if key == optional_env_var:
                 continue
             key = key[len(ENV_VAR_PREFIX):].lstrip("_").lower()
             value = yaml.safe_load(value)

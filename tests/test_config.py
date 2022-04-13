@@ -205,7 +205,10 @@ COMBINED_ENVVARS = {
     },
     "expected": {
         "taxii1": {"persistence_api": {"class": "something.Else", "other": 1}},
-        "taxii2": {"persistence_api": {"class": "something.Else2", "other": 2}, "max_content_length": 1024},
+        "taxii2": {
+            "persistence_api": {"class": "something.Else2", "other": 2},
+            "max_content_length": 1024,
+        },
     },
 }
 TAXII2_ENVVARS = {
@@ -215,7 +218,10 @@ TAXII2_ENVVARS = {
         "OPENTAXII__TAXII2__MAX_CONTENT_LENGTH": "1024",
     },
     "expected": {
-        "taxii2": {"persistence_api": {"class": "something.Else2", "other": 2}, "max_content_length": 1024},
+        "taxii2": {
+            "persistence_api": {"class": "something.Else2", "other": 2},
+            "max_content_length": 1024,
+        },
     },
 }
 

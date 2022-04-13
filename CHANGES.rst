@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.3.0 (2022-04-13)
+------------------
+* Implement taxii2.1 support
+
 0.3.0a4 (2022-04-13)
 --------------------
 * Merge changes from 0.2.4 maintenance release

@@ -41,6 +41,9 @@ setup(
             'opentaxii-update-account = opentaxii.cli.auth:update_account',
             'opentaxii-sync-data = opentaxii.cli.persistence:sync_data_configuration',
             'opentaxii-delete-blocks = opentaxii.cli.persistence:delete_content_blocks',
+            'opentaxii-add-api-root = opentaxii.cli.persistence:add_api_root',
+            'opentaxii-add-collection = opentaxii.cli.persistence:add_collection',
+            'opentaxii-job-cleanup = opentaxii.cli.persistence:job_cleanup',
         ]
     },
     install_requires=install_requires,

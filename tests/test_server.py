@@ -42,13 +42,13 @@ INTERNAL_SERVICES = [INBOX, DISCOVERY]
 SERVICES = INTERNAL_SERVICES + [DISCOVERY_EXTERNAL]
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def local_services(server):
     for service in SERVICES:
         server.servers.taxii1.persistence.update_service(dict_to_service_entity(service))
 
 
-def test_services_configured(server):
+def test_services_configured(server, local_services):
     assert len(server.servers.taxii1.get_services()) == len(SERVICES)
 
     with_paths = [
@@ -77,7 +77,8 @@ def test_taxii2_configured(server):
     )
 
 
-def test_multithreaded_access(server):
+@pytest.mark.truncate()
+def test_multithreaded_access(server, local_services):
 
     def testfunc():
         server.servers.taxii1.get_services()
