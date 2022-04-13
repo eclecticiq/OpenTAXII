@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.2.4 (2022-04-13)
+------------------
+* Make sure werkzeug <2.1 and >=2.1 work correctly with auth system
+
 0.2.3 (2021-12-22)
 ------------------
 * Fix bug in multithreaded use of sqlite (`#210 <https://github.com/eclecticiq/OpenTAXII/issues/114>`_ thanks `@rohits144 <https://github.com/rohits144>`_ for the report)

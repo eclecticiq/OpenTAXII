@@ -1,4 +1,5 @@
-from flask import _app_ctx_stack
+from threading import get_ident
+
 from sqlalchemy import engine, orm
 from sqlalchemy.orm.exc import UnmappedClassError
 
@@ -44,11 +45,10 @@ class SQLAlchemyDB(object):
 
         options = options or {}
 
-        scopefunc = _app_ctx_stack.__ident_func__
         options.setdefault('query_cls', self.Query)
 
         return orm.scoped_session(
-            self.create_session(options), scopefunc=scopefunc)
+            self.create_session(options), scopefunc=get_ident)
 
     def create_session(self, options):
         return orm.sessionmaker(bind=self.engine, **options)
