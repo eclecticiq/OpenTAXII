@@ -5,10 +5,11 @@ from urllib.parse import urlencode
 from uuid import uuid4
 
 import pytest
-from opentaxii.taxii2.utils import get_next_param, taxii2_datetimeformat
+from opentaxii.taxii2.utils import taxii2_datetimeformat
 from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
                                 GET_COLLECTION_MOCK, GET_JOB_AND_DETAILS_MOCK,
-                                GET_OBJECTS_MOCK, JOBS, NOW, STIX_OBJECTS)
+                                GET_NEXT_PARAM, GET_OBJECTS_MOCK, JOBS, NOW,
+                                STIX_OBJECTS)
 
 
 @pytest.mark.parametrize(
@@ -160,7 +161,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             },
             {
                 "more": True,
-                "next": get_next_param(STIX_OBJECTS[0]).decode(),
+                "next": GET_NEXT_PARAM({"id": STIX_OBJECTS[0].id, "date_added": STIX_OBJECTS[0].date_added}),
                 "objects": [
                     {
                         "id": obj.id,
@@ -254,7 +255,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             {"Accept": "application/taxii+json;version=2.1"},
             API_ROOTS[0].id,
             COLLECTIONS[5].id,
-            {"next": get_next_param(STIX_OBJECTS[0])},
+            {"next": GET_NEXT_PARAM({"id": STIX_OBJECTS[0].id, "date_added": STIX_OBJECTS[0].date_added})},
             {},
             200,
             {

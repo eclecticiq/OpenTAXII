@@ -3,8 +3,9 @@ import datetime
 import json
 
 from marshmallow import Schema, fields
+from opentaxii.persistence.api import OpenTAXII2PersistenceAPI
 from opentaxii.taxii2.exceptions import ValidationError
-from opentaxii.taxii2.utils import DATETIMEFORMAT, parse_next_param
+from opentaxii.taxii2.utils import DATETIMEFORMAT
 from stix2 import parse
 from stix2.exceptions import STIXError
 from werkzeug.datastructures import ImmutableMultiDict
@@ -50,7 +51,7 @@ class Taxii2Next(fields.Field):
     def _deserialize(self, value, attr, data, **kwargs):
         value = super()._deserialize(value, attr, data, **kwargs)
         try:
-            value = parse_next_param(value)
+            value = self.parent.persistence_api.parse_next_param(value)
         except:  # noqa
             raise ValidationError("Not a valid value.")
         return value
@@ -61,7 +62,7 @@ class Taxii2Filter(fields.Field):
 
     def _deserialize(self, value, attr, data, **kwargs):
         value = super()._deserialize(value, attr, data, **kwargs)
-        return value.split(',')
+        return value.split(",")
 
 
 class Taxii2VersionFilter(Taxii2Filter):
@@ -73,14 +74,23 @@ class Taxii2VersionFilter(Taxii2Filter):
         for value in values:
             if value not in ["first", "last", "all"]:
                 try:
-                    value = datetime.datetime.strptime(value, DATETIMEFORMAT).replace(tzinfo=datetime.timezone.utc)
+                    value = datetime.datetime.strptime(value, DATETIMEFORMAT).replace(
+                        tzinfo=datetime.timezone.utc
+                    )
                 except ValueError:
                     pass
             new_values.append(value)
         return new_values
 
 
-class VersionFilterParamsSchema(Schema):
+class PersistenceApiMxin:
+    """Store persistence api on schema instance, to reference in `Taxii2Next`"""
+    def __init__(self, persistence_api: OpenTAXII2PersistenceAPI, *args, **kwargs):
+        self.persistence_api = persistence_api
+        super().__init__(*args, **kwargs)
+
+
+class VersionFilterParamsSchema(PersistenceApiMxin, Schema):
     """Schema for the versions endpoint filters."""
 
     limit = fields.Int()
@@ -89,7 +99,7 @@ class VersionFilterParamsSchema(Schema):
     match_spec_version = Taxii2Filter(data_key="match[spec_version]")
 
 
-class ObjectFilterParamsSchema(Schema):
+class ObjectFilterParamsSchema(PersistenceApiMxin, Schema):
     """Schema for the object endpoint filters."""
 
     limit = fields.Int()
@@ -99,7 +109,7 @@ class ObjectFilterParamsSchema(Schema):
     match_version = Taxii2VersionFilter(data_key="match[version]")
 
 
-class ListFilterParamsSchema(Schema):
+class ListFilterParamsSchema(PersistenceApiMxin, Schema):
     """Schema for the object list endpoint filters."""
 
     limit = fields.Int()
@@ -118,21 +128,27 @@ class DeleteFilterParamsSchema(Schema):
     match_spec_version = Taxii2Filter(data_key="match[spec_version]")
 
 
-def validate_object_filter_params(filter_params: ImmutableMultiDict) -> dict:
+def validate_object_filter_params(
+    filter_params: ImmutableMultiDict, persistence_api: OpenTAXII2PersistenceAPI
+) -> dict:
     """Validate and load filter params for the object endpoint."""
-    parsed_params = ObjectFilterParamsSchema().load(filter_params)
+    parsed_params = ObjectFilterParamsSchema(persistence_api).load(filter_params)
     return parsed_params
 
 
-def validate_list_filter_params(filter_params: ImmutableMultiDict) -> dict:
+def validate_list_filter_params(
+    filter_params: ImmutableMultiDict, persistence_api: OpenTAXII2PersistenceAPI
+) -> dict:
     """Validate and load filter params for the list endpoint."""
-    parsed_params = ListFilterParamsSchema().load(filter_params)
+    parsed_params = ListFilterParamsSchema(persistence_api).load(filter_params)
     return parsed_params
 
 
-def validate_versions_filter_params(filter_params: ImmutableMultiDict) -> dict:
+def validate_versions_filter_params(
+    filter_params: ImmutableMultiDict, persistence_api: OpenTAXII2PersistenceAPI
+) -> dict:
     """Validate and load filter params for the versions endpoint."""
-    parsed_params = ListFilterParamsSchema().load(filter_params)
+    parsed_params = VersionFilterParamsSchema(persistence_api).load(filter_params)
     return parsed_params
 
 

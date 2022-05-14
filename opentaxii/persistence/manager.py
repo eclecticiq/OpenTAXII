@@ -500,7 +500,7 @@ class Taxii2PersistenceManager(BasePersistenceManager):
         match_type: Optional[List[str]] = None,
         match_version: Optional[List[str]] = None,
         match_spec_version: Optional[List[str]] = None,
-    ) -> Tuple[List[STIXObject], bool]:
+    ) -> Tuple[List[STIXObject], bool, Optional[str]]:
         collection = self.get_collection(
             api_root_id=api_root_id, collection_id_or_alias=collection_id_or_alias
         )
@@ -546,13 +546,13 @@ class Taxii2PersistenceManager(BasePersistenceManager):
         next_kwargs: Optional[Dict] = None,
         match_version: Optional[List[str]] = None,
         match_spec_version: Optional[List[str]] = None,
-    ) -> Tuple[List[STIXObject], bool]:
+    ) -> Tuple[List[STIXObject], bool, Optional[str]]:
         collection = self.get_collection(
             api_root_id=api_root_id, collection_id_or_alias=collection_id_or_alias
         )
         if not collection.can_read(context.account):
             raise NoReadPermission()
-        versions, more = self.api.get_object(
+        versions, more, next_param = self.api.get_object(
             collection_id=collection.id,
             object_id=object_id,
             limit=limit,
@@ -563,7 +563,7 @@ class Taxii2PersistenceManager(BasePersistenceManager):
         )
         if versions is None:
             raise DoesNotExistError()
-        return (versions, more)
+        return (versions, more, next_param)
 
     def delete_object(
         self,

@@ -1,3 +1,4 @@
+import base64
 import datetime
 import json
 import uuid
@@ -484,6 +485,31 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
 class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
     BASEMODEL = taxii2models.Base
 
+    @staticmethod
+    def get_next_param(kwargs: Dict) -> str:
+        """
+        Get value for `next` based on :class:`Dict` instance.
+
+        :param :class:`Dict` kwargs: The dict to base the `next` param on
+
+        :return: The value to use as `next` param
+        :rtype: str
+        """
+        return base64.b64encode(
+            f"{kwargs['date_added'].isoformat()}|{kwargs['id']}".encode("utf-8")
+        ).decode()
+
+    @staticmethod
+    def parse_next_param(next_param: str) -> Dict:
+        """
+        Parse provided `next_param` into kwargs to be used to filter stix objects.
+        """
+        date_added_str, obj_id = base64.b64decode(next_param.encode()).decode().split("|")
+        date_added = datetime.datetime.strptime(
+            date_added_str.split('+')[0], "%Y-%m-%dT%H:%M:%S.%f"
+        ).replace(tzinfo=datetime.timezone.utc)
+        return {"id": obj_id, "date_added": date_added}
+
     def get_api_roots(self) -> List[entities.ApiRoot]:
         query = self.db.session.query(taxii2models.ApiRoot).order_by("title")
         return [
@@ -875,7 +901,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         match_type: Optional[List[str]] = None,
         match_version: Optional[List[str]] = None,
         match_spec_version: Optional[List[str]] = None,
-    ) -> Tuple[List[entities.STIXObject], bool]:
+    ) -> Tuple[List[entities.STIXObject], bool, Optional[str]]:
         query, more = self._filtered_objects_query(
             collection_id=collection_id,
             limit=limit,
@@ -886,6 +912,13 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             match_version=match_version,
             match_spec_version=match_spec_version,
         )
+        items = query.all()
+        if more:
+            next_param = self.get_next_param(
+                {"id": items[-1].id, "date_added": items[-1].date_added}
+            )
+        else:
+            next_param = None
         return (
             [
                 entities.STIXObject(
@@ -897,9 +930,10 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
                     version=obj.version,
                     serialized_data=obj.serialized_data,
                 )
-                for obj in query.all()
+                for obj in items
             ],
             more,
+            next_param,
         )
 
     def add_objects(
@@ -987,7 +1021,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         next_kwargs: Optional[Dict] = None,
         match_version: Optional[List[str]] = None,
         match_spec_version: Optional[List[str]] = None,
-    ) -> Tuple[Optional[List[entities.STIXObject]], bool]:
+    ) -> Tuple[Optional[List[entities.STIXObject]], bool, Optional[str]]:
         """
         Get all versions of single object from database.
 
@@ -1005,7 +1039,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             )
             .scalar()
         ):
-            return (None, False)
+            return (None, False, None)
         query, more = self._filtered_objects_query(
             collection_id=collection_id,
             limit=limit,
@@ -1015,6 +1049,13 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             match_version=match_version,
             match_spec_version=match_spec_version,
         )
+        items = query.all()
+        if more:
+            next_param = self.get_next_param(
+                {"id": items[-1].id, "date_added": items[-1].date_added}
+            )
+        else:
+            next_param = None
         return (
             [
                 entities.STIXObject(
@@ -1026,9 +1067,10 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
                     version=obj.version,
                     serialized_data=obj.serialized_data,
                 )
-                for obj in query.all()
+                for obj in items
             ],
             more,
+            next_param,
         )
 
     def delete_object(

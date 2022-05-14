@@ -5,9 +5,10 @@ from urllib.parse import urlencode
 from uuid import uuid4
 
 import pytest
-from opentaxii.taxii2.utils import get_next_param, taxii2_datetimeformat
+from opentaxii.taxii2.utils import taxii2_datetimeformat
 from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, GET_COLLECTION_MOCK,
-                                GET_MANIFEST_MOCK, NOW, STIX_OBJECTS)
+                                GET_MANIFEST_MOCK, GET_NEXT_PARAM, NOW,
+                                STIX_OBJECTS)
 
 
 @pytest.mark.parametrize(
@@ -233,7 +234,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, GET_COLLECTION_MOCK,
             {"Accept": "application/taxii+json;version=2.1"},
             API_ROOTS[0].id,
             COLLECTIONS[5].id,
-            {"next": get_next_param(STIX_OBJECTS[0])},
+            {"next": GET_NEXT_PARAM({"id": STIX_OBJECTS[0].id, "date_added": STIX_OBJECTS[0].date_added})},
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",

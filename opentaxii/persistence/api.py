@@ -267,8 +267,29 @@ class OpenTAXII2PersistenceAPI:
 
     Stub, pending implementation.
     """
+    @staticmethod
+    def get_next_param(self, kwargs: Dict) -> str:
+        """
+        Get value for `next` based on :class:`Dict` instance.
+
+        :param :class:`Dict` kwargs: The dict to base the `next` param on
+
+        :return: The value to use as `next` param
+        :rtype: str
+        """
+        raise NotImplementedError
+
+    @staticmethod
+    def parse_next_param(next_param: str) -> Dict:
+        """
+        Parse provided `next_param` into kwargs to be used to filter stix objects.
+        """
+        raise NotImplementedError
 
     def get_api_roots(self) -> List[ApiRoot]:
+        """
+        Parse provided `next_param` into kwargs to be used to filter stix objects.
+        """
         raise NotImplementedError
 
     def get_api_root(self, api_root_id: str) -> Optional[ApiRoot]:
@@ -310,7 +331,7 @@ class OpenTAXII2PersistenceAPI:
         match_type: Optional[List[str]] = None,
         match_version: Optional[List[str]] = None,
         match_spec_version: Optional[List[str]] = None,
-    ) -> Tuple[List[STIXObject], bool]:
+    ) -> Tuple[List[STIXObject], bool, Optional[str]]:
         raise NotImplementedError
 
     def add_objects(self, api_root_id: str, collection_id: str, objects: List[Dict]) -> Tuple[Job, List[JobDetail]]:
@@ -325,7 +346,7 @@ class OpenTAXII2PersistenceAPI:
         next_kwargs: Optional[Dict] = None,
         match_version: Optional[List[str]] = None,
         match_spec_version: Optional[List[str]] = None,
-    ) -> Tuple[Optional[List[STIXObject]], bool]:
+    ) -> Tuple[Optional[List[STIXObject]], bool, Optional[str]]:
         """
         Get all versions of single object from database.
 
