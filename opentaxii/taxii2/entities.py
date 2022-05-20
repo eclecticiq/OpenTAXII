@@ -173,7 +173,15 @@ class JobDetail(Entity):
     :param str status: status of this job
     """
 
-    def __init__(self, id: str, job_id: str, stix_id: str, version: datetime, message: str, status: str):
+    def __init__(
+        self,
+        id: str,
+        job_id: str,
+        stix_id: str,
+        version: datetime,
+        message: str,
+        status: str,
+    ):
         """Initialize JobDetail."""
         self.id = id
         self.job_id = job_id
