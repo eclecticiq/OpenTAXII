@@ -1,5 +1,6 @@
 """Taxii2 entities."""
 from datetime import datetime
+from typing import Optional
 
 from opentaxii.common.entities import Entity
 from opentaxii.entities import Account
@@ -45,13 +46,17 @@ class Collection(Entity):
         self.description = description
         self.alias = alias
 
-    def can_read(self, account: Account):
+    def can_read(self, account: Optional[Account]):
         """Determine if `account` is allowed to read from this collection."""
-        return account.is_admin or "read" in set(account.permissions.get(self.id, []))
+        return account and (
+            account.is_admin or "read" in set(account.permissions.get(self.id, []))
+        )
 
-    def can_write(self, account: Account):
+    def can_write(self, account: Optional[Account]):
         """Determine if `account` is allowed to write to this collection."""
-        return account.is_admin or "write" in set(account.permissions.get(self.id, []))
+        return account and (
+            account.is_admin or "write" in set(account.permissions.get(self.id, []))
+        )
 
 
 class STIXObject(Entity):
@@ -173,7 +178,15 @@ class JobDetail(Entity):
     :param str status: status of this job
     """
 
-    def __init__(self, id: str, job_id: str, stix_id: str, version: datetime, message: str, status: str):
+    def __init__(
+        self,
+        id: str,
+        job_id: str,
+        stix_id: str,
+        version: datetime,
+        message: str,
+        status: str,
+    ):
         """Initialize JobDetail."""
         self.id = id
         self.job_id = job_id

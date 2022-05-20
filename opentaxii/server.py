@@ -19,7 +19,7 @@ from opentaxii.persistence.exceptions import (DoesNotExistError,
                                               NoReadNoWritePermission,
                                               NoReadPermission,
                                               NoWritePermission)
-from opentaxii.taxii2.utils import get_next_param, taxii2_datetimeformat
+from opentaxii.taxii2.utils import taxii2_datetimeformat
 from opentaxii.taxii2.validation import (validate_delete_filter_params,
                                          validate_envelope,
                                          validate_list_filter_params,
@@ -573,7 +573,7 @@ class TAXII2Server(BaseTAXIIServer):
         r"^/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/manifest/$"
     )
     def manifest_handler(self, api_root_id, collection_id_or_alias):
-        filter_params = validate_list_filter_params(request.args)
+        filter_params = validate_list_filter_params(request.args, self.persistence.api)
         try:
             manifest, more = self.persistence.get_manifest(
                 api_root_id=api_root_id,
@@ -623,9 +623,9 @@ class TAXII2Server(BaseTAXIIServer):
             return self.objects_post_handler(api_root_id, collection_id_or_alias)
 
     def objects_get_handler(self, api_root_id, collection_id_or_alias):
-        filter_params = validate_list_filter_params(request.args)
+        filter_params = validate_list_filter_params(request.args, self.persistence.api)
         try:
-            objects, more = self.persistence.get_objects(
+            objects, more, next_param = self.persistence.get_objects(
                 api_root_id=api_root_id,
                 collection_id_or_alias=collection_id_or_alias,
                 **filter_params,
@@ -654,7 +654,7 @@ class TAXII2Server(BaseTAXIIServer):
                 ),
             }
             if more:
-                response["next"] = get_next_param(objects[-1]).decode()
+                response["next"] = next_param
         else:
             response = {}
             headers = {}
@@ -713,9 +713,9 @@ class TAXII2Server(BaseTAXIIServer):
             )
 
     def object_get_handler(self, api_root_id, collection_id_or_alias, object_id):
-        filter_params = validate_object_filter_params(request.args)
+        filter_params = validate_object_filter_params(request.args, self.persistence.api)
         try:
-            versions, more = self.persistence.get_object(
+            versions, more, next_param = self.persistence.get_object(
                 api_root_id=api_root_id,
                 collection_id_or_alias=collection_id_or_alias,
                 object_id=object_id,
@@ -745,7 +745,7 @@ class TAXII2Server(BaseTAXIIServer):
                 ),
             }
             if more:
-                response["next"] = get_next_param(versions[-1]).decode()
+                response["next"] = next_param
         else:
             response = {}
             headers = {}
@@ -776,7 +776,7 @@ class TAXII2Server(BaseTAXIIServer):
         ),
     )
     def versions_handler(self, api_root_id, collection_id_or_alias, object_id):
-        filter_params = validate_versions_filter_params(request.args)
+        filter_params = validate_versions_filter_params(request.args, self.persistence.api)
         try:
             versions, more = self.persistence.get_versions(
                 api_root_id=api_root_id,

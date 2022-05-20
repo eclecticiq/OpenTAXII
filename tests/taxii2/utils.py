@@ -1,3 +1,4 @@
+import base64
 import datetime
 from typing import Dict, List, Optional
 from uuid import uuid4
@@ -22,44 +23,53 @@ NOW = datetime.datetime.now(datetime.timezone.utc)
 JOBS = tuple()
 for api_root in API_ROOTS:
     JOBS = JOBS + (
-        Job(str(uuid4()), api_root.id, "complete", NOW, NOW - datetime.timedelta(hours=24, minutes=1)),
+        Job(
+            str(uuid4()),
+            api_root.id,
+            "complete",
+            NOW,
+            NOW - datetime.timedelta(hours=24, minutes=1),
+        ),
         Job(str(uuid4()), api_root.id, "pending", NOW, None),
     )
 
-JOB_DETAILS_KWARGS = sorted((
-    {
-        "stix_id": "indicator--c410e480-e42b-47d1-9476-85307c12bcbf",
-        "version": datetime.datetime.strptime(
-            "2018-05-27T12:02:41.312Z", DATETIMEFORMAT
-        ).replace(tzinfo=datetime.timezone.utc),
-        "message": "",
-        "status": "success",
-    },
-    {
-        "stix_id": "malware--664fa29d-bf65-4f28-a667-bdb76f29ec98",
-        "version": datetime.datetime.strptime(
-            "2018-05-28T14:03:42.543Z", DATETIMEFORMAT
-        ).replace(tzinfo=datetime.timezone.utc),
-        "message": "Unable to process object",
-        "status": "failure",
-    },
-    {
-        "stix_id": "indicator--252c7c11-daf2-42bd-843b-be65edca9f61",
-        "version": datetime.datetime.strptime(
-            "2018-05-18T20:16:21.148Z", DATETIMEFORMAT
-        ).replace(tzinfo=datetime.timezone.utc),
-        "message": "",
-        "status": "pending",
-    },
-    {
-        "stix_id": "relationship--045585ad-a22f-4333-af33-bfd503a683b5",
-        "version": datetime.datetime.strptime(
-            "2018-05-15T10:13:32.579Z", DATETIMEFORMAT
-        ).replace(tzinfo=datetime.timezone.utc),
-        "message": "",
-        "status": "pending",
-    },
-), key=lambda item: item["stix_id"])
+JOB_DETAILS_KWARGS = sorted(
+    (
+        {
+            "stix_id": "indicator--c410e480-e42b-47d1-9476-85307c12bcbf",
+            "version": datetime.datetime.strptime(
+                "2018-05-27T12:02:41.312Z", DATETIMEFORMAT
+            ).replace(tzinfo=datetime.timezone.utc),
+            "message": "",
+            "status": "success",
+        },
+        {
+            "stix_id": "malware--664fa29d-bf65-4f28-a667-bdb76f29ec98",
+            "version": datetime.datetime.strptime(
+                "2018-05-28T14:03:42.543Z", DATETIMEFORMAT
+            ).replace(tzinfo=datetime.timezone.utc),
+            "message": "Unable to process object",
+            "status": "failure",
+        },
+        {
+            "stix_id": "indicator--252c7c11-daf2-42bd-843b-be65edca9f61",
+            "version": datetime.datetime.strptime(
+                "2018-05-18T20:16:21.148Z", DATETIMEFORMAT
+            ).replace(tzinfo=datetime.timezone.utc),
+            "message": "",
+            "status": "pending",
+        },
+        {
+            "stix_id": "relationship--045585ad-a22f-4333-af33-bfd503a683b5",
+            "version": datetime.datetime.strptime(
+                "2018-05-15T10:13:32.579Z", DATETIMEFORMAT
+            ).replace(tzinfo=datetime.timezone.utc),
+            "message": "",
+            "status": "pending",
+        },
+    ),
+    key=lambda item: item["stix_id"],
+)
 JOB_DETAILS = tuple(
     JobDetail(id=str(uuid4()), job_id=JOBS[0].id, **kwargs)
     for kwargs in JOB_DETAILS_KWARGS
@@ -254,7 +264,7 @@ def GET_MANIFEST_MOCK(
     match_version: Optional[List[str]] = None,
     match_spec_version: Optional[List[str]] = None,
 ):
-    stix_objects, more = GET_OBJECTS_MOCK(
+    stix_objects, more, _ = GET_OBJECTS_MOCK(
         collection_id=collection_id,
         limit=limit,
         added_after=added_after,
@@ -269,6 +279,12 @@ def GET_MANIFEST_MOCK(
         for obj in stix_objects
     ]
     return response, more
+
+
+def GET_NEXT_PARAM(kwargs: Dict) -> str:
+    return base64.b64encode(
+        f"{kwargs['date_added'].isoformat()}|{kwargs['id']}".encode("utf-8")
+    ).decode()
 
 
 def GET_OBJECTS_MOCK(
@@ -311,7 +327,11 @@ def GET_OBJECTS_MOCK(
             ):
                 continue
             response.append(stix_object)
-    return response, more
+    if more:
+        next_param = GET_NEXT_PARAM({"id": response[-1].id, "date_added": response[-1].date_added})
+    else:
+        next_param = None
+    return response, more, next_param
 
 
 def GET_OBJECT_MOCK(
@@ -328,10 +348,7 @@ def GET_OBJECT_MOCK(
     more = False
     at_least_one = False
     for stix_object in STIX_OBJECTS:
-        if (
-            stix_object.collection_id == collection_id
-            and stix_object.id == object_id
-        ):
+        if stix_object.collection_id == collection_id and stix_object.id == object_id:
             at_least_one = True
             if (
                 stix_object.id,
@@ -356,9 +373,13 @@ def GET_OBJECT_MOCK(
             ):
                 continue
             response.append(stix_object)
+    if more:
+        next_param = GET_NEXT_PARAM({"id": response[-1].id, "date_added": response[-1].date_added})
+    else:
+        next_param = None
     if not at_least_one:
         response = None
-    return response, more
+    return response, more, next_param
 
 
 def ADD_OBJECTS_MOCK(api_root_id: str, collection_id: str, objects: List[Dict]):
@@ -382,7 +403,7 @@ def GET_VERSIONS_MOCK(
     next_kwargs: Optional[Dict] = None,
     match_spec_version: Optional[List[str]] = None,
 ):
-    versions, more = GET_OBJECT_MOCK(
+    versions, more, _ = GET_OBJECT_MOCK(
         collection_id=collection_id,
         object_id=object_id,
         limit=limit,
