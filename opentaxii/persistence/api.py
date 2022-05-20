@@ -348,7 +348,7 @@ class OpenTAXII2PersistenceAPI:
         match_spec_version: Optional[List[str]] = None,
     ) -> Tuple[Optional[List[STIXObject]], bool, Optional[str]]:
         """
-        Get all versions of single object from database.
+        Get single object from database.
 
         Should return `None` when object matching object_id doesn't exist.
         """
@@ -372,4 +372,9 @@ class OpenTAXII2PersistenceAPI:
         next_kwargs: Optional[Dict] = None,
         match_spec_version: Optional[List[str]] = None,
     ) -> Tuple[List[VersionRecord], bool]:
+        """
+        Get all versions of single object from database.
+
+        Should return `None` when object matching object_id doesn't exist.
+        """
         raise NotImplementedError

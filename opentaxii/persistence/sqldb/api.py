@@ -1023,7 +1023,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         match_spec_version: Optional[List[str]] = None,
     ) -> Tuple[Optional[List[entities.STIXObject]], bool, Optional[str]]:
         """
-        Get all versions of single object from database.
+        Get single object from database.
 
         Should return `None` when object matching object_id doesn't exist.
         """
@@ -1100,6 +1100,11 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         next_kwargs: Optional[Dict] = None,
         match_spec_version: Optional[List[str]] = None,
     ) -> Tuple[List[entities.VersionRecord], bool]:
+        """
+        Get all versions of single object from database.
+
+        Should return `None` when object matching object_id doesn't exist.
+        """
         if (
             not self.db.session.query(literal(True))
             .filter(
