@@ -351,6 +351,7 @@ def test_add_api_root(
                 "title": "my new collection",
                 "description": None,
                 "alias": None,
+                "is_public": False,
             },  # expected_call
             id="rootid, title only",
         ),
@@ -372,6 +373,7 @@ def test_add_api_root(
                 "title": "my new collection",
                 "description": "my description",
                 "alias": None,
+                "is_public": False,
             },  # expected_call
             id="rootid, title, description",
         ),
@@ -395,8 +397,24 @@ def test_add_api_root(
                 "title": "my new collection",
                 "description": "my description",
                 "alias": "my-alias",
+                "is_public": False,
             },  # expected_call
             id="rootid, title, description, alias",
+        ),
+        pytest.param(
+            ["-r", API_ROOTS[0].id, "-t", "my new collection", "--public"],  # argv
+            False,  # raises
+            None,  # message
+            "",  # stdout
+            "",  # stderr
+            {
+                "api_root_id": API_ROOTS[0].id,
+                "title": "my new collection",
+                "description": None,
+                "alias": None,
+                "is_public": True,
+            },  # expected_call
+            id="rootid, titlei, public",
         ),
         pytest.param(
             ["-r", "fake-uuid", "-t", "my new collection"],  # argv
@@ -411,6 +429,7 @@ def test_add_api_root(
                     "-t TITLE",
                     "[-d DESCRIPTION]",
                     "[-a ALIAS]",
+                    "[--public]",
                     ": error: argument -r/--rootid: invalid choice: 'fake-uuid'",
                     "(choose from WRAPPED_ROOTIDS)",
                 ]
@@ -431,6 +450,7 @@ def test_add_api_root(
                     "-t TITLE",
                     "[-d DESCRIPTION]",
                     "[-a ALIAS]",
+                    "[--public]",
                     ": error: the following arguments are required: -r/--rootid, -t/--title",
                 ]
             ),

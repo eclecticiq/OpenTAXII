@@ -316,6 +316,7 @@ def register_handler(
     valid_methods: Optional[Tuple[str]] = None,
     valid_accept_mimetypes: Optional[Tuple[str]] = None,
     valid_content_types: Optional[Tuple[str]] = None,
+    handles_own_auth: bool = False,
 ):
     """
     Register decorated method as handler function for `url_re`.
@@ -345,6 +346,7 @@ def register_handler(
         inner.registered_valid_methods = valid_methods
         inner.registered_valid_accept_mimetypes = valid_accept_mimetypes
         inner.registered_valid_content_types = valid_content_types
+        inner.handles_own_auth = handles_own_auth
         return inner
 
     return inner_decorator

@@ -203,7 +203,9 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, DELETE_OBJECT_MOCK,
             },
             {
                 "more": True,
-                "next": GET_NEXT_PARAM({"id": STIX_OBJECTS[0].id, "date_added": STIX_OBJECTS[0].date_added}),
+                "next": GET_NEXT_PARAM(
+                    {"id": STIX_OBJECTS[0].id, "date_added": STIX_OBJECTS[0].date_added}
+                ),
                 "objects": [
                     {
                         "id": obj.id,
@@ -299,7 +301,11 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, DELETE_OBJECT_MOCK,
             API_ROOTS[0].id,
             COLLECTIONS[5].id,
             STIX_OBJECTS[0].id,
-            {"next": GET_NEXT_PARAM({"id": STIX_OBJECTS[0].id, "date_added": STIX_OBJECTS[0].date_added})},
+            {
+                "next": GET_NEXT_PARAM(
+                    {"id": STIX_OBJECTS[0].id, "date_added": STIX_OBJECTS[0].date_added}
+                )
+            },
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -314,7 +320,9 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, DELETE_OBJECT_MOCK,
             COLLECTIONS[5].id,
             STIX_OBJECTS[0].id,
             {
-                "next": GET_NEXT_PARAM({"id": STIX_OBJECTS[0].id, "date_added": STIX_OBJECTS[0].date_added}),
+                "next": GET_NEXT_PARAM(
+                    {"id": STIX_OBJECTS[0].id, "date_added": STIX_OBJECTS[0].date_added}
+                ),
                 "match[version]": "all",
             },
             200,
@@ -853,13 +861,43 @@ def test_object(
     assert content == expected_content
 
 
+@pytest.mark.parametrize("is_public", [True, False])
 @pytest.mark.parametrize("method", ["get", "post", "delete"])
 def test_object_unauthenticated(
     client,
     method,
+    is_public,
 ):
-    func = getattr(client, method)
-    response = func(
-        f"/{API_ROOTS[0].id}/collections/{COLLECTIONS[5].id}/objects/{STIX_OBJECTS[0].id}/"
-    )
-    assert response.status_code == 401
+    if is_public:
+        collection_id = COLLECTIONS[6].id
+        stix_id = STIX_OBJECTS[4].id
+        if method == "get":
+            expected_status_code = 200
+        elif method == "delete":
+            expected_status_code = 401
+        else:
+            expected_status_code = 405
+    else:
+        collection_id = COLLECTIONS[0].id
+        stix_id = STIX_OBJECTS[0].id
+        if method == "get":
+            expected_status_code = 401
+        elif method == "delete":
+            expected_status_code = 401
+        else:
+            expected_status_code = 405
+    with patch.object(
+        client.application.taxii_server.servers.taxii2.persistence.api,
+        "get_object",
+        side_effect=GET_OBJECT_MOCK,
+    ), patch.object(
+        client.application.taxii_server.servers.taxii2.persistence.api,
+        "get_collection",
+        side_effect=GET_COLLECTION_MOCK,
+    ):
+        func = getattr(client, method)
+        response = func(
+            f"/{API_ROOTS[0].id}/collections/{collection_id}/objects/{stix_id}/",
+            headers={"Accept": "application/taxii+json;version=2.1"},
+        )
+    assert response.status_code == expected_status_code

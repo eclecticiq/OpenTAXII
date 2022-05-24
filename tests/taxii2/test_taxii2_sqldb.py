@@ -147,7 +147,9 @@ def test_get_collections(taxii2_sqldb_api, db_collections, api_root_id):
         ),
     ],
 )
-def test_get_collection(taxii2_sqldb_api, db_collections, api_root_id, collection_id_or_alias):
+def test_get_collection(
+    taxii2_sqldb_api, db_collections, api_root_id, collection_id_or_alias
+):
     response = taxii2_sqldb_api.get_collection(api_root_id, collection_id_or_alias)
     assert response == GET_COLLECTION_MOCK(api_root_id, collection_id_or_alias)
 
@@ -223,7 +225,10 @@ def test_get_collection(taxii2_sqldb_api, db_collections, api_root_id, collectio
             COLLECTIONS[5].id,  # collection_id
             None,  # limit
             None,  # added_after
-            {"id": STIX_OBJECTS[0].id, "date_added": STIX_OBJECTS[0].date_added},  # next_kwargs
+            {
+                "id": STIX_OBJECTS[0].id,
+                "date_added": STIX_OBJECTS[0].date_added,
+            },  # next_kwargs
             None,  # match_id
             None,  # match_type
             None,  # match_version
@@ -516,7 +521,10 @@ def test_get_manifest(
             COLLECTIONS[5].id,  # collection_id
             None,  # limit
             None,  # added_after
-            {"id": STIX_OBJECTS[0].id, "date_added": STIX_OBJECTS[0].date_added},  # next_kwargs
+            {
+                "id": STIX_OBJECTS[0].id,
+                "date_added": STIX_OBJECTS[0].date_added,
+            },  # next_kwargs
             None,  # match_id
             None,  # match_type
             None,  # match_version
@@ -996,7 +1004,10 @@ def test_add_objects(
             STIX_OBJECTS[0].id,  # object_id
             None,  # limit
             None,  # added_after
-            {"id": STIX_OBJECTS[0].id, "date_added": STIX_OBJECTS[0].date_added},  # next_kwargs
+            {
+                "id": STIX_OBJECTS[0].id,
+                "date_added": STIX_OBJECTS[0].date_added,
+            },  # next_kwargs
             None,  # match_version
             None,  # match_spec_version
             id="next",
@@ -1006,7 +1017,10 @@ def test_add_objects(
             STIX_OBJECTS[0].id,  # object_id
             None,  # limit
             None,  # added_after
-            {"id": STIX_OBJECTS[0].id, "date_added": STIX_OBJECTS[0].date_added},  # next_kwargs
+            {
+                "id": STIX_OBJECTS[0].id,
+                "date_added": STIX_OBJECTS[0].date_added,
+            },  # next_kwargs
             ["all"],  # match_version
             None,  # match_spec_version
             id="next, all",
@@ -1181,7 +1195,7 @@ def test_get_object(
             STIX_OBJECTS[0].id,  # object_id
             None,  # match_version
             None,  # match_spec_version
-            [STIX_OBJECTS[1], STIX_OBJECTS[3]],  # expected_objects
+            [STIX_OBJECTS[1], STIX_OBJECTS[3], STIX_OBJECTS[4]],  # expected_objects
             id="default",
         ),
         pytest.param(
@@ -1300,7 +1314,10 @@ def test_delete_object(
             STIX_OBJECTS[0].id,  # object_id
             None,  # limit
             None,  # added_after
-            {"id": STIX_OBJECTS[0].id, "date_added": STIX_OBJECTS[0].date_added},  # next_kwargs
+            {
+                "id": STIX_OBJECTS[0].id,
+                "date_added": STIX_OBJECTS[0].date_added,
+            },  # next_kwargs
             None,  # match_spec_version
             id="next",
         ),
@@ -1381,5 +1398,11 @@ def test_get_versions(
     ],
 )
 def test_next_param(taxii2_sqldb_api, stix_id, date_added, next_param):
-    assert taxii2_sqldb_api.get_next_param({"id": stix_id, "date_added": date_added}) == next_param
-    assert taxii2_sqldb_api.parse_next_param(next_param) == {"id": stix_id, "date_added": date_added}
+    assert (
+        taxii2_sqldb_api.get_next_param({"id": stix_id, "date_added": date_added})
+        == next_param
+    )
+    assert taxii2_sqldb_api.parse_next_param(next_param) == {
+        "id": stix_id,
+        "date_added": date_added,
+    }

@@ -76,13 +76,28 @@ JOB_DETAILS = tuple(
 )
 COLLECTIONS = (
     Collection(
-        str(uuid4()), API_ROOTS[0].id, "0Read only", "Read only description", None
+        str(uuid4()),
+        API_ROOTS[0].id,
+        "0Read only",
+        "Read only description",
+        None,
+        False,
     ),
     Collection(
-        str(uuid4()), API_ROOTS[0].id, "1Write only", "Write only description", None
+        str(uuid4()),
+        API_ROOTS[0].id,
+        "1Write only",
+        "Write only description",
+        None,
+        False,
     ),
     Collection(
-        str(uuid4()), API_ROOTS[0].id, "2Read/Write", "Read/Write description", None
+        str(uuid4()),
+        API_ROOTS[0].id,
+        "2Read/Write",
+        "Read/Write description",
+        None,
+        False,
     ),
     Collection(
         str(uuid4()),
@@ -90,14 +105,24 @@ COLLECTIONS = (
         "3No permissions",
         "No permissions description",
         None,
+        False,
     ),
-    Collection(str(uuid4()), API_ROOTS[0].id, "4No description", "", None),
+    Collection(str(uuid4()), API_ROOTS[0].id, "4No description", "", None, False),
     Collection(
         str(uuid4()),
         API_ROOTS[0].id,
         "5With alias",
         "With alias description",
         "this-is-an-alias",
+        False,
+    ),
+    Collection(
+        str(uuid4()),
+        API_ROOTS[0].id,
+        "6Public",
+        "public description",
+        "",
+        True,
     ),
 )
 STIX_OBJECTS = (
@@ -164,6 +189,26 @@ STIX_OBJECTS = STIX_OBJECTS + (
         COLLECTIONS[1].id,
         "indicator",
         "2.1",
+        NOW,
+        NOW + datetime.timedelta(seconds=1),
+        {
+            "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+            "created": "2016-04-06T20:03:48.000Z",
+            "modified": taxii2_datetimeformat(NOW + datetime.timedelta(seconds=1)),
+            "indicator_types": ["malicious-activity"],
+            "name": "Poison Ivy Malware",
+            "description": "This file is part of Poison Ivy",
+            "pattern": "[ file:hashes.'SHA-256' = "
+            "'4bac27393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f877' ]",
+            "pattern_type": "stix",
+            "valid_from": "2016-01-01T00:00:00Z",
+        },
+    ),
+    STIXObject(
+        f"indicator--{str(uuid4())}",
+        COLLECTIONS[6].id,
+        "indicator",
+        "2.0",
         NOW,
         NOW + datetime.timedelta(seconds=1),
         {
@@ -328,7 +373,9 @@ def GET_OBJECTS_MOCK(
                 continue
             response.append(stix_object)
     if more:
-        next_param = GET_NEXT_PARAM({"id": response[-1].id, "date_added": response[-1].date_added})
+        next_param = GET_NEXT_PARAM(
+            {"id": response[-1].id, "date_added": response[-1].date_added}
+        )
     else:
         next_param = None
     return response, more, next_param
@@ -374,7 +421,9 @@ def GET_OBJECT_MOCK(
                 continue
             response.append(stix_object)
     if more:
-        next_param = GET_NEXT_PARAM({"id": response[-1].id, "date_added": response[-1].date_added})
+        next_param = GET_NEXT_PARAM(
+            {"id": response[-1].id, "date_added": response[-1].date_added}
+        )
     else:
         next_param = None
     if not at_least_one:

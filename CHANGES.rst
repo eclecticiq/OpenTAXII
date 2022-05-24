@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.5.0 (2022-05-24)
+------------------
+* Add support for publicly readable taxii 2 collections
+
 0.4.0 (2022-05-20)
 ------------------
 * Move next_param handling into `OpenTAXII2PersistenceAPI`

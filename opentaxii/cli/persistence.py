@@ -134,6 +134,10 @@ def add_collection():
         "-d", "--description", required=False, help="Description of the collection"
     )
     parser.add_argument("-a", "--alias", required=False, help="alias of the collection")
+    parser.add_argument(
+        "--public", action="store_true", help="allow public read access"
+    )
+    parser.set_defaults(public=False)
 
     args = parser.parse_args()
     with app.app_context():
@@ -142,6 +146,7 @@ def add_collection():
             title=args.title,
             description=args.description,
             alias=args.alias,
+            is_public=args.public,
         )
 
 

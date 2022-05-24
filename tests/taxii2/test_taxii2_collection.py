@@ -204,24 +204,51 @@ def test_collection(
     assert content == expected_content
 
 
+@pytest.mark.parametrize("is_public", [True, False])
 @pytest.mark.parametrize("method", ["get", "post", "delete"])
 def test_collection_unauthenticated(
     client,
     method,
+    is_public,
 ):
-    func = getattr(client, method)
-    response = func(f"/{API_ROOTS[0].id}/collections/{COLLECTIONS[0].id}/")
-    assert response.status_code == 401
+    if is_public:
+        collection_id = COLLECTIONS[6].id
+        if method == "get":
+            expected_status_code = 200
+        else:
+            expected_status_code = 405
+    else:
+        collection_id = COLLECTIONS[0].id
+        if method == "get":
+            expected_status_code = 401
+        else:
+            expected_status_code = 405
+    with patch.object(
+        client.application.taxii_server.servers.taxii2.persistence.api,
+        "get_api_root",
+        side_effect=GET_API_ROOT_MOCK,
+    ), patch.object(
+        client.application.taxii_server.servers.taxii2.persistence.api,
+        "get_collection",
+        side_effect=GET_COLLECTION_MOCK,
+    ):
+        func = getattr(client, method)
+        response = func(
+            f"/{API_ROOTS[0].id}/collections/{collection_id}/",
+            headers={"Accept": "application/taxii+json;version=2.1"},
+        )
+    assert response.status_code == expected_status_code
 
 
 @pytest.mark.parametrize(
-    ["api_root_id", "title", "description", "alias"],
+    ["api_root_id", "title", "description", "alias", "is_public"],
     [
         pytest.param(
             API_ROOTS[0].id,  # api_root_id
             "my new collection",  # title
             None,  # description
             None,  # alias
+            False,  # is_public
             id="api_root_id, title",
         ),
         pytest.param(
@@ -229,6 +256,7 @@ def test_collection_unauthenticated(
             "my new collection",  # title
             "my description",  # description
             None,  # alias
+            True,  # is_public
             id="api_root_id, title, description",
         ),
         pytest.param(
@@ -236,24 +264,27 @@ def test_collection_unauthenticated(
             "my new collection",  # title
             "my description",  # description
             "my-alias",  # alias
+            False,  # is_public
             id="api_root_id, title, description, alias",
         ),
     ],
 )
 def test_add_collection(
-    app, api_root_id, title, description, alias, db_api_roots, db_collections
+    app, api_root_id, title, description, alias, is_public, db_api_roots, db_collections
 ):
     collection = app.taxii_server.servers.taxii2.persistence.api.add_collection(
         api_root_id=api_root_id,
         title=title,
         description=description,
         alias=alias,
+        is_public=is_public,
     )
     assert collection.id is not None
     assert str(collection.api_root_id) == api_root_id
     assert collection.title == title
     assert collection.description == description
     assert collection.alias == alias
+    assert collection.is_public == is_public
     db_collection = (
         app.taxii_server.servers.taxii2.persistence.api.db.session.query(
             taxii2models.Collection
@@ -265,3 +296,4 @@ def test_add_collection(
     assert db_collection.title == title
     assert db_collection.description == description
     assert db_collection.alias == alias
+    assert db_collection.is_public == is_public
