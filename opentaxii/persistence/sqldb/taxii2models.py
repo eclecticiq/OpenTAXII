@@ -118,6 +118,7 @@ class Collection(Base):
     title = sqlalchemy.Column(sqlalchemy.String(100), nullable=False, index=True)
     description = sqlalchemy.Column(sqlalchemy.Text)
     alias = sqlalchemy.Column(sqlalchemy.String(100), nullable=True)
+    is_public = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
 
     api_root = relationship("ApiRoot", back_populates="collections")
     objects = relationship("STIXObject", back_populates="collection")

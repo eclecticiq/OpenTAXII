@@ -1181,7 +1181,7 @@ def test_get_object(
             STIX_OBJECTS[0].id,  # object_id
             None,  # match_version
             None,  # match_spec_version
-            [STIX_OBJECTS[1], STIX_OBJECTS[3]],  # expected_objects
+            [STIX_OBJECTS[1], STIX_OBJECTS[3], STIX_OBJECTS[4]],  # expected_objects
             id="default",
         ),
         pytest.param(

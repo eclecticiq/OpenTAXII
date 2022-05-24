@@ -630,6 +630,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
                 title=obj.title,
                 description=obj.description,
                 alias=obj.alias,
+                is_public=obj.is_public,
             )
             for obj in query.all()
         ]
@@ -660,6 +661,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             title=obj.title,
             description=obj.description,
             alias=obj.alias,
+            is_public=obj.is_public,
         )
 
     def add_collection(
@@ -668,6 +670,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         title: str,
         description: Optional[str] = None,
         alias: Optional[str] = None,
+        is_public: bool = False,
     ) -> entities.Collection:
         """
         Add a new collection.
@@ -676,11 +679,12 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         :param str title: Title of the new collection
         :param str description: [Optional] Description of the new collection
         :param str alias: [Optional] Alias of the new collection
+        :param bool is_public: [Optional] Whether collection should be publicly readable
 
         :return: The added Collection entity.
         """
         collection = taxii2models.Collection(
-            api_root_id=api_root_id, title=title, description=description, alias=alias
+            api_root_id=api_root_id, title=title, description=description, alias=alias, is_public=is_public
         )
         self.db.session.add(collection)
         self.db.session.commit()
@@ -691,6 +695,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             title=collection.title,
             description=collection.description,
             alias=collection.alias,
+            is_public=collection.is_public,
         )
 
     def _objects_query(self, collection_id: str, ordered: bool) -> Query:

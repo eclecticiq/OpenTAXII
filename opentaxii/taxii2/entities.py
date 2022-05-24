@@ -34,10 +34,11 @@ class Collection(Entity):
     :param str title: human readable plain text name used to identify this collection
     :param str description: human readable plain text description for this collection
     :param str alias: human readable collection name that can be used on systems to alias a collection id
+    :param bool is_public: whether this is a publicly readable collection
     """
 
     def __init__(
-        self, id: str, api_root_id: str, title: str, description: str, alias: str
+        self, id: str, api_root_id: str, title: str, description: str, alias: str, is_public: bool
     ):
         """Initialize Collection."""
         self.id = id
@@ -45,12 +46,13 @@ class Collection(Entity):
         self.title = title
         self.description = description
         self.alias = alias
+        self.is_public = is_public
 
     def can_read(self, account: Optional[Account]):
         """Determine if `account` is allowed to read from this collection."""
-        return account and (
+        return self.is_public or ( account and (
             account.is_admin or "read" in set(account.permissions.get(self.id, []))
-        )
+        ) )
 
     def can_write(self, account: Optional[Account]):
         """Determine if `account` is allowed to write to this collection."""

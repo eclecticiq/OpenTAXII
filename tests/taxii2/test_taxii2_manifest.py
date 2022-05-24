@@ -234,7 +234,11 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, GET_COLLECTION_MOCK,
             {"Accept": "application/taxii+json;version=2.1"},
             API_ROOTS[0].id,
             COLLECTIONS[5].id,
-            {"next": GET_NEXT_PARAM({"id": STIX_OBJECTS[0].id, "date_added": STIX_OBJECTS[0].date_added})},
+            {
+                "next": GET_NEXT_PARAM(
+                    {"id": STIX_OBJECTS[0].id, "date_added": STIX_OBJECTS[0].date_added}
+                )
+            },
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -286,9 +290,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, GET_COLLECTION_MOCK,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
                 "X-TAXII-Date-Added-First": taxii2_datetimeformat(NOW),
-                "X-TAXII-Date-Added-Last": taxii2_datetimeformat(
-                    NOW
-                ),
+                "X-TAXII-Date-Added-Last": taxii2_datetimeformat(NOW),
             },
             {
                 "more": False,
@@ -342,9 +344,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, GET_COLLECTION_MOCK,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
                 "X-TAXII-Date-Added-First": taxii2_datetimeformat(NOW),
-                "X-TAXII-Date-Added-Last": taxii2_datetimeformat(
-                    NOW
-                ),
+                "X-TAXII-Date-Added-Last": taxii2_datetimeformat(NOW),
             },
             {
                 "more": False,
@@ -451,8 +451,12 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, GET_COLLECTION_MOCK,
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
-                "X-TAXII-Date-Added-First": taxii2_datetimeformat(NOW + datetime.timedelta(seconds=2)),
-                "X-TAXII-Date-Added-Last": taxii2_datetimeformat(NOW + datetime.timedelta(seconds=3)),
+                "X-TAXII-Date-Added-First": taxii2_datetimeformat(
+                    NOW + datetime.timedelta(seconds=2)
+                ),
+                "X-TAXII-Date-Added-Last": taxii2_datetimeformat(
+                    NOW + datetime.timedelta(seconds=3)
+                ),
             },
             {
                 "more": False,
@@ -739,14 +743,37 @@ def test_manifest(
     assert content == expected_content
 
 
-@pytest.mark.parametrize(
-    "method",
-    ["get", "post", "delete"]
-)
+@pytest.mark.parametrize("is_public", [True, False])
+@pytest.mark.parametrize("method", ["get", "post", "delete"])
 def test_manifest_unauthenticated(
     client,
     method,
+    is_public,
 ):
-    func = getattr(client, method)
-    response = func(f"/{API_ROOTS[0].id}/collections/{COLLECTIONS[5].id}/manifest/")
-    assert response.status_code == 401
+    if is_public:
+        collection_id = COLLECTIONS[6].id
+        if method == "get":
+            expected_status_code = 200
+        else:
+            expected_status_code = 405
+    else:
+        collection_id = COLLECTIONS[0].id
+        if method == "get":
+            expected_status_code = 401
+        else:
+            expected_status_code = 405
+    with patch.object(
+        client.application.taxii_server.servers.taxii2.persistence.api,
+        "get_manifest",
+        side_effect=GET_MANIFEST_MOCK,
+    ), patch.object(
+        client.application.taxii_server.servers.taxii2.persistence.api,
+        "get_collection",
+        side_effect=GET_COLLECTION_MOCK,
+    ):
+        func = getattr(client, method)
+        response = func(
+            f"/{API_ROOTS[0].id}/collections/{collection_id}/manifest/",
+            headers={"Accept": "application/taxii+json;version=2.1"},
+        )
+    assert response.status_code == expected_status_code

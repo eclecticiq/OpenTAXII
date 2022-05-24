@@ -427,7 +427,10 @@ class TAXII2Server(BaseTAXIIServer):
         if endpoint:
             return functools.partial(self.handle_request, endpoint)
 
-    def check_authentication(self):
+    def check_authentication(self, endpoint: Callable[[], Response]):
+        if endpoint.func.handles_own_auth:
+            # Endpoint will handle auth checks itself
+            return
         if context.account is None:
             raise Unauthorized()
 
@@ -458,7 +461,7 @@ class TAXII2Server(BaseTAXIIServer):
             raise MethodNotAllowed(valid_methods=endpoint.func.registered_valid_methods)
 
     def handle_request(self, endpoint: Callable[[], Response]):
-        self.check_authentication()
+        self.check_authentication(endpoint)
         self.check_content_length()
         self.check_allowed_methods(endpoint)
         self.check_headers(endpoint)
@@ -547,7 +550,8 @@ class TAXII2Server(BaseTAXIIServer):
         return make_taxii2_response(response)
 
     @register_handler(
-        r"^/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/$"
+        r"^/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/$",
+        handles_own_auth=True,
     )
     def collection_handler(self, api_root_id, collection_id_or_alias):
         try:
@@ -555,7 +559,11 @@ class TAXII2Server(BaseTAXIIServer):
                 api_root_id=api_root_id, collection_id_or_alias=collection_id_or_alias
             )
         except DoesNotExistError:
+            if context.account is None:
+                raise Unauthorized()
             raise NotFound()
+        if context.account is None and not collection.can_read(context.account):
+            raise Unauthorized()
         response = {
             "id": collection.id,
             "title": collection.title,
@@ -570,7 +578,8 @@ class TAXII2Server(BaseTAXIIServer):
         return make_taxii2_response(response)
 
     @register_handler(
-        r"^/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/manifest/$"
+        r"^/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/manifest/$",
+        handles_own_auth=True,
     )
     def manifest_handler(self, api_root_id, collection_id_or_alias):
         filter_params = validate_list_filter_params(request.args, self.persistence.api)
@@ -581,6 +590,8 @@ class TAXII2Server(BaseTAXIIServer):
                 **filter_params,
             )
         except (DoesNotExistError, NoReadPermission):
+            if context.account is None:
+                raise Unauthorized()
             raise NotFound()
         if manifest:
             response = {
@@ -615,6 +626,7 @@ class TAXII2Server(BaseTAXIIServer):
         r"^/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/objects/$",
         ("GET", "POST"),
         valid_content_types=("application/taxii+json;version=2.1",),
+        handles_own_auth=True,
     )
     def objects_handler(self, api_root_id, collection_id_or_alias):
         if request.method == "GET":
@@ -631,6 +643,8 @@ class TAXII2Server(BaseTAXIIServer):
                 **filter_params,
             )
         except (DoesNotExistError, NoReadPermission):
+            if context.account is None:
+                raise Unauthorized()
             raise NotFound()
         if objects:
             response = {
@@ -672,6 +686,8 @@ class TAXII2Server(BaseTAXIIServer):
                 data=request.get_json(),
             )
         except (DoesNotExistError, NoWritePermission):
+            if context.account is None:
+                raise Unauthorized()
             raise NotFound()
         response = {
             "id": job.id,
@@ -701,6 +717,7 @@ class TAXII2Server(BaseTAXIIServer):
     @register_handler(
         r"^/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/objects/(?P<object_id>[^/]+)/$",
         ("GET", "DELETE"),
+        handles_own_auth=True,
     )
     def object_handler(self, api_root_id, collection_id_or_alias, object_id):
         if request.method == "GET":
@@ -722,6 +739,8 @@ class TAXII2Server(BaseTAXIIServer):
                 **filter_params,
             )
         except (DoesNotExistError, NoReadPermission):
+            if context.account is None:
+                raise Unauthorized()
             raise NotFound()
         if versions:
             response = {
@@ -764,8 +783,12 @@ class TAXII2Server(BaseTAXIIServer):
                 **filter_params,
             )
         except (DoesNotExistError, NoReadNoWritePermission):
+            if context.account is None:
+                raise Unauthorized()
             raise NotFound()
         except (NoReadPermission, NoWritePermission):
+            if context.account is None:
+                raise Unauthorized()
             raise Forbidden()
         return make_taxii2_response("")
 
@@ -774,6 +797,7 @@ class TAXII2Server(BaseTAXIIServer):
             r"^/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)"
             r"/objects/(?P<object_id>[^/]+)/versions/$"
         ),
+        handles_own_auth=True,
     )
     def versions_handler(self, api_root_id, collection_id_or_alias, object_id):
         filter_params = validate_versions_filter_params(request.args, self.persistence.api)
@@ -785,6 +809,8 @@ class TAXII2Server(BaseTAXIIServer):
                 **filter_params,
             )
         except (DoesNotExistError, NoReadPermission):
+            if context.account is None:
+                raise Unauthorized()
             raise NotFound()
         if versions:
             response = {

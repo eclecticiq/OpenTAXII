@@ -161,7 +161,9 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             },
             {
                 "more": True,
-                "next": GET_NEXT_PARAM({"id": STIX_OBJECTS[0].id, "date_added": STIX_OBJECTS[0].date_added}),
+                "next": GET_NEXT_PARAM(
+                    {"id": STIX_OBJECTS[0].id, "date_added": STIX_OBJECTS[0].date_added}
+                ),
                 "objects": [
                     {
                         "id": obj.id,
@@ -255,7 +257,11 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             {"Accept": "application/taxii+json;version=2.1"},
             API_ROOTS[0].id,
             COLLECTIONS[5].id,
-            {"next": GET_NEXT_PARAM({"id": STIX_OBJECTS[0].id, "date_added": STIX_OBJECTS[0].date_added})},
+            {
+                "next": GET_NEXT_PARAM(
+                    {"id": STIX_OBJECTS[0].id, "date_added": STIX_OBJECTS[0].date_added}
+                )
+            },
             {},
             200,
             {
@@ -1062,7 +1068,9 @@ def test_objects(
     assert response.status_code == expected_status
     if method == "post" and expected_status == 202:
         add_objects_mock.assert_called_once_with(
-            api_root_id=API_ROOTS[0].id, collection_id=COLLECTIONS[5].id, objects=post_data["objects"]
+            api_root_id=API_ROOTS[0].id,
+            collection_id=COLLECTIONS[5].id,
+            objects=post_data["objects"],
         )
     else:
         add_objects_mock.assert_not_called()
@@ -1079,11 +1087,67 @@ def test_objects(
     assert content == expected_content
 
 
+@pytest.mark.parametrize("is_public", [True, False])
 @pytest.mark.parametrize("method", ["get", "post", "delete"])
 def test_objects_unauthenticated(
     client,
     method,
+    is_public,
 ):
-    func = getattr(client, method)
-    response = func(f"/{API_ROOTS[0].id}/collections/{COLLECTIONS[5].id}/objects/")
-    assert response.status_code == 401
+    if is_public:
+        collection_id = COLLECTIONS[6].id
+        if method == "get":
+            expected_status_code = 200
+        elif method == "post":
+            expected_status_code = 401
+        else:
+            expected_status_code = 405
+    else:
+        collection_id = COLLECTIONS[0].id
+        if method == "get":
+            expected_status_code = 401
+        elif method == "post":
+            expected_status_code = 401
+        else:
+            expected_status_code = 405
+    with patch.object(
+        client.application.taxii_server.servers.taxii2.persistence.api,
+        "get_objects",
+        side_effect=GET_OBJECTS_MOCK,
+    ), patch.object(
+        client.application.taxii_server.servers.taxii2.persistence.api,
+        "get_collection",
+        side_effect=GET_COLLECTION_MOCK,
+    ):
+        kwargs = {
+            'headers':{
+                "Accept": "application/taxii+json;version=2.1",
+                "Content-Type": "application/taxii+json;version=2.1",
+            }
+        }
+        if method == "post":
+            kwargs["json"] = {
+                "objects": [
+                    {
+                        "type": "indicator",
+                        "spec_version": "2.1",
+                        "id": "indicator--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+                        "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+                        "created": "2016-04-06T20:03:48.000Z",
+                        "modified": "2016-04-06T20:03:48.000Z",
+                        "indicator_types": ["malicious-activity"],
+                        "name": "Poison Ivy Malware",
+                        "description": "This file is part of Poison Ivy",
+                        "pattern": "[ file:hashes.'SHA-256' = "
+                        "'4bac27393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f877' ]",
+                        "pattern_type": "stix",
+                        "valid_from": "2016-01-01T00:00:00Z",
+                    }
+                ]
+            }
+        func = getattr(client, method)
+        response = func(
+            f"/{API_ROOTS[0].id}/collections/{collection_id}/objects/",
+            **kwargs,
+        )
+    assert response.status_code == expected_status_code
