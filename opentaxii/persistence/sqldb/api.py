@@ -504,9 +504,11 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         """
         Parse provided `next_param` into kwargs to be used to filter stix objects.
         """
-        date_added_str, obj_id = base64.b64decode(next_param.encode()).decode().split("|")
+        date_added_str, obj_id = (
+            base64.b64decode(next_param.encode()).decode().split("|")
+        )
         date_added = datetime.datetime.strptime(
-            date_added_str.split('+')[0], "%Y-%m-%dT%H:%M:%S.%f"
+            date_added_str.split("+")[0], "%Y-%m-%dT%H:%M:%S.%f"
         ).replace(tzinfo=datetime.timezone.utc)
         return {"id": obj_id, "date_added": date_added}
 
@@ -684,7 +686,11 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         :return: The added Collection entity.
         """
         collection = taxii2models.Collection(
-            api_root_id=api_root_id, title=title, description=description, alias=alias, is_public=is_public
+            api_root_id=api_root_id,
+            title=title,
+            description=description,
+            alias=alias,
+            is_public=is_public,
         )
         self.db.session.add(collection)
         self.db.session.commit()

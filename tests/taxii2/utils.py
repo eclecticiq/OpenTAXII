@@ -76,13 +76,28 @@ JOB_DETAILS = tuple(
 )
 COLLECTIONS = (
     Collection(
-        str(uuid4()), API_ROOTS[0].id, "0Read only", "Read only description", None, False
+        str(uuid4()),
+        API_ROOTS[0].id,
+        "0Read only",
+        "Read only description",
+        None,
+        False,
     ),
     Collection(
-        str(uuid4()), API_ROOTS[0].id, "1Write only", "Write only description", None, False
+        str(uuid4()),
+        API_ROOTS[0].id,
+        "1Write only",
+        "Write only description",
+        None,
+        False,
     ),
     Collection(
-        str(uuid4()), API_ROOTS[0].id, "2Read/Write", "Read/Write description", None, False
+        str(uuid4()),
+        API_ROOTS[0].id,
+        "2Read/Write",
+        "Read/Write description",
+        None,
+        False,
     ),
     Collection(
         str(uuid4()),
@@ -358,7 +373,9 @@ def GET_OBJECTS_MOCK(
                 continue
             response.append(stix_object)
     if more:
-        next_param = GET_NEXT_PARAM({"id": response[-1].id, "date_added": response[-1].date_added})
+        next_param = GET_NEXT_PARAM(
+            {"id": response[-1].id, "date_added": response[-1].date_added}
+        )
     else:
         next_param = None
     return response, more, next_param
@@ -404,7 +421,9 @@ def GET_OBJECT_MOCK(
                 continue
             response.append(stix_object)
     if more:
-        next_param = GET_NEXT_PARAM({"id": response[-1].id, "date_added": response[-1].date_added})
+        next_param = GET_NEXT_PARAM(
+            {"id": response[-1].id, "date_added": response[-1].date_added}
+        )
     else:
         next_param = None
     if not at_least_one:

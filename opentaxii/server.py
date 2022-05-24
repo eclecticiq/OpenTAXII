@@ -730,7 +730,9 @@ class TAXII2Server(BaseTAXIIServer):
             )
 
     def object_get_handler(self, api_root_id, collection_id_or_alias, object_id):
-        filter_params = validate_object_filter_params(request.args, self.persistence.api)
+        filter_params = validate_object_filter_params(
+            request.args, self.persistence.api
+        )
         try:
             versions, more, next_param = self.persistence.get_object(
                 api_root_id=api_root_id,
@@ -800,7 +802,9 @@ class TAXII2Server(BaseTAXIIServer):
         handles_own_auth=True,
     )
     def versions_handler(self, api_root_id, collection_id_or_alias, object_id):
-        filter_params = validate_versions_filter_params(request.args, self.persistence.api)
+        filter_params = validate_versions_filter_params(
+            request.args, self.persistence.api
+        )
         try:
             versions, more = self.persistence.get_versions(
                 api_root_id=api_root_id,

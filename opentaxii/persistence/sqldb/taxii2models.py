@@ -57,7 +57,7 @@ class Job(Base):
     details = relationship("JobDetail", back_populates="job")
 
     __table_args__ = (
-        sqlalchemy.Index('ix_opentaxii_job_api_root_id_id', api_root_id, id),
+        sqlalchemy.Index("ix_opentaxii_job_api_root_id_id", api_root_id, id),
     )
 
     @classmethod
@@ -139,7 +139,9 @@ class STIXObject(Base):
     pk = sqlalchemy.Column(GUID, primary_key=True, default=uuid.uuid4)
     id = sqlalchemy.Column(sqlalchemy.String(100), index=True)
     collection_id = sqlalchemy.Column(
-        GUID, sqlalchemy.ForeignKey("opentaxii_collection.id", ondelete="CASCADE"), index=True,
+        GUID,
+        sqlalchemy.ForeignKey("opentaxii_collection.id", ondelete="CASCADE"),
+        index=True,
     )
     type = sqlalchemy.Column(sqlalchemy.String(50), index=True)
     spec_version = sqlalchemy.Column(sqlalchemy.String(10), index=True)  # STIX version

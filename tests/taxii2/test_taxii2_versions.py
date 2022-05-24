@@ -184,7 +184,11 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, GET_COLLECTION_MOCK,
             API_ROOTS[0].id,
             COLLECTIONS[5].id,
             STIX_OBJECTS[0].id,
-            {"next": GET_NEXT_PARAM({"id": STIX_OBJECTS[0].id, "date_added": STIX_OBJECTS[0].date_added})},
+            {
+                "next": GET_NEXT_PARAM(
+                    {"id": STIX_OBJECTS[0].id, "date_added": STIX_OBJECTS[0].date_added}
+                )
+            },
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",

@@ -1120,7 +1120,7 @@ def test_objects_unauthenticated(
         side_effect=GET_COLLECTION_MOCK,
     ):
         kwargs = {
-            'headers':{
+            "headers": {
                 "Accept": "application/taxii+json;version=2.1",
                 "Content-Type": "application/taxii+json;version=2.1",
             }

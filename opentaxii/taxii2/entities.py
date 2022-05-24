@@ -38,7 +38,13 @@ class Collection(Entity):
     """
 
     def __init__(
-        self, id: str, api_root_id: str, title: str, description: str, alias: str, is_public: bool
+        self,
+        id: str,
+        api_root_id: str,
+        title: str,
+        description: str,
+        alias: str,
+        is_public: bool,
     ):
         """Initialize Collection."""
         self.id = id
@@ -50,9 +56,12 @@ class Collection(Entity):
 
     def can_read(self, account: Optional[Account]):
         """Determine if `account` is allowed to read from this collection."""
-        return self.is_public or ( account and (
-            account.is_admin or "read" in set(account.permissions.get(self.id, []))
-        ) )
+        return self.is_public or (
+            account
+            and (
+                account.is_admin or "read" in set(account.permissions.get(self.id, []))
+            )
+        )
 
     def can_write(self, account: Optional[Account]):
         """Determine if `account` is allowed to write to this collection."""
