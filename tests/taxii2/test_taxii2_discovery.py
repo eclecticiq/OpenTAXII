@@ -149,11 +149,35 @@ def test_discovery(
     assert json.loads(response.data) == expected_content
 
 
+@pytest.mark.parametrize("public_discovery", [True, False])
 @pytest.mark.parametrize("method", ["get", "post", "delete"])
 def test_discovery_unauthenticated(
     client,
     method,
+    public_discovery,
 ):
-    func = getattr(client, method)
-    response = func("/taxii2/")
-    assert response.status_code == 401
+    if public_discovery:
+        if method == "get":
+            expected_status_code = 200
+        else:
+            expected_status_code = 405
+    else:
+        if method == "get":
+            expected_status_code = 401
+        else:
+            expected_status_code = 405
+    with patch.object(
+        client.application.taxii_server.servers.taxii2,
+        "config",
+        {
+            **client.application.taxii_server.servers.taxii2.config,
+            "title": "Some TAXII Server",
+            "public_discovery": public_discovery,
+        },
+    ):
+        func = getattr(client, method)
+        response = func(
+            "/taxii2/",
+            headers={"Accept": "application/taxii+json;version=2.1"},
+        )
+    assert response.status_code == expected_status_code

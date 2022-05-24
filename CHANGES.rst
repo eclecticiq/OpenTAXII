@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.6.0 (2022-??-??)
+------------------
+* Add `public_discovery` option to taxii2 config
+
 0.5.0 (2022-05-24)
 ------------------
 * Add support for publicly readable taxii 2 collections

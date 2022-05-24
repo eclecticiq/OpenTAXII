@@ -62,6 +62,7 @@ class ServerConfig(dict):
         "description",
         "max_content_length",
         "title",
+        "public_discovery",
     )
     ALL_VALID_OPTIONS = VALID_BASE_OPTIONS + VALID_TAXII_OPTIONS + VALID_TAXII1_OPTIONS
 

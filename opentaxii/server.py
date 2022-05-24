@@ -468,8 +468,10 @@ class TAXII2Server(BaseTAXIIServer):
         self.check_headers(endpoint)
         return endpoint()
 
-    @register_handler(r"^/taxii2/$")
+    @register_handler(r"^/taxii2/$", handles_own_auth=True)
     def discovery_handler(self):
+        if context.account is None and not self.config["public_discovery"]:
+            raise Unauthorized()
         response = {
             "title": self.config["title"],
         }

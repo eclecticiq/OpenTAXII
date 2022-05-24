@@ -37,6 +37,7 @@ taxii2:
       a: 1
       b: 2
   max_content_length: 1024
+  public_discovery: true
 """
 TAXII2_CONFIG = """
 ---
@@ -55,6 +56,7 @@ taxii2:
       a: 1
       b: 2
   max_content_length: 1024
+  public_discovery: true
 """
 DEFAULT_BASE_VALUES = {
     "domain": "localhost:9000",
@@ -99,6 +101,7 @@ TAXII2_VALUES = {
         },
     },
     "max_content_length": 1024,
+    "public_discovery": True,
 }
 EXPECTED_VALUES = {
     BACKWARDS_COMPAT_CONFIG: {
