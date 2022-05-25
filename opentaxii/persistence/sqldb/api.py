@@ -520,6 +520,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
                 default=obj.default,
                 title=obj.title,
                 description=obj.description,
+                is_public=obj.is_public,
             )
             for obj in query.all()
         ]
@@ -536,6 +537,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
                 default=api_root.default,
                 title=api_root.title,
                 description=api_root.description,
+                is_public=api_root.is_public,
             )
         else:
             return None
@@ -545,6 +547,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         title: str,
         description: Optional[str] = None,
         default: Optional[bool] = False,
+        is_public: bool = False,
     ) -> entities.ApiRoot:
         """
         Add a new api root.
@@ -552,11 +555,12 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         :param str title: Title of the new api root
         :param str description: [Optional] Description of the new api root
         :param bool default: [Optional, False] If the new api should be the default
+        :param bool is_public: whether this is a publicly readable API root
 
         :return: The added ApiRoot entity.
         """
         api_root = taxii2models.ApiRoot(
-            title=title, description=description, default=False
+            title=title, description=description, default=default, is_public=is_public
         )
         self.db.session.add(api_root)
         self.db.session.commit()
@@ -567,6 +571,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             default=api_root.default,
             title=api_root.title,
             description=api_root.description,
+            is_public=is_public,
         )
 
     def get_job_and_details(
