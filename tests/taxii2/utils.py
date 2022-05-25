@@ -10,13 +10,13 @@ from opentaxii.taxii2.entities import (ApiRoot, Collection, Job, JobDetail,
 from opentaxii.taxii2.utils import DATETIMEFORMAT, taxii2_datetimeformat
 
 API_ROOTS_WITH_DEFAULT = (
-    ApiRoot(str(uuid4()), True, "first title", "first description"),
-    ApiRoot(str(uuid4()), False, "second title", "second description"),
+    ApiRoot(str(uuid4()), True, "first title", "first description", False),
+    ApiRoot(str(uuid4()), False, "second title", "second description", True),
 )
 API_ROOTS_WITHOUT_DEFAULT = (
-    ApiRoot(str(uuid4()), False, "first title", "first description"),
-    ApiRoot(str(uuid4()), False, "second title", "second description"),
-    ApiRoot(str(uuid4()), False, "third title", None),
+    ApiRoot(str(uuid4()), False, "first title", "first description", False),
+    ApiRoot(str(uuid4()), False, "second title", "second description", True),
+    ApiRoot(str(uuid4()), False, "third title", None, False),
 )
 API_ROOTS = API_ROOTS_WITHOUT_DEFAULT
 NOW = datetime.datetime.now(datetime.timezone.utc)

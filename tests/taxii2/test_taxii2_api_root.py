@@ -198,23 +198,46 @@ def test_api_root(
     assert content == expected_content
 
 
+@pytest.mark.parametrize("is_public", [True, False])
 @pytest.mark.parametrize("method", ["get", "post", "delete"])
 def test_api_root_unauthenticated(
     client,
     method,
+    is_public,
 ):
-    func = getattr(client, method)
-    response = func(f"/{API_ROOTS[0].id}/")
-    assert response.status_code == 401
+    if is_public:
+        api_root_id = API_ROOTS[1].id
+        if method == "get":
+            expected_status_code = 200
+        else:
+            expected_status_code = 405
+    else:
+        api_root_id = API_ROOTS[0].id
+        if method == "get":
+            expected_status_code = 401
+        else:
+            expected_status_code = 405
+    with patch.object(
+        client.application.taxii_server.servers.taxii2.persistence.api,
+        "get_api_root",
+        side_effect=GET_API_ROOT_MOCK,
+    ):
+        func = getattr(client, method)
+        response = func(
+            f"/{api_root_id}/",
+            headers={"Accept": "application/taxii+json;version=2.1"},
+        )
+    assert response.status_code == expected_status_code
 
 
 @pytest.mark.parametrize(
-    ["title", "description", "default", "db_api_roots"],
+    ["title", "description", "default", "is_public", "db_api_roots"],
     [
         pytest.param(
             "my new api root",  # title
             None,  # description
             False,  # default
+            False,  # is_public
             [],  # db_api_roots
             id="title only",
         ),
@@ -222,6 +245,7 @@ def test_api_root_unauthenticated(
             "my new api root",  # title
             "my description",  # description
             False,  # default
+            True,  # is_public
             [],  # db_api_roots
             id="title, description",
         ),
@@ -229,6 +253,7 @@ def test_api_root_unauthenticated(
             "my new api root",  # title
             None,  # description
             True,  # default
+            False,  # is_public
             [],  # db_api_roots
             id="title, default",
         ),
@@ -236,20 +261,22 @@ def test_api_root_unauthenticated(
             "my new api root",  # title
             "my description",  # description
             True,  # default
+            True,  # is_public
             API_ROOTS_WITH_DEFAULT,  # db_api_roots
             id="title, description, default, existing",
         ),
     ],
     indirect=["db_api_roots"],
 )
-def test_add_api_root(app, title, description, default, db_api_roots):
+def test_add_api_root(app, title, description, default, is_public, db_api_roots):
     api_root = app.taxii_server.servers.taxii2.persistence.api.add_api_root(
-        title, description, default
+        title, description, default, is_public
     )
     assert api_root.id is not None
     assert api_root.title == title
     assert api_root.description == description
     assert api_root.default == default
+    assert api_root.is_public == is_public
     db_api_root = (
         app.taxii_server.servers.taxii2.persistence.api.db.session.query(
             taxii2models.ApiRoot
@@ -260,6 +287,7 @@ def test_add_api_root(app, title, description, default, db_api_roots):
     assert db_api_root.title == title
     assert db_api_root.description == description
     assert db_api_root.default == default
+    assert db_api_root.is_public == is_public
     if default:
         assert (
             app.taxii_server.servers.taxii2.persistence.api.db.session.query(

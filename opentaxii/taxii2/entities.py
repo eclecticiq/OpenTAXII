@@ -15,14 +15,18 @@ class ApiRoot(Entity):
     :param bool default: indicator of default api root, should only be True once
     :param str title: human readable plain text name used to identify this API Root
     :param str description: human readable plain text description for this API Root
+    :param bool is_public: whether this is a publicly readable API root
     """
 
-    def __init__(self, id: str, default: bool, title: str, description: str):
+    def __init__(
+        self, id: str, default: bool, title: str, description: str, is_public: bool
+    ):
         """Initialize ApiRoot."""
         self.id = id
         self.default = default
         self.title = title
         self.description = description
+        self.is_public = is_public
 
 
 class Collection(Entity):

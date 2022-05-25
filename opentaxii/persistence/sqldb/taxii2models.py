@@ -21,6 +21,7 @@ class ApiRoot(Base):
     default = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
     title = sqlalchemy.Column(sqlalchemy.String(100), nullable=False, index=True)
     description = sqlalchemy.Column(sqlalchemy.Text)
+    is_public = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
 
     collections = relationship("Collection", back_populates="api_root")
 

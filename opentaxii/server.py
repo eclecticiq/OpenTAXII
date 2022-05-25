@@ -468,8 +468,10 @@ class TAXII2Server(BaseTAXIIServer):
         self.check_headers(endpoint)
         return endpoint()
 
-    @register_handler(r"^/taxii2/$")
+    @register_handler(r"^/taxii2/$", handles_own_auth=True)
     def discovery_handler(self):
+        if context.account is None and not self.config["public_discovery"]:
+            raise Unauthorized()
         response = {
             "title": self.config["title"],
         }
@@ -482,12 +484,16 @@ class TAXII2Server(BaseTAXIIServer):
         response["api_roots"] = [f"/{api_root.id}/" for api_root in api_roots]
         return make_taxii2_response(response)
 
-    @register_handler(r"^/(?P<api_root_id>[^/]+)/$")
+    @register_handler(r"^/(?P<api_root_id>[^/]+)/$", handles_own_auth=True)
     def api_root_handler(self, api_root_id):
         try:
             api_root = self.persistence.get_api_root(api_root_id=api_root_id)
         except DoesNotExistError:
+            if context.account is None:
+                raise Unauthorized()
             raise NotFound()
+        if context.account is None and not api_root.is_public:
+            raise Unauthorized()
         response = {
             "title": api_root.title,
             "versions": ["application/taxii+json;version=2.1"],
@@ -525,12 +531,16 @@ class TAXII2Server(BaseTAXIIServer):
         }
         return make_taxii2_response(response)
 
-    @register_handler(r"^/(?P<api_root_id>[^/]+)/collections/$")
+    @register_handler(r"^/(?P<api_root_id>[^/]+)/collections/$", handles_own_auth=True)
     def collections_handler(self, api_root_id):
         try:
-            self.persistence.get_api_root(api_root_id=api_root_id)
+            api_root = self.persistence.get_api_root(api_root_id=api_root_id)
         except DoesNotExistError:
+            if context.account is None:
+                raise Unauthorized()
             raise NotFound()
+        if context.account is None and not api_root.is_public:
+            raise Unauthorized()
         collections = self.persistence.get_collections(api_root_id=api_root_id)
         response = {}
         if collections:

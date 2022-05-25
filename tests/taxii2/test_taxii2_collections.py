@@ -228,11 +228,37 @@ def test_collections(
     assert content == expected_content
 
 
+@pytest.mark.parametrize("is_public", [True, False])
 @pytest.mark.parametrize("method", ["get", "post", "delete"])
 def test_collections_unauthenticated(
     client,
     method,
+    is_public,
 ):
-    func = getattr(client, method)
-    response = func(f"/{API_ROOTS[0].id}/collections/")
-    assert response.status_code == 401
+    if is_public:
+        api_root_id = API_ROOTS[1].id
+        if method == "get":
+            expected_status_code = 200
+        else:
+            expected_status_code = 405
+    else:
+        api_root_id = API_ROOTS[0].id
+        if method == "get":
+            expected_status_code = 401
+        else:
+            expected_status_code = 405
+    with patch.object(
+        client.application.taxii_server.servers.taxii2.persistence.api,
+        "get_api_root",
+        side_effect=GET_API_ROOT_MOCK,
+    ), patch.object(
+        client.application.taxii_server.servers.taxii2.persistence.api,
+        "get_collections",
+        side_effect=GET_COLLECTIONS_MOCK,
+    ):
+        func = getattr(client, method)
+        response = func(
+            f"/{api_root_id}/collections/",
+            headers={"Accept": "application/taxii+json;version=2.1"},
+        )
+    assert response.status_code == expected_status_code
