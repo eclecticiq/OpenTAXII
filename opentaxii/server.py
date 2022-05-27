@@ -480,11 +480,11 @@ class TAXII2Server(BaseTAXIIServer):
                 response[key] = self.config.get(key)
         default_api_root, api_roots = self.persistence.get_api_roots()
         if default_api_root:
-            response["default"] = f"/{default_api_root.id}/"
-        response["api_roots"] = [f"/{api_root.id}/" for api_root in api_roots]
+            response["default"] = f"/taxii2/{default_api_root.id}/"
+        response["api_roots"] = [f"/taxii2/{api_root.id}/" for api_root in api_roots]
         return make_taxii2_response(response)
 
-    @register_handler(r"^/(?P<api_root_id>[^/]+)/$", handles_own_auth=True)
+    @register_handler(r"^/taxii2/(?P<api_root_id>[^/]+)/$", handles_own_auth=True)
     def api_root_handler(self, api_root_id):
         try:
             api_root = self.persistence.get_api_root(api_root_id=api_root_id)
@@ -503,7 +503,7 @@ class TAXII2Server(BaseTAXIIServer):
             response["description"] = api_root.description
         return make_taxii2_response(response)
 
-    @register_handler(r"^/(?P<api_root_id>[^/]+)/status/(?P<job_id>[^/]+)/$")
+    @register_handler(r"^/taxii2/(?P<api_root_id>[^/]+)/status/(?P<job_id>[^/]+)/$")
     def job_handler(self, api_root_id, job_id):
         try:
             job, job_details = self.persistence.get_job_and_details(
@@ -531,7 +531,7 @@ class TAXII2Server(BaseTAXIIServer):
         }
         return make_taxii2_response(response)
 
-    @register_handler(r"^/(?P<api_root_id>[^/]+)/collections/$", handles_own_auth=True)
+    @register_handler(r"^/taxii2/(?P<api_root_id>[^/]+)/collections/$", handles_own_auth=True)
     def collections_handler(self, api_root_id):
         try:
             api_root = self.persistence.get_api_root(api_root_id=api_root_id)
@@ -561,7 +561,7 @@ class TAXII2Server(BaseTAXIIServer):
         return make_taxii2_response(response)
 
     @register_handler(
-        r"^/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/$",
+        r"^/taxii2/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/$",
         handles_own_auth=True,
     )
     def collection_handler(self, api_root_id, collection_id_or_alias):
@@ -589,7 +589,7 @@ class TAXII2Server(BaseTAXIIServer):
         return make_taxii2_response(response)
 
     @register_handler(
-        r"^/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/manifest/$",
+        r"^/taxii2/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/manifest/$",
         handles_own_auth=True,
     )
     def manifest_handler(self, api_root_id, collection_id_or_alias):
@@ -634,7 +634,7 @@ class TAXII2Server(BaseTAXIIServer):
         )
 
     @register_handler(
-        r"^/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/objects/$",
+        r"^/taxii2/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/objects/$",
         ("GET", "POST"),
         valid_content_types=("application/taxii+json;version=2.1",),
         handles_own_auth=True,
@@ -726,7 +726,7 @@ class TAXII2Server(BaseTAXIIServer):
         )
 
     @register_handler(
-        r"^/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/objects/(?P<object_id>[^/]+)/$",
+        r"^/taxii2/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/objects/(?P<object_id>[^/]+)/$",
         ("GET", "DELETE"),
         handles_own_auth=True,
     )
@@ -807,7 +807,7 @@ class TAXII2Server(BaseTAXIIServer):
 
     @register_handler(
         (
-            r"^/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)"
+            r"^/taxii2/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)"
             r"/objects/(?P<object_id>[^/]+)/versions/$"
         ),
         handles_own_auth=True,

@@ -246,7 +246,7 @@ def test_status(
         ),
     ):
         func = getattr(authenticated_client, method)
-        response = func(f"/{api_root_id}/status/{job_id}/", headers=headers)
+        response = func(f"/taxii2/{api_root_id}/status/{job_id}/", headers=headers)
     assert response.status_code == expected_status
     assert {
         key: response.headers.get(key) for key in expected_headers
@@ -267,7 +267,7 @@ def test_status_unauthenticated(
     method,
 ):
     func = getattr(client, method)
-    response = func(f"/{API_ROOTS[0].id}/status/{JOBS[0].id}/")
+    response = func(f"/taxii2/{API_ROOTS[0].id}/status/{JOBS[0].id}/")
     assert response.status_code == 401
 
 

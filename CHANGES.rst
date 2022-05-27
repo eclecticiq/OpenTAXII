@@ -1,7 +1,11 @@
 Changelog
 =========
 
-0.6.0 (2022-05-25
+0.7.0 (2022-05-27)
+------------------
+* Nest taxii2 endpoints under `/taxii2/`
+
+0.6.0 (2022-05-25)
 ------------------
 * Add `public_discovery` option to taxii2 config
 * Add support for publicly readable taxii 2 api roots

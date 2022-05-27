@@ -726,7 +726,7 @@ def test_manifest(
         else:
             querystring = ""
         response = func(
-            f"/{api_root_id}/collections/{collection_id}/manifest/{querystring}",
+            f"/taxii2/{api_root_id}/collections/{collection_id}/manifest/{querystring}",
             headers=headers,
         )
     assert response.status_code == expected_status
@@ -773,7 +773,7 @@ def test_manifest_unauthenticated(
     ):
         func = getattr(client, method)
         response = func(
-            f"/{API_ROOTS[0].id}/collections/{collection_id}/manifest/",
+            f"/taxii2/{API_ROOTS[0].id}/collections/{collection_id}/manifest/",
             headers={"Accept": "application/taxii+json;version=2.1"},
         )
     assert response.status_code == expected_status_code
