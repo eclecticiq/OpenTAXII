@@ -189,7 +189,7 @@ def test_collection(
         },
     ):
         func = getattr(authenticated_client, method)
-        response = func(f"/{api_root_id}/collections/{collection_id}/", headers=headers)
+        response = func(f"/taxii2/{api_root_id}/collections/{collection_id}/", headers=headers)
     assert response.status_code == expected_status
     assert {
         key: response.headers.get(key) for key in expected_headers
@@ -234,7 +234,7 @@ def test_collection_unauthenticated(
     ):
         func = getattr(client, method)
         response = func(
-            f"/{API_ROOTS[0].id}/collections/{collection_id}/",
+            f"/taxii2/{API_ROOTS[0].id}/collections/{collection_id}/",
             headers={"Accept": "application/taxii+json;version=2.1"},
         )
     assert response.status_code == expected_status_code

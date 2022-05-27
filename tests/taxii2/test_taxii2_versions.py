@@ -407,7 +407,7 @@ def test_versions(
             querystring = ""
         kwargs = {"headers": headers}
         response = func(
-            f"/{api_root_id}/collections/{collection_id}/objects/{object_id}/versions/{querystring}",
+            f"/taxii2/{api_root_id}/collections/{collection_id}/objects/{object_id}/versions/{querystring}",
             **kwargs,
         )
     assert response.status_code == expected_status
@@ -456,7 +456,7 @@ def test_versions_unauthenticated(
     ):
         func = getattr(client, method)
         response = func(
-            f"/{API_ROOTS[0].id}/collections/{collection_id}/objects/{stix_id}/versions/",
+            f"/taxii2/{API_ROOTS[0].id}/collections/{collection_id}/objects/{stix_id}/versions/",
             headers={"Accept": "application/taxii+json;version=2.1"},
         )
     assert response.status_code == expected_status_code

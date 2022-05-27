@@ -1062,7 +1062,7 @@ def test_objects(
         if method == "post":
             kwargs["json"] = post_data
         response = func(
-            f"/{api_root_id}/collections/{collection_id}/objects/{querystring}",
+            f"/taxii2/{api_root_id}/collections/{collection_id}/objects/{querystring}",
             **kwargs,
         )
     assert response.status_code == expected_status
@@ -1147,7 +1147,7 @@ def test_objects_unauthenticated(
             }
         func = getattr(client, method)
         response = func(
-            f"/{API_ROOTS[0].id}/collections/{collection_id}/objects/",
+            f"/taxii2/{API_ROOTS[0].id}/collections/{collection_id}/objects/",
             **kwargs,
         )
     assert response.status_code == expected_status_code
