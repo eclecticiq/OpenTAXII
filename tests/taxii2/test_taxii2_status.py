@@ -81,13 +81,30 @@ from tests.taxii2.utils import (API_ROOTS, GET_JOB_AND_DETAILS_MOCK, JOBS,
                 "request_timestamp": taxii2_datetimeformat(JOBS[3].request_timestamp),
                 "total_count": 0,
                 "success_count": 0,
-                "successes": [],
                 "failure_count": 0,
-                "failures": [],
                 "pending_count": 0,
-                "pendings": [],
             },
             id="good, second, second",
+        ),
+        pytest.param(
+            "get",
+            {"Accept": "application/taxii+json;version=2.1"},
+            API_ROOTS[0].id,
+            JOBS[6].id,
+            config_noop,
+            server_mapping_noop,
+            200,
+            {"Content-Type": "application/taxii+json;version=2.1"},
+            {
+                "id": JOBS[6].id,
+                "status": JOBS[6].status,
+                "request_timestamp": taxii2_datetimeformat(JOBS[6].request_timestamp),
+                "total_count": 6,
+                "success_count": 1,
+                "failure_count": 2,
+                "pending_count": 3,
+            },
+            id="good, no details",
         ),
         pytest.param(
             "get",
@@ -278,5 +295,5 @@ def test_job_cleanup(app, db_jobs):
         app.taxii_server.servers.taxii2.persistence.api.db.session.query(
             taxii2models.Job
         ).count()
-        == 3
+        == 4
     )

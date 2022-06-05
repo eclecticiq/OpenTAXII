@@ -1,5 +1,5 @@
 import datetime
-from typing import Dict, List, NamedTuple, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import structlog
 from opentaxii.local import context
@@ -9,7 +9,7 @@ from opentaxii.persistence.exceptions import (DoesNotExistError,
                                               NoWritePermission)
 from opentaxii.signals import (CONTENT_BLOCK_CREATED, INBOX_MESSAGE_CREATED,
                                SUBSCRIPTION_CREATED)
-from opentaxii.taxii2.entities import (ApiRoot, Collection, Job, JobDetail,
+from opentaxii.taxii2.entities import (ApiRoot, Collection, Job,
                                        ManifestRecord, STIXObject,
                                        VersionRecord)
 
@@ -384,13 +384,6 @@ class Taxii1PersistenceManager(BasePersistenceManager):
         return count
 
 
-class JobDetailsResponse(NamedTuple):
-    total_count: int
-    success: List[JobDetail]
-    failure: List[JobDetail]
-    pending: List[JobDetail]
-
-
 class Taxii2PersistenceManager(BasePersistenceManager):
     """Manager responsible for persisting and retrieving data.
 
@@ -427,26 +420,11 @@ class Taxii2PersistenceManager(BasePersistenceManager):
             raise DoesNotExistError()
         return api_root
 
-    def _get_job_details_response(
-        self, job_details: List[JobDetail]
-    ) -> JobDetailsResponse:
-        job_details_response = JobDetailsResponse(
-            total_count=len(job_details), success=[], failure=[], pending=[]
-        )
-        for job_detail in job_details:
-            getattr(job_details_response, job_detail.status).append(job_detail)
-        return job_details_response
-
-    def get_job_and_details(
-        self, api_root_id: str, job_id: str
-    ) -> Tuple[Job, JobDetailsResponse]:
-        job, job_details = self.api.get_job_and_details(
-            api_root_id=api_root_id, job_id=job_id
-        )
+    def get_job_and_details(self, api_root_id: str, job_id: str) -> Job:
+        job = self.api.get_job_and_details(api_root_id=api_root_id, job_id=job_id)
         if job is None:
             raise DoesNotExistError()
-        job_details_response = self._get_job_details_response(job_details)
-        return (job, job_details_response)
+        return job
 
     def get_collections(self, api_root_id: str) -> List[Collection]:
         return self.api.get_collections(api_root_id=api_root_id)
@@ -522,19 +500,18 @@ class Taxii2PersistenceManager(BasePersistenceManager):
         api_root_id: str,
         collection_id_or_alias: str,
         data: Dict,
-    ) -> Tuple[Job, JobDetailsResponse]:
+    ) -> Job:
         collection = self.get_collection(
             api_root_id=api_root_id, collection_id_or_alias=collection_id_or_alias
         )
         if not collection.can_write(context.account):
             raise NoWritePermission()
-        job, job_details = self.api.add_objects(
+        job = self.api.add_objects(
             api_root_id=api_root_id,
             collection_id=collection.id,
             objects=data["objects"],
         )
-        job_details_response = self._get_job_details_response(job_details)
-        return (job, job_details_response)
+        return job
 
     def get_object(
         self,

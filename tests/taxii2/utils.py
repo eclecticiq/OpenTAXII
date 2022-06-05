@@ -30,50 +30,85 @@ for api_root in API_ROOTS:
             NOW,
             NOW - datetime.timedelta(hours=24, minutes=1),
         ),
-        Job(str(uuid4()), api_root.id, "pending", NOW, None),
+        Job(
+            str(uuid4()),
+            api_root.id,
+            "pending",
+            NOW,
+            None,
+        ),
     )
+JOBS = JOBS + (
+    Job(
+        str(uuid4()),
+        API_ROOTS[0].id,
+        "pending",
+        NOW,
+        None,
+        6,
+        1,
+        2,
+        3,
+    ),
+)
 
-JOB_DETAILS_KWARGS = sorted(
-    (
-        {
-            "stix_id": "indicator--c410e480-e42b-47d1-9476-85307c12bcbf",
-            "version": datetime.datetime.strptime(
+JOBS[0].details.success.extend(
+    [
+        JobDetail(
+            id=str(uuid4()),
+            job_id=JOBS[0].id,
+            stix_id="indicator--c410e480-e42b-47d1-9476-85307c12bcbf",
+            version=datetime.datetime.strptime(
                 "2018-05-27T12:02:41.312Z", DATETIMEFORMAT
             ).replace(tzinfo=datetime.timezone.utc),
-            "message": "",
-            "status": "success",
-        },
-        {
-            "stix_id": "malware--664fa29d-bf65-4f28-a667-bdb76f29ec98",
-            "version": datetime.datetime.strptime(
+            message="",
+            status="success",
+        )
+    ]
+)
+JOBS[0].success_count = 1
+JOBS[0].details.failure.extend(
+    [
+        JobDetail(
+            id=str(uuid4()),
+            job_id=JOBS[0].id,
+            stix_id="malware--664fa29d-bf65-4f28-a667-bdb76f29ec98",
+            version=datetime.datetime.strptime(
                 "2018-05-28T14:03:42.543Z", DATETIMEFORMAT
             ).replace(tzinfo=datetime.timezone.utc),
-            "message": "Unable to process object",
-            "status": "failure",
-        },
-        {
-            "stix_id": "indicator--252c7c11-daf2-42bd-843b-be65edca9f61",
-            "version": datetime.datetime.strptime(
+            message="Unable to process object",
+            status="failure",
+        )
+    ]
+)
+JOBS[0].failure_count = 1
+JOBS[0].details.pending.extend(
+    [
+        JobDetail(
+            id=str(uuid4()),
+            job_id=JOBS[0].id,
+            stix_id="indicator--252c7c11-daf2-42bd-843b-be65edca9f61",
+            version=datetime.datetime.strptime(
                 "2018-05-18T20:16:21.148Z", DATETIMEFORMAT
             ).replace(tzinfo=datetime.timezone.utc),
-            "message": "",
-            "status": "pending",
-        },
-        {
-            "stix_id": "relationship--045585ad-a22f-4333-af33-bfd503a683b5",
-            "version": datetime.datetime.strptime(
+            message="",
+            status="pending",
+        ),
+        JobDetail(
+            id=str(uuid4()),
+            job_id=JOBS[0].id,
+            stix_id="relationship--045585ad-a22f-4333-af33-bfd503a683b5",
+            version=datetime.datetime.strptime(
                 "2018-05-15T10:13:32.579Z", DATETIMEFORMAT
             ).replace(tzinfo=datetime.timezone.utc),
-            "message": "",
-            "status": "pending",
-        },
-    ),
-    key=lambda item: item["stix_id"],
+            message="",
+            status="pending",
+        ),
+    ]
 )
-JOB_DETAILS = tuple(
-    JobDetail(id=str(uuid4()), job_id=JOBS[0].id, **kwargs)
-    for kwargs in JOB_DETAILS_KWARGS
-)
+JOBS[0].pending_count = 2
+JOBS[0].total_count = 4
+
 COLLECTIONS = (
     Collection(
         str(uuid4()),
@@ -262,17 +297,11 @@ def GET_API_ROOT_MOCK(api_root_id):
 
 def GET_JOB_AND_DETAILS_MOCK(api_root_id, job_id):
     job_response = None
-    details_response = []
     for job in JOBS:
         if job.api_root_id == api_root_id and job.id == job_id:
             job_response = job
             break
-    if job_response is None:
-        return None, []
-    for job_detail in JOB_DETAILS:
-        if job_detail.job_id == job_id:
-            details_response.append(job_detail)
-    return job_response, details_response
+    return job_response
 
 
 def GET_COLLECTIONS_MOCK(api_root_id):
@@ -432,7 +461,7 @@ def GET_OBJECT_MOCK(
 
 
 def ADD_OBJECTS_MOCK(api_root_id: str, collection_id: str, objects: List[Dict]):
-    return (JOBS[0], JOB_DETAILS)
+    return JOBS[0]
 
 
 def DELETE_OBJECT_MOCK(

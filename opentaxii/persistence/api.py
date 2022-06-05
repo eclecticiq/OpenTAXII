@@ -1,7 +1,7 @@
 import datetime
 from typing import Dict, List, Optional, Tuple
 
-from opentaxii.taxii2.entities import (ApiRoot, Collection, Job, JobDetail,
+from opentaxii.taxii2.entities import (ApiRoot, Collection, Job,
                                        ManifestRecord, STIXObject,
                                        VersionRecord)
 
@@ -297,7 +297,7 @@ class OpenTAXII2PersistenceAPI:
 
     def get_job_and_details(
         self, api_root_id: str, job_id: str
-    ) -> Tuple[Optional[Job], List[JobDetail]]:
+    ) -> Optional[Job]:
         raise NotImplementedError
 
     def get_collections(self, api_root_id: str) -> List[Collection]:
@@ -334,7 +334,7 @@ class OpenTAXII2PersistenceAPI:
     ) -> Tuple[List[STIXObject], bool, Optional[str]]:
         raise NotImplementedError
 
-    def add_objects(self, api_root_id: str, collection_id: str, objects: List[Dict]) -> Tuple[Job, List[JobDetail]]:
+    def add_objects(self, api_root_id: str, collection_id: str, objects: List[Dict]) -> Job:
         raise NotImplementedError
 
     def get_object(

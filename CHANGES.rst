@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.8.0 (2022-06-05)
+------------------
+* Nest details inside taxii2 job and allow counts without details
+
 0.7.0 (2022-05-27)
 ------------------
 * Nest taxii2 endpoints under `/taxii2/`

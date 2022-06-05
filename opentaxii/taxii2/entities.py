@@ -1,6 +1,6 @@
 """Taxii2 entities."""
 from datetime import datetime
-from typing import Optional
+from typing import List, NamedTuple, Optional
 
 from opentaxii.common.entities import Entity
 from opentaxii.entities import Account
@@ -153,33 +153,6 @@ class VersionRecord(Entity):
         self.version = version
 
 
-class Job(Entity):
-    """
-    TAXII2 Job entity, called a "status resource" in taxii2 docs.
-
-    :param str id: id of this job
-    :param str api_root_id: id of the :class:`ApiRoot` this collection belongs to
-    :param str status: status of this job
-    :param datetime request_timestamp: the datetime of the request that this status resource is monitoring
-    :param datetime completed_timestamp: the datetime of the completion of this job (used for cleanup)
-    """
-
-    def __init__(
-        self,
-        id: str,
-        api_root_id: str,
-        status: str,
-        request_timestamp: datetime,
-        completed_timestamp: datetime,
-    ):
-        """Initialize Job."""
-        self.id = id
-        self.api_root_id = api_root_id
-        self.status = status
-        self.request_timestamp = request_timestamp
-        self.completed_timestamp = completed_timestamp
-
-
 class JobDetail(Entity):
     """
     TAXII2 JobDetail entity, part of "status resource" in taxii2 docs.
@@ -215,4 +188,79 @@ class JobDetail(Entity):
         response = {"id": self.stix_id, "version": taxii2_datetimeformat(self.version)}
         if self.message:
             response["message"] = self.message
+        return response
+
+
+class JobDetails(NamedTuple):
+    success: List[JobDetail]
+    failure: List[JobDetail]
+    pending: List[JobDetail]
+
+
+class Job(Entity):
+    """
+    TAXII2 Job entity, called a "status resource" in taxii2 docs.
+
+    :param str id: id of this job
+    :param str api_root_id: id of the :class:`ApiRoot` this collection belongs to
+    :param str status: status of this job
+    :param datetime request_timestamp: the datetime of the request that this status resource is monitoring
+    :param datetime completed_timestamp: the datetime of the completion of this job (used for cleanup)
+    :param int total_count: the total number of stix objects in this job
+    :param int success_count: the number of successful stix objects in this job
+    :param int failure_count: the number of failed stix objects in this job
+    :param int pending_count: the number of pending stix objects in this job
+    :param dict details: the details per status of this job
+    """
+
+    def __init__(
+        self,
+        id: str,
+        api_root_id: str,
+        status: str,
+        request_timestamp: datetime,
+        completed_timestamp: Optional[datetime] = None,
+        total_count: int = 0,
+        success_count: int = 0,
+        failure_count: int = 0,
+        pending_count: int = 0,
+        details: Optional[JobDetails] = None,
+    ):
+        """Initialize Job."""
+        self.id = id
+        self.api_root_id = api_root_id
+        self.status = status
+        self.request_timestamp = request_timestamp
+        self.completed_timestamp = completed_timestamp
+        self.total_count = total_count
+        self.success_count = success_count
+        self.failure_count = failure_count
+        self.pending_count = pending_count
+        if details is None:
+            details = JobDetails([], [], [])
+        self.details = details
+
+    def as_taxii2_dict(self):
+        """Turn this object into a taxii2 dict."""
+        response = {
+            "id": self.id,
+            "status": self.status,
+            "request_timestamp": taxii2_datetimeformat(self.request_timestamp),
+            "total_count": self.total_count,
+            "success_count": self.success_count,
+            "failure_count": self.failure_count,
+            "pending_count": self.pending_count,
+        }
+        if self.details.success:
+            response["successes"] = [
+                job_detail.as_taxii2_dict() for job_detail in self.details.success
+            ]
+        if self.details.failure:
+            response["failures"] = [
+                job_detail.as_taxii2_dict() for job_detail in self.details.failure
+            ]
+        if self.details.pending:
+            response["pendings"] = [
+                job_detail.as_taxii2_dict() for job_detail in self.details.pending
+            ]
         return response
