@@ -826,7 +826,7 @@ def test_add_objects(
     collection_id,
     objects,
 ):
-    job, job_details = taxii2_sqldb_api.add_objects(
+    job = taxii2_sqldb_api.add_objects(
         api_root_id=api_root_id,
         collection_id=collection_id,
         objects=objects,
@@ -838,21 +838,30 @@ def test_add_objects(
         status="complete",
         request_timestamp=job.request_timestamp,
         completed_timestamp=job.completed_timestamp,
+        total_count=len(objects),
+        success_count=len(objects),
+        failure_count=0,
+        pending_count=0,
+        details=entities.JobDetails(
+            [
+                entities.JobDetail(
+                    id=job_detail.id,
+                    job_id=job.id,
+                    stix_id=obj["id"],
+                    version=datetime.datetime.strptime(
+                        obj["modified"], DATETIMEFORMAT
+                    ).replace(tzinfo=datetime.timezone.utc),
+                    message="",
+                    status="success",
+                )
+                for (job_detail, obj) in zip(job.details.success, objects)
+            ],
+            [],
+            [],
+        ),
     )
     assert isinstance(job.request_timestamp, datetime.datetime)
     assert isinstance(job.completed_timestamp, datetime.datetime)
-    assert len(job_details) == len(objects)
-    for (job_detail, obj) in zip(job_details, objects):
-        assert job_detail == entities.JobDetail(
-            id=job_detail.id,
-            job_id=job.id,
-            stix_id=obj["id"],
-            version=datetime.datetime.strptime(obj["modified"], DATETIMEFORMAT).replace(
-                tzinfo=datetime.timezone.utc
-            ),
-            message="",
-            status="success",
-        )
     # Check database state
     db_job = taxii2_sqldb_api.db.session.query(Job).one()
     assert str(db_job.api_root_id) == api_root_id

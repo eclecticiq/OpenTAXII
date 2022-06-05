@@ -17,8 +17,7 @@ from opentaxii.utils import configure_logging
 
 from tests.fixtures import (ACCOUNT, COLLECTIONS_B, DOMAIN, PASSWORD, SERVICES,
                             USERNAME, VALID_TOKEN)
-from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, JOB_DETAILS, JOBS,
-                                STIX_OBJECTS)
+from tests.taxii2.utils import API_ROOTS, COLLECTIONS, JOBS, STIX_OBJECTS
 
 
 class CustomClient(FlaskClient):
@@ -194,7 +193,9 @@ def transaction_app(dbconn, taxiiserver):
     context.server = taxiiserver
     app = create_app(context.server)
     app.config["TESTING"] = True
-    managers = [taxiiserver.auth] + [subserver.persistence for subserver in taxiiserver.servers]
+    managers = [taxiiserver.auth] + [
+        subserver.persistence for subserver in taxiiserver.servers
+    ]
     transactions = []
     connections = []
     sessions = []
@@ -206,7 +207,9 @@ def transaction_app(dbconn, taxiiserver):
         connections.append(connection)
         sessions.append(manager.api.db.session)
     yield app
-    for (transaction, connection, session, manager) in zip(transactions, connections, sessions, managers):
+    for (transaction, connection, session, manager) in zip(
+        transactions, connections, sessions, managers
+    ):
         transaction.rollback()
         connection.close()
         session.remove()
@@ -311,15 +314,16 @@ def db_api_roots(request, taxii2_sqldb_api):
 @pytest.fixture(scope="function")
 def db_jobs(request, taxii2_sqldb_api, db_api_roots):
     try:
-        (jobs, job_details) = request.param
+        jobs = request.param
     except AttributeError:
-        (jobs, job_details) = (JOBS, JOB_DETAILS)
+        jobs = JOBS
     for job in jobs:
         taxii2_sqldb_api.db.session.add(Job.from_entity(job))
-    for job_detail in job_details:
-        taxii2_sqldb_api.db.session.add(JobDetail.from_entity(job_detail))
+        for job_details in job.details:
+            for job_detail in job_details:
+                taxii2_sqldb_api.db.session.add(JobDetail.from_entity(job_detail))
     taxii2_sqldb_api.db.session.commit()
-    yield (jobs, job_details)
+    yield jobs
 
 
 @pytest.fixture(scope="function")

@@ -54,6 +54,10 @@ class Job(Base):
     )
     request_timestamp = sqlalchemy.Column(UTCDateTime, nullable=True)
     completed_timestamp = sqlalchemy.Column(UTCDateTime, nullable=True)
+    total_count = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
+    success_count = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
+    failure_count = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
+    pending_count = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
 
     details = relationship("JobDetail", back_populates="job")
 
@@ -80,7 +84,9 @@ class Job(Base):
     @classmethod
     def from_entity(cls, entity: entities.Job):
         """Generate database model from input entity."""
-        return cls(**entity.to_dict())
+        kwargs = entity.to_dict()
+        kwargs.pop("details")
+        return cls(**kwargs)
 
 
 class JobDetail(Base):

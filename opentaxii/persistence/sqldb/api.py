@@ -574,9 +574,36 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             is_public=is_public,
         )
 
+    def _job_and_details_to_entity(
+        self, job: taxii2models.Job, job_details: List[taxii2models.JobDetail]
+    ) -> entities.Job:
+        job_entity = entities.Job(
+            id=job.id,
+            api_root_id=job.api_root_id,
+            status=job.status,
+            request_timestamp=job.request_timestamp,
+            completed_timestamp=job.completed_timestamp,
+            total_count=job.total_count,
+            success_count=job.success_count,
+            failure_count=job.failure_count,
+            pending_count=job.pending_count,
+        )
+        for job_detail in job_details:
+            getattr(job_entity.details, job_detail.status).append(
+                entities.JobDetail(
+                    id=job_detail.id,
+                    job_id=job_detail.job_id,
+                    stix_id=job_detail.stix_id,
+                    version=job_detail.version,
+                    message=job_detail.message,
+                    status=job_detail.status,
+                )
+            )
+        return job_entity
+
     def get_job_and_details(
         self, api_root_id: str, job_id: str
-    ) -> Tuple[Optional[entities.Job], List[entities.JobDetail]]:
+    ) -> Optional[entities.Job]:
         job = (
             self.db.session.query(taxii2models.Job)
             .filter(
@@ -586,7 +613,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             .one_or_none()
         )
         if job is None:
-            return None, []
+            return None
         job_details = (
             self.db.session.query(taxii2models.JobDetail)
             .filter(
@@ -595,26 +622,8 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             .order_by(taxii2models.JobDetail.stix_id)
             .all()
         )
-        return (
-            entities.Job(
-                id=job.id,
-                api_root_id=job.api_root_id,
-                status=job.status,
-                request_timestamp=job.request_timestamp,
-                completed_timestamp=job.completed_timestamp,
-            ),
-            [
-                entities.JobDetail(
-                    id=job_detail.id,
-                    job_id=job_detail.job_id,
-                    stix_id=job_detail.stix_id,
-                    version=job_detail.version,
-                    message=job_detail.message,
-                    status=job_detail.status,
-                )
-                for job_detail in job_details
-            ],
-        )
+        job_entity = self._job_and_details_to_entity(job, job_details)
+        return job_entity
 
     def job_cleanup(self) -> int:
         """
@@ -954,11 +963,15 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
 
     def add_objects(
         self, api_root_id: str, collection_id: str, objects: List[Dict]
-    ) -> Tuple[entities.Job, List[entities.JobDetail]]:
+    ) -> entities.Job:
         job = taxii2models.Job(
             api_root_id=api_root_id,
             status="pending",
             request_timestamp=datetime.datetime.now(datetime.timezone.utc),
+            total_count=0,
+            success_count=0,
+            failure_count=0,
+            pending_count=0,
         )
         self.db.session.add(job)
         self.db.session.commit()
@@ -1004,29 +1017,13 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             )
             job_details.append(job_detail)
             self.db.session.add(job_detail)
+            job.total_count += 1
+            job.success_count += 1
         job.status = "complete"
         job.completed_timestamp = datetime.datetime.now(datetime.timezone.utc)
         self.db.session.commit()
-        return (
-            entities.Job(
-                id=job.id,
-                api_root_id=job.api_root_id,
-                status=job.status,
-                request_timestamp=job.request_timestamp,
-                completed_timestamp=job.completed_timestamp,
-            ),
-            [
-                entities.JobDetail(
-                    id=job_detail.id,
-                    job_id=job_detail.job_id,
-                    stix_id=job_detail.stix_id,
-                    version=job_detail.version,
-                    message=job_detail.message,
-                    status=job_detail.status,
-                )
-                for job_detail in job_details
-            ],
-        )
+        job_entity = self._job_and_details_to_entity(job, job_details)
+        return job_entity
 
     def get_object(
         self,

@@ -506,32 +506,17 @@ class TAXII2Server(BaseTAXIIServer):
     @register_handler(r"^/taxii2/(?P<api_root_id>[^/]+)/status/(?P<job_id>[^/]+)/$")
     def job_handler(self, api_root_id, job_id):
         try:
-            job, job_details = self.persistence.get_job_and_details(
+            job = self.persistence.get_job_and_details(
                 api_root_id=api_root_id, job_id=job_id
             )
         except DoesNotExistError:
             raise NotFound()
-        response = {
-            "id": job.id,
-            "status": job.status,
-            "request_timestamp": taxii2_datetimeformat(job.request_timestamp),
-            "total_count": job_details.total_count,
-            "success_count": len(job_details.success),
-            "successes": [
-                job_detail.as_taxii2_dict() for job_detail in job_details.success
-            ],
-            "failure_count": len(job_details.failure),
-            "failures": [
-                job_detail.as_taxii2_dict() for job_detail in job_details.failure
-            ],
-            "pending_count": len(job_details.pending),
-            "pendings": [
-                job_detail.as_taxii2_dict() for job_detail in job_details.pending
-            ],
-        }
+        response = job.as_taxii2_dict()
         return make_taxii2_response(response)
 
-    @register_handler(r"^/taxii2/(?P<api_root_id>[^/]+)/collections/$", handles_own_auth=True)
+    @register_handler(
+        r"^/taxii2/(?P<api_root_id>[^/]+)/collections/$", handles_own_auth=True
+    )
     def collections_handler(self, api_root_id):
         try:
             api_root = self.persistence.get_api_root(api_root_id=api_root_id)
@@ -691,7 +676,7 @@ class TAXII2Server(BaseTAXIIServer):
     def objects_post_handler(self, api_root_id, collection_id_or_alias):
         validate_envelope(request.data)
         try:
-            job, job_details = self.persistence.add_objects(
+            job = self.persistence.add_objects(
                 api_root_id=api_root_id,
                 collection_id_or_alias=collection_id_or_alias,
                 data=request.get_json(),
@@ -700,24 +685,7 @@ class TAXII2Server(BaseTAXIIServer):
             if context.account is None:
                 raise Unauthorized()
             raise NotFound()
-        response = {
-            "id": job.id,
-            "status": job.status,
-            "request_timestamp": taxii2_datetimeformat(job.request_timestamp),
-            "total_count": job_details.total_count,
-            "success_count": len(job_details.success),
-            "successes": [
-                job_detail.as_taxii2_dict() for job_detail in job_details.success
-            ],
-            "failure_count": len(job_details.failure),
-            "failures": [
-                job_detail.as_taxii2_dict() for job_detail in job_details.failure
-            ],
-            "pending_count": len(job_details.pending),
-            "pendings": [
-                job_detail.as_taxii2_dict() for job_detail in job_details.pending
-            ],
-        }
+        response = job.as_taxii2_dict()
         headers = {}
         return make_taxii2_response(
             response,
