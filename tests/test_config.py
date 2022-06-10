@@ -37,6 +37,7 @@ taxii2:
       a: 1
       b: 2
   max_content_length: 1024
+  allow_custom_properties: true
   public_discovery: true
 """
 TAXII2_CONFIG = """
@@ -56,6 +57,7 @@ taxii2:
       a: 1
       b: 2
   max_content_length: 1024
+  allow_custom_properties: true
   public_discovery: true
 """
 DEFAULT_BASE_VALUES = {
@@ -102,6 +104,7 @@ TAXII2_VALUES = {
     },
     "max_content_length": 1024,
     "public_discovery": True,
+    "allow_custom_properties": True,
 }
 EXPECTED_VALUES = {
     BACKWARDS_COMPAT_CONFIG: {
@@ -205,12 +208,14 @@ COMBINED_ENVVARS = {
         "OPENTAXII__TAXII2__PERSISTENCE_API__CLASS": "something.Else2",
         "OPENTAXII__TAXII2__PERSISTENCE_API__OTHER": "2",
         "OPENTAXII__TAXII2__MAX_CONTENT_LENGTH": "1024",
+        "OPENTAXII__TAXII2__ALLOW_CUSTOM_PROPERTIES": "true",
     },
     "expected": {
         "taxii1": {"persistence_api": {"class": "something.Else", "other": 1}},
         "taxii2": {
             "persistence_api": {"class": "something.Else2", "other": 2},
             "max_content_length": 1024,
+            "allow_custom_properties": True,
         },
     },
 }
@@ -219,11 +224,13 @@ TAXII2_ENVVARS = {
         "OPENTAXII__TAXII2__PERSISTENCE_API__CLASS": "something.Else2",
         "OPENTAXII__TAXII2__PERSISTENCE_API__OTHER": "2",
         "OPENTAXII__TAXII2__MAX_CONTENT_LENGTH": "1024",
+        "OPENTAXII__TAXII2__ALLOW_CUSTOM_PROPERTIES": "true",
     },
     "expected": {
         "taxii2": {
             "persistence_api": {"class": "something.Else2", "other": 2},
             "max_content_length": 1024,
+            "allow_custom_properties": True,
         },
     },
 }
