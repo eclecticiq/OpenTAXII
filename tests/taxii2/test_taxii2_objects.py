@@ -10,6 +10,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
                                 GET_COLLECTION_MOCK, GET_JOB_AND_DETAILS_MOCK,
                                 GET_NEXT_PARAM, GET_OBJECTS_MOCK, JOBS, NOW,
                                 STIX_OBJECTS)
+from tests.utils import SKIP
 
 
 @pytest.mark.parametrize(
@@ -808,39 +809,8 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
                 ]
             },
             202,
-            {"Content-Type": "application/taxii+json;version=2.1"},
-            {
-                "id": JOBS[0].id,
-                "status": JOBS[0].status,
-                "request_timestamp": taxii2_datetimeformat(JOBS[0].request_timestamp),
-                "total_count": 4,
-                "success_count": 1,
-                "successes": [
-                    {
-                        "id": "indicator--c410e480-e42b-47d1-9476-85307c12bcbf",
-                        "version": "2018-05-27T12:02:41.312000Z",
-                    }
-                ],
-                "failure_count": 1,
-                "failures": [
-                    {
-                        "id": "malware--664fa29d-bf65-4f28-a667-bdb76f29ec98",
-                        "version": "2018-05-28T14:03:42.543000Z",
-                        "message": "Unable to process object",
-                    }
-                ],
-                "pending_count": 2,
-                "pendings": [
-                    {
-                        "id": "indicator--252c7c11-daf2-42bd-843b-be65edca9f61",
-                        "version": "2018-05-18T20:16:21.148000Z",
-                    },
-                    {
-                        "id": "relationship--045585ad-a22f-4333-af33-bfd503a683b5",
-                        "version": "2018-05-15T10:13:32.579000Z",
-                    },
-                ],
-            },
+            SKIP,
+            SKIP,
             id="post, good, custom property",
         ),
         pytest.param(
@@ -1139,9 +1109,10 @@ def test_objects(
         )
     else:
         add_objects_mock.assert_not_called()
-    assert {
-        key: response.headers.get(key) for key in expected_headers
-    } == expected_headers
+    if expected_headers != SKIP:
+        assert {
+            key: response.headers.get(key) for key in expected_headers
+        } == expected_headers
     if (
         response.headers.get("Content-Type", "application/taxii+json;version=2.1")
         == "application/taxii+json;version=2.1"
@@ -1149,7 +1120,8 @@ def test_objects(
         content = json.loads(response.data)
     else:
         content = response.data
-    assert content == expected_content
+    if expected_content != SKIP:
+        assert content == expected_content
 
 
 @pytest.mark.parametrize("is_public", [True, False])
