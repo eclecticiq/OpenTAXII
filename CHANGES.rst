@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.9.0 (????-??-??)
+0.9.0 (2022-06-13)
 ------------------
 * Allow custom properties. This can be disabled by config option ``allow_custom_properties``
 
