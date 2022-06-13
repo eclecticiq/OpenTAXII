@@ -121,6 +121,7 @@ Properties
           - ``create_tables`` — boolean, if true, create tables on startup
 
       - ``max_content_length`` — the maximum size of the request body in bytes that the server can support
+      - ``allow_custom_properties`` — boolean, if true, allow custom stix2 properties when posting objects (default: true)
 
     - ``logging`` — logging configuration.
 

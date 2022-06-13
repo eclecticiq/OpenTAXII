@@ -9,7 +9,8 @@ from opentaxii.taxii2.utils import taxii2_datetimeformat
 from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
                                 GET_COLLECTION_MOCK, GET_JOB_AND_DETAILS_MOCK,
                                 GET_NEXT_PARAM, GET_OBJECTS_MOCK, JOBS, NOW,
-                                STIX_OBJECTS)
+                                STIX_OBJECTS, config_noop, config_override)
+from tests.utils import SKIP
 
 
 @pytest.mark.parametrize(
@@ -20,6 +21,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
         "collection_id",
         "filter_kwargs",
         "post_data",
+        "config_override_func",
         "expected_status",
         "expected_headers",
         "expected_content",
@@ -32,6 +34,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].id,
             {},
             {},
+            config_noop,
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -61,6 +64,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].alias,
             {},
             {},
+            config_noop,
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -90,6 +94,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].id,
             {"added_after": taxii2_datetimeformat(NOW)},
             {},
+            config_noop,
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -121,6 +126,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].id,
             {"added_after": taxii2_datetimeformat(NOW + datetime.timedelta(seconds=3))},
             {},
+            config_noop,
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -135,6 +141,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].id,
             {"added_after": taxii2_datetimeformat(NOW).replace("Z", "+00:00")},
             {},
+            config_noop,
             400,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -153,6 +160,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].id,
             {"limit": 1},
             {},
+            config_noop,
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -183,6 +191,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].id,
             {"limit": 2},
             {},
+            config_noop,
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -212,6 +221,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].id,
             {"limit": 999},
             {},
+            config_noop,
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -241,6 +251,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].id,
             {"limit": "a"},
             {},
+            config_noop,
             400,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -263,6 +274,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
                 )
             },
             {},
+            config_noop,
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -294,6 +306,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].id,
             {"next": "a"},
             {},
+            config_noop,
             400,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -312,6 +325,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].id,
             {"match[id]": STIX_OBJECTS[0].id},
             {},
+            config_noop,
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -339,6 +353,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].id,
             {"match[id]": ",".join([obj.id for obj in STIX_OBJECTS[:3]])},
             {},
+            config_noop,
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -368,6 +383,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].id,
             {"match[type]": STIX_OBJECTS[0].type},
             {},
+            config_noop,
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -395,6 +411,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].id,
             {"match[type]": ",".join([obj.type for obj in STIX_OBJECTS[:3]])},
             {},
+            config_noop,
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -424,6 +441,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].id,
             {"match[version]": taxii2_datetimeformat(STIX_OBJECTS[0].version)},
             {},
+            config_noop,
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -451,6 +469,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].id,
             {"match[version]": "last"},
             {},
+            config_noop,
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -480,6 +499,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].id,
             {"match[version]": "first"},
             {},
+            config_noop,
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -511,6 +531,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].id,
             {"match[version]": "all"},
             {},
+            config_noop,
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -544,6 +565,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
                 )
             },
             {},
+            config_noop,
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -573,6 +595,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].id,
             {"match[spec_version]": STIX_OBJECTS[0].spec_version},
             {},
+            config_noop,
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -604,6 +627,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
                 )
             },
             {},
+            config_noop,
             200,
             {
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -633,6 +657,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[1].id,
             {},
             {},
+            config_noop,
             404,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
@@ -650,6 +675,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].id,
             {},
             {},
+            config_noop,
             404,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
@@ -667,6 +693,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].id,
             {},
             {},
+            config_noop,
             404,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
@@ -684,6 +711,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             str(uuid4()),
             {},
             {},
+            config_noop,
             404,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
@@ -701,6 +729,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].id,
             {},
             {},
+            config_noop,
             406,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
@@ -742,6 +771,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
                     }
                 ]
             },
+            config_noop,
             202,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
@@ -787,7 +817,113 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             API_ROOTS[0].id,
             COLLECTIONS[5].id,
             {},
+            {
+                "objects": [
+                    {
+                        "type": "indicator",
+                        "spec_version": "2.1",
+                        "id": "indicator--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+                        "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+                        "created": "2016-04-06T20:03:48.000Z",
+                        "modified": "2016-04-06T20:03:48.000Z",
+                        "indicator_types": ["malicious-activity"],
+                        "name": "Poison Ivy Malware",
+                        "description": "This file is part of Poison Ivy",
+                        "pattern": "[ file:hashes.'SHA-256' = "
+                        "'4bac27393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f877' ]",
+                        "pattern_type": "stix",
+                        "valid_from": "2016-01-01T00:00:00Z",
+                        "x_my_custom_attr": "custom value",
+                    }
+                ]
+            },
+            config_noop,
+            202,
+            SKIP,
+            SKIP,
+            id="post, good, custom property, no config",
+        ),
+        pytest.param(
+            "post",
+            {
+                "Accept": "application/taxii+json;version=2.1",
+                "Content-Type": "application/taxii+json;version=2.1",
+            },
+            API_ROOTS[0].id,
+            COLLECTIONS[5].id,
             {},
+            {
+                "objects": [
+                    {
+                        "type": "indicator",
+                        "spec_version": "2.1",
+                        "id": "indicator--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+                        "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+                        "created": "2016-04-06T20:03:48.000Z",
+                        "modified": "2016-04-06T20:03:48.000Z",
+                        "indicator_types": ["malicious-activity"],
+                        "name": "Poison Ivy Malware",
+                        "description": "This file is part of Poison Ivy",
+                        "pattern": "[ file:hashes.'SHA-256' = "
+                        "'4bac27393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f877' ]",
+                        "pattern_type": "stix",
+                        "valid_from": "2016-01-01T00:00:00Z",
+                        "x_my_custom_attr": "custom value",
+                    }
+                ]
+            },
+            config_override({"allow_custom_properties": True}),
+            202,
+            SKIP,
+            SKIP,
+            id="post, good, custom property, allowed",
+        ),
+        pytest.param(
+            "post",
+            {
+                "Accept": "application/taxii+json;version=2.1",
+                "Content-Type": "application/taxii+json;version=2.1",
+            },
+            API_ROOTS[0].id,
+            COLLECTIONS[5].id,
+            {},
+            {
+                "objects": [
+                    {
+                        "type": "indicator",
+                        "spec_version": "2.1",
+                        "id": "indicator--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+                        "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+                        "created": "2016-04-06T20:03:48.000Z",
+                        "modified": "2016-04-06T20:03:48.000Z",
+                        "indicator_types": ["malicious-activity"],
+                        "name": "Poison Ivy Malware",
+                        "description": "This file is part of Poison Ivy",
+                        "pattern": "[ file:hashes.'SHA-256' = "
+                        "'4bac27393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f877' ]",
+                        "pattern_type": "stix",
+                        "valid_from": "2016-01-01T00:00:00Z",
+                        "x_my_custom_attr": "custom value",
+                    }
+                ]
+            },
+            config_override({"allow_custom_properties": False}),
+            400,
+            SKIP,
+            SKIP,
+            id="post, good, custom property, not allowed",
+        ),
+        pytest.param(
+            "post",
+            {
+                "Accept": "application/taxii+json;version=2.1",
+                "Content-Type": "application/taxii+json;version=2.1",
+            },
+            API_ROOTS[0].id,
+            COLLECTIONS[5].id,
+            {},
+            {},
+            config_noop,
             400,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
@@ -825,6 +961,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
                     }
                 ]
             },
+            config_noop,
             404,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
@@ -845,6 +982,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
             COLLECTIONS[5].id,
             {},
             {},
+            config_noop,
             406,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
@@ -885,6 +1023,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
                     }
                 ]
             },
+            config_noop,
             415,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
@@ -925,6 +1064,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
                     }
                 ]
             },
+            config_noop,
             415,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
@@ -965,6 +1105,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
                     }
                 ]
             },
+            config_noop,
             413,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
@@ -1003,6 +1144,7 @@ from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
                     }
                 ]
             },
+            config_noop,
             413,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
@@ -1022,11 +1164,18 @@ def test_objects(
     filter_kwargs,
     post_data,
     headers,
+    config_override_func,
     expected_status,
     expected_headers,
     expected_content,
 ):
     with patch.object(
+        authenticated_client.application.taxii_server.servers.taxii2,
+        "config",
+        config_override_func(
+            authenticated_client.application.taxii_server.servers.taxii2.config
+        ),
+    ), patch.object(
         authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
         "get_objects",
         side_effect=GET_OBJECTS_MOCK,
@@ -1074,9 +1223,10 @@ def test_objects(
         )
     else:
         add_objects_mock.assert_not_called()
-    assert {
-        key: response.headers.get(key) for key in expected_headers
-    } == expected_headers
+    if expected_headers != SKIP:
+        assert {
+            key: response.headers.get(key) for key in expected_headers
+        } == expected_headers
     if (
         response.headers.get("Content-Type", "application/taxii+json;version=2.1")
         == "application/taxii+json;version=2.1"
@@ -1084,7 +1234,8 @@ def test_objects(
         content = json.loads(response.data)
     else:
         content = response.data
-    assert content == expected_content
+    if expected_content != SKIP:
+        assert content == expected_content
 
 
 @pytest.mark.parametrize("is_public", [True, False])

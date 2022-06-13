@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.9.0 (????-??-??)
+------------------
+* Allow custom properties. This can be disabled by config option ``allow_custom_properties``
+
 0.8.0 (2022-06-05)
 ------------------
 * Nest details inside taxii2 job and allow counts without details

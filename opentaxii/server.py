@@ -674,7 +674,9 @@ class TAXII2Server(BaseTAXIIServer):
         )
 
     def objects_post_handler(self, api_root_id, collection_id_or_alias):
-        validate_envelope(request.data)
+        validate_envelope(
+            request.data, allow_custom=self.config.get("allow_custom_properties", True)
+        )
         try:
             job = self.persistence.add_objects(
                 api_root_id=api_root_id,

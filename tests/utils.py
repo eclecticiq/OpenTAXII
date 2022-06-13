@@ -160,3 +160,8 @@ def assert_str_equal_no_formatting(str1, str2):
     assert "".join([part.strip() for part in str1.split()]) == "".join(
         [part.strip() for part in str2.split()]
     )
+
+
+class SKIP:
+    """Used as signalling value to skip check"""
+    pass
