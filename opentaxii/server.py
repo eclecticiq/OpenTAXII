@@ -417,6 +417,12 @@ class TAXII2Server(BaseTAXIIServer):
         }
         return make_taxii2_response(response, status=400)
 
+    def raise_unauthorized(self):
+        """
+        Handle unauthorized access.
+        """
+        raise Unauthorized()
+
     def get_endpoint(self, relative_path: str) -> Optional[Callable[[], Response]]:
         endpoint = None
         for regex, handler in self.ENDPOINT_MAPPING:
