@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.9.1 (2022-07-11)
+------------------
+* Implement `raise_unauthorized` for taxii2, this was missing and lead to 500 errors.
+
 0.9.0 (2022-06-13)
 ------------------
 * Allow custom properties. This can be disabled by config option ``allow_custom_properties``
