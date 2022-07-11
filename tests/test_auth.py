@@ -510,3 +510,9 @@ def prepare_inbox_message(version, blocks=None, dest_collection=None):
     else:
         raise ValueError('Unknown TAXII message version: %s' % version)
     return inbox_message
+
+
+def test_broken_bearer_token_taxii2(client):
+    headers = {HTTP_AUTHORIZATION: "Bearer broken"}
+    response = client.get("/taxii2/", headers=headers)
+    assert response.status_code == 401
