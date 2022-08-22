@@ -34,7 +34,7 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.extlinks',
     'sphinx_rtd_theme',
-    'readthedocs-sphinx-search',
+    'sphinx_search.extension',
     ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -111,7 +111,7 @@ autodoc_member_order = 'bysource'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'sphind_rtd_theme'
+html_theme = 'sphinx_rtd_theme'
 
 # -- sphinx-rtd-theme options -----------
 
@@ -124,7 +124,7 @@ html_theme_options = {
     'prev_next_buttons_location': 'bottom',
     'style_external_links': True,
     'vcs_pageview_mode': '',
-    'style_nav_header_background': 'white',
+    #'style_nav_header_background': 'white',
     # Toc options
     'collapse_navigation': True,
     'sticky_navigation': True,
