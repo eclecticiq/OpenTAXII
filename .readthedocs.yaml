@@ -3,9 +3,14 @@ version: 2
 # Build from the docs/ directory with Sphinx
 sphinx:
   configuration: docs/conf.py
+  builder: "dirhtml"
 
 # Explicitly set the version of Python and its requirements
+build:
+  os: "ubuntu-20.04"
+  tools:
+   python: "3.9"
+
 python:
-  version: 3.7
   install:
     - requirements: docs/requirements.txt
