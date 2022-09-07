@@ -43,7 +43,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, DELETE_OBJECT_MOCK,
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in [STIX_OBJECTS[0]]
@@ -70,7 +70,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, DELETE_OBJECT_MOCK,
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in [STIX_OBJECTS[0]]
@@ -104,7 +104,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, DELETE_OBJECT_MOCK,
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in [STIX_OBJECTS[2]]
@@ -177,7 +177,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, DELETE_OBJECT_MOCK,
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in STIX_OBJECTS[:1]
@@ -210,7 +210,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, DELETE_OBJECT_MOCK,
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in STIX_OBJECTS[:1]
@@ -242,7 +242,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, DELETE_OBJECT_MOCK,
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in [STIX_OBJECTS[0], STIX_OBJECTS[2]]
@@ -269,7 +269,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, DELETE_OBJECT_MOCK,
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in [STIX_OBJECTS[0]]
@@ -341,7 +341,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, DELETE_OBJECT_MOCK,
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in [STIX_OBJECTS[2]]
@@ -386,7 +386,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, DELETE_OBJECT_MOCK,
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in STIX_OBJECTS[:1]
@@ -413,7 +413,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, DELETE_OBJECT_MOCK,
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in [STIX_OBJECTS[0]]
@@ -444,7 +444,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, DELETE_OBJECT_MOCK,
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in [STIX_OBJECTS[2]]
@@ -473,7 +473,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, DELETE_OBJECT_MOCK,
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in [STIX_OBJECTS[0], STIX_OBJECTS[2]]
@@ -514,7 +514,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, DELETE_OBJECT_MOCK,
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in STIX_OBJECTS[:1]

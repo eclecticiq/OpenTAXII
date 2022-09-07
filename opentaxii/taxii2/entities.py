@@ -63,14 +63,14 @@ class Collection(Entity):
         return self.is_public or (
             account
             and (
-                account.is_admin or "read" in set(account.permissions.get(self.id, []))
+                account.is_admin or "read" in account.permissions.get(str(self.id), [])
             )
         )
 
     def can_write(self, account: Optional[Account]):
         """Determine if `account` is allowed to write to this collection."""
         return account and (
-            account.is_admin or "write" in set(account.permissions.get(self.id, []))
+            account.is_admin or "write" in account.permissions.get(str(self.id), [])
         )
 
 
@@ -185,7 +185,7 @@ class JobDetail(Entity):
 
     def as_taxii2_dict(self):
         """Turn this object into a taxii2 dict."""
-        response = {"id": self.stix_id, "version": taxii2_datetimeformat(self.version)}
+        response = {"id": str(self.stix_id), "version": taxii2_datetimeformat(self.version)}
         if self.message:
             response["message"] = self.message
         return response
@@ -243,7 +243,7 @@ class Job(Entity):
     def as_taxii2_dict(self):
         """Turn this object into a taxii2 dict."""
         response = {
-            "id": self.id,
+            "id": str(self.id),
             "status": self.status,
             "request_timestamp": taxii2_datetimeformat(self.request_timestamp),
             "total_count": self.total_count,
