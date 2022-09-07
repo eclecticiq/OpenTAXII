@@ -49,7 +49,7 @@ from tests.utils import SKIP
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in STIX_OBJECTS[:2]
@@ -79,7 +79,7 @@ from tests.utils import SKIP
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in STIX_OBJECTS[:2]
@@ -111,7 +111,7 @@ from tests.utils import SKIP
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in STIX_OBJECTS[1:2]
@@ -176,7 +176,7 @@ from tests.utils import SKIP
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in STIX_OBJECTS[:1]
@@ -206,7 +206,7 @@ from tests.utils import SKIP
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in STIX_OBJECTS[:2]
@@ -236,7 +236,7 @@ from tests.utils import SKIP
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in STIX_OBJECTS[:2]
@@ -291,7 +291,7 @@ from tests.utils import SKIP
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in STIX_OBJECTS[1:2]
@@ -338,7 +338,7 @@ from tests.utils import SKIP
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in [STIX_OBJECTS[0]]
@@ -368,7 +368,7 @@ from tests.utils import SKIP
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in STIX_OBJECTS[:2]
@@ -396,7 +396,7 @@ from tests.utils import SKIP
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in [STIX_OBJECTS[0]]
@@ -426,7 +426,7 @@ from tests.utils import SKIP
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in STIX_OBJECTS[:2]
@@ -454,7 +454,7 @@ from tests.utils import SKIP
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in STIX_OBJECTS[:1]
@@ -484,7 +484,7 @@ from tests.utils import SKIP
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in STIX_OBJECTS[:2]
@@ -516,7 +516,7 @@ from tests.utils import SKIP
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in STIX_OBJECTS[1:3]
@@ -546,7 +546,7 @@ from tests.utils import SKIP
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in STIX_OBJECTS[:3]
@@ -580,7 +580,7 @@ from tests.utils import SKIP
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in STIX_OBJECTS[:3]
@@ -608,7 +608,7 @@ from tests.utils import SKIP
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in STIX_OBJECTS[:1]
@@ -642,7 +642,7 @@ from tests.utils import SKIP
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in STIX_OBJECTS[:2]
