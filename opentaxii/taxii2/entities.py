@@ -63,14 +63,14 @@ class Collection(Entity):
         return self.is_public or (
             account
             and (
-                account.is_admin or "read" in set(account.permissions.get(self.id, []))
+                account.is_admin or "read" in set(account.permissions.get(str(self.id), []))
             )
         )
 
     def can_write(self, account: Optional[Account]):
         """Determine if `account` is allowed to write to this collection."""
         return account and (
-            account.is_admin or "write" in set(account.permissions.get(self.id, []))
+            account.is_admin or "write" in set(account.permissions.get(str(self.id), []))
         )
 
 
