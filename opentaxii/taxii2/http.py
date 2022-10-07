@@ -7,7 +7,11 @@ from uuid import UUID
 
 
 class Taxii2JSONEncoder(json.JSONEncoder):
+    """
+    Extended JSONEncoder class with additional data types support.
+    """
     def default(self, o):
+        """Implements UUID serialization"""
         if isinstance(o, UUID):
             return str(o)
 
