@@ -647,6 +647,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
                 description=obj.description,
                 alias=obj.alias,
                 is_public=obj.is_public,
+                is_public_write=obj.is_public_write,
             )
             for obj in query.all()
         ]
@@ -678,6 +679,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             description=obj.description,
             alias=obj.alias,
             is_public=obj.is_public,
+            is_public_write=obj.is_public_write,
         )
 
     def add_collection(
@@ -687,6 +689,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         description: Optional[str] = None,
         alias: Optional[str] = None,
         is_public: bool = False,
+        is_public_write: bool = False,
     ) -> entities.Collection:
         """
         Add a new collection.
@@ -696,6 +699,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         :param str description: [Optional] Description of the new collection
         :param str alias: [Optional] Alias of the new collection
         :param bool is_public: [Optional] Whether collection should be publicly readable
+        :param bool is_public_write: [Optional] Whether collection should be publicly writable
 
         :return: The added Collection entity.
         """
@@ -705,6 +709,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             description=description,
             alias=alias,
             is_public=is_public,
+            is_public_write=is_public_write,
         )
         self.db.session.add(collection)
         self.db.session.commit()
@@ -716,6 +721,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             description=collection.description,
             alias=collection.alias,
             is_public=collection.is_public,
+            is_public_write=collection.is_public_write,
         )
 
     def _objects_query(self, collection_id: str, ordered: bool) -> Query:

@@ -205,14 +205,22 @@ def test_collection(
 
 
 @pytest.mark.parametrize("is_public", [True, False])
+@pytest.mark.parametrize("is_public_write", [True, False])
 @pytest.mark.parametrize("method", ["get", "post", "delete"])
 def test_collection_unauthenticated(
     client,
     method,
     is_public,
+    is_public_write,
 ):
     if is_public:
         collection_id = COLLECTIONS[6].id
+        if method == "get":
+            expected_status_code = 200
+        else:
+            expected_status_code = 405
+    elif is_public_write:
+        collection_id = COLLECTIONS[7].id
         if method == "get":
             expected_status_code = 200
         else:
@@ -241,7 +249,7 @@ def test_collection_unauthenticated(
 
 
 @pytest.mark.parametrize(
-    ["api_root_id", "title", "description", "alias", "is_public"],
+    ["api_root_id", "title", "description", "alias", "is_public", "is_public_write"],
     [
         pytest.param(
             API_ROOTS[0].id,  # api_root_id
@@ -249,6 +257,7 @@ def test_collection_unauthenticated(
             None,  # description
             None,  # alias
             False,  # is_public
+            False,  # is_public_write
             id="api_root_id, title",
         ),
         pytest.param(
@@ -257,6 +266,7 @@ def test_collection_unauthenticated(
             "my description",  # description
             None,  # alias
             True,  # is_public
+            False,  # is_public_write
             id="api_root_id, title, description",
         ),
         pytest.param(
@@ -265,12 +275,13 @@ def test_collection_unauthenticated(
             "my description",  # description
             "my-alias",  # alias
             False,  # is_public
+            True,  # is_public_write
             id="api_root_id, title, description, alias",
         ),
     ],
 )
 def test_add_collection(
-    app, api_root_id, title, description, alias, is_public, db_api_roots, db_collections
+    app, api_root_id, title, description, alias, is_public, is_public_write, db_api_roots, db_collections
 ):
     collection = app.taxii_server.servers.taxii2.persistence.api.add_collection(
         api_root_id=api_root_id,
@@ -278,6 +289,7 @@ def test_add_collection(
         description=description,
         alias=alias,
         is_public=is_public,
+        is_public_write=is_public_write,
     )
     assert collection.id is not None
     assert str(collection.api_root_id) == api_root_id
@@ -285,6 +297,7 @@ def test_add_collection(
     assert collection.description == description
     assert collection.alias == alias
     assert collection.is_public == is_public
+    assert collection.is_public_write == is_public_write
     db_collection = (
         app.taxii_server.servers.taxii2.persistence.api.db.session.query(
             taxii2models.Collection
@@ -297,3 +310,4 @@ def test_add_collection(
     assert db_collection.description == description
     assert db_collection.alias == alias
     assert db_collection.is_public == is_public
+    assert db_collection.is_public_write == is_public_write

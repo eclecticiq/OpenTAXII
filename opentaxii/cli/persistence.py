@@ -137,6 +137,9 @@ def add_collection():
     parser.add_argument(
         "--public", action="store_true", help="allow public read access"
     )
+    parser.add_argument(
+        "--public-write", action="store_true", help="allow public write access"
+    )
     parser.set_defaults(public=False)
 
     args = parser.parse_args()
@@ -147,6 +150,7 @@ def add_collection():
             description=args.description,
             alias=args.alias,
             is_public=args.public,
+            is_public_write=args.public_write,
         )
 
 

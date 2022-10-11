@@ -509,8 +509,19 @@ class TAXII2Server(BaseTAXIIServer):
             response["description"] = api_root.description
         return make_taxii2_response(response)
 
-    @register_handler(r"^/taxii2/(?P<api_root_id>[^/]+)/status/(?P<job_id>[^/]+)/$")
+    @register_handler(
+        r"^/taxii2/(?P<api_root_id>[^/]+)/status/(?P<job_id>[^/]+)/$",
+        handles_own_auth=True,
+    )
     def job_handler(self, api_root_id, job_id):
+        try:
+            api_root = self.persistence.get_api_root(api_root_id=api_root_id)
+        except DoesNotExistError:
+            if context.account is None:
+                raise Unauthorized()
+            raise NotFound()
+        if context.account is None and not api_root.is_public:
+            raise Unauthorized()
         try:
             job = self.persistence.get_job_and_details(
                 api_root_id=api_root_id, job_id=job_id
@@ -564,7 +575,10 @@ class TAXII2Server(BaseTAXIIServer):
             if context.account is None:
                 raise Unauthorized()
             raise NotFound()
-        if context.account is None and not collection.can_read(context.account):
+        if context.account is None and not (
+            collection.can_read(context.account)
+            or collection.can_write(context.account)
+        ):
             raise Unauthorized()
         response = {
             "id": collection.id,
