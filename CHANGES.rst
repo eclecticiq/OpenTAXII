@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.9.3 (2022-10-11)
+------------------
+* Add public write support.
+
 0.9.2 (2022-08-26)
 ------------------
 * Improve readability and navigation of docs (`#238 <https://github.com/eclecticiq/OpenTAXII/pull/238>`_ thanks `@zed-eiq <https://github.com/zed-eiq>`_ for the improvement).
