@@ -314,9 +314,10 @@ def test_status_unauthenticated(
         side_effect=GET_JOB_AND_DETAILS_MOCK,
     ):
         func = getattr(client, method)
-        response = func(f"/taxii2/{api_root_id}/status/{job_id}/",
+        response = func(
+            f"/taxii2/{api_root_id}/status/{job_id}/",
             headers={"Accept": "application/taxii+json;version=2.1"},
-                        )
+        )
     assert response.status_code == expected_status_code
 
 
