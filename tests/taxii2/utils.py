@@ -117,6 +117,7 @@ COLLECTIONS = (
         "Read only description",
         None,
         False,
+        False,
     ),
     Collection(
         str(uuid4()),
@@ -124,6 +125,7 @@ COLLECTIONS = (
         "1Write only",
         "Write only description",
         None,
+        False,
         False,
     ),
     Collection(
@@ -133,6 +135,7 @@ COLLECTIONS = (
         "Read/Write description",
         None,
         False,
+        False,
     ),
     Collection(
         str(uuid4()),
@@ -141,14 +144,16 @@ COLLECTIONS = (
         "No permissions description",
         None,
         False,
+        False,
     ),
-    Collection(str(uuid4()), API_ROOTS[0].id, "4No description", "", None, False),
+    Collection(str(uuid4()), API_ROOTS[0].id, "4No description", "", None, False, False),
     Collection(
         str(uuid4()),
         API_ROOTS[0].id,
         "5With alias",
         "With alias description",
         "this-is-an-alias",
+        False,
         False,
     ),
     Collection(
@@ -157,6 +162,16 @@ COLLECTIONS = (
         "6Public",
         "public description",
         "",
+        True,
+        False,
+    ),
+    Collection(
+        str(uuid4()),
+        API_ROOTS[0].id,
+        "7Publicwrite",
+        "public write description",
+        None,
+        False,
         True,
     ),
 )

@@ -352,6 +352,7 @@ def test_add_api_root(
                 "description": None,
                 "alias": None,
                 "is_public": False,
+                "is_public_write": False,
             },  # expected_call
             id="rootid, title only",
         ),
@@ -374,6 +375,7 @@ def test_add_api_root(
                 "description": "my description",
                 "alias": None,
                 "is_public": False,
+                "is_public_write": False,
             },  # expected_call
             id="rootid, title, description",
         ),
@@ -398,6 +400,7 @@ def test_add_api_root(
                 "description": "my description",
                 "alias": "my-alias",
                 "is_public": False,
+                "is_public_write": False,
             },  # expected_call
             id="rootid, title, description, alias",
         ),
@@ -413,8 +416,25 @@ def test_add_api_root(
                 "description": None,
                 "alias": None,
                 "is_public": True,
+                "is_public_write": False,
             },  # expected_call
             id="rootid, titlei, public",
+        ),
+        pytest.param(
+            ["-r", API_ROOTS[0].id, "-t", "my new collection", "--public-write"],  # argv
+            False,  # raises
+            None,  # message
+            "",  # stdout
+            "",  # stderr
+            {
+                "api_root_id": API_ROOTS[0].id,
+                "title": "my new collection",
+                "description": None,
+                "alias": None,
+                "is_public": False,
+                "is_public_write": True,
+            },  # expected_call
+            id="rootid, titlei, publicwrite",
         ),
         pytest.param(
             ["-r", "fake-uuid", "-t", "my new collection"],  # argv
@@ -430,6 +450,7 @@ def test_add_api_root(
                     "[-d DESCRIPTION]",
                     "[-a ALIAS]",
                     "[--public]",
+                    "[--public-write]",
                     ": error: argument -r/--rootid: invalid choice: 'fake-uuid'",
                     "(choose from WRAPPED_ROOTIDS)",
                 ]
@@ -451,6 +472,7 @@ def test_add_api_root(
                     "[-d DESCRIPTION]",
                     "[-a ALIAS]",
                     "[--public]",
+                    "[--public-write]",
                     ": error: the following arguments are required: -r/--rootid, -t/--title",
                 ]
             ),
