@@ -476,7 +476,7 @@ class TAXII2Server(BaseTAXIIServer):
 
     @register_handler(r"^/taxii2/$", handles_own_auth=True)
     def discovery_handler(self):
-        if context.account is None and not self.config["public_discovery"]:
+        if context.account is None and not self.config.get("public_discovery", False):
             raise Unauthorized()
         response = {
             "title": self.config["title"],
