@@ -88,6 +88,11 @@ def _authenticate(server, headers):
 
         token = server.auth.authenticate(username, password)
 
+    # Support `token` type provided by `taxii2client` library
+    # https://github.com/oasis-open/cti-taxii-client/blob/54dabadf1a67517e99e6a8f2961614a2a4f5ad2c/taxii2client/common.py#L138
+    elif auth_type == "token":
+        token = raw_token
+
     elif auth_type == "bearer":
         token = raw_token
     else:
