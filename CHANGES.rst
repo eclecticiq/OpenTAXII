@@ -5,6 +5,7 @@ Changelog
 -------------------
 * Drop EOL Python 3.6 and 3.7 support
 * Add Python 3.11 support
+* Remove mypy_extensions dependency
 
 0.9.3 (2022-10-11)
 ------------------
