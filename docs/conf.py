@@ -20,46 +20,50 @@ import sphinx_rtd_theme
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('.'))
+#sys.path.insert(0, os.path.abspath("."))
 
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-#needs_sphinx = '1.0'
+#needs_sphinx = "1.0"
 
 # Add any Sphinx extension module names here, as strings. They can be
-# extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
+# extensions coming with Sphinx (named "sphinx.ext.*") or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.coverage',
-    'sphinx.ext.extlinks',
-    'sphinx_rtd_theme',
-    'sphinx_search.extension',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.coverage",
+    "sphinx.ext.extlinks",
+    "sphinx_rtd_theme",
+    "sphinx_search.extension",
+    "myst_parser",  # markdown parser https://myst-parser.readthedocs.io/en/latest/sphinx/use.html
     ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = {
+  ".rst": "restructuredtext",
+  ".md": "markdown",
+}
 
 # The encoding of source files.
-#source_encoding = 'utf-8-sig'
+#source_encoding = "utf-8-sig"
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
-project = u'OpenTAXII'
-copyright = u'2016-%s, EclecticIQ' % datetime.date.today().year
+project = u"OpenTAXII"
+copyright = u"2016-%s, EclecticIQ" % datetime.date.today().year
 
-# The version info for the project you're documenting, acts as replacement for
+# The version info for the project you"re documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-exec(open(os.path.join(os.path.dirname(__file__), '../opentaxii/_version.py')).read())
+exec(open(os.path.join(os.path.dirname(__file__), "../opentaxii/_version.py")).read())
 version = __version__
 
 # The full version, including alpha/beta/rc tags.
@@ -72,19 +76,19 @@ release = __version__
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
-#today = ''
+#today = ""
 # Else, today_fmt is used as the format for a strftime call.
-#today_fmt = '%B %d, %Y'
+#today_fmt = "%B %d, %Y"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ["_build"]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
 #default_role = None
 
-# If true, '()' will be appended to :func: etc. cross-reference text.
+# If true, "()" will be appended to :func: etc. cross-reference text.
 #add_function_parentheses = True
 
 # If true, the current module name will be prepended to all description
@@ -96,13 +100,13 @@ exclude_patterns = ['_build']
 #show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
 
-autodoc_default_flags = ['members', 'undoc-members']
-autodoc_member_order = 'bysource'
+autodoc_default_flags = ["members", "undoc-members"]
+autodoc_member_order = "bysource"
 
 # If true, keep warnings as "system message" paragraphs in the built documents.
 #keep_warnings = False
@@ -112,48 +116,48 @@ autodoc_member_order = 'bysource'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
 
 # -- sphinx-rtd-theme options -----------
 
 html_theme_options = {
-    # 'analytics_id': 'G-XXXXXXXXXX',  #  Provided by Google in your dashboard
-    # 'analytics_anonymize_ip': False,
-    'logo_only': False,
-    'display_version': True,
-    # 'canonical_url': 'https://opentaxii.readthedocs.io/', # important when we host on multiple urls
-    'prev_next_buttons_location': 'bottom',
-    'style_external_links': True,
-    'vcs_pageview_mode': '',
-    #'style_nav_header_background': 'white',
+    # "analytics_id": "G-XXXXXXXXXX",  #  Provided by Google in your dashboard
+    # "analytics_anonymize_ip": False,
+    "logo_only": False,
+    "display_version": True,
+    # "canonical_url": "https://opentaxii.readthedocs.io/", # important when we host on multiple urls
+    "prev_next_buttons_location": "bottom",
+    "style_external_links": True,
+    "vcs_pageview_mode": "",
+    #"style_nav_header_background": "white",
     # Toc options
-    'collapse_navigation': True,
-    'sticky_navigation': True,
-    'navigation_depth': 4,
-    'includehidden': True,
-    'titles_only': False,
+    "collapse_navigation": True,
+    "sticky_navigation": True,
+    "navigation_depth": 4,
+    "includehidden": True,
+    "titles_only": False,
 }
 
 
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
-#'papersize': 'letterpaper',
+# The paper size ("letterpaper" or "a4paper").
+#"papersize": "letterpaper",
 
-# The font size ('10pt', '11pt' or '12pt').
-#'pointsize': '10pt',
+# The font size ("10pt", "11pt" or "12pt").
+#"pointsize": "10pt",
 
 # Additional stuff for the LaTeX preamble.
-#'preamble': '',
+#"preamble": "",
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'opentaxii.tex', u'opentaxii Documentation',
-   u'EclecticIQ', 'manual'),
+  ("index", "opentaxii.tex", u"opentaxii Documentation",
+   u"EclecticIQ", "manual"),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -182,8 +186,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'opentaxii', u'opentaxii Documentation',
-     [u'EclecticIQ'], 1)
+    ("index", "opentaxii", u"opentaxii Documentation",
+     [u"EclecticIQ"], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -196,9 +200,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'opentaxii', u'opentaxii Documentation',
-   u'EclecticIQ', 'opentaxii', 'One line description of project.',
-   'Miscellaneous'),
+  ("index", "opentaxii", u"opentaxii Documentation",
+   u"EclecticIQ", "opentaxii", "One line description of project.",
+   "Miscellaneous"),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -207,17 +211,37 @@ texinfo_documents = [
 # If false, no module index is generated.
 #texinfo_domain_indices = True
 
-# How to display URL addresses: 'footnote', 'no', or 'inline'.
-#texinfo_show_urls = 'footnote'
+# How to display URL addresses: "footnote", "no", or "inline".
+#texinfo_show_urls = "footnote"
 
-# If true, do not generate a @detailmenu in the "Top" node's menu.
+# If true, do not generate a @detailmenu in the "Top" node"s menu.
 #texinfo_no_detailmenu = False
 
 # use "master" branch if version is alpha else use release value
-github_release = 'master' if 'a' in __version__ else __version__
+github_release = "master" if "a" in __version__ else __version__
 
 github_release_prefix = (
-    'https://github.com/eclecticiq/OpenTAXII/blob/{version}/%s'
+    "https://github.com/eclecticiq/OpenTAXII/blob/{version}/%s"
     .format(version=github_release))
 
-extlinks = {'github-file': (github_release_prefix, '')}
+extlinks = {"github-file": (github_release_prefix, None)}
+
+# -- MyST configuration ----------------------
+
+myst_enable_extensions = [
+    "amsmath",
+    "colon_fence",
+    "deflist",
+    "dollarmath",
+    "fieldlist",
+    "html_admonition",
+    "html_image",
+    # "linkify",
+    "replacements",
+    "smartquotes",
+    "strikethrough",
+    "substitution",
+    "tasklist",
+]
+
+myst_heading_anchors = 7
