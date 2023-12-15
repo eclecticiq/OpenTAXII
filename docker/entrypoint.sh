@@ -67,11 +67,14 @@ cat > "$tmpConfig" <<-EOCONFIG
 
 domain: "${OPENTAXII_DOMAIN}"
 
-persistence_api:
-  class: opentaxii.persistence.sqldb.SQLDatabaseAPI
-  parameters:
-    db_connection: ${P_URL}
-    create_tables: yes
+taxii:
+  persistence_api:
+    class: opentaxii.persistence.sqldb.SQLDatabaseAPI
+    parameters:
+      db_connection: ${P_URL}
+      create_tables: yes
+
+taxii2:
 
 auth_api:
   class: opentaxii.auth.sqldb.SQLDatabaseAPI
