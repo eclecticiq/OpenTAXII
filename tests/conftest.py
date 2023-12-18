@@ -82,7 +82,7 @@ else:
 
 @pytest.fixture(autouse=True, scope="session")
 def setup_logging():
-    configure_logging({"": "debug"})
+    configure_logging({"": "debug", "sqlalchemy.engine": "debug"})
 
 
 def prepare_test_config(dbconnection):
