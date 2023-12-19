@@ -32,16 +32,11 @@ OpenTAXII architecture follows TAXII specification in its idea of TTA (TAXII tra
 .. toctree::
    :maxdepth: 1
 
-   installation
-   configuration
-   running
-   docker
-   auth
-   public-apis
-   opentaxii-apis
-   developer
-   changes
+   installation/index
+   usage/index
+   contribute/index
    license
+   references/index
 
 .. rubric:: External links
 
