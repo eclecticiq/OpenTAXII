@@ -1,5 +1,6 @@
+=====================
 How to use OpenTAXII?
-*********************
+=====================
 
 Requirements
 ============
@@ -21,7 +22,7 @@ Run OpenTAXII
         auth_api:
           class: opentaxii.auth.sqldb.SQLDatabaseAPI
           parameters:
-            db_connection: sqlite:////tmp/auth.db
+            db_connection: sqlite:////data/auth.db
             create_tables: yes
             secret: <secret_password1>
 
@@ -74,10 +75,10 @@ Configure OpenTAXII
     ..  code-block:: yaml
     
         ---
-
         accounts:
-          - username: user1
+          - username: admin
             password: <secret_password2>
+            is_admin: yes
 
     Change the value for the passwords to more secure values.
 
@@ -107,7 +108,7 @@ Interact with OpenTAXII
     .. code-block:: python
 
         server = taxii2client.Server(url='http://localhost:9000/taxii2/',
-                                     user='user1',
+                                     user='admin',
                                      password='<same-password-set-in-data-configuration')
 
 #.  Print your server's information.
