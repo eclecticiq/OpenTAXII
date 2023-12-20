@@ -67,4 +67,4 @@ jobs:
           sleep 1
         done
     - name: Test with tox
-      run: tox
+      run: tox --recreate
