@@ -20,12 +20,12 @@ class Account:
     def can_read(self, collection_name):
         return (
             self.is_admin or
-            self.permissions.get(collection_name) in ('read', 'modify'))
+            self.permissions.get(str(collection_name)) in ('read', 'modify'))
 
     def can_modify(self, collection_name):
         return (
             self.is_admin or
-            self.permissions.get(collection_name) == 'modify')
+            self.permissions.get(str(collection_name)) == 'modify')
 
     def __repr__(self):
         return (
