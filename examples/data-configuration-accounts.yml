@@ -1,0 +1,13 @@
+---
+accounts:
+  - username: user
+    password: user
+    permissions:
+      taxii1:
+        firstcollection: read
+      taxii2:
+        ec5f3df5-2b43-4037-9ae1-fe168554ed08:
+          PrivCollectionAlias: read
+  - username: admin
+    password: admin
+    is_admin: yes
