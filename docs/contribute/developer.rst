@@ -29,7 +29,7 @@ OpenTAXII repository has the following layout:
 
 Database schema
 ===============
-.. image:: db_schema_diagram.png
+.. image:: ../db_schema_diagram.png
   :width: 1000
 
 Compiling from source
