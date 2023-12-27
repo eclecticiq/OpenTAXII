@@ -164,6 +164,10 @@ class STIXObject(Base):
         sqlalchemy.Index("ix_opentaxii_stixobject_date_added_id", date_added, id),
     )
 
+    __mapper_args__ = {
+        "order_by": date_added
+    }
+
     @classmethod
     def from_entity(cls, entity: entities.STIXObject):
         """Generate database model from input entity."""
