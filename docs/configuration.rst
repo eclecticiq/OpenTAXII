@@ -120,8 +120,12 @@ Properties
           - ``db_connection`` — the database connetion string
           - ``create_tables`` — boolean, if true, create tables on startup
 
-      - ``max_content_length`` — the maximum size of the request body in bytes that the server can support
+      - ``max_content_length`` — the maximum size of the request body in bytes that the server can support. Required field
       - ``allow_custom_properties`` — boolean, if true, allow custom stix2 properties when posting objects (default: true)
+      - ``public_discovery`` - boolean, if true, do not require authentication for discovery of api roots (default: false)
+      - ``title`` - title of the server, returned as part of the discovery of api roots. Required field
+      - ``contact`` - contact for the server, returned as part of the discovery of api roots
+      - ``description`` - description of the server, returned as part of the discovery of api roots
 
     - ``logging`` — logging configuration.
 
