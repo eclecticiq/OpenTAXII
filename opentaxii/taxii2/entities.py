@@ -77,7 +77,8 @@ class Collection(Entity):
         return self.is_public_write or (
             account
             and (
-                account.is_admin or "modify" in account.permissions.get(self.id, "")
+                account.is_admin or
+                "modify" in account.permissions.get(str(self.id), "")
             )
         )
 
