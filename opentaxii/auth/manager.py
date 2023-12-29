@@ -1,4 +1,5 @@
 import structlog
+from opentaxii.persistence.exceptions import DoesNotExistError
 
 log = structlog.getLogger(__name__)
 
@@ -58,11 +59,12 @@ class AuthManager:
         # Check for taxii2 collections
         for api_root, collections in list(account.permissions.get("taxii2", {}).items()):
             for colname, permission in collections.items():
-                collection = self.server.servers.taxii2.persistence.get_collection(api_root, colname)
-                if not collection:
+                try:
+                    collection = self.server.servers.taxii2.persistence.get_collection(api_root, colname)
+                except DoesNotExistError:
                     log.warning(
                         "update_account.unknown_collection",
-                        collection=colname)
+                        api_root=api_root, collection=colname)
                 else:
                     permission_collections[str(collection.id)] = permission
 
