@@ -1,54 +1,57 @@
-db:
-  image: postgres:9.4
-  environment:
-    POSTGRES_USER: user
-    POSTGRES_PASSWORD: password
-    POSTGRES_DB: opentaxii
+version: '3'
 
-authdb:
-  image: postgres:9.4
-  environment:
-    POSTGRES_USER: user1
-    POSTGRES_PASSWORD: password1
-    POSTGRES_DB: opentaxii1
+services:
+  db:
+    image: postgres:9.4
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: opentaxii
 
-opentaxii:
-  image: eclecticiq/opentaxii
-  environment:
-    OPENTAXII_AUTH_SECRET: secret
-    OPENTAXII_DOMAIN: 192.168.59.103:9000
-    OPENTAXII_USER: user
-    OPENTAXII_PASS: pass
-    DATABASE_HOST: db
-    DATABASE_NAME: opentaxii
-    DATABASE_USER: user
-    DATABASE_PASS: password
-    AUTH_DATABASE_HOST: authdb
-    AUTH_DATABASE_NAME: opentaxii1
-    AUTH_DATABASE_USER: user1
-    AUTH_DATABASE_PASS: password1
-  volumes:
-    - ./:/input:ro
-  ports:
-    - 9000:9000
-  links:
-    - db:db
-    - authdb:authdb
+  authdb:
+    image: postgres:9.4
+    environment:
+      POSTGRES_USER: user1
+      POSTGRES_PASSWORD: password1
+      POSTGRES_DB: opentaxii1
 
-opentaxii2:
-  image: eclecticiq/opentaxii
-  environment:
-    OPENTAXII_AUTH_SECRET: secrettwo
-    OPENTAXII_DOMAIN: 192.168.59.103
-    OPENTAXII_USER: user1
-    OPENTAXII_PASS: pass1
-    DATABASE_HOST: authdb
-    DATABASE_NAME: opentaxii1
-    DATABASE_USER: user1
-    DATABASE_PASS: password1
-  volumes:
-    - ./:/input:ro
-  ports:
-    - 9001:9000
-  links:
-    - authdb:authdb
+  opentaxii:
+    image: eclecticiq/opentaxii
+    environment:
+      OPENTAXII_AUTH_SECRET: secret
+      OPENTAXII_DOMAIN: 192.168.59.103:9000
+      OPENTAXII_USER: user
+      OPENTAXII_PASS: pass
+      DATABASE_HOST: db
+      DATABASE_NAME: opentaxii
+      DATABASE_USER: user
+      DATABASE_PASS: password
+      AUTH_DATABASE_HOST: authdb
+      AUTH_DATABASE_NAME: opentaxii1
+      AUTH_DATABASE_USER: user1
+      AUTH_DATABASE_PASS: password1
+    volumes:
+      - ./:/input:ro
+    ports:
+      - 9000:9000
+    links:
+      - db:db
+      - authdb:authdb
+
+  opentaxii2:
+    image: eclecticiq/opentaxii
+    environment:
+      OPENTAXII_AUTH_SECRET: secrettwo
+      OPENTAXII_DOMAIN: 192.168.59.103
+      OPENTAXII_USER: user1
+      OPENTAXII_PASS: pass1
+      DATABASE_HOST: authdb
+      DATABASE_NAME: opentaxii1
+      DATABASE_USER: user1
+      DATABASE_PASS: password1
+    volumes:
+      - ./:/input:ro
+    ports:
+      - 9001:9000
+    links:
+      - authdb:authdb
