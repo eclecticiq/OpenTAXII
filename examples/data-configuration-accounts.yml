@@ -6,13 +6,13 @@ accounts:
       taxii1:
         firstcollection: read
       taxii2:
-        ea9cdf30-dc20-4ec3-b308-bf658d865cae:
+        ea9cdf30-root-idc3-b308-bf658d865cae:
           privCollectionAlias: read
   - username: user_write
     password: user_write
     permissions:
       taxii2:
-        ea9cdf30-dc20-4ec3-b308-bf658d865cae:
+        ea9cdf30-root-idc3-b308-bf658d865cae:
           privCollectionAlias: modify
   - username: admin
     password: admin
