@@ -48,7 +48,6 @@ def push_data(api_root_url, collection):
 
 
 def subscribe(api_root_url, collection):
-    total_objects_pulled = 0
     added_after = None
 
     # Get Authentication Token
