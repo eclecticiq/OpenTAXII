@@ -1,4 +1,5 @@
 import structlog
+from opentaxii.persistence.exceptions import DoesNotExistError
 
 log = structlog.getLogger(__name__)
 
@@ -44,13 +45,30 @@ class AuthManager:
         NOTE: Additional method that is only used in the helper scripts
         shipped with OpenTAXII.
         '''
-        for colname, permission in list(account.permissions.items()):
+        permission_collections = {}
+        # Check for taxii1 collections
+        for colname, permission in list(account.permissions.get("taxii1", {}).items()):
             collection = self.server.servers.taxii1.persistence.get_collection(colname)
             if not collection:
                 log.warning(
                     "update_account.unknown_collection",
                     collection=colname)
-                account.permissions.pop(colname)
+            else:
+                permission_collections[colname] = permission
+
+        # Check for taxii2 collections
+        for api_root, collections in list(account.permissions.get("taxii2", {}).items()):
+            for colname, permission in collections.items():
+                try:
+                    collection = self.server.servers.taxii2.persistence.get_collection(api_root, colname)
+                except DoesNotExistError:
+                    log.warning(
+                        "update_account.unknown_collection",
+                        api_root=api_root, collection=colname)
+                else:
+                    permission_collections[str(collection.id)] = permission
+
+        account.permissions = permission_collections
         account = self.api.update_account(account, password)
         return account
 
