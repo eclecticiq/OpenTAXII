@@ -64,6 +64,8 @@ class ServerConfig(dict):
         "title",
         "public_discovery",
         "allow_custom_properties",
+        "max_pagination_limit",
+        "default_pagination_limit"
     )
     ALL_VALID_OPTIONS = VALID_BASE_OPTIONS + VALID_TAXII_OPTIONS + VALID_TAXII1_OPTIONS
 
