@@ -984,7 +984,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         job_details = []
         for obj in objects:
             if not obj.get("modified"):
-                obj["modified"] = obj.get("created") or datetime.datetime.now(datetime.timezone.utc).isoformat()
+                obj["modified"] = obj.get("created") or datetime.datetime.now(datetime.timezone.utc).strftime(DATETIMEFORMAT)
             version = datetime.datetime.strptime(
                 obj["modified"], DATETIMEFORMAT
             ).replace(tzinfo=datetime.timezone.utc)
@@ -1006,7 +1006,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
                         id=obj["id"],
                         collection_id=collection_id,
                         type=obj["id"].split("--")[0],
-                        spec_version=obj["spec_version"],
+                        spec_version=obj.get("spec_version", 2.1),
                         date_added=datetime.datetime.now(datetime.timezone.utc),
                         version=version,
                         serialized_data={
