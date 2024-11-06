@@ -105,10 +105,16 @@ def add_api_root():
         "--default", action="store_true", help="Set as default api root"
     )
 
+    parser.add_argument(
+        "--public", action="store_true", help="Create a public api root"
+    )
     args = parser.parse_args()
     with app.app_context():
         app.taxii_server.servers.taxii2.persistence.api.add_api_root(
-            title=args.title, description=args.description, default=args.default
+            title=args.title,
+            description=args.description,
+            default=args.default,
+            is_public=args.public,
         )
 
 

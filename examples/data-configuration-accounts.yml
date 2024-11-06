@@ -1,0 +1,19 @@
+---
+accounts:
+  - username: user_read
+    password: user_read
+    permissions:
+      taxii1:
+        firstcollection: read
+      taxii2:
+        ea9cdf30-root-idc3-b308-bf658d865cae:
+          privCollectionAlias: read
+  - username: user_write
+    password: user_write
+    permissions:
+      taxii2:
+        ea9cdf30-root-idc3-b308-bf658d865cae:
+          privCollectionAlias: modify
+  - username: admin
+    password: admin
+    is_admin: yes
