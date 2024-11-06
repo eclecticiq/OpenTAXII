@@ -983,6 +983,8 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         self.db.session.commit()
         job_details = []
         for obj in objects:
+            if not obj.get("modified"):
+                obj["modified"] = obj.get("created") or datetime.datetime.now(datetime.timezone.utc).isoformat()
             version = datetime.datetime.strptime(
                 obj["modified"], DATETIMEFORMAT
             ).replace(tzinfo=datetime.timezone.utc)
