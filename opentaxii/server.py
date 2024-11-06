@@ -669,7 +669,7 @@ class TAXII2Server(BaseTAXIIServer):
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in objects
@@ -752,7 +752,7 @@ class TAXII2Server(BaseTAXIIServer):
                     {
                         "id": obj.id,
                         "type": obj.type,
-                        "spec_version": obj.type,
+                        "spec_version": obj.spec_version,
                         **obj.serialized_data,
                     }
                     for obj in versions
