@@ -270,22 +270,26 @@ def sync_collections(server, collections, force_deletion=False):
 def sync_accounts(server, accounts):
     manager = server.auth
 
-    defined_by_username = {a["username"]: a for a in accounts}
     existing_by_username = {a.username: a for a in manager.get_accounts()}
+    delete_accounts = []
 
     created_counter = 0
     updated_counter = 0
     for account in accounts:
         existing = existing_by_username.get(account["username"])
         if existing:
+            if account.get("is_delete"):
+                delete_accounts.append(account["username"])
+                continue
             properties = account.copy()
-            password = properties.pop("password")
-            existing.permissions = properties.get("permissions", {})
-            existing.is_admin = properties.get("is_admin", False)
-            existing = manager.update_account(existing, password)
+            existing.permissions = properties.get("permissions", existing.permissions)
+            existing.is_admin = properties.get("is_admin", existing.is_admin)
+            existing = manager.update_account(existing, properties.get("password"))
             log.info("sync_accounts.updated", username=existing.username)
             updated_counter += 1
         else:
+            if account.get("is_delete"):
+                continue
             obj = Account(
                 id=None,
                 username=account["username"],
@@ -296,10 +300,7 @@ def sync_accounts(server, accounts):
             log.info("sync_accounts.created", username=obj.username)
             created_counter += 1
     deleted_counter = 0
-    missing_usernames = set(existing_by_username.keys()) - set(
-        defined_by_username.keys()
-    )
-    for username in missing_usernames:
+    for username in delete_accounts:
         manager.delete_account(username)
         deleted_counter += 1
         log.info("sync_accounts.deleted", username=username)
