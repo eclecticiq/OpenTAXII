@@ -1,7 +1,8 @@
 from threading import get_ident
 
-from sqlalchemy import engine, orm
+from sqlalchemy import engine, orm, event, exc
 from sqlalchemy.orm.exc import UnmappedClassError
+import os
 
 
 class _QueryProperty:
@@ -30,6 +31,20 @@ class SQLAlchemyDB:
         self.session_options = session_options
         self.Model = self.extend_base_model(base_model)
         self._session = None
+
+        @event.listens_for(self.engine, "connect")
+        def connect(dbapi_connection, connection_record):
+            connection_record.info["pid"] = os.getpid()
+
+        @event.listens_for(self.engine, "checkout")
+        def checkout(dbapi_connection, connection_record, connection_proxy):
+            pid = os.getpid()
+            if connection_record.info["pid"] != pid:
+                connection_record.dbapi_connection = connection_proxy.dbapi_connection = None
+                raise exc.DisconnectionError(
+                    "Connection record belongs to pid %s, "
+                    "attempting to check out in pid %s" % (connection_record.info["pid"], pid)
+                )
 
     def extend_base_model(self, base):
         if not getattr(base, 'query_class', None):
@@ -70,5 +85,6 @@ class SQLAlchemyDB:
     def init_app(self, app):
         @app.teardown_appcontext
         def shutdown_session(response_or_exc):
-            self.session.remove()
+            if self._session:
+                self._session.remove()
             return response_or_exc

@@ -162,12 +162,13 @@ class AtomicStreamHandler(logging.StreamHandler):
 
 
 def sync_conf_dict_into_db(server, config, force_collection_deletion=False):
-    services = config.get("services", [])
-    sync_services(server.servers.taxii1, services)
-    collections = config.get("collections", [])
-    sync_collections(
-        server.servers.taxii1, collections, force_deletion=force_collection_deletion
-    )
+    if server.servers.taxii1:
+        services = config.get("services", [])
+        sync_services(server.servers.taxii1, services)
+        collections = config.get("collections", [])
+        sync_collections(
+            server.servers.taxii1, collections, force_deletion=force_collection_deletion
+        )
     accounts = config.get("accounts", [])
     sync_accounts(server, accounts)
 
