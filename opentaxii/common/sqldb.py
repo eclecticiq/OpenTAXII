@@ -7,21 +7,28 @@ try:
 except ImportError:
     from sqlalchemy.ext.declarative import DeclarativeMeta
 
+selected_db = None
+
 
 class BaseSQLDatabaseAPI:
     BASEMODEL: ClassVar[Type[DeclarativeMeta]]
 
     def __init__(self, db_connection, create_tables=False, **engine_parameters):
         super().__init__()
-        self.db = SQLAlchemyDB(
-            db_connection,
-            self.BASEMODEL,
-            session_options={
-                "autocommit": False,
-                "autoflush": True,
-            },
-            **engine_parameters
-        )
+        global selected_db
+        if not selected_db:
+            selected_db = SQLAlchemyDB(
+                db_connection,
+                self.BASEMODEL,
+                session_options={
+                    "autocommit": False,
+                    "autoflush": True,
+                },
+                **engine_parameters
+            )
+        # Use same db object in auth and taxii persistent to keep exact track of connection pools
+        self.db = selected_db
+        self.db.Model = self.db.extend_base_model(self.BASEMODEL)
         if create_tables:
             self.db.create_all_tables()
 
