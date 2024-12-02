@@ -983,14 +983,13 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         self.db.session.commit()
         job_details = []
         for obj in objects:
-            if not obj.get("modified"):
-                obj["modified"] = obj.get("created") or datetime.datetime.now(datetime.timezone.utc).strftime(DATETIMEFORMAT)
+            modified_date = obj.get("modified") or obj.get("created") or datetime.datetime.now(datetime.timezone.utc).strftime(DATETIMEFORMAT)
             version = datetime.datetime.strptime(
-                obj["modified"], DATETIMEFORMAT
+                modified_date, DATETIMEFORMAT
             ).replace(tzinfo=datetime.timezone.utc)
-            if (
-                not self.db.session.query(literal(True))
-                .filter(
+            modified_object = True
+            if obj.get("modified") or obj.get("created"):
+                modified_object = not self.db.session.query(literal(True)).filter(
                     self.db.session.query(taxii2models.STIXObject)
                     .filter(
                         taxii2models.STIXObject.id == obj["id"],
@@ -998,9 +997,15 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
                         taxii2models.STIXObject.version == version,
                     )
                     .exists()
-                )
-                .scalar()
-            ):
+                ).scalar()
+            else:
+                stored_object = self.db.session.query(taxii2models.STIXObject).filter(
+                        taxii2models.STIXObject.id == obj["id"],
+                        taxii2models.STIXObject.collection_id == collection_id,
+                    ).order_by(taxii2models.STIXObject.date_added.desc()).first()
+                if stored_object and stored_object.serialized_data == obj:
+                    modified_object = False
+            if modified_object:
                 self.db.session.add(
                     taxii2models.STIXObject(
                         id=obj["id"],
@@ -1009,11 +1014,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
                         spec_version=obj.get("spec_version", 2.1),
                         date_added=datetime.datetime.now(datetime.timezone.utc),
                         version=version,
-                        serialized_data={
-                            key: value
-                            for (key, value) in obj.items()
-                            if key not in ["id", "type", "spec_version"]
-                        },
+                        serialized_data=obj,
                     )
                 )
             job_detail = taxii2models.JobDetail(
