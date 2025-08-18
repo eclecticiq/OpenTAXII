@@ -7,13 +7,13 @@ on:
       - master
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10", "pypy-3.7"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "pypy-3.10"]
     services:
       mariadb:
-        image: mariadb
+        image: mariadb:10.11
         env:
           MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: yes
           MARIADB_DATABASE: test
@@ -21,7 +21,7 @@ jobs:
           - 3307:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
       mysql:
-        image: mysql
+        image: mysql:8.1
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
           MYSQL_DATABASE: test
@@ -29,7 +29,7 @@ jobs:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
       postgres:
-        image: postgres
+        image: postgres:15.4
         env:
           POSTGRES_PASSWORD: test
           POSTGRES_USER: test
@@ -38,13 +38,13 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install lxml dependencies
-      if: ${{ matrix.python-version == 'pypy-3.7' }}
+      if: ${{ matrix.python-version == 'pypy-3.10' }}
       run: |
         sudo apt-get install libxml2-dev libxslt-dev
     - name: Install dependencies
@@ -67,4 +67,4 @@ jobs:
           sleep 1
         done
     - name: Test with tox
-      run: tox
+      run: tox --recreate
