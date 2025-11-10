@@ -99,6 +99,6 @@ cp -f $tmpConfig /opentaxii.yml
 [ "$AUTH_DATABASE_HOST" ] && wait_for_port $AUTH_DATABASE_HOST ${AUTH_DATABASE_PORT-5432}
 
 # Sync data configuration if it is present
-[ -f /input/data-configuration.yml ] && opentaxii-sync-data -f /input/data-configuration.yml 2>/dev/null
+[ -f /input/data-configuration.yml ] && opentaxii-sync-data -f /input/data-configuration.yml
 
 exec "$@"
