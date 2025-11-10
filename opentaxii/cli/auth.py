@@ -21,6 +21,7 @@ def create_account(argv=None):
         account = app.taxii_server.auth.api.create_account(
             username=args.username,
             password=args.password,
+            is_admin=args.admin
         )
         token = app.taxii_server.auth.authenticate(
             username=account.username,
@@ -67,3 +68,24 @@ def update_account(argv=None):
                     print('now user is mortal')
                 return
     print('cannot find account with given username')
+
+
+def delete_account(argv=None):
+    parser = argparse.ArgumentParser(
+        description="Delete Account via OpenTAXII Auth API",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument("-u", "--username", required=True)
+
+    if argv is None:
+        argv = sys.argv[1:]
+    args = parser.parse_args(argv)
+
+    with app.app_context():
+        account = app.taxii_server.auth.api.delete_account(
+            username=args.username
+        )
+        if account:
+            print('Deleted Account: {}'.format(account))
+        else:
+            print('Cannot Delete Account: {}'.format(args.username))
