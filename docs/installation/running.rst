@@ -54,7 +54,7 @@ Make sure you configure your TAXII services in OpenTAXII with proper protocol bi
 
 You can use multiple protocol bindings per service. That would tell OpenTAXII you want to advertise services over both HTTPs and HTTP. TAXII services create external URLs according to their protocol bindings, using ``http://`` or ``https://`` schemas.
 
-Continue to :doc:`Manage OpenTAXII <../usage/manage>` page to learn how to OpenTAXII create services, collections, and accounts.
+Continue to :doc:`Manage OpenTAXII <../usage/index>` pages to learn how to manage the OpenTAXII instance.
 
 .. vim: set spell spelllang=en:
 

@@ -2,6 +2,9 @@
 Sending requests to services
 ============================
 
+TAXII 1
+=======
+
 The easiest way to send requests to TAXII services is to use `Cabby library <http://github.com/eclecticiq/cabby>`_ CLI tools::
 
     (venv) $ pip install cabby
@@ -128,3 +131,34 @@ You should see the following output::
 
 
 See `Cabby documentation <http://cabby.readthedocs.org>`_ for more examples.
+
+TAXII 2
+=======
+
+HTTP
+----
+
+You can make HTTP requests directly to the server. The discovery endpoint is at
+``/taxii2/``. The trailing ``/`` is important.
+
+Then, the other endpoints are the ones provided by the `TAXII 2.1 specs
+<https://docs.oasis-open.org/cti/taxii/v2.1/csprd02/taxii-v2.1-csprd02.html#_Toc16526015>`_. 
+
+Python
+------
+
+.. code-block:: python
+
+  import taxii2client
+
+  # With public discovery
+  server = taxii2client.Server(url="http://localhost:9000/taxii2/")
+
+  print(server.title)
+  for root in server.api_roots:
+      print(root.url)
+
+  # With authentication
+  api_root = taxii2client.ApiRoot(
+    root.url, user="<username>", password="<password>"
+  )
