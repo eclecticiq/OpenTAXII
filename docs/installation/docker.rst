@@ -1,5 +1,5 @@
-Docker
-======
+Run OpenTAXII on Docker
+=======================
 
 OpenTAXII can also be run using docker. This guide assumes that you have access to a local or remote docker server, and won't go into the setup of docker.
 
@@ -147,8 +147,6 @@ This configuration starts two containers: ``opentaxii`` and ``db``, and creates 
 
 .. rubric:: Next steps
 
-Continue to :doc:`Authentication <auth>` page to learn how OpenTAXII authentication process works.
-
-
+Continue to :doc:`Configuration <configuration>` page to learn how to configure OpenTAXII.
 
 .. vim: set spell spelllang=en:
