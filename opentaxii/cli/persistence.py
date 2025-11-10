@@ -1,7 +1,9 @@
 import argparse
+import uuid
 
 import structlog
 import yaml
+
 from opentaxii.cli import app
 from opentaxii.entities import Account
 from opentaxii.local import context
@@ -104,11 +106,26 @@ def add_api_root():
     parser.add_argument(
         "--default", action="store_true", help="Set as default api root"
     )
+    parser.add_argument("--public", action="store_true", help="Set as default api root")
+    parser.add_argument(
+        "-i",
+        "--id",
+        required=False,
+        help="The UUID to assign else a UUID4 is generated",
+    )
 
     args = parser.parse_args()
+
+    if args.id is not None:
+        uuid.UUID(args.id)
+
     with app.app_context():
         app.taxii_server.servers.taxii2.persistence.api.add_api_root(
-            title=args.title, description=args.description, default=args.default
+            title=args.title,
+            description=args.description,
+            default=args.default,
+            public=args.public,
+            api_root_id=args.id,
         )
 
 
