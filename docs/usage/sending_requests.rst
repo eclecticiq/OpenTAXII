@@ -1,7 +1,4 @@
-=============
-Use OpenTAXII
-=============
-
+============================
 Sending requests to services
 ============================
 
@@ -9,7 +6,7 @@ The easiest way to send requests to TAXII services is to use `Cabby library <htt
 
     (venv) $ pip install cabby
 
-If you are running OpenTAXII in default configuration and you created services using :doc:`provided examples <configuration>`, you should
+If you are running OpenTAXII in default configuration and you created services using :doc:`provided examples <../installation/configuration>`, you should
 be able to communicate with the services.
 
 Assuming OpenTAXII is running on ``http://localhost:9000``, to get the list of advertised services, run::
@@ -131,19 +128,3 @@ You should see the following output::
 
 
 See `Cabby documentation <http://cabby.readthedocs.org>`_ for more examples.
-
-Health check
-============
-
-OpenTAXII has an endpoint that can be used to check health of the service::
-
-    $ curl http://localhost:9000/management/health
-    {
-      "alive": true
-    }
-
-.. rubric:: Next steps
-
-Continue to :doc:`Authentication <../usage/auth>` page to learn how OpenTAXII authentication process works.
-
-.. vim: set spell spelllang=en:

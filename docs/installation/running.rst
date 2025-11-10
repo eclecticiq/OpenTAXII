@@ -2,23 +2,6 @@
 Running OpenTAXII
 =================
 
-.. highlight:: sh
-
-Here we describe how to run OpenTAXII in a *development* or *production* mode. Development mode activates `Flask <http://flask.pocoo.org/>`_ debug mode, simplifies log messages (for humans) and runs the server in one thread. While in production mode there are no debug messages, proper json log messages and multithreaded if configured.
-
-Development mode
-================
-
-To run the server in development mode use the CLI command shipped with OpenTAXII package::
-
-   (venv) $ opentaxii-run-dev
-
-This will start OpenTAXII in a development mode and bind it to ``localhost:9000``.
-
-
-Production mode
-===============
-
 To run OpenTAXII in production it is recommended to use `standalone WSGI
 container
 <http://flask.pocoo.org/docs/1.0/tutorial/deploy/#run-with-a-production-server>`_

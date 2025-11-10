@@ -1,9 +1,6 @@
-================
-Manage OpenTAXII
-================
-
-Services, collections and accounts
-==================================
+=========================================
+Manage Services, collections and accounts
+=========================================
 
 Services, collections and accounts can be created with CLI command ``opentaxii-sync-data`` or with custom code talking to a specific Persistent API implementation/backend.
 

@@ -9,4 +9,5 @@ Use OpenTAXII
 
     manage
     auth
-    use-opentaxii
+    sending_requests
+    health_check

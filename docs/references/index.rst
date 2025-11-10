@@ -7,5 +7,6 @@ References
     :titlesonly:
     :glob:
 
-    opentaxii-apis
-    public-apis
+    opentaxii_apis
+    public_apis
+    changes
