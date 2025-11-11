@@ -124,7 +124,7 @@ def add_api_root():
             title=args.title,
             description=args.description,
             default=args.default,
-            public=args.public,
+            is_public=args.public,
             api_root_id=args.id,
         )
 

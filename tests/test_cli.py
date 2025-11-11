@@ -258,7 +258,7 @@ def test_update_account(app, account, capsys, argv, raises, message, stdout, std
                 "title": "my new api root",
                 "description": None,
                 "default": False,
-                "public": False,
+                "is_public": False,
                 "api_root_id": None,
             },  # expected_call
             id="title only",
@@ -273,7 +273,7 @@ def test_update_account(app, account, capsys, argv, raises, message, stdout, std
                 "title": "my new api root",
                 "description": "my description",
                 "default": False,
-                "public": False,
+                "is_public": False,
                 "api_root_id": None,
             },  # expected_call
             id="title, description",
@@ -288,7 +288,7 @@ def test_update_account(app, account, capsys, argv, raises, message, stdout, std
                 "title": "my new api root",
                 "description": None,
                 "default": True,
-                "public": False,
+                "is_public": False,
                 "api_root_id": None,
             },  # expected_call
             id="title, default",
@@ -303,7 +303,7 @@ def test_update_account(app, account, capsys, argv, raises, message, stdout, std
                 "title": "my new api root",
                 "description": "my description",
                 "default": True,
-                "public": False,
+                "is_public": False,
                 "api_root_id": None,
             },  # expected_call
             id="title, description, default",
@@ -318,7 +318,7 @@ def test_update_account(app, account, capsys, argv, raises, message, stdout, std
                 "title": "my new api root",
                 "description": None,
                 "default": False,
-                "public": True,
+                "is_public": True,
                 "api_root_id": None,
             },  # expected_call
             id="title, public",
@@ -338,7 +338,7 @@ def test_update_account(app, account, capsys, argv, raises, message, stdout, std
                 "title": "my new api root",
                 "description": None,
                 "default": False,
-                "public": False,
+                "is_public": False,
                 "api_root_id": "7468eafb-585d-402e-b6b9-49fe76492f9e",
             },  # expected_call
             id="title, id",
@@ -380,7 +380,7 @@ def test_add_api_root(
     with mock.patch("opentaxii.cli.persistence.app", app), mock.patch(
         "sys.argv", [""] + argv
     ), mock.patch.object(
-        app.taxii_server.servers.taxii2.persistence.api, "add_api_root"
+        app.taxii_server.servers.taxii2.persistence.api, "add_api_root", autospec=True
     ) as mock_add_api_root:
         with conditional_raises(raises) as exception:
             add_api_root()
