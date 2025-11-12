@@ -6,6 +6,7 @@ Changelog
 * Drop EOL Python 3.6 and 3.7 support
 * Add Python 3.11 support
 * Remove mypy_extensions dependency
+* Fix returned "spec_version" was equal to the "type" #237 (@meetghodasara-crest)
 
 0.9.3 (2022-10-11)
 ------------------

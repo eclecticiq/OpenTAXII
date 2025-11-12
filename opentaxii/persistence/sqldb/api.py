@@ -565,8 +565,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         :param bool default: [Optional, False] If the new api should be the
             default
         :param bool is_public: whether this is a publicly readable API root
-        :param api_root_id: A 32 chars global ID, ideally UUID. If not provided
-            a UUID4 is generated.
+        :param api_root_id: The UUID to assign else a UUID4 is generated
 
         :return: The added ApiRoot entity.
         """
