@@ -1,0 +1,24 @@
+domain: "localhost:9000"
+
+taxii2:
+  persistence_api:
+    class: opentaxii.persistence.sqldb.Taxii2SQLDatabaseAPI
+    parameters:
+      db_connection: sqlite:////data/data.db
+      create_tables: yes
+  title: "TAXII2 Server"
+  public_discovery: true
+  max_content_length: 209715200
+
+auth_api:
+  class: opentaxii.auth.sqldb.SQLDatabaseAPI
+  parameters:
+    db_connection: sqlite:////data/auth.db
+    create_tables: yes
+    secret: not-secret
+
+taxii1:
+
+logging:
+  opentaxii: info
+  root: info

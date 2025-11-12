@@ -74,10 +74,13 @@ This docker container exposes two volumes, which can be attached to a running in
 ``/data``
     This volume will contain the SQLite databases used by the default instance.
 
-``/input``
-    If you want to pre-load the running instance with services/collections/accounts,
-    put provided :github-file:`data-configuration.yml <examples/data-configuration.yml>` or custom configuration file
-    in ``/input`` folder.
+``/input/data-configuration.yml``
+    If you want to pre-load the running instance with
+    services/collections/accounts, An example is provided with
+    :github-file:`data-configuration.yml <examples/data-configuration.yml>`.
+
+``/input/opentaxii.yml``
+    To overwrite the default configuration used by the docker instance.
 
 .. code-block:: shell
 
@@ -111,6 +114,17 @@ And building the image is then done using:
 
   $ docker build -t eclecticiq/opentaxii-mysql .
 
+
+TAXII 2 instance with Compose
+-----------------------------
+
+Checkout the configuration at: :github-file:`examples/docker-compose-taxii2.yml <examples/docker-compose-taxii2.yml>`.
+
+To add dummy data, you can execute:
+
+.. code-block:: shell
+
+    docker exec -i examples-opentaxii-1 bash < examples/taxii2/data-setup.sh
 
 Full Example with Compose
 -------------------------

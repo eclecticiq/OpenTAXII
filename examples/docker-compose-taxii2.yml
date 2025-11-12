@@ -1,0 +1,11 @@
+services:
+  opentaxii:
+    image: eclecticiq/opentaxii:latest
+    environment:
+      # Required for the CLI commands to use the correct config
+      OPENTAXII_CONFIG: /opentaxii.yml
+    volumes:
+      - ./taxii2/opentaxii.yml:/input/opentaxii.yml:ro
+    ports:
+      - 9000:9000
+
