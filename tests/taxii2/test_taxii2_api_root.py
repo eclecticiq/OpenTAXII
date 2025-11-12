@@ -1,14 +1,21 @@
 import json
+import uuid
 from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
-from opentaxii.persistence.sqldb import taxii2models
 from sqlalchemy import literal
-from tests.taxii2.utils import (API_ROOTS, API_ROOTS_WITH_DEFAULT,
-                                GET_API_ROOT_MOCK, config_noop,
-                                config_override, server_mapping_noop,
-                                server_mapping_remove_fields)
+
+from opentaxii.persistence.sqldb import taxii2models
+from tests.taxii2.utils import (
+    API_ROOTS,
+    API_ROOTS_WITH_DEFAULT,
+    GET_API_ROOT_MOCK,
+    config_noop,
+    config_override,
+    server_mapping_noop,
+    server_mapping_remove_fields,
+)
 
 
 @pytest.mark.parametrize(
@@ -231,13 +238,14 @@ def test_api_root_unauthenticated(
 
 
 @pytest.mark.parametrize(
-    ["title", "description", "default", "is_public", "db_api_roots"],
+    ["title", "description", "default", "is_public", "api_root_id", "db_api_roots"],
     [
         pytest.param(
             "my new api root",  # title
             None,  # description
             False,  # default
             False,  # is_public
+            None,  # api_root_id
             [],  # db_api_roots
             id="title only",
         ),
@@ -246,6 +254,7 @@ def test_api_root_unauthenticated(
             "my description",  # description
             False,  # default
             True,  # is_public
+            None,  # api_root_id
             [],  # db_api_roots
             id="title, description",
         ),
@@ -254,25 +263,50 @@ def test_api_root_unauthenticated(
             None,  # description
             True,  # default
             False,  # is_public
+            None,  # api_root_id
             [],  # db_api_roots
             id="title, default",
+        ),
+        pytest.param(
+            "my new api root",  # title
+            None,  # description
+            False,  # default
+            False,  # is_public
+            "7468eafb-585d-402e-b6b9-49fe76492f9e",  # api_root_id
+            [],  # db_api_roots
+            id="title, id (str)",
+        ),
+        pytest.param(
+            "my new api root",  # title
+            None,  # description
+            False,  # default
+            False,  # is_public
+            uuid.UUID("7468eafb-585d-402e-b6b9-49fe76492f9e"),  # api_root_id
+            [],  # db_api_roots
+            id="title, id (uuid)",
         ),
         pytest.param(
             "my new api root",  # title
             "my description",  # description
             True,  # default
             True,  # is_public
+            None,  # api_root_id
             API_ROOTS_WITH_DEFAULT,  # db_api_roots
             id="title, description, default, existing",
         ),
     ],
     indirect=["db_api_roots"],
 )
-def test_add_api_root(app, title, description, default, is_public, db_api_roots):
+def test_add_api_root(
+    app, title, description, default, is_public, api_root_id, db_api_roots
+):
     api_root = app.taxii_server.servers.taxii2.persistence.api.add_api_root(
-        title, description, default, is_public
+        title, description, default, is_public, api_root_id
     )
-    assert api_root.id is not None
+    if api_root_id:
+        assert str(api_root.id) == str(api_root_id)
+    else:
+        assert api_root.id is not None
     assert api_root.title == title
     assert api_root.description == description
     assert api_root.default == default
