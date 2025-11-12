@@ -7,18 +7,25 @@ from typing import Dict, List, Optional, Tuple
 
 import six
 import structlog
-from opentaxii.common.sqldb import BaseSQLDatabaseAPI
-from opentaxii.persistence import (OpenTAXII2PersistenceAPI,
-                                   OpenTAXIIPersistenceAPI)
-from opentaxii.persistence.sqldb import taxii2models
-from opentaxii.taxii2 import entities
-from opentaxii.taxii2.utils import DATETIMEFORMAT
 from sqlalchemy import and_, func, literal, or_
 from sqlalchemy.orm import Query, load_only
 
+from opentaxii.common.sqldb import BaseSQLDatabaseAPI
+from opentaxii.persistence import OpenTAXII2PersistenceAPI, OpenTAXIIPersistenceAPI
+from opentaxii.persistence.sqldb import taxii2models
+from opentaxii.taxii2 import entities
+from opentaxii.taxii2.utils import DATETIMEFORMAT
+
 from . import converters as conv
-from .models import (Base, ContentBlock, DataCollection, InboxMessage,
-                     ResultSet, Service, Subscription)
+from .models import (
+    Base,
+    ContentBlock,
+    DataCollection,
+    InboxMessage,
+    ResultSet,
+    Service,
+    Subscription,
+)
 
 __all__ = ["SQLDatabaseAPI"]
 
@@ -548,19 +555,26 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         description: Optional[str] = None,
         default: Optional[bool] = False,
         is_public: bool = False,
+        api_root_id: Optional[str] = None,
     ) -> entities.ApiRoot:
         """
         Add a new api root.
 
         :param str title: Title of the new api root
         :param str description: [Optional] Description of the new api root
-        :param bool default: [Optional, False] If the new api should be the default
+        :param bool default: [Optional, False] If the new api should be the
+            default
         :param bool is_public: whether this is a publicly readable API root
+        :param api_root_id: The UUID to assign else a UUID4 is generated
 
         :return: The added ApiRoot entity.
         """
         api_root = taxii2models.ApiRoot(
-            title=title, description=description, default=default, is_public=is_public
+            id=api_root_id,
+            title=title,
+            description=description,
+            default=default,
+            is_public=is_public,
         )
         self.db.session.add(api_root)
         self.db.session.commit()
