@@ -599,6 +599,7 @@ class TAXII2Server(BaseTAXIIServer):
     )
     def manifest_handler(self, api_root_id, collection_id_or_alias):
         filter_params = validate_list_filter_params(request.args, self.persistence.api)
+        filter_params["limit"] = self.config.get("max_pagination_limit") if filter_params.get("limit", self.config.get("max_pagination_limit")) > self.config.get("max_pagination_limit") else filter_params.get("limit", self.config.get("default_pagination_limit"))
         try:
             manifest, more = self.persistence.get_manifest(
                 api_root_id=api_root_id,
@@ -652,6 +653,7 @@ class TAXII2Server(BaseTAXIIServer):
 
     def objects_get_handler(self, api_root_id, collection_id_or_alias):
         filter_params = validate_list_filter_params(request.args, self.persistence.api)
+        filter_params["limit"] = self.config.get("max_pagination_limit") if filter_params.get("limit", self.config.get("max_pagination_limit")) > self.config.get("max_pagination_limit") else filter_params.get("limit", self.config.get("default_pagination_limit"))
         try:
             objects, more, next_param = self.persistence.get_objects(
                 api_root_id=api_root_id,
