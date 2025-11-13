@@ -15,10 +15,8 @@ authdb:
 opentaxii:
   image: eclecticiq/opentaxii
   environment:
-    OPENTAXII_AUTH_SECRET: secret
+    DOCKER_OPENTAXII_AUTH_SECRET: secret
     OPENTAXII_DOMAIN: 192.168.59.103:9000
-    OPENTAXII_USER: user
-    OPENTAXII_PASS: pass
     DATABASE_HOST: db
     DATABASE_NAME: opentaxii
     DATABASE_USER: user
@@ -28,7 +26,7 @@ opentaxii:
     AUTH_DATABASE_USER: user1
     AUTH_DATABASE_PASS: password1
   volumes:
-    - ./:/input:ro
+    - ./data-configuration.yml:/input/data-configuration.yml:ro
   ports:
     - 9000:9000
   links:
@@ -38,16 +36,14 @@ opentaxii:
 opentaxii2:
   image: eclecticiq/opentaxii
   environment:
-    OPENTAXII_AUTH_SECRET: secrettwo
+    DOCKER_OPENTAXII_AUTH_SECRET: secrettwo
     OPENTAXII_DOMAIN: 192.168.59.103
-    OPENTAXII_USER: user1
-    OPENTAXII_PASS: pass1
     DATABASE_HOST: authdb
     DATABASE_NAME: opentaxii1
     DATABASE_USER: user1
     DATABASE_PASS: password1
   volumes:
-    - ./:/input:ro
+    - ./data-configuration.yml:/input/data-configuration.yml:ro
   ports:
     - 9001:9000
   links:

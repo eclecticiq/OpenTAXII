@@ -129,7 +129,7 @@ To see a full example of running OpenTAXII against a "real" database, using the 
     opentaxii:
       image: eclecticiq/opentaxii
       environment:
-        OPENTAXII_AUTH_SECRET: secret
+        DOCKER_OPENTAXII_AUTH_SECRET: secret
         OPENTAXII_DOMAIN: 192.168.59.103:9000
         DATABASE_HOST: db
         DATABASE_NAME: opentaxii
