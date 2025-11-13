@@ -26,7 +26,7 @@ opentaxii:
     AUTH_DATABASE_USER: user1
     AUTH_DATABASE_PASS: password1
   volumes:
-    - ./:/input:ro
+    - ./data-configuration.yml:/input/data-configuration.yml:ro
   ports:
     - 9000:9000
   links:
@@ -43,7 +43,7 @@ opentaxii2:
     DATABASE_USER: user1
     DATABASE_PASS: password1
   volumes:
-    - ./:/input:ro
+    - ./data-configuration.yml:/input/data-configuration.yml:ro
   ports:
     - 9001:9000
   links:
