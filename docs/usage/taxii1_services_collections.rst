@@ -1,8 +1,10 @@
-=========================================
-Manage Services, collections and accounts
-=========================================
+=================================
+TAXII 1: Services and Collections
+=================================
 
-Services, collections and accounts can be created with CLI command ``opentaxii-sync-data`` or with custom code talking to a specific Persistent API implementation/backend.
+Services and Collections can be created with CLI commands
+``opentaxii-sync-data`` or with custom code talking to a specific Persistence API
+implementation/backend.
 
 ..  Note::
     The services and collections created with CLI command ``opentaxii-sync-data`` are only available with TAXII 1.
@@ -34,10 +36,9 @@ Accounts:
 .. note::
 	Without an account you can't access services with ``authentication_required`` enabled.
 
-
 Step 2
 ------
-Use ``opentaxii-sync-data`` command to synchorize data configuration in provided file and in DB.
+Use ``opentaxii-sync-data`` command to synchronize data configuration in provided file and in DB.
 
 Usage help::
 
