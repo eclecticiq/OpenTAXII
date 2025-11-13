@@ -15,7 +15,7 @@ authdb:
 opentaxii:
   image: eclecticiq/opentaxii
   environment:
-    OPENTAXII_AUTH_SECRET: secret
+    DOCKER_OPENTAXII_AUTH_SECRET: secret
     OPENTAXII_DOMAIN: 192.168.59.103:9000
     OPENTAXII_USER: user
     OPENTAXII_PASS: pass
@@ -38,7 +38,7 @@ opentaxii:
 opentaxii2:
   image: eclecticiq/opentaxii
   environment:
-    OPENTAXII_AUTH_SECRET: secrettwo
+    DOCKER_OPENTAXII_AUTH_SECRET: secrettwo
     OPENTAXII_DOMAIN: 192.168.59.103
     OPENTAXII_USER: user1
     OPENTAXII_PASS: pass1

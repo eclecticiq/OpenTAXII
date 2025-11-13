@@ -16,7 +16,7 @@ function wait_for_port() {
 
 # Default OpenTAXII Configuration
 : ${OPENTAXII_DOMAIN:=localhost:9000}
-: ${OPENTAXII_AUTH_SECRET:=notVerySecret}
+: ${DOCKER_OPENTAXII_AUTH_SECRET:=notVerySecret}
 : ${OPENTAXII_CONFIG:=/opentaxii.yml}
 # make sure this env var is available to the main process and subprocesses!
 export OPENTAXII_CONFIG
@@ -81,7 +81,7 @@ auth_api:
   parameters:
     db_connection: ${A_URL}
     create_tables: yes
-    secret: ${OPENTAXII_AUTH_SECRET}
+    secret: ${DOCKER_OPENTAXII_AUTH_SECRET}
 
 logging:
   opentaxii: info
