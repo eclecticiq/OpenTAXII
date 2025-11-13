@@ -3,7 +3,7 @@ TAXII 1: Services and Collections
 =================================
 
 Services and Collections can be created with CLI commands
-``opentaxii-sync-data`` or with custom code talking to a specific Persistent API
+``opentaxii-sync-data`` or with custom code talking to a specific Persistence API
 implementation/backend.
 
 ..  Note::

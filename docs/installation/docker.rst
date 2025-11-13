@@ -124,6 +124,7 @@ To add dummy data, you can execute:
 
 .. code-block:: shell
 
+    # while the compose project is running
     docker exec -i examples-opentaxii-1 bash < examples/taxii2/data-setup.sh
 
 Full Example with Compose
