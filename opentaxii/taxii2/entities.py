@@ -66,7 +66,7 @@ class Collection(Entity):
         return self.is_public or (
             account
             and (
-                account.is_admin or "read" in set(account.permissions.get(self.id, []))
+                account.is_admin or "read" in set(account.permissions.get(str(self.id), []))
             )
         )
 
@@ -75,7 +75,7 @@ class Collection(Entity):
         return self.is_public_write or (
             account
             and (
-                account.is_admin or "write" in set(account.permissions.get(self.id, []))
+                account.is_admin or "write" in set(account.permissions.get(str(self.id), []))
             )
         )
 
