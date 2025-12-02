@@ -2,16 +2,27 @@ import datetime
 from uuid import uuid4
 
 import pytest
+
 from opentaxii.persistence.sqldb.taxii2models import Job, JobDetail, STIXObject
 from opentaxii.taxii2 import entities
 from opentaxii.taxii2.utils import DATETIMEFORMAT
-from tests.taxii2.utils import (API_ROOTS, API_ROOTS_WITH_DEFAULT,
-                                API_ROOTS_WITHOUT_DEFAULT, COLLECTIONS,
-                                GET_API_ROOT_MOCK, GET_COLLECTION_MOCK,
-                                GET_COLLECTIONS_MOCK, GET_JOB_AND_DETAILS_MOCK,
-                                GET_MANIFEST_MOCK, GET_OBJECT_MOCK,
-                                GET_OBJECTS_MOCK, GET_VERSIONS_MOCK, JOBS, NOW,
-                                STIX_OBJECTS)
+from tests.taxii2.utils import (
+    API_ROOTS,
+    API_ROOTS_WITH_DEFAULT,
+    API_ROOTS_WITHOUT_DEFAULT,
+    COLLECTIONS,
+    GET_API_ROOT_MOCK,
+    GET_COLLECTION_MOCK,
+    GET_COLLECTIONS_MOCK,
+    GET_JOB_AND_DETAILS_MOCK,
+    GET_MANIFEST_MOCK,
+    GET_OBJECT_MOCK,
+    GET_OBJECTS_MOCK,
+    GET_VERSIONS_MOCK,
+    JOBS,
+    NOW,
+    STIX_OBJECTS,
+)
 
 
 @pytest.mark.parametrize(
@@ -51,8 +62,8 @@ def test_get_api_roots(taxii2_sqldb_api, db_api_roots):
     ],
 )
 def test_get_api_root(taxii2_sqldb_api, db_api_roots, api_root_id):
-    response = taxii2_sqldb_api.get_api_root(api_root_id)
-    assert response == GET_API_ROOT_MOCK(api_root_id)
+    response = taxii2_sqldb_api.get_api_root(str(api_root_id))
+    assert response == GET_API_ROOT_MOCK(str(api_root_id))
 
 
 @pytest.mark.parametrize(
@@ -86,8 +97,8 @@ def test_get_api_root(taxii2_sqldb_api, db_api_roots, api_root_id):
     ],
 )
 def test_get_job_and_details(taxii2_sqldb_api, db_jobs, api_root_id, job_id):
-    response = taxii2_sqldb_api.get_job_and_details(api_root_id, job_id)
-    assert response == GET_JOB_AND_DETAILS_MOCK(api_root_id, job_id)
+    response = taxii2_sqldb_api.get_job_and_details(str(api_root_id), str(job_id))
+    assert response == GET_JOB_AND_DETAILS_MOCK(str(api_root_id), str(job_id))
 
 
 @pytest.mark.parametrize(
@@ -108,8 +119,8 @@ def test_get_job_and_details(taxii2_sqldb_api, db_jobs, api_root_id, job_id):
     ],
 )
 def test_get_collections(taxii2_sqldb_api, db_collections, api_root_id):
-    response = taxii2_sqldb_api.get_collections(api_root_id)
-    assert response == GET_COLLECTIONS_MOCK(api_root_id)
+    response = taxii2_sqldb_api.get_collections(str(api_root_id))
+    assert response == GET_COLLECTIONS_MOCK(str(api_root_id))
 
 
 @pytest.mark.parametrize(
@@ -150,8 +161,12 @@ def test_get_collections(taxii2_sqldb_api, db_collections, api_root_id):
 def test_get_collection(
     taxii2_sqldb_api, db_collections, api_root_id, collection_id_or_alias
 ):
-    response = taxii2_sqldb_api.get_collection(api_root_id, collection_id_or_alias)
-    assert response == GET_COLLECTION_MOCK(api_root_id, collection_id_or_alias)
+    response = taxii2_sqldb_api.get_collection(
+        str(api_root_id), str(collection_id_or_alias)
+    )
+    assert response == GET_COLLECTION_MOCK(
+        str(api_root_id), str(collection_id_or_alias)
+    )
 
 
 @pytest.mark.parametrize(
@@ -864,7 +879,7 @@ def test_add_objects(
     assert isinstance(job.completed_timestamp, datetime.datetime)
     # Check database state
     db_job = taxii2_sqldb_api.db.session.query(Job).one()
-    assert str(db_job.api_root_id) == api_root_id
+    assert db_job.api_root_id == api_root_id
     assert db_job.status == "complete"
     assert isinstance(db_job.request_timestamp, datetime.datetime)
     assert isinstance(db_job.completed_timestamp, datetime.datetime)
@@ -881,7 +896,7 @@ def test_add_objects(
             .one()
         )
         assert db_obj.id == obj["id"]
-        assert str(db_obj.collection_id) == collection_id
+        assert db_obj.collection_id == collection_id
         assert db_obj.type == obj["type"]
         assert db_obj.spec_version == obj["spec_version"]
         assert isinstance(db_obj.date_added, datetime.datetime)
@@ -1249,7 +1264,7 @@ def test_delete_object(
         match_spec_version=match_spec_version,
     )
     assert set(
-        (str(db_obj.collection_id), db_obj.id, db_obj.version)
+        (db_obj.collection_id, db_obj.id, db_obj.version)
         for db_obj in taxii2_sqldb_api.db.session.query(STIXObject).all()
     ) == set((obj.collection_id, obj.id, obj.version) for obj in expected_objects)
 

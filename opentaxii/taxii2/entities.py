@@ -1,4 +1,6 @@
 """Taxii2 entities."""
+
+import uuid
 from datetime import datetime
 from typing import List, NamedTuple, Optional
 
@@ -11,15 +13,20 @@ class ApiRoot(Entity):
     """
     TAXII2 API Root entity.
 
-    :param str id: id of this API root
-    :param bool default: indicator of default api root, should only be True once
-    :param str title: human readable plain text name used to identify this API Root
-    :param str description: human readable plain text description for this API Root
-    :param bool is_public: whether this is a publicly readable API root
+    :param id: id of this API root
+    :param default: indicator of default api root, should only be True once
+    :param title: human readable plain text name used to identify this API Root
+    :param description: human readable plain text description for this API Root
+    :param is_public: whether this is a publicly readable API root
     """
 
     def __init__(
-        self, id: str, default: bool, title: str, description: str, is_public: bool
+        self,
+        id: uuid.UUID,
+        default: bool,
+        title: str,
+        description: str | None,
+        is_public: bool,
     ):
         """Initialize ApiRoot."""
         self.id = id
@@ -33,22 +40,25 @@ class Collection(Entity):
     """
     TAXII2 Collection entity.
 
-    :param str id: id of this collection
-    :param str api_root_id: id of the :class:`ApiRoot` this collection belongs to
-    :param str title: human readable plain text name used to identify this collection
-    :param str description: human readable plain text description for this collection
-    :param str alias: human readable collection name that can be used on systems to alias a collection id
-    :param bool is_public: whether this is a publicly readable collection
-    :param bool is_public_write: whether this is a publicly writable collection
+    :param id: id of this collection
+    :param api_root_id: id of the :class:`ApiRoot` this collection belongs to
+    :param title: human readable plain text name used to identify this
+        collection
+    :param description: human readable plain text description for this
+        collection
+    :param alias: human readable collection name that can be used on systems to
+        alias a collection id
+    :param is_public: whether this is a publicly readable collection
+    :param is_public_write: whether this is a publicly writable collection
     """
 
     def __init__(
         self,
-        id: str,
-        api_root_id: str,
+        id: uuid.UUID,
+        api_root_id: uuid.UUID,
         title: str,
         description: str,
-        alias: str,
+        alias: str | None,
         is_public: bool,
         is_public_write: bool,
     ):
@@ -84,19 +94,19 @@ class STIXObject(Entity):
     """
     TAXII2 STIXObject entity.
 
-    :param str id: id of this stix object
-    :param str collection_id: id of the :class:`Collection` this stix object belongs to
-    :param str type: type of this stix object
-    :param str spec_version: stix version this object matches
-    :param datetime date_added: the date and time this object was added
-    :param datetime version: the version of this object
-    :param dict serialized_data: the payload of this object
+    :param id: id of this stix object
+    :param collection_id: id of the :class:`Collection` this stix object belongs to
+    :param type: type of this stix object
+    :param spec_version: stix version this object matches
+    :param date_added: the date and time this object was added
+    :param version: the version of this object
+    :param serialized_data: the payload of this object
     """
 
     def __init__(
         self,
         id: str,
-        collection_id: str,
+        collection_id: uuid.UUID,
         type: str,
         spec_version: str,
         date_added: datetime,
@@ -119,10 +129,10 @@ class ManifestRecord(Entity):
 
     This is a cut-down version of :class:`STIXObject`, for efficiency.
 
-    :param str id: id of this stix object
-    :param datetime date_added: the date and time this object was added
-    :param datetime version: the version of this object
-    :param str spec_version: stix version this object matches
+    :param id: id of this stix object
+    :param date_added: the date and time this object was added
+    :param version: the version of this object
+    :param spec_version: stix version this object matches
     """
 
     def __init__(
@@ -163,19 +173,20 @@ class JobDetail(Entity):
     """
     TAXII2 JobDetail entity, part of "status resource" in taxii2 docs.
 
-    :param str id: id of this job detail
-    :param str job_id: id of the job this detail belongs to
-    :param str stix_id: id of the :class:`STIXObject` this detail tracks
-    :param datetime version: the version of this object
-    :param str message: message indicating more information about the object being created,
-        its pending state, or why the object failed to be created.
-    :param str status: status of this job
+    :param id: id of this job detail
+    :param job_id: id of the job this detail belongs to
+    :param stix_id: id of the :class:`STIXObject` this detail tracks
+    :param version: the version of this object
+    :param message: message indicating more information about the object
+        being created, its pending state, or why the object failed to be
+        created.
+    :param status: status of this job
     """
 
     def __init__(
         self,
-        id: str,
-        job_id: str,
+        id: uuid.UUID,
+        job_id: uuid.UUID,
         stix_id: str,
         version: datetime,
         message: str,
@@ -207,22 +218,24 @@ class Job(Entity):
     """
     TAXII2 Job entity, called a "status resource" in taxii2 docs.
 
-    :param str id: id of this job
-    :param str api_root_id: id of the :class:`ApiRoot` this collection belongs to
-    :param str status: status of this job
-    :param datetime request_timestamp: the datetime of the request that this status resource is monitoring
-    :param datetime completed_timestamp: the datetime of the completion of this job (used for cleanup)
-    :param int total_count: the total number of stix objects in this job
-    :param int success_count: the number of successful stix objects in this job
-    :param int failure_count: the number of failed stix objects in this job
-    :param int pending_count: the number of pending stix objects in this job
-    :param dict details: the details per status of this job
+    :param id: id of this job
+    :param api_root_id: id of the :class:`ApiRoot` this collection belongs to
+    :param status: status of this job
+    :param request_timestamp: the datetime of the request that this status
+        resource is monitoring
+    :param completed_timestamp: the datetime of the completion of this job (used
+        for cleanup)
+    :param total_count: the total number of stix objects in this job
+    :param success_count: the number of successful stix objects in this job
+    :param failure_count: the number of failed stix objects in this job
+    :param pending_count: the number of pending stix objects in this job
+    :param details: the details per status of this job
     """
 
     def __init__(
         self,
-        id: str,
-        api_root_id: str,
+        id: uuid.UUID,
+        api_root_id: uuid.UUID,
         status: str,
         request_timestamp: datetime,
         completed_timestamp: Optional[datetime] = None,

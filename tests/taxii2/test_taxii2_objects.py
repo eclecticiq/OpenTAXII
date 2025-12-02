@@ -5,11 +5,22 @@ from urllib.parse import urlencode
 from uuid import uuid4
 
 import pytest
+
 from opentaxii.taxii2.utils import taxii2_datetimeformat
-from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
-                                GET_COLLECTION_MOCK, GET_JOB_AND_DETAILS_MOCK,
-                                GET_NEXT_PARAM, GET_OBJECTS_MOCK, JOBS, NOW,
-                                STIX_OBJECTS, config_noop, config_override)
+from tests.taxii2.utils import (
+    ADD_OBJECTS_MOCK,
+    API_ROOTS,
+    COLLECTIONS,
+    GET_COLLECTION_MOCK,
+    GET_JOB_AND_DETAILS_MOCK,
+    GET_NEXT_PARAM,
+    GET_OBJECTS_MOCK,
+    JOBS,
+    NOW,
+    STIX_OBJECTS,
+    config_noop,
+    config_override,
+)
 from tests.utils import SKIP
 
 
@@ -775,7 +786,7 @@ from tests.utils import SKIP
             202,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
-                "id": JOBS[0].id,
+                "id": str(JOBS[0].id),
                 "status": JOBS[0].status,
                 "request_timestamp": taxii2_datetimeformat(JOBS[0].request_timestamp),
                 "total_count": 4,
@@ -1217,7 +1228,7 @@ def test_objects(
     assert response.status_code == expected_status
     if method == "post" and expected_status == 202:
         add_objects_mock.assert_called_once_with(
-            api_root_id=API_ROOTS[0].id,
+            api_root_id=str(API_ROOTS[0].id),
             collection_id=COLLECTIONS[5].id,
             objects=post_data["objects"],
         )
@@ -1318,7 +1329,7 @@ def test_objects_unauthenticated(
     assert response.status_code == expected_status_code
     if method == "post" and expected_status_code == 202:
         add_objects_mock.assert_called_once_with(
-            api_root_id=API_ROOTS[0].id,
+            api_root_id=str(API_ROOTS[0].id),
             collection_id=COLLECTIONS[7].id,
             objects=kwargs["json"]["objects"],
         )

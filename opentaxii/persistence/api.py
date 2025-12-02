@@ -1,4 +1,5 @@
 import datetime
+import uuid
 from typing import Dict, List, Optional, Tuple
 
 from opentaxii.taxii2.entities import (ApiRoot, Collection, Job,
@@ -310,7 +311,7 @@ class OpenTAXII2PersistenceAPI:
 
     def get_manifest(
         self,
-        collection_id: str,
+        collection_id: uuid.UUID,
         limit: Optional[int] = None,
         added_after: Optional[datetime.datetime] = None,
         next_kwargs: Optional[Dict] = None,
@@ -323,7 +324,7 @@ class OpenTAXII2PersistenceAPI:
 
     def get_objects(
         self,
-        collection_id: str,
+        collection_id: uuid.UUID,
         limit: Optional[int] = None,
         added_after: Optional[datetime.datetime] = None,
         next_kwargs: Optional[Dict] = None,
@@ -334,12 +335,14 @@ class OpenTAXII2PersistenceAPI:
     ) -> Tuple[List[STIXObject], bool, Optional[str]]:
         raise NotImplementedError
 
-    def add_objects(self, api_root_id: str, collection_id: str, objects: List[Dict]) -> Job:
+    def add_objects(
+        self, api_root_id: str, collection_id: uuid.UUID, objects: List[Dict]
+    ) -> Job:
         raise NotImplementedError
 
     def get_object(
         self,
-        collection_id: str,
+        collection_id: uuid.UUID,
         object_id: str,
         limit: Optional[int] = None,
         added_after: Optional[datetime.datetime] = None,
@@ -356,7 +359,7 @@ class OpenTAXII2PersistenceAPI:
 
     def delete_object(
         self,
-        collection_id: str,
+        collection_id: uuid.UUID,
         object_id: str,
         match_version: Optional[List[str]] = None,
         match_spec_version: Optional[List[str]] = None,
@@ -365,7 +368,7 @@ class OpenTAXII2PersistenceAPI:
 
     def get_versions(
         self,
-        collection_id: str,
+        collection_id: uuid.UUID,
         object_id: str,
         limit: Optional[int] = None,
         added_after: Optional[datetime.datetime] = None,

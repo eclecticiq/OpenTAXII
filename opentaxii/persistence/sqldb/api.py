@@ -738,7 +738,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             is_public_write=collection.is_public_write,
         )
 
-    def _objects_query(self, collection_id: str, ordered: bool) -> Query:
+    def _objects_query(self, collection_id: uuid.UUID, ordered: bool) -> Query:
         query = self.db.session.query(taxii2models.STIXObject).filter(
             taxii2models.STIXObject.collection_id == collection_id,
         )
@@ -785,7 +785,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
     def _apply_match_version(
         self,
         query: Query,
-        collection_id: str,
+        collection_id: uuid.UUID,
         match_version: Optional[List[str]] = None,
     ) -> Query:
         if match_version is None:
@@ -874,7 +874,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
 
     def _filtered_objects_query(
         self,
-        collection_id: str,
+        collection_id: uuid.UUID,
         limit: Optional[int] = None,
         added_after: Optional[datetime.datetime] = None,
         next_kwargs: Optional[Dict] = None,
@@ -896,7 +896,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
 
     def get_manifest(
         self,
-        collection_id: str,
+        collection_id: uuid.UUID,
         limit: Optional[int] = None,
         added_after: Optional[datetime.datetime] = None,
         next_kwargs: Optional[Dict] = None,
@@ -938,7 +938,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
 
     def get_objects(
         self,
-        collection_id: str,
+        collection_id: uuid.UUID,
         limit: Optional[int] = None,
         added_after: Optional[datetime.datetime] = None,
         next_kwargs: Optional[Dict] = None,
@@ -982,7 +982,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         )
 
     def add_objects(
-        self, api_root_id: str, collection_id: str, objects: List[Dict]
+        self, api_root_id: str, collection_id: uuid.UUID, objects: List[Dict]
     ) -> entities.Job:
         job = taxii2models.Job(
             api_root_id=api_root_id,
@@ -1047,7 +1047,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
 
     def get_object(
         self,
-        collection_id: str,
+        collection_id: uuid.UUID,
         object_id: str,
         limit: Optional[int] = None,
         added_after: Optional[datetime.datetime] = None,
@@ -1108,7 +1108,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
 
     def delete_object(
         self,
-        collection_id: str,
+        collection_id: uuid.UUID,
         object_id: str,
         match_version: Optional[List[str]] = None,
         match_spec_version: Optional[List[str]] = None,
@@ -1126,7 +1126,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
 
     def get_versions(
         self,
-        collection_id: str,
+        collection_id: uuid.UUID,
         object_id: str,
         limit: Optional[int] = None,
         added_after: Optional[datetime.datetime] = None,
