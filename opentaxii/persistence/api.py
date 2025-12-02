@@ -268,8 +268,9 @@ class OpenTAXII2PersistenceAPI:
 
     Stub, pending implementation.
     """
+
     @staticmethod
-    def get_next_param(self, kwargs: Dict) -> str:
+    def get_next_param(kwargs: Dict) -> str:
         """
         Get value for `next` based on :class:`Dict` instance.
 

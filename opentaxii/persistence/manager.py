@@ -1,5 +1,5 @@
 import datetime
-from typing import Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
 import structlog
 from opentaxii.local import context
@@ -15,9 +15,14 @@ from opentaxii.taxii2.entities import (ApiRoot, Collection, Job,
 
 log = structlog.getLogger(__name__)
 
+if TYPE_CHECKING:
+    from opentaxii.persistence.api import OpenTAXII2PersistenceAPI
+    from opentaxii.server import TAXII2Server
+
 
 class BasePersistenceManager:
-    pass
+    def __init__(self, server, api):
+        raise NotImplementedError
 
 
 class Taxii1PersistenceManager(BasePersistenceManager):
@@ -394,7 +399,7 @@ class Taxii2PersistenceManager(BasePersistenceManager):
         instance of persistence API class
     """
 
-    def __init__(self, server, api):
+    def __init__(self, server: "TAXII2Server", api: "OpenTAXII2PersistenceAPI"):
         self.server = server
         self.api = api
 

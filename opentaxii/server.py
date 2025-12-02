@@ -433,6 +433,8 @@ class TAXII2Server(BaseTAXIIServer):
         if endpoint:
             return functools.partial(self.handle_request, endpoint)
 
+        return None
+
     def check_authentication(self, endpoint: Callable[[], Response]):
         """Check if account is authenticated, unless endpoint handles that itself."""
         if endpoint.func.handles_own_auth:

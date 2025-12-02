@@ -882,7 +882,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         match_type: Optional[List[str]] = None,
         match_version: Optional[List[str]] = None,
         match_spec_version: Optional[List[str]] = None,
-        ordered: Optional[bool] = True,
+        ordered: bool = True,
     ) -> Tuple[Query, bool]:
         query = self._objects_query(collection_id, ordered)
         query = self._apply_added_after(query, added_after)
