@@ -36,12 +36,15 @@ class OpenTAXIIPersistenceAPI:
         raise NotImplementedError()
 
     def update_service(self, obj):
+        """Update service. To implement in subclass"""
         raise NotImplementedError()
 
     def delete_service(self, service_id):
+        """Delete service. To implement in subclass"""
         raise NotImplementedError()
 
     def set_collection_services(self, collection_id, service_ids):
+        """Set collection's services. To implement in subclass"""
         raise NotImplementedError()
 
     def create_collection(self, collection_entity):

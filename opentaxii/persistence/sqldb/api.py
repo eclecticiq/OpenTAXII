@@ -652,6 +652,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         return taxii2models.Job.cleanup(self.db.session)
 
     def get_collections(self, api_root_id: uuid.UUID) -> List[entities.Collection]:
+        """Get a list of collections from the database"""
         query = (
             self.db.session.query(taxii2models.Collection)
             .filter(taxii2models.Collection.api_root_id == api_root_id)
@@ -673,6 +674,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
     def get_collection(
         self, api_root_id: uuid.UUID, collection_id_or_alias: str
     ) -> Optional[entities.Collection]:
+        """Get a collection from the database"""
         id_or_alias_filter = taxii2models.Collection.alias == collection_id_or_alias
         try:
             uuid.UUID(collection_id_or_alias)
