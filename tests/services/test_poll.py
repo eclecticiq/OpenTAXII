@@ -1,15 +1,27 @@
 import pytest
-from fixtures import (COLLECTION_DISABLED, COLLECTION_ONLY_STIX,
-                      COLLECTION_OPEN, COLLECTION_STIX_AND_CUSTOM,
-                      COLLECTIONS_B, CUSTOM_CONTENT_BINDING, MESSAGE_ID,
-                      POLL_MAX_COUNT, POLL_RESULT_SIZE)
 from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
-from libtaxii.constants import (ACT_SUBSCRIBE, CB_STIX_XML_111, RT_COUNT_ONLY,
-                                RT_FULL)
+from libtaxii.constants import ACT_SUBSCRIBE, CB_STIX_XML_111, RT_COUNT_ONLY, RT_FULL
+
 from opentaxii.taxii import exceptions
-from utils import (as_tm, persist_content, prepare_headers,
-                   prepare_subscription_request)
+
+from ..fixtures import (
+    COLLECTION_DISABLED,
+    COLLECTION_ONLY_STIX,
+    COLLECTION_OPEN,
+    COLLECTION_STIX_AND_CUSTOM,
+    COLLECTIONS_B,
+    CUSTOM_CONTENT_BINDING,
+    MESSAGE_ID,
+    POLL_MAX_COUNT,
+    POLL_RESULT_SIZE,
+)
+from ..utils import (
+    as_tm,
+    persist_content,
+    prepare_headers,
+    prepare_subscription_request,
+)
 
 
 @pytest.fixture(autouse=True)

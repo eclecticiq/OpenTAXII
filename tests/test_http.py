@@ -1,9 +1,10 @@
 import pytest
 from libtaxii.constants import ST_BAD_MESSAGE, ST_FAILURE
+
 from opentaxii.taxii.converters import dict_to_service_entity
 from opentaxii.taxii.http import HTTP_X_TAXII_SERVICES
 
-from utils import as_tm, is_headers_valid, prepare_headers
+from .utils import as_tm, is_headers_valid, prepare_headers
 
 INBOX = dict(
     id='inbox-A',

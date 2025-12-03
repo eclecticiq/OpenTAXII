@@ -1,7 +1,8 @@
 import pytest
-from fixtures import INBOX_A, INBOX_B, INSTANCES_CONFIGURED, MESSAGE_ID
 from libtaxii.constants import SVC_INBOX
-from utils import as_tm, prepare_headers
+
+from ..fixtures import INBOX_A, INBOX_B, INSTANCES_CONFIGURED, MESSAGE_ID
+from ..utils import as_tm, prepare_headers
 
 
 @pytest.fixture(autouse=True)

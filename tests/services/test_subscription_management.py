@@ -1,12 +1,26 @@
 import pytest
-from fixtures import (COLLECTION_OPEN, COLLECTIONS_B, CUSTOM_CONTENT_BINDING,
-                      SUBSCRIPTION_MESSAGE)
-from libtaxii.constants import (ACT_PAUSE, ACT_RESUME, ACT_SUBSCRIBE,
-                                ACT_UNSUBSCRIBE, CB_STIX_XML_111, RT_FULL,
-                                SS_ACTIVE, SS_PAUSED, SS_UNSUBSCRIBED)
+from libtaxii.constants import (
+    ACT_PAUSE,
+    ACT_RESUME,
+    ACT_SUBSCRIBE,
+    ACT_UNSUBSCRIBE,
+    CB_STIX_XML_111,
+    RT_FULL,
+    SS_ACTIVE,
+    SS_PAUSED,
+    SS_UNSUBSCRIBED,
+)
+
 from opentaxii.taxii import exceptions
-from utils import as_tm, prepare_headers
-from utils import prepare_subscription_request as prepare_request
+
+from ..fixtures import (
+    COLLECTION_OPEN,
+    COLLECTIONS_B,
+    CUSTOM_CONTENT_BINDING,
+    SUBSCRIPTION_MESSAGE,
+)
+from ..utils import as_tm, prepare_headers
+from ..utils import prepare_subscription_request as prepare_request
 
 ASSIGNED_SERVICES = ['collection-management-A', 'poll-A']
 

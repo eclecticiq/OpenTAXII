@@ -1,13 +1,13 @@
 import concurrent.futures
 
 import pytest
-from opentaxii.persistence import (OpenTAXII2PersistenceAPI,
-                                   Taxii2PersistenceManager)
+
+from opentaxii.persistence import OpenTAXII2PersistenceAPI, Taxii2PersistenceManager
 from opentaxii.persistence.sqldb import Taxii2SQLDatabaseAPI
 from opentaxii.server import TAXII2Server
 from opentaxii.taxii.converters import dict_to_service_entity
 
-from fixtures import DOMAIN
+from .fixtures import DOMAIN
 
 INBOX = dict(
     id='inbox-A',

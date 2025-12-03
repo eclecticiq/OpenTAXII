@@ -3,15 +3,19 @@ import re
 import pytest
 from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
+
 from opentaxii.taxii import entities
-from opentaxii.taxii.http import (HTTP_ACCEPT, HTTP_CONTENT_XML,
-                                  TAXII_10_HTTP_HEADERS,
-                                  TAXII_10_HTTPS_HEADERS,
-                                  TAXII_11_HTTP_HEADERS,
-                                  TAXII_11_HTTPS_HEADERS)
+from opentaxii.taxii.http import (
+    HTTP_ACCEPT,
+    HTTP_CONTENT_XML,
+    TAXII_10_HTTP_HEADERS,
+    TAXII_10_HTTPS_HEADERS,
+    TAXII_11_HTTP_HEADERS,
+    TAXII_11_HTTPS_HEADERS,
+)
 from opentaxii.taxii.utils import get_utc_now
 
-from fixtures import CB_STIX_XML_111, CONTENT, MESSAGE, MESSAGE_ID
+from .fixtures import CB_STIX_XML_111, CONTENT, MESSAGE, MESSAGE_ID
 
 JWT_RE = re.compile(r'[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*')
 
