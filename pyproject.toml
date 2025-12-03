@@ -10,3 +10,28 @@ ignore-semiprivate = true
 omit-covered-files = true
 verbose = 0
 exclude = ["tests"]
+
+[tool.mypy]
+plugins = ["sqlmypy"]
+
+ignore_missing_imports = true
+no_implicit_optional = true
+show_error_codes = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_unused_ignores = true
+check_untyped_defs = true
+follow_imports = "silent"
+
+files = [
+    "opentaxii/",
+]
+
+exclude = """
+(?x)(
+    ^opentaxii/persistence/sqldb/api\\.py$
+    | ^opentaxii/taxii/.+
+    | ^opentaxii/utils\\.py$
+    | ^opentaxii/common/entities\\.py$
+)
+"""
