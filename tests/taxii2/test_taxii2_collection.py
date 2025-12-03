@@ -3,9 +3,14 @@ from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
+
 from opentaxii.persistence.sqldb import taxii2models
-from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, GET_API_ROOT_MOCK,
-                                GET_COLLECTION_MOCK)
+from tests.taxii2.utils import (
+    API_ROOTS,
+    COLLECTIONS,
+    GET_API_ROOT_MOCK,
+    GET_COLLECTION_MOCK,
+)
 
 
 @pytest.mark.parametrize(

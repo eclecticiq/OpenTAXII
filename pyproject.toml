@@ -25,6 +25,7 @@ follow_imports = "silent"
 
 files = [
     "opentaxii/",
+    "tests/",
 ]
 
 exclude = """

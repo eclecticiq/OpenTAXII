@@ -168,4 +168,5 @@ def assert_str_equal_no_formatting(str1, str2):
 
 class SKIP:
     """Used as signalling value to skip check"""
+
     pass

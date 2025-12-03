@@ -71,7 +71,7 @@ def prepare_server(server, services):
                     .filter_by(name=coll.name)
                     .one()
                 )
-                service_ids = {s.id for s in coll.services} | {service}
+                service_ids = {s.id for s in coll.services} | {service}  # type:ignore
 
             server.servers.taxii1.persistence.set_collection_services(
                 coll.id, service_ids=service_ids

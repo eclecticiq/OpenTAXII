@@ -18,7 +18,8 @@ INBOX = dict(
     accept_all_content='yes',
     protocol_bindings=[
         'urn:taxii.mitre.org:protocol:http:1.0',
-        'urn:taxii.mitre.org:protocol:https:1.0'],
+        'urn:taxii.mitre.org:protocol:https:1.0',
+    ],
 )
 
 DISCOVERY = dict(
@@ -27,7 +28,7 @@ DISCOVERY = dict(
     description='discoveryA description',
     address='/relative/discovery',
     advertised_services=['inboxA', 'discoveryA'],
-    protocol_bindings=['urn:taxii.mitre.org:protocol:http:1.0']
+    protocol_bindings=['urn:taxii.mitre.org:protocol:http:1.0'],
 )
 
 DISCOVERY_EXTERNAL = dict(
@@ -35,7 +36,7 @@ DISCOVERY_EXTERNAL = dict(
     type='discovery',
     description='discoveryB description',
     address='http://example.com/a/b/c',
-    protocol_bindings=['urn:taxii.mitre.org:protocol:http:1.0']
+    protocol_bindings=['urn:taxii.mitre.org:protocol:http:1.0'],
 )
 
 INTERNAL_SERVICES = [INBOX, DISCOVERY]
@@ -45,19 +46,18 @@ SERVICES = INTERNAL_SERVICES + [DISCOVERY_EXTERNAL]
 @pytest.fixture()
 def local_services(server):
     for service in SERVICES:
-        server.servers.taxii1.persistence.update_service(dict_to_service_entity(service))
+        server.servers.taxii1.persistence.update_service(
+            dict_to_service_entity(service)
+        )
 
 
 def test_services_configured(server, local_services):
     assert len(server.servers.taxii1.get_services()) == len(SERVICES)
 
-    with_paths = [
-        s for s in server.servers.taxii1.get_services()
-        if s.path]
+    with_paths = [s for s in server.servers.taxii1.get_services() if s.path]
 
     assert len(with_paths) == len(INTERNAL_SERVICES)
-    assert all([
-        p.address.startswith(DOMAIN) for p in with_paths])
+    assert all([p.address.startswith(DOMAIN) for p in with_paths])
 
 
 def test_taxii2_configured(server):

@@ -1295,7 +1295,7 @@ def test_objects_unauthenticated(
         "add_objects",
         side_effect=ADD_OBJECTS_MOCK,
     ) as add_objects_mock:
-        kwargs = {
+        kwargs: dict = {
             "headers": {
                 "Accept": "application/taxii+json;version=2.1",
                 "Content-Type": "application/taxii+json;version=2.1",

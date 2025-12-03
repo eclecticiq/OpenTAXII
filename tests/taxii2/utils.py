@@ -1,6 +1,6 @@
 import base64
 import datetime
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from uuid import UUID, uuid4
 
 from opentaxii.server import ServerMapping
@@ -26,7 +26,7 @@ API_ROOTS_WITHOUT_DEFAULT = (
 )
 API_ROOTS = API_ROOTS_WITHOUT_DEFAULT
 NOW = datetime.datetime.now(datetime.timezone.utc)
-JOBS = tuple()
+JOBS: Tuple[Job, ...] = tuple()
 for api_root in API_ROOTS:
     JOBS = JOBS + (
         Job(
@@ -286,7 +286,7 @@ STIX_OBJECTS = STIX_OBJECTS + (
 def process_match_version(match_version):
     if match_version is None:
         match_version = ["last"]
-    versions_per_id = {}
+    versions_per_id: dict = {}
     for stix_obj in STIX_OBJECTS:
         if stix_obj.id not in versions_per_id:
             versions_per_id[stix_obj.id] = []
@@ -393,7 +393,7 @@ def GET_OBJECTS_MOCK(
     match_spec_version: Optional[List[str]] = None,
 ):
     id_version_combos = process_match_version(match_version)
-    response = []
+    response: List = []
     more = False
     for stix_object in STIX_OBJECTS:
         if (
@@ -441,7 +441,7 @@ def GET_OBJECT_MOCK(
     match_spec_version: Optional[List[str]] = None,
 ):
     id_version_combos = process_match_version(match_version)
-    response = []
+    response: List = []
     more = False
     at_least_one = False
     for stix_object in STIX_OBJECTS:
@@ -477,7 +477,7 @@ def GET_OBJECT_MOCK(
     else:
         next_param = None
     if not at_least_one:
-        response = None
+        response = None  # type: ignore[assignment]
     return response, more, next_param
 
 

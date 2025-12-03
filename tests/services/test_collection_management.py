@@ -1,21 +1,31 @@
 import pytest
-from fixtures import (COLLECTION_DISABLED, COLLECTION_ONLY_STIX,
-                      COLLECTION_OPEN, COLLECTION_STIX_AND_CUSTOM,
-                      COLLECTIONS_B, MESSAGE_ID, SERVICES)
+
 from opentaxii.taxii import entities
-from utils import as_tm, persist_content, prepare_headers
+
+from ..fixtures import (
+    COLLECTION_DISABLED,
+    COLLECTION_ONLY_STIX,
+    COLLECTION_OPEN,
+    COLLECTION_STIX_AND_CUSTOM,
+    COLLECTIONS_B,
+    MESSAGE_ID,
+    SERVICES,
+)
+from ..utils import as_tm, persist_content, prepare_headers
 
 ASSIGNED_SERVICES = ['collection-management-A', 'inbox-A', 'inbox-B', 'poll-A']
 
 ASSIGNED_INBOX_INSTANCES = sum(
     len(s['protocol_bindings'])
     for s in SERVICES
-    if s['id'] in ASSIGNED_SERVICES and s['id'].startswith('inbox'))
+    if s['id'] in ASSIGNED_SERVICES and s['id'].startswith('inbox')
+)
 
 ASSIGNED_SUBSCTRIPTION_INSTANCES = sum(
     len(s['protocol_bindings'])
     for s in SERVICES
-    if s['id'] in ASSIGNED_SERVICES and s['id'].startswith('collection-'))
+    if s['id'] in ASSIGNED_SERVICES and s['id'].startswith('collection-')
+)
 
 
 @pytest.fixture(autouse=True)
@@ -23,7 +33,8 @@ def prepare_server(server, services):
     for coll in COLLECTIONS_B:
         coll = server.servers.taxii1.persistence.create_collection(coll)
         server.servers.taxii1.persistence.set_collection_services(
-            coll.id, service_ids=ASSIGNED_SERVICES)
+            coll.id, service_ids=ASSIGNED_SERVICES
+        )
 
 
 def prepare_request(version):
@@ -47,8 +58,7 @@ def test_collections(server, version, https):
     names = [c.name for c in COLLECTIONS_B]
 
     if version == 11:
-        assert isinstance(
-            response, as_tm(version).CollectionInformationResponse)
+        assert isinstance(response, as_tm(version).CollectionInformationResponse)
         assert len(response.collection_informations) == len(COLLECTIONS_B)
 
         for c in response.collection_informations:
@@ -111,18 +121,18 @@ def test_collection_supported_content(server, version, https):
 
         def get_coll(name):
             return next(
-                c for c in response.collection_informations
-                if c.collection_name == name)
+                c for c in response.collection_informations if c.collection_name == name
+            )
 
         assert (
-            get_coll(COLLECTION_OPEN).collection_type ==
-            entities.CollectionEntity.TYPE_SET)
+            get_coll(COLLECTION_OPEN).collection_type
+            == entities.CollectionEntity.TYPE_SET
+        )
 
     else:
+
         def get_coll(name):
-            return next(
-                c for c in response.feed_informations
-                if c.feed_name == name)
+            return next(c for c in response.feed_informations if c.feed_name == name)
 
     assert len(get_coll(COLLECTION_OPEN).supported_contents) == 0
 
@@ -146,8 +156,10 @@ def test_collections_volume(server, https):
     response = service.process(headers, request)
 
     collection = next(
-        c for c in response.collection_informations
-        if c.collection_name == COLLECTION_OPEN)
+        c
+        for c in response.collection_informations
+        if c.collection_name == COLLECTION_OPEN
+    )
 
     assert collection.collection_volume == 0
 
@@ -160,8 +172,10 @@ def test_collections_volume(server, https):
     response = service.process(headers, request)
 
     collection = next(
-        c for c in response.collection_informations
-        if c.collection_name == COLLECTION_OPEN)
+        c
+        for c in response.collection_informations
+        if c.collection_name == COLLECTION_OPEN
+    )
 
     assert collection.collection_volume == blocks_amount
 
