@@ -1,14 +1,8 @@
 -r requirements.txt
-pytest-cov
-pytest>=4.6
-pytest-pythonpath
+-r requirements-test.txt
 flake8
 ipdb
-factory-boy>=3.2.1
-# Pypy is incompatible with latest mypy version
-# https://github.com/python/mypy/issues/20329
-mypy==1.19.0;platform_python_implementation != 'PyPy'
-mypy<=1.19.0;platform_python_implementation == 'PyPy'
+mypy==1.19.0
 types-six==1.17.0.20251009
 sqlalchemy-stubs==0.4
 types-PyYAML==6.0.12.20250915
