@@ -2,9 +2,14 @@ import datetime
 import uuid
 from typing import Dict, List, Optional, Tuple
 
-from opentaxii.taxii2.entities import (ApiRoot, Collection, Job,
-                                       ManifestRecord, STIXObject,
-                                       VersionRecord)
+from opentaxii.taxii2.entities import (
+    ApiRoot,
+    Collection,
+    Job,
+    ManifestRecord,
+    STIXObject,
+    VersionRecord,
+)
 
 
 class OpenTAXIIPersistenceAPI:
@@ -28,6 +33,15 @@ class OpenTAXIIPersistenceAPI:
         :return: updated service entity, with ID field not None
         :rtype: :py:class:`opentaxii.taxii.entities.ServiceEntity`
         """
+        raise NotImplementedError()
+
+    def update_service(self, obj):
+        raise NotImplementedError()
+
+    def delete_service(self, service_id):
+        raise NotImplementedError()
+
+    def set_collection_services(self, collection_id, service_ids):
         raise NotImplementedError()
 
     def create_collection(self, collection_entity):
@@ -269,6 +283,9 @@ class OpenTAXII2PersistenceAPI:
     Stub, pending implementation.
     """
 
+    def init_app(self, app):
+        pass
+
     @staticmethod
     def get_next_param(kwargs: Dict) -> str:
         """
@@ -297,9 +314,7 @@ class OpenTAXII2PersistenceAPI:
     def get_api_root(self, api_root_id: str) -> Optional[ApiRoot]:
         raise NotImplementedError
 
-    def get_job_and_details(
-        self, api_root_id: str, job_id: str
-    ) -> Optional[Job]:
+    def get_job_and_details(self, api_root_id: str, job_id: str) -> Optional[Job]:
         raise NotImplementedError
 
     def get_collections(self, api_root_id: str) -> List[Collection]:

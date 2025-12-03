@@ -2,30 +2,39 @@ import datetime
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
 import structlog
+
 from opentaxii.local import context
-from opentaxii.persistence.exceptions import (DoesNotExistError,
-                                              NoReadNoWritePermission,
-                                              NoReadPermission,
-                                              NoWritePermission)
-from opentaxii.signals import (CONTENT_BLOCK_CREATED, INBOX_MESSAGE_CREATED,
-                               SUBSCRIPTION_CREATED)
-from opentaxii.taxii2.entities import (ApiRoot, Collection, Job,
-                                       ManifestRecord, STIXObject,
-                                       VersionRecord)
+from opentaxii.persistence.exceptions import (
+    DoesNotExistError,
+    NoReadNoWritePermission,
+    NoReadPermission,
+    NoWritePermission,
+)
+from opentaxii.signals import (
+    CONTENT_BLOCK_CREATED,
+    INBOX_MESSAGE_CREATED,
+    SUBSCRIPTION_CREATED,
+)
+from opentaxii.taxii2.entities import (
+    ApiRoot,
+    Collection,
+    Job,
+    ManifestRecord,
+    STIXObject,
+    VersionRecord,
+)
 
 log = structlog.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from opentaxii.persistence.api import OpenTAXII2PersistenceAPI
-    from opentaxii.server import TAXII2Server
+    from opentaxii.persistence.api import (
+        OpenTAXII2PersistenceAPI,
+        OpenTAXIIPersistenceAPI,
+    )
+    from opentaxii.server import TAXII1Server, TAXII2Server
 
 
-class BasePersistenceManager:
-    def __init__(self, server, api):
-        raise NotImplementedError
-
-
-class Taxii1PersistenceManager(BasePersistenceManager):
+class Taxii1PersistenceManager:
     """Manager responsible for persisting and retrieving data.
 
     Manager uses API instance ``api`` for basic data CRUD operations and
@@ -35,7 +44,7 @@ class Taxii1PersistenceManager(BasePersistenceManager):
         instance of persistence API class
     """
 
-    def __init__(self, server, api):
+    def __init__(self, server: "TAXII1Server", api: "OpenTAXIIPersistenceAPI"):
         self.server = server
         self.api = api
 
@@ -389,7 +398,7 @@ class Taxii1PersistenceManager(BasePersistenceManager):
         return count
 
 
-class Taxii2PersistenceManager(BasePersistenceManager):
+class Taxii2PersistenceManager:
     """Manager responsible for persisting and retrieving data.
 
     Manager uses API instance ``api`` for basic data CRUD operations and

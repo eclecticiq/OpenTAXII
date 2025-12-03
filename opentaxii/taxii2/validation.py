@@ -1,22 +1,24 @@
 """Taxii2 validation functions."""
+
 import datetime
 import json
+from typing import Mapping
 
 from marshmallow import Schema, fields
+from stix2 import parse
+from stix2.exceptions import STIXError
+
 from opentaxii.persistence.api import OpenTAXII2PersistenceAPI
 from opentaxii.taxii2.exceptions import ValidationError
 from opentaxii.taxii2.utils import DATETIMEFORMAT
-from stix2 import parse
-from stix2.exceptions import STIXError
-from werkzeug.datastructures import ImmutableMultiDict
 
 
-def validate_envelope(json_data: str, allow_custom: bool = False) -> None:
+def validate_envelope(json_data: str | bytes, allow_custom: bool = False) -> None:
     """
     Validate if ``json_data`` is a valid taxii2 envelope.
 
-    :param str json_data: the data to check
-    :param bool allow_custom: if true, allow non-standard stix types
+    :param json_data: the data to check
+    :param allow_custom: if true, allow non-standard stix types
     """
     if not json_data:
         raise ValidationError("No data")
@@ -51,7 +53,11 @@ class Taxii2Next(fields.Field):
     def _deserialize(self, value, attr, data, **kwargs):
         value = super()._deserialize(value, attr, data, **kwargs)
         try:
-            value = self.parent.persistence_api.parse_next_param(value)
+            value = (
+                self.parent.persistence_api.parse_next_param(  # type:ignore[union-attr]
+                    value
+                )
+            )
         except:  # noqa
             raise ValidationError("Not a valid value.")
         return value
@@ -85,6 +91,7 @@ class Taxii2VersionFilter(Taxii2Filter):
 
 class PersistenceApiMxin:
     """Store persistence api on schema instance, to reference in `Taxii2Next`"""
+
     def __init__(self, persistence_api: OpenTAXII2PersistenceAPI, *args, **kwargs):
         self.persistence_api = persistence_api
         super().__init__(*args, **kwargs)
@@ -129,7 +136,7 @@ class DeleteFilterParamsSchema(Schema):
 
 
 def validate_object_filter_params(
-    filter_params: ImmutableMultiDict, persistence_api: OpenTAXII2PersistenceAPI
+    filter_params: Mapping, persistence_api: OpenTAXII2PersistenceAPI
 ) -> dict:
     """Validate and load filter params for the object endpoint."""
     parsed_params = ObjectFilterParamsSchema(persistence_api).load(filter_params)
@@ -137,7 +144,7 @@ def validate_object_filter_params(
 
 
 def validate_list_filter_params(
-    filter_params: ImmutableMultiDict, persistence_api: OpenTAXII2PersistenceAPI
+    filter_params: Mapping, persistence_api: OpenTAXII2PersistenceAPI
 ) -> dict:
     """Validate and load filter params for the list endpoint."""
     parsed_params = ListFilterParamsSchema(persistence_api).load(filter_params)
@@ -145,14 +152,14 @@ def validate_list_filter_params(
 
 
 def validate_versions_filter_params(
-    filter_params: ImmutableMultiDict, persistence_api: OpenTAXII2PersistenceAPI
+    filter_params: Mapping, persistence_api: OpenTAXII2PersistenceAPI
 ) -> dict:
     """Validate and load filter params for the versions endpoint."""
     parsed_params = VersionFilterParamsSchema(persistence_api).load(filter_params)
     return parsed_params
 
 
-def validate_delete_filter_params(filter_params: ImmutableMultiDict) -> dict:
+def validate_delete_filter_params(filter_params: Mapping) -> dict:
     """Validate and load filter params for the delete endpoint."""
     parsed_params = DeleteFilterParamsSchema().load(filter_params)
     return parsed_params

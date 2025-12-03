@@ -5,26 +5,36 @@ import json
 try:
     from re import Pattern
 except ImportError:
-    from typing.re import Pattern
+    from typing.re import Pattern  # type: ignore[no-redef]
 
-from typing import Callable, ClassVar, NamedTuple, Optional, Tuple, Type
+from typing import ClassVar, NamedTuple, Optional, Protocol, Tuple, Type
 
 import structlog
 from flask import Flask, Response, request
-from werkzeug.exceptions import (Forbidden, MethodNotAllowed, NotAcceptable,
-                                 NotFound, RequestEntityTooLarge, Unauthorized,
-                                 UnsupportedMediaType)
+from werkzeug.exceptions import (
+    Forbidden,
+    MethodNotAllowed,
+    NotAcceptable,
+    NotFound,
+    RequestEntityTooLarge,
+    Unauthorized,
+    UnsupportedMediaType,
+)
 
-from opentaxii.persistence.exceptions import (DoesNotExistError,
-                                              NoReadNoWritePermission,
-                                              NoReadPermission,
-                                              NoWritePermission)
+from opentaxii.persistence.exceptions import (
+    DoesNotExistError,
+    NoReadNoWritePermission,
+    NoReadPermission,
+    NoWritePermission,
+)
 from opentaxii.taxii2.utils import taxii2_datetimeformat
-from opentaxii.taxii2.validation import (validate_delete_filter_params,
-                                         validate_envelope,
-                                         validate_list_filter_params,
-                                         validate_object_filter_params,
-                                         validate_versions_filter_params)
+from opentaxii.taxii2.validation import (
+    validate_delete_filter_params,
+    validate_envelope,
+    validate_list_filter_params,
+    validate_object_filter_params,
+    validate_versions_filter_params,
+)
 from opentaxii.utils import register_handler
 
 from .auth import AuthManager
@@ -32,20 +42,26 @@ from .config import ServerConfig
 from .entities import Account
 from .exceptions import UnauthorizedException
 from .local import context
-from .persistence import (BasePersistenceManager, Taxii1PersistenceManager,
-                          Taxii2PersistenceManager)
+from .persistence import Taxii1PersistenceManager, Taxii2PersistenceManager
 from .taxii2.http import make_taxii2_response
-from .taxii.bindings import (ALL_PROTOCOL_BINDINGS, MESSAGE_BINDINGS,
-                             SERVICE_BINDINGS)
-from .taxii.exceptions import (FailureStatus, StatusMessageException,
-                               raise_failure)
-from .taxii.http import (HTTP_ALLOW, HTTP_X_TAXII_CONTENT_TYPES,
-                         get_content_type, get_http_headers,
-                         make_taxii_response, validate_request_headers,
-                         validate_request_headers_post_parse,
-                         validate_response_headers)
-from .taxii.services import (CollectionManagementService, DiscoveryService,
-                             InboxService, PollService)
+from .taxii.bindings import ALL_PROTOCOL_BINDINGS, MESSAGE_BINDINGS, SERVICE_BINDINGS
+from .taxii.exceptions import FailureStatus, StatusMessageException, raise_failure
+from .taxii.http import (
+    HTTP_ALLOW,
+    HTTP_X_TAXII_CONTENT_TYPES,
+    get_content_type,
+    get_http_headers,
+    make_taxii_response,
+    validate_request_headers,
+    validate_request_headers_post_parse,
+    validate_response_headers,
+)
+from .taxii.services import (
+    CollectionManagementService,
+    DiscoveryService,
+    InboxService,
+    PollService,
+)
 from .taxii.services.abstract import TAXIIService
 from .taxii.status import process_status_exception
 from .taxii.utils import configure_libtaxii_xml_parser, parse_message
@@ -56,27 +72,39 @@ log = structlog.get_logger(__name__)
 anonymous_full_access = Account(id=None, username=None, permissions={}, is_admin=True)
 
 
+class EndpointFunc(Protocol):
+    registered_url_re: Pattern
+    registered_valid_methods: Tuple[str, ...]
+    registered_valid_accept_mimetypes: Tuple[str, ...]
+    registered_valid_content_types: Tuple[str, ...]
+    handles_own_auth: bool
+
+    def __call__(self, **kwargs) -> Response: ...
+
+
+class Endpoint(Protocol):
+    """The result of functools.partial"""
+
+    func: EndpointFunc
+    server: "BaseTAXIIServer"
+
+    def __call__(self) -> Response: ...
+
+
 class BaseTAXIIServer:
     """
     Base class for common functionality in taxii* servers.
     """
 
-    PERSISTENCE_MANAGER_CLASS: ClassVar[Type[BasePersistenceManager]]
-    ENDPOINT_MAPPING: Tuple[(Pattern, Callable[[], Response])]
+    ENDPOINT_MAPPING: Tuple[Tuple[Pattern, EndpointFunc], ...]
     app: Flask
     config: dict
-
-    def __init__(self, config: dict):
-        self.config = config
-        self.persistence = self.PERSISTENCE_MANAGER_CLASS(
-            server=self, api=initialize_api(config["persistence_api"])
-        )
-        self.setup_endpoint_mapping()
+    persistence: Taxii1PersistenceManager | Taxii2PersistenceManager
 
     def setup_endpoint_mapping(self):
         mapping = []
         for attr_name in self.__dir__():
-            attr = getattr(self, attr_name)
+            attr: EndpointFunc = getattr(self, attr_name)
             if hasattr(attr, "registered_url_re"):
                 mapping.append((attr.registered_url_re, attr))
         if mapping:
@@ -87,15 +115,9 @@ class BaseTAXIIServer:
         self.app = app
         self.persistence.api.init_app(app)
 
-    def get_domain(self, service_id):
-        """Get domain either from request handler or config."""
-        dynamic_domain = self.persistence.get_domain(service_id)
-        domain = dynamic_domain or self.config.get("domain")
-        return domain
-
-    def get_endpoint(self, relative_path: str) -> Optional[Callable[[], Response]]:
+    def get_endpoint(self, relative_path: str) -> Optional[Endpoint]:
         """Get first endpoint matching relative_path."""
-        return
+        raise NotImplementedError
 
     def handle_internal_error(self, error):
         """
@@ -103,7 +125,7 @@ class BaseTAXIIServer:
 
         Placeholder for subclasses to implement.
         """
-        return
+        raise NotImplementedError
 
     def handle_status_exception(self, error):
         """
@@ -111,7 +133,7 @@ class BaseTAXIIServer:
 
         Placeholder for subclasses to implement.
         """
-        return
+        raise NotImplementedError
 
     def handle_http_exception(self, error):
         return error.get_response()
@@ -122,7 +144,7 @@ class BaseTAXIIServer:
 
         Placeholder for subclasses to implement.
         """
-        return
+        raise NotImplementedError
 
     def raise_unauthorized(self):
         """
@@ -149,10 +171,14 @@ class TAXII1Server(BaseTAXIIServer):
         "collection_management": CollectionManagementService,
         "poll": PollService,
     }
-    PERSISTENCE_MANAGER_CLASS = Taxii1PersistenceManager
+    persistence: Taxii1PersistenceManager
 
     def __init__(self, config: dict):
-        super().__init__(config)
+        self.config = config
+        self.persistence = Taxii1PersistenceManager(
+            server=self, api=initialize_api(config["persistence_api"])
+        )
+        self.setup_endpoint_mapping()
         signal_hooks = config["hooks"]
         if signal_hooks:
             importlib.import_module(signal_hooks)
@@ -198,11 +224,21 @@ class TAXII1Server(BaseTAXIIServer):
         if request.method not in valid_methods:
             raise MethodNotAllowed(valid_methods=valid_methods)
 
-    def get_endpoint(self, relative_path: str) -> Optional[Callable[[], Response]]:
+    def get_endpoint(self, relative_path: str) -> Optional[Endpoint]:
         """Get first endpoint matching relative_path."""
         for endpoint in self.get_services():
             if endpoint.path == relative_path:
-                return functools.partial(self.handle_request, endpoint=endpoint)
+                return functools.partial(  # type: ignore[return-value]
+                    self.handle_request, endpoint=endpoint
+                )
+
+        return None
+
+    def get_domain(self, service_id):
+        """Get domain either from request handler or config."""
+        dynamic_domain = self.persistence.get_domain(service_id)
+        domain = dynamic_domain or self.config.get("domain")
+        return domain
 
     def get_services(self, service_ids=None):
         """Get services registered with this TAXII server instance.
@@ -265,11 +301,12 @@ class TAXII1Server(BaseTAXIIServer):
         # Sync services for collection with registered services for this server
         return self.get_services(ids_for_type)
 
-    def handle_request(self, endpoint: TAXIIService):
+    def handle_request(self, endpoint: TAXIIService) -> Response:
         """
         Handle request and return appropriate response.
 
-        Process :class:`TAXIIService` with either :meth:`_process_with_service` or :meth:`_process_options_request`.
+        Process :class:`TAXIIService` with either :meth:`_process_with_service`
+        or :meth:`_process_options_request`.
         """
         self.check_allowed_methods()
         if endpoint.authentication_required and context.account is None:
@@ -286,7 +323,7 @@ class TAXII1Server(BaseTAXIIServer):
 
         if request.method == "POST":
             return self._process_with_service(endpoint)
-        if request.method == "OPTIONS":
+        else:  # OPTIONS
             return self._process_options_request(endpoint)
 
     @staticmethod
@@ -312,7 +349,7 @@ class TAXII1Server(BaseTAXIIServer):
         if "application/xml" not in request.accept_mimetypes:
             raise_failure(
                 "The specified values of Accept is not supported: {}".format(
-                    ", ".join((request.accept_mimetypes or []))
+                    ", ".join((request.accept_mimetypes or []))  # type: ignore[arg-type]
                 )
             )
 
@@ -389,7 +426,14 @@ class TAXII2Server(BaseTAXIIServer):
     Stub, implementation pending.
     """
 
-    PERSISTENCE_MANAGER_CLASS = Taxii2PersistenceManager
+    persistence: Taxii2PersistenceManager
+
+    def __init__(self, config: dict):
+        self.config = config
+        self.persistence = Taxii2PersistenceManager(
+            server=self, api=initialize_api(config["persistence_api"])
+        )
+        self.setup_endpoint_mapping()
 
     def handle_http_exception(self, error):
         """Return JSON instead of HTML for HTTP errors."""
@@ -423,7 +467,7 @@ class TAXII2Server(BaseTAXIIServer):
         """
         raise Unauthorized()
 
-    def get_endpoint(self, relative_path: str) -> Optional[Callable[[], Response]]:
+    def get_endpoint(self, relative_path: str) -> Optional[Endpoint]:
         endpoint = None
         for regex, handler in self.ENDPOINT_MAPPING:
             match = regex.match(relative_path)
@@ -431,11 +475,13 @@ class TAXII2Server(BaseTAXIIServer):
                 endpoint = functools.partial(handler, **match.groupdict())
                 break
         if endpoint:
-            return functools.partial(self.handle_request, endpoint)
+            return functools.partial(  # type: ignore[return-value]
+                self.handle_request, endpoint  # type: ignore[arg-type]
+            )
 
         return None
 
-    def check_authentication(self, endpoint: Callable[[], Response]):
+    def check_authentication(self, endpoint: Endpoint):
         """Check if account is authenticated, unless endpoint handles that itself."""
         if endpoint.func.handles_own_auth:
             # Endpoint will handle auth checks itself
@@ -451,11 +497,11 @@ class TAXII2Server(BaseTAXIIServer):
         ]:  # untestable with flask
             raise RequestEntityTooLarge()
 
-    def check_headers(self, endpoint: Callable[[], Response]):
+    def check_headers(self, endpoint: Endpoint):
         if not any(
             [
-                valid_accept_mimetype in request.accept_mimetypes
-                for valid_accept_mimetype in endpoint.func.registered_valid_accept_mimetypes
+                accept_mimetype in request.accept_mimetypes
+                for accept_mimetype in endpoint.func.registered_valid_accept_mimetypes
             ]
         ):
             raise NotAcceptable()
@@ -465,11 +511,11 @@ class TAXII2Server(BaseTAXIIServer):
         ):
             raise UnsupportedMediaType()
 
-    def check_allowed_methods(self, endpoint: Callable[[], Response]):
+    def check_allowed_methods(self, endpoint: Endpoint):
         if request.method not in endpoint.func.registered_valid_methods:
             raise MethodNotAllowed(valid_methods=endpoint.func.registered_valid_methods)
 
-    def handle_request(self, endpoint: Callable[[], Response]):
+    def handle_request(self, endpoint: Endpoint) -> Response:
         self.check_authentication(endpoint)
         self.check_content_length()
         self.check_allowed_methods(endpoint)
@@ -546,7 +592,7 @@ class TAXII2Server(BaseTAXIIServer):
         if context.account is None and not api_root.is_public:
             raise Unauthorized()
         collections = self.persistence.get_collections(api_root_id=api_root_id)
-        response = {}
+        response: dict = {}
         if collections:
             response["collections"] = []
             for collection in collections:
@@ -565,10 +611,11 @@ class TAXII2Server(BaseTAXIIServer):
         return make_taxii2_response(response)
 
     @register_handler(
-        r"^/taxii2/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/$",
+        r"^/taxii2/(?P<api_root_id>[^/]+)"
+        r"/collections/(?P<collection_id_or_alias>[^/]+)/$",
         handles_own_auth=True,
     )
-    def collection_handler(self, api_root_id, collection_id_or_alias):
+    def collection_handler(self, api_root_id, collection_id_or_alias: str):
         try:
             collection = self.persistence.get_collection(
                 api_root_id=api_root_id, collection_id_or_alias=collection_id_or_alias
@@ -596,7 +643,8 @@ class TAXII2Server(BaseTAXIIServer):
         return make_taxii2_response(response)
 
     @register_handler(
-        r"^/taxii2/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/manifest/$",
+        r"^/taxii2/(?P<api_root_id>[^/]+)"
+        r"/collections/(?P<collection_id_or_alias>[^/]+)/manifest/$",
         handles_own_auth=True,
     )
     def manifest_handler(self, api_root_id, collection_id_or_alias):
@@ -612,14 +660,15 @@ class TAXII2Server(BaseTAXIIServer):
                 raise Unauthorized()
             raise NotFound()
         if manifest:
-            response = {
+            response: dict = {
                 "more": more,
                 "objects": [
                     {
                         "id": obj.id,
                         "date_added": taxii2_datetimeformat(obj.date_added),
                         "version": taxii2_datetimeformat(obj.version),
-                        "media_type": f"application/stix+json;version={obj.spec_version}",
+                        "media_type": "application/stix+json;version="
+                        + obj.spec_version,
                     }
                     for obj in manifest
                 ],
@@ -641,7 +690,8 @@ class TAXII2Server(BaseTAXIIServer):
         )
 
     @register_handler(
-        r"^/taxii2/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/objects/$",
+        r"^/taxii2/(?P<api_root_id>[^/]+)"
+        r"/collections/(?P<collection_id_or_alias>[^/]+)/objects/$",
         ("GET", "POST"),
         valid_content_types=("application/taxii+json;version=2.1",),
         handles_own_auth=True,
@@ -710,7 +760,7 @@ class TAXII2Server(BaseTAXIIServer):
                 raise Unauthorized()
             raise NotFound()
         response = job.as_taxii2_dict()
-        headers = {}
+        headers: dict = {}
         return make_taxii2_response(
             response,
             202,
@@ -718,7 +768,9 @@ class TAXII2Server(BaseTAXIIServer):
         )
 
     @register_handler(
-        r"^/taxii2/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)/objects/(?P<object_id>[^/]+)/$",
+        r"^/taxii2/(?P<api_root_id>[^/]+)"
+        r"/collections/(?P<collection_id_or_alias>[^/]+)"
+        r"/objects/(?P<object_id>[^/]+)/$",
         ("GET", "DELETE"),
         handles_own_auth=True,
     )
@@ -799,7 +851,8 @@ class TAXII2Server(BaseTAXIIServer):
 
     @register_handler(
         (
-            r"^/taxii2/(?P<api_root_id>[^/]+)/collections/(?P<collection_id_or_alias>[^/]+)"
+            r"^/taxii2/(?P<api_root_id>[^/]+)"
+            r"/collections/(?P<collection_id_or_alias>[^/]+)"
             r"/objects/(?P<object_id>[^/]+)/versions/$"
         ),
         handles_own_auth=True,
@@ -864,7 +917,7 @@ class TAXIIServer:
 
     def __init__(self, config: ServerConfig):
         self.config = config
-        servers_kwargs = {
+        servers_kwargs: dict = {
             "taxii1": None,
             "taxii2": None,
         }
@@ -907,13 +960,15 @@ class TAXIIServer:
         """Check if basic auth is a supported feature."""
         return self.config.get("support_basic_auth", False)
 
-    def get_endpoint(self, relative_path: str) -> Optional[Callable[[], Response]]:
+    def get_endpoint(self, relative_path: str) -> Optional[Endpoint]:
         """Get first endpoint matching relative_path."""
         for server in self.real_servers:
             endpoint = server.get_endpoint(relative_path)
             if endpoint:
                 endpoint.server = server
                 return endpoint
+
+        return None
 
     def handle_request(self, relative_path: str) -> Response:
         """Dispatch request to appropriate taxii* server."""
@@ -954,6 +1009,7 @@ class TAXIIServer:
         if endpoint:
             server = endpoint.server
         else:
+            assert self.servers.taxii1 is not None
             server = self.servers.taxii1
         context.taxiiserver = server
         return server.raise_unauthorized()

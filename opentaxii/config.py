@@ -99,7 +99,7 @@ class ServerConfig(dict):
                 continue
             if key == optional_env_var:
                 continue
-            key = key[len(ENV_VAR_PREFIX):].lstrip("_").lower()
+            key = key[len(ENV_VAR_PREFIX) :].lstrip("_").lower()
             value = yaml.safe_load(value)
 
             container = result
@@ -112,7 +112,7 @@ class ServerConfig(dict):
 
     @classmethod
     def _load_configs(cls, *configs):
-        result = dict()
+        result: dict = dict()
         for config in configs:
             # read content from path-like object
             if not isinstance(config, dict):

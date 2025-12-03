@@ -3,7 +3,7 @@ from typing import ClassVar, Type
 from opentaxii.sqldb_helper import SQLAlchemyDB
 
 try:
-    from sqlalchemy.orm import DeclarativeMeta
+    from sqlalchemy.orm import DeclarativeMeta  # type: ignore[attr-defined]
 except ImportError:
     from sqlalchemy.ext.declarative import DeclarativeMeta
 
