@@ -8,7 +8,7 @@ try:
 except ImportError:
     from typing.re import Pattern  # type: ignore[no-redef]
 
-from typing import ClassVar, NamedTuple, Optional, Protocol, Tuple, Type
+from typing import ClassVar, NamedTuple, Optional, Protocol, Tuple, Type, Union
 
 import structlog
 from flask import Flask, Response, request
@@ -100,7 +100,7 @@ class BaseTAXIIServer:
     ENDPOINT_MAPPING: Tuple[Tuple[Pattern, EndpointFunc], ...]
     app: Flask
     config: dict
-    persistence: Taxii1PersistenceManager | Taxii2PersistenceManager
+    persistence: Union[Taxii1PersistenceManager, Taxii2PersistenceManager]
 
     def setup_endpoint_mapping(self):
         mapping = []

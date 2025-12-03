@@ -10,7 +10,7 @@ PROTOCOL_BINDINGS = [VID_TAXII_HTTP_10, VID_TAXII_HTTPS_10]
 CUSTOM_CONTENT_BINDING = 'custom:content:binding'
 INVALID_CONTENT_BINDING = 'invalid:content:binding'
 
-INBOX_A = dict(
+INBOX_A: dict = dict(
     id='inbox-A',
     type='inbox',
     description='inbox-A description',
@@ -20,7 +20,7 @@ INBOX_A = dict(
     protocol_bindings=PROTOCOL_BINDINGS,
 )
 
-INBOX_B = dict(
+INBOX_B: dict = dict(
     id='inbox-B',
     type='inbox',
     description='inbox-B description',
@@ -30,7 +30,7 @@ INBOX_B = dict(
     protocol_bindings=PROTOCOL_BINDINGS,
 )
 
-DISCOVERY_A = dict(
+DISCOVERY_A: dict = dict(
     id='discovery-A',
     type='discovery',
     description='discovery-A description',
@@ -46,7 +46,7 @@ DISCOVERY_A = dict(
     protocol_bindings=PROTOCOL_BINDINGS,
 )
 
-DISCOVERY_B = dict(
+DISCOVERY_B: dict = dict(
     id='discovery-B',
     type='discovery',
     description='External discovery-B service',
@@ -56,7 +56,7 @@ DISCOVERY_B = dict(
 
 SUBSCRIPTION_MESSAGE = 'message about subscription'
 
-COLLECTION_MANAGEMENT = dict(
+COLLECTION_MANAGEMENT: dict = dict(
     id='collection-management-A',
     type='collection_management',
     description='Collection management description',
@@ -68,7 +68,7 @@ COLLECTION_MANAGEMENT = dict(
 POLL_RESULT_SIZE = 20
 POLL_MAX_COUNT = 15
 
-POLL = dict(
+POLL: dict = dict(
     id='poll-A',
     type='poll',
     description='Poll service description',
@@ -83,7 +83,7 @@ DOMAIN = 'www.some-example.local'
 INTERNAL_SERVICES = [INBOX_A, INBOX_B, DISCOVERY_A, COLLECTION_MANAGEMENT, POLL]
 SERVICES = INTERNAL_SERVICES + [DISCOVERY_B]
 
-INSTANCES_CONFIGURED = sum(len(s['protocol_bindings']) for s in SERVICES)  # type: ignore
+INSTANCES_CONFIGURED = sum(len(s['protocol_bindings']) for s in SERVICES)
 
 MESSAGE_ID = '123'
 CONTENT = 'some-content'

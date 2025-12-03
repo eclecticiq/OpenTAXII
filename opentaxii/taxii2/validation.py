@@ -2,7 +2,7 @@
 
 import datetime
 import json
-from typing import Mapping
+from typing import Mapping, Union
 
 from marshmallow import Schema, fields
 from stix2 import parse
@@ -13,7 +13,7 @@ from opentaxii.taxii2.exceptions import ValidationError
 from opentaxii.taxii2.utils import DATETIMEFORMAT
 
 
-def validate_envelope(json_data: str | bytes, allow_custom: bool = False) -> None:
+def validate_envelope(json_data: Union[str, bytes], allow_custom: bool = False) -> None:
     """
     Validate if ``json_data`` is a valid taxii2 envelope.
 
