@@ -1,2 +1,1 @@
--r requirements-dev.txt
 mysqlclient>=2.0.3
