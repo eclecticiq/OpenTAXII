@@ -25,7 +25,7 @@ class ApiRoot(Entity):
         id: uuid.UUID,
         default: bool,
         title: str,
-        description: str | None,
+        description: Optional[str],
         is_public: bool,
     ):
         """Initialize ApiRoot."""
@@ -58,7 +58,7 @@ class Collection(Entity):
         api_root_id: uuid.UUID,
         title: str,
         description: str,
-        alias: str | None,
+        alias: Optional[str],
         is_public: bool,
         is_public_write: bool,
     ):
