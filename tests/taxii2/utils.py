@@ -309,33 +309,33 @@ def process_match_version(match_version):
     return id_version_combos
 
 
-def GET_API_ROOT_MOCK(api_root_id: str):
+def GET_API_ROOT_MOCK(api_root_id: UUID):
     for api_root in API_ROOTS:
-        if str(api_root.id) == api_root_id:
+        if api_root.id == api_root_id:
             return api_root
     return None
 
 
-def GET_JOB_AND_DETAILS_MOCK(api_root_id: str, job_id: str):
+def GET_JOB_AND_DETAILS_MOCK(api_root_id: UUID, job_id: UUID):
     job_response = None
     for job in JOBS:
-        if str(job.api_root_id) == api_root_id and str(job.id) == job_id:
+        if job.api_root_id == api_root_id and job.id == job_id:
             job_response = job
             break
     return job_response
 
 
-def GET_COLLECTIONS_MOCK(api_root_id):
+def GET_COLLECTIONS_MOCK(api_root_id: UUID):
     response = []
     for collection in COLLECTIONS:
-        if str(collection.api_root_id) == api_root_id:
+        if collection.api_root_id == api_root_id:
             response.append(collection)
     return response
 
 
-def GET_COLLECTION_MOCK(api_root_id: str, collection_id_or_alias: str):
+def GET_COLLECTION_MOCK(api_root_id: UUID, collection_id_or_alias: str):
     for collection in COLLECTIONS:
-        if str(collection.api_root_id) == api_root_id and (
+        if collection.api_root_id == api_root_id and (
             str(collection.id) == collection_id_or_alias
             or collection.alias == collection_id_or_alias
         ):
@@ -350,7 +350,7 @@ def STIX_OBJECT_FROM_MANIFEST(stix_id):
 
 
 def GET_MANIFEST_MOCK(
-    collection_id: str,
+    collection_id: UUID,
     limit: Optional[int] = None,
     added_after: Optional[datetime.datetime] = None,
     next_kwargs: Optional[Dict] = None,
@@ -481,7 +481,7 @@ def GET_OBJECT_MOCK(
     return response, more, next_param
 
 
-def ADD_OBJECTS_MOCK(api_root_id: str, collection_id: str, objects: List[Dict]):
+def ADD_OBJECTS_MOCK(api_root_id: UUID, collection_id: str, objects: List[Dict]):
     return JOBS[0]
 
 

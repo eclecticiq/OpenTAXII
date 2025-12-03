@@ -1,6 +1,7 @@
 import functools
 import importlib
 import json
+import uuid
 
 try:
     from re import Pattern
@@ -539,9 +540,9 @@ class TAXII2Server(BaseTAXIIServer):
         return make_taxii2_response(response)
 
     @register_handler(r"^/taxii2/(?P<api_root_id>[^/]+)/$", handles_own_auth=True)
-    def api_root_handler(self, api_root_id):
+    def api_root_handler(self, api_root_id: str):
         try:
-            api_root = self.persistence.get_api_root(api_root_id=api_root_id)
+            api_root = self.persistence.get_api_root(api_root_id=uuid.UUID(api_root_id))
         except DoesNotExistError:
             if context.account is None:
                 raise Unauthorized()
@@ -561,9 +562,10 @@ class TAXII2Server(BaseTAXIIServer):
         r"^/taxii2/(?P<api_root_id>[^/]+)/status/(?P<job_id>[^/]+)/$",
         handles_own_auth=True,
     )
-    def job_handler(self, api_root_id, job_id):
+    def job_handler(self, api_root_id: str, job_id: str):
+        api_root_uuid = uuid.UUID(api_root_id)
         try:
-            api_root = self.persistence.get_api_root(api_root_id=api_root_id)
+            api_root = self.persistence.get_api_root(api_root_id=api_root_uuid)
         except DoesNotExistError:
             if context.account is None:
                 raise Unauthorized()
@@ -572,7 +574,7 @@ class TAXII2Server(BaseTAXIIServer):
             raise Unauthorized()
         try:
             job = self.persistence.get_job_and_details(
-                api_root_id=api_root_id, job_id=job_id
+                api_root_id=api_root_uuid, job_id=uuid.UUID(job_id)
             )
         except DoesNotExistError:
             raise NotFound()
@@ -582,16 +584,17 @@ class TAXII2Server(BaseTAXIIServer):
     @register_handler(
         r"^/taxii2/(?P<api_root_id>[^/]+)/collections/$", handles_own_auth=True
     )
-    def collections_handler(self, api_root_id):
+    def collections_handler(self, api_root_id: str):
+        api_root_uuid = uuid.UUID(api_root_id)
         try:
-            api_root = self.persistence.get_api_root(api_root_id=api_root_id)
+            api_root = self.persistence.get_api_root(api_root_id=api_root_uuid)
         except DoesNotExistError:
             if context.account is None:
                 raise Unauthorized()
             raise NotFound()
         if context.account is None and not api_root.is_public:
             raise Unauthorized()
-        collections = self.persistence.get_collections(api_root_id=api_root_id)
+        collections = self.persistence.get_collections(api_root_id=api_root_uuid)
         response: dict = {}
         if collections:
             response["collections"] = []
@@ -615,10 +618,11 @@ class TAXII2Server(BaseTAXIIServer):
         r"/collections/(?P<collection_id_or_alias>[^/]+)/$",
         handles_own_auth=True,
     )
-    def collection_handler(self, api_root_id, collection_id_or_alias: str):
+    def collection_handler(self, api_root_id: str, collection_id_or_alias: str):
         try:
             collection = self.persistence.get_collection(
-                api_root_id=api_root_id, collection_id_or_alias=collection_id_or_alias
+                api_root_id=uuid.UUID(api_root_id),
+                collection_id_or_alias=collection_id_or_alias,
             )
         except DoesNotExistError:
             if context.account is None:
@@ -647,11 +651,11 @@ class TAXII2Server(BaseTAXIIServer):
         r"/collections/(?P<collection_id_or_alias>[^/]+)/manifest/$",
         handles_own_auth=True,
     )
-    def manifest_handler(self, api_root_id, collection_id_or_alias):
+    def manifest_handler(self, api_root_id: str, collection_id_or_alias: str):
         filter_params = validate_list_filter_params(request.args, self.persistence.api)
         try:
             manifest, more = self.persistence.get_manifest(
-                api_root_id=api_root_id,
+                api_root_id=uuid.UUID(api_root_id),
                 collection_id_or_alias=collection_id_or_alias,
                 **filter_params,
             )
@@ -696,13 +700,14 @@ class TAXII2Server(BaseTAXIIServer):
         valid_content_types=("application/taxii+json;version=2.1",),
         handles_own_auth=True,
     )
-    def objects_handler(self, api_root_id, collection_id_or_alias):
+    def objects_handler(self, api_root_id: str, collection_id_or_alias: str):
+        api_root_uuid = uuid.UUID(api_root_id)
         if request.method == "GET":
-            return self.objects_get_handler(api_root_id, collection_id_or_alias)
+            return self.objects_get_handler(api_root_uuid, collection_id_or_alias)
         if request.method == "POST":
-            return self.objects_post_handler(api_root_id, collection_id_or_alias)
+            return self.objects_post_handler(api_root_uuid, collection_id_or_alias)
 
-    def objects_get_handler(self, api_root_id, collection_id_or_alias):
+    def objects_get_handler(self, api_root_id: uuid.UUID, collection_id_or_alias: str):
         filter_params = validate_list_filter_params(request.args, self.persistence.api)
         try:
             objects, more, next_param = self.persistence.get_objects(
@@ -745,7 +750,7 @@ class TAXII2Server(BaseTAXIIServer):
             extra_headers=headers,
         )
 
-    def objects_post_handler(self, api_root_id, collection_id_or_alias):
+    def objects_post_handler(self, api_root_id: uuid.UUID, collection_id_or_alias: str):
         validate_envelope(
             request.data, allow_custom=self.config.get("allow_custom_properties", True)
         )
@@ -774,17 +779,22 @@ class TAXII2Server(BaseTAXIIServer):
         ("GET", "DELETE"),
         handles_own_auth=True,
     )
-    def object_handler(self, api_root_id, collection_id_or_alias, object_id):
+    def object_handler(
+        self, api_root_id: str, collection_id_or_alias: str, object_id: str
+    ):
+        api_root_uuid = uuid.UUID(api_root_id)
         if request.method == "GET":
             return self.object_get_handler(
-                api_root_id, collection_id_or_alias, object_id
+                api_root_uuid, collection_id_or_alias, object_id
             )
         if request.method == "DELETE":
             return self.object_delete_handler(
-                api_root_id, collection_id_or_alias, object_id
+                api_root_uuid, collection_id_or_alias, object_id
             )
 
-    def object_get_handler(self, api_root_id, collection_id_or_alias, object_id):
+    def object_get_handler(
+        self, api_root_id: uuid.UUID, collection_id_or_alias: str, object_id: str
+    ):
         filter_params = validate_object_filter_params(
             request.args, self.persistence.api
         )
@@ -830,7 +840,9 @@ class TAXII2Server(BaseTAXIIServer):
             extra_headers=headers,
         )
 
-    def object_delete_handler(self, api_root_id, collection_id_or_alias, object_id):
+    def object_delete_handler(
+        self, api_root_id: uuid.UUID, collection_id_or_alias: str, object_id: str
+    ):
         filter_params = validate_delete_filter_params(request.args)
         try:
             self.persistence.delete_object(
@@ -857,13 +869,15 @@ class TAXII2Server(BaseTAXIIServer):
         ),
         handles_own_auth=True,
     )
-    def versions_handler(self, api_root_id, collection_id_or_alias, object_id):
+    def versions_handler(
+        self, api_root_id: str, collection_id_or_alias: str, object_id: str
+    ):
         filter_params = validate_versions_filter_params(
             request.args, self.persistence.api
         )
         try:
             versions, more = self.persistence.get_versions(
-                api_root_id=api_root_id,
+                api_root_id=uuid.UUID(api_root_id),
                 collection_id_or_alias=collection_id_or_alias,
                 object_id=object_id,
                 **filter_params,

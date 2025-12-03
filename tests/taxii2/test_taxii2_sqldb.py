@@ -3,6 +3,7 @@ from uuid import uuid4
 
 import pytest
 
+from opentaxii.persistence.sqldb.api import Taxii2SQLDatabaseAPI
 from opentaxii.persistence.sqldb.taxii2models import Job, JobDetail, STIXObject
 from opentaxii.taxii2 import entities
 from opentaxii.taxii2.utils import DATETIMEFORMAT
@@ -39,7 +40,7 @@ from tests.taxii2.utils import (
     ],
     indirect=["db_api_roots"],
 )
-def test_get_api_roots(taxii2_sqldb_api, db_api_roots):
+def test_get_api_roots(taxii2_sqldb_api: Taxii2SQLDatabaseAPI, db_api_roots):
     response = taxii2_sqldb_api.get_api_roots()
     assert response == [api_root for api_root in db_api_roots]
 
@@ -61,9 +62,11 @@ def test_get_api_roots(taxii2_sqldb_api, db_api_roots):
         ),
     ],
 )
-def test_get_api_root(taxii2_sqldb_api, db_api_roots, api_root_id):
-    response = taxii2_sqldb_api.get_api_root(str(api_root_id))
-    assert response == GET_API_ROOT_MOCK(str(api_root_id))
+def test_get_api_root(
+    taxii2_sqldb_api: Taxii2SQLDatabaseAPI, db_api_roots, api_root_id
+):
+    response = taxii2_sqldb_api.get_api_root(api_root_id)
+    assert response == GET_API_ROOT_MOCK(api_root_id)
 
 
 @pytest.mark.parametrize(
@@ -96,9 +99,11 @@ def test_get_api_root(taxii2_sqldb_api, db_api_roots, api_root_id):
         ),
     ],
 )
-def test_get_job_and_details(taxii2_sqldb_api, db_jobs, api_root_id, job_id):
-    response = taxii2_sqldb_api.get_job_and_details(str(api_root_id), str(job_id))
-    assert response == GET_JOB_AND_DETAILS_MOCK(str(api_root_id), str(job_id))
+def test_get_job_and_details(
+    taxii2_sqldb_api: Taxii2SQLDatabaseAPI, db_jobs, api_root_id, job_id
+):
+    response = taxii2_sqldb_api.get_job_and_details(api_root_id, job_id)
+    assert response == GET_JOB_AND_DETAILS_MOCK(api_root_id, job_id)
 
 
 @pytest.mark.parametrize(
@@ -118,9 +123,11 @@ def test_get_job_and_details(taxii2_sqldb_api, db_jobs, api_root_id, job_id):
         ),
     ],
 )
-def test_get_collections(taxii2_sqldb_api, db_collections, api_root_id):
-    response = taxii2_sqldb_api.get_collections(str(api_root_id))
-    assert response == GET_COLLECTIONS_MOCK(str(api_root_id))
+def test_get_collections(
+    taxii2_sqldb_api: Taxii2SQLDatabaseAPI, db_collections, api_root_id
+):
+    response = taxii2_sqldb_api.get_collections(api_root_id)
+    assert response == GET_COLLECTIONS_MOCK(api_root_id)
 
 
 @pytest.mark.parametrize(
@@ -147,26 +154,25 @@ def test_get_collections(taxii2_sqldb_api, db_collections, api_root_id):
             id="wrong api root",
         ),
         pytest.param(
-            str(uuid4()),
+            uuid4(),
             COLLECTIONS[0].id,
             id="unknown api root",
         ),
         pytest.param(
             API_ROOTS[0].id,
-            str(uuid4()),
+            uuid4(),
             id="unknown collection id",
         ),
     ],
 )
 def test_get_collection(
-    taxii2_sqldb_api, db_collections, api_root_id, collection_id_or_alias
+    taxii2_sqldb_api: Taxii2SQLDatabaseAPI,
+    db_collections,
+    api_root_id,
+    collection_id_or_alias,
 ):
-    response = taxii2_sqldb_api.get_collection(
-        str(api_root_id), str(collection_id_or_alias)
-    )
-    assert response == GET_COLLECTION_MOCK(
-        str(api_root_id), str(collection_id_or_alias)
-    )
+    response = taxii2_sqldb_api.get_collection(api_root_id, str(collection_id_or_alias))
+    assert response == GET_COLLECTION_MOCK(api_root_id, str(collection_id_or_alias))
 
 
 @pytest.mark.parametrize(
@@ -432,7 +438,7 @@ def test_get_collection(
     ],
 )
 def test_get_manifest(
-    taxii2_sqldb_api,
+    taxii2_sqldb_api: Taxii2SQLDatabaseAPI,
     db_stix_objects,
     collection_id,
     limit,
@@ -728,7 +734,7 @@ def test_get_manifest(
     ],
 )
 def test_get_objects(
-    taxii2_sqldb_api,
+    taxii2_sqldb_api: Taxii2SQLDatabaseAPI,
     db_stix_objects,
     collection_id,
     limit,
@@ -835,7 +841,7 @@ def test_get_objects(
     ],
 )
 def test_add_objects(
-    taxii2_sqldb_api,
+    taxii2_sqldb_api: Taxii2SQLDatabaseAPI,
     db_stix_objects,
     api_root_id,
     collection_id,
@@ -1175,7 +1181,7 @@ def test_add_objects(
     ],
 )
 def test_get_object(
-    taxii2_sqldb_api,
+    taxii2_sqldb_api: Taxii2SQLDatabaseAPI,
     db_stix_objects,
     collection_id,
     object_id,
@@ -1249,7 +1255,7 @@ def test_get_object(
     ],
 )
 def test_delete_object(
-    taxii2_sqldb_api,
+    taxii2_sqldb_api: Taxii2SQLDatabaseAPI,
     db_stix_objects,
     collection_id,
     object_id,
@@ -1378,7 +1384,7 @@ def test_delete_object(
     ],
 )
 def test_get_versions(
-    taxii2_sqldb_api,
+    taxii2_sqldb_api: Taxii2SQLDatabaseAPI,
     db_stix_objects,
     collection_id,
     object_id,
@@ -1421,7 +1427,9 @@ def test_get_versions(
         ),
     ],
 )
-def test_next_param(taxii2_sqldb_api, stix_id, date_added, next_param):
+def test_next_param(
+    taxii2_sqldb_api: Taxii2SQLDatabaseAPI, stix_id, date_added, next_param
+):
     assert (
         taxii2_sqldb_api.get_next_param({"id": stix_id, "date_added": date_added})
         == next_param

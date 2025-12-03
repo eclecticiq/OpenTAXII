@@ -311,17 +311,19 @@ class OpenTAXII2PersistenceAPI:
         """
         raise NotImplementedError
 
-    def get_api_root(self, api_root_id: str) -> Optional[ApiRoot]:
+    def get_api_root(self, api_root_id: uuid.UUID) -> Optional[ApiRoot]:
         raise NotImplementedError
 
-    def get_job_and_details(self, api_root_id: str, job_id: str) -> Optional[Job]:
+    def get_job_and_details(
+        self, api_root_id: uuid.UUID, job_id: uuid.UUID
+    ) -> Optional[Job]:
         raise NotImplementedError
 
-    def get_collections(self, api_root_id: str) -> List[Collection]:
+    def get_collections(self, api_root_id: uuid.UUID) -> List[Collection]:
         raise NotImplementedError
 
     def get_collection(
-        self, api_root_id: str, collection_id_or_alias: str
+        self, api_root_id: uuid.UUID, collection_id_or_alias: str
     ) -> Optional[Collection]:
         raise NotImplementedError
 
@@ -352,7 +354,7 @@ class OpenTAXII2PersistenceAPI:
         raise NotImplementedError
 
     def add_objects(
-        self, api_root_id: str, collection_id: uuid.UUID, objects: List[Dict]
+        self, api_root_id: uuid.UUID, collection_id: uuid.UUID, objects: List[Dict]
     ) -> Job:
         raise NotImplementedError
 
@@ -390,7 +392,7 @@ class OpenTAXII2PersistenceAPI:
         added_after: Optional[datetime.datetime] = None,
         next_kwargs: Optional[Dict] = None,
         match_spec_version: Optional[List[str]] = None,
-    ) -> Tuple[List[VersionRecord], bool]:
+    ) -> Tuple[Optional[List[VersionRecord]], bool]:
         """
         Get all versions of single object from database.
 

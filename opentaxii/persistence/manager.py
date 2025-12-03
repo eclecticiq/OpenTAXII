@@ -1,4 +1,5 @@
 import datetime
+import uuid
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
 import structlog
@@ -428,23 +429,23 @@ class Taxii2PersistenceManager:
                 break
         return (default_api_root, api_roots)
 
-    def get_api_root(self, api_root_id: str) -> ApiRoot:
+    def get_api_root(self, api_root_id: uuid.UUID) -> ApiRoot:
         api_root = self.api.get_api_root(api_root_id=api_root_id)
         if api_root is None:
             raise DoesNotExistError()
         return api_root
 
-    def get_job_and_details(self, api_root_id: str, job_id: str) -> Job:
+    def get_job_and_details(self, api_root_id: uuid.UUID, job_id: uuid.UUID) -> Job:
         job = self.api.get_job_and_details(api_root_id=api_root_id, job_id=job_id)
         if job is None:
             raise DoesNotExistError()
         return job
 
-    def get_collections(self, api_root_id: str) -> List[Collection]:
+    def get_collections(self, api_root_id: uuid.UUID) -> List[Collection]:
         return self.api.get_collections(api_root_id=api_root_id)
 
     def get_collection(
-        self, api_root_id: str, collection_id_or_alias: str
+        self, api_root_id: uuid.UUID, collection_id_or_alias: str
     ) -> Collection:
         collection = self.api.get_collection(
             api_root_id=api_root_id, collection_id_or_alias=collection_id_or_alias
@@ -455,7 +456,7 @@ class Taxii2PersistenceManager:
 
     def get_manifest(
         self,
-        api_root_id: str,
+        api_root_id: uuid.UUID,
         collection_id_or_alias: str,
         limit: Optional[int] = None,
         added_after: Optional[datetime.datetime] = None,
@@ -483,7 +484,7 @@ class Taxii2PersistenceManager:
 
     def get_objects(
         self,
-        api_root_id: str,
+        api_root_id: uuid.UUID,
         collection_id_or_alias: str,
         limit: Optional[int] = None,
         added_after: Optional[datetime.datetime] = None,
@@ -511,7 +512,7 @@ class Taxii2PersistenceManager:
 
     def add_objects(
         self,
-        api_root_id: str,
+        api_root_id: uuid.UUID,
         collection_id_or_alias: str,
         data: Dict,
     ) -> Job:
@@ -529,7 +530,7 @@ class Taxii2PersistenceManager:
 
     def get_object(
         self,
-        api_root_id: str,
+        api_root_id: uuid.UUID,
         collection_id_or_alias: str,
         object_id: str,
         limit: Optional[int] = None,
@@ -558,7 +559,7 @@ class Taxii2PersistenceManager:
 
     def delete_object(
         self,
-        api_root_id: str,
+        api_root_id: uuid.UUID,
         collection_id_or_alias: str,
         object_id: str,
         match_version: Optional[List[str]] = None,
@@ -586,7 +587,7 @@ class Taxii2PersistenceManager:
 
     def get_versions(
         self,
-        api_root_id: str,
+        api_root_id: uuid.UUID,
         collection_id_or_alias: str,
         object_id: str,
         limit: Optional[int] = None,

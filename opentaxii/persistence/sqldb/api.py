@@ -532,7 +532,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             for obj in query.all()
         ]
 
-    def get_api_root(self, api_root_id: str) -> Optional[entities.ApiRoot]:
+    def get_api_root(self, api_root_id: uuid.UUID) -> Optional[entities.ApiRoot]:
         api_root = (
             self.db.session.query(taxii2models.ApiRoot)
             .filter(taxii2models.ApiRoot.id == api_root_id)
@@ -616,7 +616,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         return job_entity
 
     def get_job_and_details(
-        self, api_root_id: str, job_id: str
+        self, api_root_id: uuid.UUID, job_id: uuid.UUID
     ) -> Optional[entities.Job]:
         job = (
             self.db.session.query(taxii2models.Job)
@@ -647,7 +647,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         """
         return taxii2models.Job.cleanup(self.db.session)
 
-    def get_collections(self, api_root_id: str) -> List[entities.Collection]:
+    def get_collections(self, api_root_id: uuid.UUID) -> List[entities.Collection]:
         query = (
             self.db.session.query(taxii2models.Collection)
             .filter(taxii2models.Collection.api_root_id == api_root_id)
@@ -667,7 +667,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         ]
 
     def get_collection(
-        self, api_root_id: str, collection_id_or_alias: str
+        self, api_root_id: uuid.UUID, collection_id_or_alias: str
     ) -> Optional[entities.Collection]:
         id_or_alias_filter = taxii2models.Collection.alias == collection_id_or_alias
         try:
@@ -982,7 +982,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         )
 
     def add_objects(
-        self, api_root_id: str, collection_id: uuid.UUID, objects: List[Dict]
+        self, api_root_id: uuid.UUID, collection_id: uuid.UUID, objects: List[Dict]
     ) -> entities.Job:
         job = taxii2models.Job(
             api_root_id=api_root_id,

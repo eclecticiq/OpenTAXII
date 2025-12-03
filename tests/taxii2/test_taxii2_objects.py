@@ -1228,7 +1228,7 @@ def test_objects(
     assert response.status_code == expected_status
     if method == "post" and expected_status == 202:
         add_objects_mock.assert_called_once_with(
-            api_root_id=str(API_ROOTS[0].id),
+            api_root_id=API_ROOTS[0].id,
             collection_id=COLLECTIONS[5].id,
             objects=post_data["objects"],
         )
@@ -1329,7 +1329,7 @@ def test_objects_unauthenticated(
     assert response.status_code == expected_status_code
     if method == "post" and expected_status_code == 202:
         add_objects_mock.assert_called_once_with(
-            api_root_id=str(API_ROOTS[0].id),
+            api_root_id=API_ROOTS[0].id,
             collection_id=COLLECTIONS[7].id,
             objects=kwargs["json"]["objects"],
         )
