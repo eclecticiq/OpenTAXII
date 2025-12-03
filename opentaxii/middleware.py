@@ -2,8 +2,7 @@ import functools
 
 import structlog
 from flask import Flask, request
-from marshmallow.exceptions import \
-    ValidationError as MarshmallowValidationError
+from marshmallow.exceptions import ValidationError as MarshmallowValidationError
 from werkzeug.exceptions import HTTPException
 
 from .exceptions import InvalidAuthHeader
@@ -42,7 +41,9 @@ def create_app(server):
     app.register_error_handler(500, server.handle_internal_error)
     app.register_error_handler(StatusMessageException, server.handle_status_exception)
     app.register_error_handler(HTTPException, server.handle_http_exception)
-    app.register_error_handler(MarshmallowValidationError, server.handle_validation_exception)
+    app.register_error_handler(
+        MarshmallowValidationError, server.handle_validation_exception
+    )
     app.before_request(functools.partial(create_context_before_request, server))
     app.after_request(cleanup_context)
     return app

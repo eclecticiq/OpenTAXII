@@ -1,4 +1,5 @@
 """Taxii2 entities."""
+
 from datetime import datetime
 from typing import List, NamedTuple, Optional
 

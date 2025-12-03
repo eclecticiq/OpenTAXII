@@ -8,4 +8,3 @@ from .poll_request_handlers import PollRequestHandler
 from .poll_fulfilment_request_handlers import PollFulfilmentRequestHandler
 
 from .subscription_request_handlers import SubscriptionRequestHandler
-

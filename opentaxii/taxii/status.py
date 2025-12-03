@@ -3,14 +3,13 @@ import libtaxii.messages_10 as tm10
 from libtaxii.common import generate_message_id
 
 from libtaxii.constants import (
-    VID_TAXII_XML_11, VID_TAXII_XML_10,
-    VID_TAXII_SERVICES_10, VID_TAXII_SERVICES_11
+    VID_TAXII_XML_11,
+    VID_TAXII_XML_10,
+    VID_TAXII_SERVICES_10,
+    VID_TAXII_SERVICES_11,
 )
 
-from .http import (
-    HTTP_X_TAXII_ACCEPT, HTTP_X_TAXII_CONTENT_TYPE,
-    get_http_headers
-)
+from .http import HTTP_X_TAXII_ACCEPT, HTTP_X_TAXII_CONTENT_TYPE, get_http_headers
 
 
 def process_status_exception(exception, headers, is_secure):
@@ -45,7 +44,8 @@ def exception_to_status(exception, format_version):
         extended_headers=exception.extended_headers,
         status_type=exception.status_type,
         status_detail=exception.status_details,
-        message=exception.message)
+        message=exception.message,
+    )
     if format_version == VID_TAXII_XML_11:
         sm = tm11.StatusMessage(**data)
     elif format_version == VID_TAXII_XML_10:

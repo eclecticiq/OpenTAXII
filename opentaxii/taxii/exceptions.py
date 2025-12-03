@@ -1,17 +1,21 @@
 import sys
 import six
-from libtaxii.constants import (
-    ST_BAD_MESSAGE, ST_FAILURE, ST_UNAUTHORIZED
-)
+from libtaxii.constants import ST_BAD_MESSAGE, ST_FAILURE, ST_UNAUTHORIZED
 
 
 class StatusMessageException(Exception):
 
-    def __init__(self, status_type, in_response_to='0', message=None,
-                 status_details=None, extended_headers=None, e=None):
+    def __init__(
+        self,
+        status_type,
+        in_response_to='0',
+        message=None,
+        status_details=None,
+        extended_headers=None,
+        e=None,
+    ):
 
-        super(StatusMessageException, self).__init__(
-            e or message or status_type)
+        super(StatusMessageException, self).__init__(e or message or status_type)
 
         self.in_response_to = in_response_to
         self.status_type = status_type
@@ -24,22 +28,22 @@ class BadMessageStatus(StatusMessageException):
 
     def __init__(self, message, **kwargs):
         super(BadMessageStatus, self).__init__(
-            ST_BAD_MESSAGE, message=message, **kwargs)
+            ST_BAD_MESSAGE, message=message, **kwargs
+        )
 
 
 class FailureStatus(StatusMessageException):
 
     def __init__(self, message, **kwargs):
-        super(FailureStatus, self).__init__(
-            ST_FAILURE, message=message, **kwargs)
+        super(FailureStatus, self).__init__(ST_FAILURE, message=message, **kwargs)
 
 
 class UnauthorizedStatus(StatusMessageException):
 
     def __init__(self, status_type=ST_UNAUTHORIZED, **kwargs):
         super(UnauthorizedStatus, self).__init__(
-            status_type=status_type.upper(),
-            **kwargs)
+            status_type=status_type.upper(), **kwargs
+        )
 
 
 def raise_failure(message, in_response_to='0'):
@@ -47,4 +51,5 @@ def raise_failure(message, in_response_to='0'):
     six.reraise(
         FailureStatus,
         FailureStatus(message, in_response_to=in_response_to, e=ei),
-        tb=tb)
+        tb=tb,
+    )

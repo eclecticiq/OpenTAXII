@@ -3,9 +3,7 @@ import json
 from sqlalchemy import schema, types
 from sqlalchemy.ext.declarative import declarative_base
 
-from werkzeug.security import (
-    check_password_hash, generate_password_hash
-)
+from werkzeug.security import check_password_hash, generate_password_hash
 
 __all__ = ['Base', 'Account']
 
@@ -42,6 +40,8 @@ class Account(Base):
         for collection_name, permission in permissions.items():
             if permission not in ALL_PERMISSIONS:
                 raise ValueError(
-                    "Unknown permission '{}' specified for collection '{}'"
-                    .format(permission, collection_name))
+                    "Unknown permission '{}' specified for collection '{}'".format(
+                        permission, collection_name
+                    )
+                )
         self._permissions = json.dumps(permissions)

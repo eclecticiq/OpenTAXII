@@ -1,4 +1,5 @@
 """Database models for taxii2 entities."""
+
 import datetime
 import uuid
 

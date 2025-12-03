@@ -1,6 +1,7 @@
 '''
-    OpenTAXII, TAXII server implementation from EclecticIQ.
+OpenTAXII, TAXII server implementation from EclecticIQ.
 '''
+
 # flake8: noqa
 
 from ._version import __version__

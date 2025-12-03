@@ -8,9 +8,7 @@ class DiscoveryService(TAXIIService):
 
     service_type = SVC_DISCOVERY
 
-    handlers = {
-        MSG_DISCOVERY_REQUEST: DiscoveryRequestHandler
-    }
+    handlers = {MSG_DISCOVERY_REQUEST: DiscoveryRequestHandler}
 
     advertised_services = []
 

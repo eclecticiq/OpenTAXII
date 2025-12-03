@@ -1,4 +1,5 @@
 """Factories for taxii2 entities."""
+
 import datetime
 from uuid import uuid4
 

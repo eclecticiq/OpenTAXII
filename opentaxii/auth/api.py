@@ -1,4 +1,3 @@
-
 class OpenTAXIIAuthAPI:
     '''Abstract class that represents OpenTAXII Authentication API.
 

@@ -172,21 +172,25 @@ def test_api_root(
     expected_headers,
     expected_content,
 ):
-    with patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2,
-        "config",
-        config_override_func(
-            authenticated_client.application.taxii_server.servers.taxii2.config
+    with (
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2,
+            "config",
+            config_override_func(
+                authenticated_client.application.taxii_server.servers.taxii2.config
+            ),
         ),
-    ), patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_api_root",
-        side_effect=GET_API_ROOT_MOCK,
-    ), patch.object(
-        authenticated_client.application.taxii_server,
-        "servers",
-        server_mapping_override_func(
-            authenticated_client.application.taxii_server.servers
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_api_root",
+            side_effect=GET_API_ROOT_MOCK,
+        ),
+        patch.object(
+            authenticated_client.application.taxii_server,
+            "servers",
+            server_mapping_override_func(
+                authenticated_client.application.taxii_server.servers
+            ),
         ),
     ):
         func = getattr(authenticated_client, method)

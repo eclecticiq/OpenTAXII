@@ -3,15 +3,25 @@ from typing import Dict, List, Optional, Tuple
 
 import structlog
 from opentaxii.local import context
-from opentaxii.persistence.exceptions import (DoesNotExistError,
-                                              NoReadNoWritePermission,
-                                              NoReadPermission,
-                                              NoWritePermission)
-from opentaxii.signals import (CONTENT_BLOCK_CREATED, INBOX_MESSAGE_CREATED,
-                               SUBSCRIPTION_CREATED)
-from opentaxii.taxii2.entities import (ApiRoot, Collection, Job,
-                                       ManifestRecord, STIXObject,
-                                       VersionRecord)
+from opentaxii.persistence.exceptions import (
+    DoesNotExistError,
+    NoReadNoWritePermission,
+    NoReadPermission,
+    NoWritePermission,
+)
+from opentaxii.signals import (
+    CONTENT_BLOCK_CREATED,
+    INBOX_MESSAGE_CREATED,
+    SUBSCRIPTION_CREATED,
+)
+from opentaxii.taxii2.entities import (
+    ApiRoot,
+    Collection,
+    Job,
+    ManifestRecord,
+    STIXObject,
+    VersionRecord,
+)
 
 log = structlog.getLogger(__name__)
 

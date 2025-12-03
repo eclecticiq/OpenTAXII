@@ -1,4 +1,3 @@
-
 from .middleware import create_app
 from .config import ServerConfig
 from .server import TAXIIServer
@@ -15,12 +14,7 @@ logconfig_dict = {
     'version': 1,
     'disable_existing_loggers': False,
     'root': {},
-    'loggers': {
-        'gunicorn.error': {
-            'level': 'INFO',
-            'propagate': True
-        }
-    }
+    'loggers': {'gunicorn.error': {'level': 'INFO', 'propagate': True}},
 }
 
 config_obj = ServerConfig()

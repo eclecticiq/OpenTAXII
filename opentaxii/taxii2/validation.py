@@ -1,4 +1,5 @@
 """Taxii2 validation functions."""
+
 import datetime
 import json
 
@@ -85,6 +86,7 @@ class Taxii2VersionFilter(Taxii2Filter):
 
 class PersistenceApiMxin:
     """Store persistence api on schema instance, to reference in `Taxii2Next`"""
+
     def __init__(self, persistence_api: OpenTAXII2PersistenceAPI, *args, **kwargs):
         self.persistence_api = persistence_api
         super().__init__(*args, **kwargs)

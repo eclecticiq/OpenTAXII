@@ -5,13 +5,23 @@ import pytest
 from opentaxii.persistence.sqldb.taxii2models import Job, JobDetail, STIXObject
 from opentaxii.taxii2 import entities
 from opentaxii.taxii2.utils import DATETIMEFORMAT
-from tests.taxii2.utils import (API_ROOTS, API_ROOTS_WITH_DEFAULT,
-                                API_ROOTS_WITHOUT_DEFAULT, COLLECTIONS,
-                                GET_API_ROOT_MOCK, GET_COLLECTION_MOCK,
-                                GET_COLLECTIONS_MOCK, GET_JOB_AND_DETAILS_MOCK,
-                                GET_MANIFEST_MOCK, GET_OBJECT_MOCK,
-                                GET_OBJECTS_MOCK, GET_VERSIONS_MOCK, JOBS, NOW,
-                                STIX_OBJECTS)
+from tests.taxii2.utils import (
+    API_ROOTS,
+    API_ROOTS_WITH_DEFAULT,
+    API_ROOTS_WITHOUT_DEFAULT,
+    COLLECTIONS,
+    GET_API_ROOT_MOCK,
+    GET_COLLECTION_MOCK,
+    GET_COLLECTIONS_MOCK,
+    GET_JOB_AND_DETAILS_MOCK,
+    GET_MANIFEST_MOCK,
+    GET_OBJECT_MOCK,
+    GET_OBJECTS_MOCK,
+    GET_VERSIONS_MOCK,
+    JOBS,
+    NOW,
+    STIX_OBJECTS,
+)
 
 
 @pytest.mark.parametrize(

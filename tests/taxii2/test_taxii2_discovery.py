@@ -2,9 +2,12 @@ import json
 from unittest.mock import patch
 
 import pytest
-from tests.taxii2.utils import (API_ROOTS_WITH_DEFAULT,
-                                API_ROOTS_WITHOUT_DEFAULT, config_noop,
-                                config_remove_fields)
+from tests.taxii2.utils import (
+    API_ROOTS_WITH_DEFAULT,
+    API_ROOTS_WITHOUT_DEFAULT,
+    config_noop,
+    config_remove_fields,
+)
 
 
 @pytest.mark.parametrize(
@@ -45,7 +48,9 @@ from tests.taxii2.utils import (API_ROOTS_WITH_DEFAULT,
                 "title": "Some TAXII Server",
                 "description": "This TAXII Server contains a listing of...",
                 "contact": "string containing contact information",
-                "api_roots": [f"/taxii2/{item.id}/" for item in API_ROOTS_WITHOUT_DEFAULT],
+                "api_roots": [
+                    f"/taxii2/{item.id}/" for item in API_ROOTS_WITHOUT_DEFAULT
+                ],
             },
             id="good, without default api root",
         ),
@@ -126,19 +131,22 @@ def test_discovery(
         "description": "This TAXII Server contains a listing of...",
         "contact": "string containing contact information",
     }
-    with patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2,
-        "config",
-        config_override_func(
-            {
-                **authenticated_client.application.taxii_server.servers.taxii2.config,
-                **config_defaults,
-            }
+    with (
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2,
+            "config",
+            config_override_func(
+                {
+                    **authenticated_client.application.taxii_server.servers.taxii2.config,
+                    **config_defaults,
+                }
+            ),
         ),
-    ), patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_api_roots",
-        return_value=api_roots,
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_api_roots",
+            return_value=api_roots,
+        ),
     ):
         func = getattr(authenticated_client, method)
         response = func("/taxii2/", headers=headers)

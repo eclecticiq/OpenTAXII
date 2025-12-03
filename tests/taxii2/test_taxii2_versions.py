@@ -6,9 +6,15 @@ from uuid import uuid4
 
 import pytest
 from opentaxii.taxii2.utils import taxii2_datetimeformat
-from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, GET_COLLECTION_MOCK,
-                                GET_NEXT_PARAM, GET_VERSIONS_MOCK, NOW,
-                                STIX_OBJECTS)
+from tests.taxii2.utils import (
+    API_ROOTS,
+    COLLECTIONS,
+    GET_COLLECTION_MOCK,
+    GET_NEXT_PARAM,
+    GET_VERSIONS_MOCK,
+    NOW,
+    STIX_OBJECTS,
+)
 
 
 @pytest.mark.parametrize(
@@ -381,24 +387,28 @@ def test_versions(
     expected_headers,
     expected_content,
 ):
-    with patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_versions",
-        side_effect=GET_VERSIONS_MOCK,
-    ), patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_collection",
-        side_effect=GET_COLLECTION_MOCK,
-    ), patch.object(
-        authenticated_client.account,
-        "permissions",
-        {
-            COLLECTIONS[0].id: ["read"],
-            COLLECTIONS[1].id: ["write"],
-            COLLECTIONS[2].id: ["read", "write"],
-            COLLECTIONS[4].id: ["read", "write"],
-            COLLECTIONS[5].id: ["write", "read"],
-        },
+    with (
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_versions",
+            side_effect=GET_VERSIONS_MOCK,
+        ),
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_collection",
+            side_effect=GET_COLLECTION_MOCK,
+        ),
+        patch.object(
+            authenticated_client.account,
+            "permissions",
+            {
+                COLLECTIONS[0].id: ["read"],
+                COLLECTIONS[1].id: ["write"],
+                COLLECTIONS[2].id: ["read", "write"],
+                COLLECTIONS[4].id: ["read", "write"],
+                COLLECTIONS[5].id: ["write", "read"],
+            },
+        ),
     ):
         func = getattr(authenticated_client, method)
         if filter_kwargs:
@@ -445,14 +455,17 @@ def test_versions_unauthenticated(
             expected_status_code = 401
         else:
             expected_status_code = 405
-    with patch.object(
-        client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_versions",
-        side_effect=GET_VERSIONS_MOCK,
-    ), patch.object(
-        client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_collection",
-        side_effect=GET_COLLECTION_MOCK,
+    with (
+        patch.object(
+            client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_versions",
+            side_effect=GET_VERSIONS_MOCK,
+        ),
+        patch.object(
+            client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_collection",
+            side_effect=GET_COLLECTION_MOCK,
+        ),
     ):
         func = getattr(client, method)
         response = func(
