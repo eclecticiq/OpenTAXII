@@ -1,4 +1,5 @@
 import json
+
 import pytz
 
 from opentaxii.taxii import entities

@@ -2,6 +2,7 @@ import datetime
 from typing import Dict, List, Optional, Tuple
 
 import structlog
+
 from opentaxii.local import context
 from opentaxii.persistence.exceptions import (
     DoesNotExistError,

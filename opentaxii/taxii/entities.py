@@ -8,6 +8,7 @@ from libtaxii.constants import (
     SS_PAUSED,
     SS_UNSUBSCRIBED,
 )
+
 from opentaxii.common.entities import Entity
 
 from .utils import is_content_supported

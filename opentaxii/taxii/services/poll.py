@@ -1,10 +1,9 @@
 import structlog
-
-from libtaxii.constants import MSG_POLL_REQUEST, MSG_POLL_FULFILLMENT_REQUEST, SVC_POLL
+from libtaxii.constants import MSG_POLL_FULFILLMENT_REQUEST, MSG_POLL_REQUEST, SVC_POLL
 
 from ..entities import ResultSetEntity
 from .abstract import TAXIIService
-from .handlers import PollRequestHandler, PollFulfilmentRequestHandler
+from .handlers import PollFulfilmentRequestHandler, PollRequestHandler
 
 log = structlog.getLogger(__name__)
 

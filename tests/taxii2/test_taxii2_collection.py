@@ -3,6 +3,7 @@ from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
+
 from opentaxii.persistence.sqldb import taxii2models
 from tests.taxii2.utils import (
     API_ROOTS,

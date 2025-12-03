@@ -4,12 +4,13 @@ import datetime
 import json
 
 from marshmallow import Schema, fields
-from opentaxii.persistence.api import OpenTAXII2PersistenceAPI
-from opentaxii.taxii2.exceptions import ValidationError
-from opentaxii.taxii2.utils import DATETIMEFORMAT
 from stix2 import parse
 from stix2.exceptions import STIXError
 from werkzeug.datastructures import ImmutableMultiDict
+
+from opentaxii.persistence.api import OpenTAXII2PersistenceAPI
+from opentaxii.taxii2.exceptions import ValidationError
+from opentaxii.taxii2.utils import DATETIMEFORMAT
 
 
 def validate_envelope(json_data: str, allow_custom: bool = False) -> None:

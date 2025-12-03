@@ -1,7 +1,6 @@
-import six
-import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10
-
+import libtaxii.messages_11 as tm11
+import six
 from libtaxii.constants import (
     SVC_COLLECTION_MANAGEMENT,
     SVC_FEED_MANAGEMENT,
@@ -11,8 +10,8 @@ from libtaxii.constants import (
 
 from .entities import (
     ContentBindingEntity,
-    InboxMessageEntity,
     ContentBlockEntity,
+    InboxMessageEntity,
     ServiceEntity,
 )
 

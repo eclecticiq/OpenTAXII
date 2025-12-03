@@ -4,11 +4,12 @@ import datetime
 import uuid
 
 import sqlalchemy
-from opentaxii.persistence.sqldb.common import GUID, UTCDateTime
-from opentaxii.taxii2 import entities
 from sqlalchemy import literal
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+
+from opentaxii.persistence.sqldb.common import GUID, UTCDateTime
+from opentaxii.taxii2 import entities
 
 Base = declarative_base()
 

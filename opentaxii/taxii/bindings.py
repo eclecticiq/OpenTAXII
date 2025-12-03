@@ -1,21 +1,20 @@
 from collections import namedtuple
 
-import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10
-from libtaxii.validation import SchemaValidator
+import libtaxii.messages_11 as tm11
 from libtaxii.constants import (
     CB_STIX_XML_10,
-    CB_STIX_XML_101,
     CB_STIX_XML_11,
+    CB_STIX_XML_101,
     CB_STIX_XML_111,
     VID_TAXII_HTTP_10,
     VID_TAXII_HTTPS_10,
-    VID_TAXII_XML_10,
-    VID_TAXII_XML_11,
     VID_TAXII_SERVICES_10,
     VID_TAXII_SERVICES_11,
+    VID_TAXII_XML_10,
+    VID_TAXII_XML_11,
 )
-
+from libtaxii.validation import SchemaValidator
 
 ValidatorAndParser = namedtuple('ValidatorAndParser', ['validator', 'parser'])
 

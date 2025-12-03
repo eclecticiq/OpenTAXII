@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 import pytest
 from flask.testing import FlaskClient
+
 from opentaxii.config import ServerConfig
 from opentaxii.local import context, release_context
 from opentaxii.middleware import create_app
@@ -19,7 +20,6 @@ from opentaxii.server import TAXIIServer
 from opentaxii.taxii.converters import dict_to_service_entity
 from opentaxii.taxii.http import HTTP_AUTHORIZATION
 from opentaxii.utils import configure_logging
-
 from tests.fixtures import (
     ACCOUNT,
     COLLECTIONS_B,

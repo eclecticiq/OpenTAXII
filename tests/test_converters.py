@@ -1,5 +1,4 @@
 import pytest
-
 from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
 from libtaxii.constants import VID_TAXII_XML_10, VID_TAXII_XML_11

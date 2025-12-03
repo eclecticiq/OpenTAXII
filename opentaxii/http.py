@@ -1,8 +1,7 @@
-from .middleware import create_app
 from .config import ServerConfig
+from .middleware import create_app
 from .server import TAXIIServer
 from .utils import configure_logging
-
 
 # This module is also used as a Gunicorn configuration module, i.e. passed
 # as ``--config python:opentaxii.http``. ``logconfig_dict`` module-level

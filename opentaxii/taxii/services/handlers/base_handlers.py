@@ -1,16 +1,16 @@
+from libtaxii.common import generate_message_id
 from libtaxii.constants import (
-    VID_TAXII_XML_10,
-    VID_TAXII_XML_11,
     VID_TAXII_SERVICES_10,
     VID_TAXII_SERVICES_11,
+    VID_TAXII_XML_10,
+    VID_TAXII_XML_11,
 )
-from libtaxii.common import generate_message_id
 
 from ...exceptions import raise_failure
 from ...http import (
+    HTTP_X_TAXII_ACCEPT,
     HTTP_X_TAXII_CONTENT_TYPE,
     HTTP_X_TAXII_SERVICES,
-    HTTP_X_TAXII_ACCEPT,
 )
 
 

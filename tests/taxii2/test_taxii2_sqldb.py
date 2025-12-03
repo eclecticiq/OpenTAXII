@@ -2,6 +2,7 @@ import datetime
 from uuid import uuid4
 
 import pytest
+
 from opentaxii.persistence.sqldb.taxii2models import Job, JobDetail, STIXObject
 from opentaxii.taxii2 import entities
 from opentaxii.taxii2.utils import DATETIMEFORMAT

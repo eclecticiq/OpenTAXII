@@ -16,9 +16,10 @@ from libtaxii.constants import (
     SS_PAUSED,
     SS_UNSUBSCRIBED,
 )
-from opentaxii.taxii import exceptions
 from utils import as_tm, prepare_headers
 from utils import prepare_subscription_request as prepare_request
+
+from opentaxii.taxii import exceptions
 
 ASSIGNED_SERVICES = ['collection-management-A', 'poll-A']
 

@@ -2,14 +2,14 @@ import base64
 import json
 
 import pytest
+from fixtures import VID_TAXII_HTTP_10
 from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
 from libtaxii.constants import CB_STIX_XML_111, RT_FULL, ST_BAD_MESSAGE, ST_UNAUTHORIZED
+from utils import as_tm, is_headers_valid, prepare_headers
+
 from opentaxii.taxii.http import HTTP_AUTHORIZATION
 from opentaxii.utils import sync_conf_dict_into_db
-
-from fixtures import VID_TAXII_HTTP_10
-from utils import as_tm, is_headers_valid, prepare_headers
 
 INBOX_OPEN = dict(
     id='inbox-A',

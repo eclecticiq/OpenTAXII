@@ -5,6 +5,7 @@ from urllib.parse import urlencode
 from uuid import uuid4
 
 import pytest
+
 from opentaxii.taxii2.utils import taxii2_datetimeformat
 from tests.taxii2.utils import (
     API_ROOTS,

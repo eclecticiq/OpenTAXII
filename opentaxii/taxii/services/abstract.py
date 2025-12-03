@@ -1,11 +1,10 @@
 import structlog
-
 from libtaxii.common import generate_message_id
 from libtaxii.constants import VID_TAXII_XML_10, VID_TAXII_XML_11
 
-from ..exceptions import raise_failure
 from ..bindings import PROTOCOL_TO_SCHEME
 from ..converters import service_to_service_instances
+from ..exceptions import raise_failure
 
 
 class TAXIIService:

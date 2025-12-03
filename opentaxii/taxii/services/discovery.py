@@ -1,4 +1,4 @@
-from libtaxii.constants import SVC_DISCOVERY, MSG_DISCOVERY_REQUEST
+from libtaxii.constants import MSG_DISCOVERY_REQUEST, SVC_DISCOVERY
 
 from .abstract import TAXIIService
 from .handlers import DiscoveryRequestHandler

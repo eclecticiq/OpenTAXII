@@ -2,6 +2,7 @@ import json
 from unittest.mock import patch
 
 import pytest
+
 from tests.taxii2.utils import (
     API_ROOTS_WITH_DEFAULT,
     API_ROOTS_WITHOUT_DEFAULT,

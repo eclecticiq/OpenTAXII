@@ -1,8 +1,7 @@
 import libtaxii.messages_11 as tm11
-from libtaxii.constants import ST_NOT_FOUND, SD_ITEM
+from libtaxii.constants import SD_ITEM, ST_NOT_FOUND
 
 from ...exceptions import StatusMessageException, raise_failure
-
 from .base_handlers import BaseMessageHandler
 from .poll_request_handlers import PollRequest11Handler, retrieve_collection
 

@@ -1,26 +1,24 @@
-import structlog
-
-import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10
+import libtaxii.messages_11 as tm11
+import structlog
 from libtaxii.constants import (
-    SD_SUPPORTED_CONTENT,
-    ST_UNSUPPORTED_CONTENT_BINDING,
-    SD_ITEM,
-    ST_NOT_FOUND,
-    ST_BAD_MESSAGE,
-    ACT_SUBSCRIBE,
-    ACT_UNSUBSCRIBE,
     ACT_PAUSE,
     ACT_RESUME,
     ACT_STATUS,
-    ACT_TYPES_11,
+    ACT_SUBSCRIBE,
     ACT_TYPES_10,
+    ACT_TYPES_11,
+    ACT_UNSUBSCRIBE,
+    SD_ITEM,
+    SD_SUPPORTED_CONTENT,
+    ST_BAD_MESSAGE,
+    ST_NOT_FOUND,
+    ST_UNSUPPORTED_CONTENT_BINDING,
 )
 
-from ...exceptions import StatusMessageException, raise_failure
-from ...converters import subscription_to_subscription_instance, parse_content_bindings
+from ...converters import parse_content_bindings, subscription_to_subscription_instance
 from ...entities import PollRequestParametersEntity, SubscriptionEntity
-
+from ...exceptions import StatusMessageException, raise_failure
 from .base_handlers import BaseMessageHandler
 from .poll_request_handlers import retrieve_collection
 

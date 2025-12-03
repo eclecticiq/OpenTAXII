@@ -13,8 +13,9 @@ from fixtures import (
 from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
 from libtaxii.constants import ACT_SUBSCRIBE, CB_STIX_XML_111, RT_COUNT_ONLY, RT_FULL
-from opentaxii.taxii import exceptions
 from utils import as_tm, persist_content, prepare_headers, prepare_subscription_request
+
+from opentaxii.taxii import exceptions
 
 
 @pytest.fixture(autouse=True)

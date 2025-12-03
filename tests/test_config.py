@@ -2,6 +2,7 @@ import os
 import tempfile
 
 import pytest
+
 from opentaxii.config import ServerConfig
 
 BACKWARDS_COMPAT_CONFIG = """

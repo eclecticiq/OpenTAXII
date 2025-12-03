@@ -1,4 +1,5 @@
 import sys
+
 import six
 from libtaxii.constants import ST_BAD_MESSAGE, ST_FAILURE, ST_UNAUTHORIZED
 

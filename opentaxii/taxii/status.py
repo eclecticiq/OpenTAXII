@@ -1,12 +1,11 @@
-import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10
+import libtaxii.messages_11 as tm11
 from libtaxii.common import generate_message_id
-
 from libtaxii.constants import (
-    VID_TAXII_XML_11,
-    VID_TAXII_XML_10,
     VID_TAXII_SERVICES_10,
     VID_TAXII_SERVICES_11,
+    VID_TAXII_XML_10,
+    VID_TAXII_XML_11,
 )
 
 from .http import HTTP_X_TAXII_ACCEPT, HTTP_X_TAXII_CONTENT_TYPE, get_http_headers

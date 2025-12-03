@@ -1,24 +1,22 @@
 from libtaxii.constants import (
-    SVC_INBOX,
     MSG_INBOX_MESSAGE,
     SD_ACCEPTABLE_DESTINATION,
+    SD_ITEM,
     ST_DESTINATION_COLLECTION_ERROR,
     ST_NOT_FOUND,
-    SD_ITEM,
+    SVC_INBOX,
 )
 
-from opentaxii.local import context
 from opentaxii.exceptions import UnauthorizedException
-
-from ..utils import is_content_supported
-from ..entities import ContentBindingEntity
-from ..exceptions import StatusMessageException
+from opentaxii.local import context
 
 from ..converters import (
     content_binding_entities_to_content_bindings,
     service_to_service_instances,
 )
-
+from ..entities import ContentBindingEntity
+from ..exceptions import StatusMessageException
+from ..utils import is_content_supported
 from .abstract import TAXIIService
 from .handlers import InboxMessageHandler
 

@@ -1,6 +1,6 @@
 import json
-import pytest
 
+import pytest
 
 HEALTH_PATH = '/management/health'
 

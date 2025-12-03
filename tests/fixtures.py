@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 from libtaxii.constants import CB_STIX_XML_111, VID_TAXII_HTTP_10, VID_TAXII_HTTPS_10
+
 from opentaxii.entities import Account
 from opentaxii.taxii import entities
 

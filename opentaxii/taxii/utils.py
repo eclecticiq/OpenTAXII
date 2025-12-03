@@ -2,11 +2,11 @@ from datetime import datetime
 
 import pytz
 import structlog
-from lxml import etree
 from libtaxii.common import set_xml_parser
+from lxml import etree
 
-from .exceptions import BadMessageStatus
 from .bindings import MESSAGE_VALIDATOR_PARSER
+from .exceptions import BadMessageStatus
 
 log = structlog.getLogger(__name__)
 

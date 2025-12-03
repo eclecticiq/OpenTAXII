@@ -13,6 +13,7 @@ from libtaxii.constants import (
     ST_PENDING,
     ST_UNSUPPORTED_CONTENT_BINDING,
 )
+
 from opentaxii.local import context
 
 from ....persistence.exceptions import ResultsNotReady

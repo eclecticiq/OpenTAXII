@@ -2,7 +2,6 @@ import json
 
 from sqlalchemy import schema, types
 from sqlalchemy.ext.declarative import declarative_base
-
 from werkzeug.security import check_password_hash, generate_password_hash
 
 __all__ = ['Base', 'Account']

@@ -1,8 +1,8 @@
-from .base_handlers import BaseMessageHandler
-from ...exceptions import raise_failure
-
-import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10
+import libtaxii.messages_11 as tm11
+
+from ...exceptions import raise_failure
+from .base_handlers import BaseMessageHandler
 
 
 class DiscoveryRequest11Handler(BaseMessageHandler):

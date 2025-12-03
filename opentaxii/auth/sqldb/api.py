@@ -2,10 +2,11 @@ from datetime import datetime, timedelta
 
 import jwt
 import structlog
+from sqlalchemy.orm import exc
+
 from opentaxii.auth import OpenTAXIIAuthAPI
 from opentaxii.common.sqldb import BaseSQLDatabaseAPI
 from opentaxii.entities import Account as AccountEntity
-from sqlalchemy.orm import exc
 
 from .models import Account, Base
 
