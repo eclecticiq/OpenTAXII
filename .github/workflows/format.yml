@@ -15,3 +15,5 @@ jobs:
         run: pip install -r requirements-dev.txt
       - name: Run black
         run: black --check opentaxii/ tests/
+      - name: Run isort
+        run: isort . --check-only

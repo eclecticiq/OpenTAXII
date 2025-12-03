@@ -15,3 +15,6 @@ exclude = ["tests"]
 line-length = 88
 skip_string_normalization = true
 target_version = ["py310", "py311"]
+
+[tool.isort]
+profile = "black"
