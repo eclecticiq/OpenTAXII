@@ -3,7 +3,7 @@ import datetime
 import json
 import uuid
 from functools import reduce
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, no_type_check
 
 import six
 import structlog
@@ -48,7 +48,8 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
 
     :param bool create_tables=False: if True, tables will be created in the DB.
 
-    :param engine_parameters=None: if defined, these arguments would be passed to sqlalchemy.create_engine
+    :param engine_parameters=None: if defined, these arguments would be passed
+        to sqlalchemy.create_engine
     """
 
     BASEMODEL = Base
@@ -70,7 +71,9 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
             service.type = obj.type
             service.properties = obj.properties
         else:
-            service = Service(id=obj.id, type=obj.type, properties=obj.properties)
+            service = Service(  # type: ignore[misc]
+                id=obj.id, type=obj.type, properties=obj.properties
+            )
         self.db.session.add(service)
         self.db.session.commit()
         return conv.to_service_entity(service)
@@ -441,7 +444,7 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
 
         content_blocks_query = (
             self.db.session.query(ContentBlock.id)
-            .join(DataCollection.content_blocks)
+            .join(DataCollection.content_blocks)  # type: ignore[attr-defined]
             .filter(DataCollection.id == collection.id)
             .filter(ContentBlock.timestamp_label > start_time)
         )
@@ -553,7 +556,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         self,
         title: str,
         description: Optional[str] = None,
-        default: Optional[bool] = False,
+        default: bool = False,
         is_public: bool = False,
         api_root_id: Optional[str] = None,
     ) -> entities.ApiRoot:
@@ -588,6 +591,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             is_public=is_public,
         )
 
+    @no_type_check  # taxii2models.Job has too many None allowance
     def _job_and_details_to_entity(
         self, job: taxii2models.Job, job_details: List[taxii2models.JobDetail]
     ) -> entities.Job:
@@ -708,12 +712,14 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         """
         Add a new collection.
 
-        :param str api_root_id: ID of the api root the new collection is part of
-        :param str title: Title of the new collection
-        :param str description: [Optional] Description of the new collection
-        :param str alias: [Optional] Alias of the new collection
-        :param bool is_public: [Optional] Whether collection should be publicly readable
-        :param bool is_public_write: [Optional] Whether collection should be publicly writable
+        :param api_root_id: ID of the api root the new collection is part of
+        :param title: Title of the new collection
+        :param description: [Optional] Description of the new collection
+        :param alias: [Optional] Alias of the new collection
+        :param is_public: [Optional] Whether collection should be publicly
+            readable
+        :param is_public_write: [Optional] Whether collection should be
+            publicly writable
 
         :return: The added Collection entity.
         """
@@ -730,9 +736,9 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
 
         return entities.Collection(
             id=collection.id,
-            api_root_id=collection.api_root_id,
+            api_root_id=collection.api_root_id,  # type: ignore[arg-type]
             title=collection.title,
-            description=collection.description,
+            description=collection.description,  # type: ignore[arg-type]
             alias=collection.alias,
             is_public=collection.is_public,
             is_public_write=collection.is_public_write,
@@ -1037,8 +1043,8 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             )
             job_details.append(job_detail)
             self.db.session.add(job_detail)
-            job.total_count += 1
-            job.success_count += 1
+            job.total_count += 1  # type: ignore[operator]
+            job.success_count += 1  # type: ignore[operator]
         job.status = "complete"
         job.completed_timestamp = datetime.datetime.now(datetime.timezone.utc)
         self.db.session.commit()
@@ -1132,7 +1138,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         added_after: Optional[datetime.datetime] = None,
         next_kwargs: Optional[Dict] = None,
         match_spec_version: Optional[List[str]] = None,
-    ) -> Tuple[List[entities.VersionRecord], bool]:
+    ) -> Tuple[Optional[List[entities.VersionRecord]], bool]:
         """
         Get all versions of single object from database.
 

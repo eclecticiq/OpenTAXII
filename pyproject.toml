@@ -30,8 +30,7 @@ files = [
 
 exclude = """
 (?x)(
-    ^opentaxii/persistence/sqldb/api\\.py$
-    | ^opentaxii/taxii/.+
+    ^opentaxii/taxii/.+
     | ^opentaxii/utils\\.py$
     | ^opentaxii/common/entities\\.py$
 )
