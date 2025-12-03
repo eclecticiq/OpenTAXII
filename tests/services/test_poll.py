@@ -1,15 +1,27 @@
 import pytest
-from fixtures import (COLLECTION_DISABLED, COLLECTION_ONLY_STIX,
-                      COLLECTION_OPEN, COLLECTION_STIX_AND_CUSTOM,
-                      COLLECTIONS_B, CUSTOM_CONTENT_BINDING, MESSAGE_ID,
-                      POLL_MAX_COUNT, POLL_RESULT_SIZE)
 from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
-from libtaxii.constants import (ACT_SUBSCRIBE, CB_STIX_XML_111, RT_COUNT_ONLY,
-                                RT_FULL)
+from libtaxii.constants import ACT_SUBSCRIBE, CB_STIX_XML_111, RT_COUNT_ONLY, RT_FULL
+
 from opentaxii.taxii import exceptions
-from utils import (as_tm, persist_content, prepare_headers,
-                   prepare_subscription_request)
+
+from ..fixtures import (
+    COLLECTION_DISABLED,
+    COLLECTION_ONLY_STIX,
+    COLLECTION_OPEN,
+    COLLECTION_STIX_AND_CUSTOM,
+    COLLECTIONS_B,
+    CUSTOM_CONTENT_BINDING,
+    MESSAGE_ID,
+    POLL_MAX_COUNT,
+    POLL_RESULT_SIZE,
+)
+from ..utils import (
+    as_tm,
+    persist_content,
+    prepare_headers,
+    prepare_subscription_request,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -18,12 +30,14 @@ def prepare_server(server, services):
     for coll in COLLECTIONS_B:
         coll = server.servers.taxii1.persistence.create_collection(coll)
         server.servers.taxii1.persistence.set_collection_services(
-            coll.id, service_ids=services)
+            coll.id, service_ids=services
+        )
     return server
 
 
-def prepare_request(collection_name, version, count_only=False,
-                    bindings=[], subscription_id=None):
+def prepare_request(
+    collection_name, version, count_only=False, bindings=[], subscription_id=None
+):
 
     if version == 11:
         content_bindings = [tm11.ContentBinding(b) for b in bindings]
@@ -31,14 +45,14 @@ def prepare_request(collection_name, version, count_only=False,
             poll_parameters = None
         else:
             poll_parameters = tm11.PollParameters(
-                response_type=(
-                    RT_FULL if not count_only else RT_COUNT_ONLY),
-                content_bindings=content_bindings)
+                response_type=(RT_FULL if not count_only else RT_COUNT_ONLY),
+                content_bindings=content_bindings,
+            )
         return tm11.PollRequest(
             message_id=MESSAGE_ID,
             collection_name=collection_name,
             subscription_id=subscription_id,
-            poll_parameters=poll_parameters
+            poll_parameters=poll_parameters,
         )
     elif version == 10:
         content_bindings = bindings
@@ -46,7 +60,7 @@ def prepare_request(collection_name, version, count_only=False,
             message_id=MESSAGE_ID,
             feed_name=collection_name,
             content_bindings=content_bindings,
-            subscription_id=subscription_id
+            subscription_id=subscription_id,
         )
 
 
@@ -55,14 +69,19 @@ def prepare_fulfilment_request(collection_name, result_id, part_number):
         message_id=MESSAGE_ID,
         collection_name=collection_name,
         result_id=result_id,
-        result_part_number=part_number
+        result_part_number=part_number,
     )
 
 
-@pytest.mark.parametrize(("https", "version", "count_blocks"), [
-    (True, 11, True), (False, 11, False),
-    (True, 10, False), (False, 10, False),
-])
+@pytest.mark.parametrize(
+    ("https", "version", "count_blocks"),
+    [
+        (True, 11, True),
+        (False, 11, False),
+        (True, 10, False),
+        (False, 10, False),
+    ],
+)
 def test_poll_empty_response(server, version, https, count_blocks):
 
     server.servers.taxii1.config['count_blocks_in_poll_responses'] = count_blocks
@@ -70,8 +89,7 @@ def test_poll_empty_response(server, version, https, count_blocks):
     service = server.servers.taxii1.get_service('poll-A')
 
     headers = prepare_headers(version, https)
-    request = prepare_request(
-        collection_name=COLLECTION_OPEN, version=version)
+    request = prepare_request(collection_name=COLLECTION_OPEN, version=version)
 
     if version == 11:
         response = service.process(headers, request)
@@ -93,15 +111,14 @@ def test_poll_empty_response(server, version, https, count_blocks):
 
 
 @pytest.mark.parametrize(
-    ("https", "version"),
-    [(True, 11), (False, 11), (True, 10), (False, 10)])
+    ("https", "version"), [(True, 11), (False, 11), (True, 10), (False, 10)]
+)
 def test_poll_collection_not_available(server, version, https):
 
     service = server.servers.taxii1.get_service('poll-A')
 
     headers = prepare_headers(version, https)
-    request = prepare_request(
-        collection_name=COLLECTION_DISABLED, version=version)
+    request = prepare_request(collection_name=COLLECTION_DISABLED, version=version)
 
     with pytest.raises(exceptions.StatusMessageException):
         service.process(headers, request)
@@ -113,14 +130,17 @@ def test_poll_get_content(server, version, https):
 
     service = server.servers.taxii1.get_service('poll-A')
     original = persist_content(
-        server.servers.taxii1.persistence, COLLECTION_ONLY_STIX,
-        service.id, binding=CB_STIX_XML_111)
+        server.servers.taxii1.persistence,
+        COLLECTION_ONLY_STIX,
+        service.id,
+        binding=CB_STIX_XML_111,
+    )
 
     # wrong collection
     headers = prepare_headers(version, https)
     request = prepare_request(
-        collection_name=COLLECTION_STIX_AND_CUSTOM,
-        version=version)
+        collection_name=COLLECTION_STIX_AND_CUSTOM, version=version
+    )
 
     response = service.process(headers, request)
 
@@ -129,9 +149,7 @@ def test_poll_get_content(server, version, https):
 
     # right collection
     headers = prepare_headers(version, https)
-    request = prepare_request(
-        collection_name=COLLECTION_ONLY_STIX,
-        version=version)
+    request = prepare_request(collection_name=COLLECTION_ONLY_STIX, version=version)
 
     response = service.process(headers, request)
 
@@ -147,7 +165,9 @@ def test_poll_get_content(server, version, https):
     headers = prepare_headers(version, https)
     request = prepare_request(
         collection_name=COLLECTION_ONLY_STIX,
-        version=version, bindings=[CUSTOM_CONTENT_BINDING])
+        version=version,
+        bindings=[CUSTOM_CONTENT_BINDING],
+    )
 
     with pytest.raises(exceptions.StatusMessageException):
         service.process(headers, request)
@@ -155,7 +175,8 @@ def test_poll_get_content(server, version, https):
 
 @pytest.mark.parametrize(
     ("https", "count_blocks"),
-    [(True, True), (False, True), (True, False), (False, False)])
+    [(True, True), (False, True), (True, False), (False, False)],
+)
 def test_poll_get_content_count(server, https, count_blocks):
     version = 11
     server.servers.taxii1.config['count_blocks_in_poll_responses'] = count_blocks
@@ -170,7 +191,8 @@ def test_poll_get_content_count(server, https, count_blocks):
 
     # count-only request
     request = prepare_request(
-        collection_name=COLLECTION_OPEN, count_only=True, version=version)
+        collection_name=COLLECTION_OPEN, count_only=True, version=version
+    )
     response = service.process(headers, request)
 
     assert isinstance(response, tm11.PollResponse)
@@ -186,7 +208,8 @@ def test_poll_get_content_count(server, https, count_blocks):
 
 @pytest.mark.parametrize(
     ("https", "count_blocks"),
-    [(True, True), (False, True), (True, False), (False, False)])
+    [(True, True), (False, True), (True, False), (False, False)],
+)
 def test_poll_max_count_max_size(server, https, count_blocks):
 
     version = 11
@@ -202,8 +225,9 @@ def test_poll_max_count_max_size(server, https, count_blocks):
     headers = prepare_headers(version, https)
 
     # count-only request
-    request = prepare_request(collection_name=COLLECTION_OPEN,
-                              count_only=True, version=version)
+    request = prepare_request(
+        collection_name=COLLECTION_OPEN, count_only=True, version=version
+    )
     response = service.process(headers, request)
 
     assert isinstance(response, tm11.PollResponse)
@@ -233,7 +257,8 @@ def test_poll_max_count_max_size(server, https, count_blocks):
 
 @pytest.mark.parametrize(
     ("https", "count_blocks"),
-    [(True, True), (False, True), (True, False), (False, False)])
+    [(True, True), (False, True), (True, False), (False, False)],
+)
 def test_poll_fulfilment_request(server, https, count_blocks):
     server.servers.taxii1.config['count_blocks_in_poll_responses'] = count_blocks
     version = 11
@@ -265,8 +290,7 @@ def test_poll_fulfilment_request(server, https, count_blocks):
     # poll fullfilment request
     result_id = response.result_id
     part_number = 2
-    request = prepare_fulfilment_request(
-        COLLECTION_OPEN, result_id, part_number)
+    request = prepare_fulfilment_request(COLLECTION_OPEN, result_id, part_number)
     response = service.process(headers, request)
 
     assert isinstance(response, tm11.PollResponse)
@@ -285,8 +309,7 @@ def test_poll_fulfilment_request(server, https, count_blocks):
     # poll fullfilment request over the top
     result_id = response.result_id
     part_number = 3
-    request = prepare_fulfilment_request(
-        COLLECTION_OPEN, result_id, part_number)
+    request = prepare_fulfilment_request(COLLECTION_OPEN, result_id, part_number)
     response = service.process(headers, request)
     assert isinstance(response, tm11.PollResponse)
 
@@ -322,13 +345,12 @@ def test_subscribe_and_poll(server, version, https):
 
     params = dict(
         response_type=RT_COUNT_ONLY,
-        content_bindings=[CB_STIX_XML_111, CUSTOM_CONTENT_BINDING])
+        content_bindings=[CB_STIX_XML_111, CUSTOM_CONTENT_BINDING],
+    )
 
     subs_request = prepare_subscription_request(
-        collection=collection,
-        action=ACT_SUBSCRIBE,
-        version=version,
-        params=params)
+        collection=collection, action=ACT_SUBSCRIBE, version=version, params=params
+    )
 
     subs_response = subs_service.process(headers, subs_request)
 
@@ -343,7 +365,8 @@ def test_subscribe_and_poll(server, version, https):
         collection_name=collection,
         count_only=False,
         subscription_id=subscription.subscription_id,
-        version=version)
+        version=version,
+    )
 
     poll_response = poll_service.process(headers, poll_request)
 

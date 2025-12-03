@@ -1,7 +1,8 @@
 import pytest
-from fixtures import INBOX_A, INBOX_B, INSTANCES_CONFIGURED, MESSAGE_ID
 from libtaxii.constants import SVC_INBOX
-from utils import as_tm, prepare_headers
+
+from ..fixtures import INBOX_A, INBOX_B, INSTANCES_CONFIGURED, MESSAGE_ID
+from ..utils import as_tm, prepare_headers
 
 
 @pytest.fixture(autouse=True)
@@ -38,9 +39,7 @@ def test_content_bindings_present(server, version, https):
     assert len(response.service_instances) == INSTANCES_CONFIGURED
     assert response.in_response_to == MESSAGE_ID
 
-    inboxes = [
-        s for s in response.service_instances
-        if s.service_type == SVC_INBOX]
+    inboxes = [s for s in response.service_instances if s.service_type == SVC_INBOX]
 
     assert len(inboxes) == 4
 

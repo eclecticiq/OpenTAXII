@@ -1,0 +1,4 @@
+pytest-cov
+pytest>=4.6
+pytest-pythonpath
+factory-boy>=3.2.1

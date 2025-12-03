@@ -120,11 +120,12 @@ TAXII 2 instance with Compose
 
 Checkout the configuration at: :github-file:`examples/docker-compose-taxii2.yml <examples/docker-compose-taxii2.yml>`.
 
-To add dummy data, you can execute:
-
 .. code-block:: shell
 
-    # while the compose project is running
+    # Start
+    docker compose -f examples/docker-compose-taxii2.yml up
+
+    # To add dummy data, run this while the compose project is running
     docker exec -i examples-opentaxii-1 bash < examples/taxii2/data-setup.sh
 
 Full Example with Compose

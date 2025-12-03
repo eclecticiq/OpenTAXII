@@ -1,2 +1,0 @@
--r requirements-dev.txt
-psycopg2cffi>=2.9.0

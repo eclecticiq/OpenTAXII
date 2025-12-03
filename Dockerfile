@@ -1,4 +1,4 @@
-FROM python:3.9 AS build
+FROM python:3.10 AS build
 LABEL maintainer="EclecticIQ <opentaxii@eclecticiq.com>"
 
 RUN apt-get update \
@@ -13,7 +13,7 @@ COPY . /opentaxii
 RUN /venv/bin/pip install /opentaxii
 
 
-FROM python:3.9-slim AS prod
+FROM python:3.10-slim AS prod
 LABEL maintainer="EclecticIQ <opentaxii@eclecticiq.com>"
 COPY --from=build /venv /venv
 

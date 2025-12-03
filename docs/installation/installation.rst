@@ -7,7 +7,7 @@ Installation
 Install Python
 --------------
 
-OpenTAXII works with Python versions 3.8 - 3.11. You can download Python
+OpenTAXII works with Python versions >=3.10. You can download Python
 `here <http://www.python.org/download/>`_ or install it with your operating system’s
 package manager.
 
