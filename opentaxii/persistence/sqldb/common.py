@@ -1,4 +1,5 @@
 """A module to put common database helper components."""
+
 import uuid
 from datetime import timezone
 

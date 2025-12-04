@@ -1,4 +1,3 @@
-
 class Account:
     '''Represents Account entity.
 
@@ -9,8 +8,7 @@ class Account:
     :param dict details: additional details of an account
     '''
 
-    def __init__(
-            self, id, username, permissions, is_admin=False, **details):
+    def __init__(self, id, username, permissions, is_admin=False, **details):
         self.id = id
         self.username = username
         self.permissions = permissions
@@ -18,16 +16,13 @@ class Account:
         self.details = details
 
     def can_read(self, collection_name):
-        return (
-            self.is_admin or
-            self.permissions.get(collection_name) in ('read', 'modify'))
+        return self.is_admin or self.permissions.get(collection_name) in (
+            'read',
+            'modify',
+        )
 
     def can_modify(self, collection_name):
-        return (
-            self.is_admin or
-            self.permissions.get(collection_name) == 'modify')
+        return self.is_admin or self.permissions.get(collection_name) == 'modify'
 
     def __repr__(self):
-        return (
-            'Account(username={}, is_admin={})'
-            .format(self.username, self.is_admin))
+        return 'Account(username={}, is_admin={})'.format(self.username, self.is_admin)

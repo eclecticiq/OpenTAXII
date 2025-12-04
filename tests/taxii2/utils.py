@@ -4,9 +4,15 @@ from typing import Dict, List, Optional
 from uuid import uuid4
 
 from opentaxii.server import ServerMapping
-from opentaxii.taxii2.entities import (ApiRoot, Collection, Job, JobDetail,
-                                       ManifestRecord, STIXObject,
-                                       VersionRecord)
+from opentaxii.taxii2.entities import (
+    ApiRoot,
+    Collection,
+    Job,
+    JobDetail,
+    ManifestRecord,
+    STIXObject,
+    VersionRecord,
+)
 from opentaxii.taxii2.utils import DATETIMEFORMAT, taxii2_datetimeformat
 
 API_ROOTS_WITH_DEFAULT = (
@@ -146,7 +152,9 @@ COLLECTIONS = (
         False,
         False,
     ),
-    Collection(str(uuid4()), API_ROOTS[0].id, "4No description", "", None, False, False),
+    Collection(
+        str(uuid4()), API_ROOTS[0].id, "4No description", "", None, False, False
+    ),
     Collection(
         str(uuid4()),
         API_ROOTS[0].id,
@@ -506,9 +514,11 @@ def GET_VERSIONS_MOCK(
         match_version=["all"],
     )
     return (
-        [VersionRecord(obj.date_added, obj.version) for obj in versions]
-        if versions is not None
-        else None,
+        (
+            [VersionRecord(obj.date_added, obj.version) for obj in versions]
+            if versions is not None
+            else None
+        ),
         more,
     )
 

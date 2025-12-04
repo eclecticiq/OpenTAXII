@@ -99,7 +99,7 @@ class ServerConfig(dict):
                 continue
             if key == optional_env_var:
                 continue
-            key = key[len(ENV_VAR_PREFIX):].lstrip("_").lower()
+            key = key[len(ENV_VAR_PREFIX) :].lstrip("_").lower()
             value = yaml.safe_load(value)
 
             container = result

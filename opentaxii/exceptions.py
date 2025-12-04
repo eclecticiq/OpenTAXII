@@ -1,4 +1,3 @@
-
 from .taxii.exceptions import UnauthorizedStatus
 
 

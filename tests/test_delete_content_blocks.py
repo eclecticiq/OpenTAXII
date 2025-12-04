@@ -1,7 +1,6 @@
 import datetime
 
 import pytest
-
 from fixtures import COLLECTION_OPEN, COLLECTIONS_A
 
 

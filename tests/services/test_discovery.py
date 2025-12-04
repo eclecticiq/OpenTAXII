@@ -38,9 +38,7 @@ def test_content_bindings_present(server, version, https):
     assert len(response.service_instances) == INSTANCES_CONFIGURED
     assert response.in_response_to == MESSAGE_ID
 
-    inboxes = [
-        s for s in response.service_instances
-        if s.service_type == SVC_INBOX]
+    inboxes = [s for s in response.service_instances if s.service_type == SVC_INBOX]
 
     assert len(inboxes) == 4
 

@@ -1,12 +1,17 @@
-from libtaxii.constants import (
-    VID_TAXII_XML_10, VID_TAXII_XML_11,
-    VID_TAXII_SERVICES_10, VID_TAXII_SERVICES_11
-)
 from libtaxii.common import generate_message_id
+from libtaxii.constants import (
+    VID_TAXII_SERVICES_10,
+    VID_TAXII_SERVICES_11,
+    VID_TAXII_XML_10,
+    VID_TAXII_XML_11,
+)
 
 from ...exceptions import raise_failure
 from ...http import (
-    HTTP_X_TAXII_CONTENT_TYPE, HTTP_X_TAXII_SERVICES, HTTP_X_TAXII_ACCEPT)
+    HTTP_X_TAXII_ACCEPT,
+    HTTP_X_TAXII_CONTENT_TYPE,
+    HTTP_X_TAXII_SERVICES,
+)
 
 
 class BaseMessageHandler:
@@ -36,40 +41,51 @@ class BaseMessageHandler:
             else:
                 raise ValueError(
                     'The variable "supported_request_messages" '
-                    'contained a non-libtaxii message module: {}'.
-                    format(message.__module__))
+                    'contained a non-libtaxii message module: {}'.format(
+                        message.__module__
+                    )
+                )
 
         no_support_service_11 = (
-            taxii_services == VID_TAXII_SERVICES_11 and not supports_taxii_11)
+            taxii_services == VID_TAXII_SERVICES_11 and not supports_taxii_11
+        )
 
         no_support_service_10 = (
-            taxii_services == VID_TAXII_SERVICES_10 and not supports_taxii_10)
+            taxii_services == VID_TAXII_SERVICES_10 and not supports_taxii_10
+        )
 
         if no_support_service_11 or no_support_service_10:
             raise_failure(
                 'The specified value of {} is not supported'.format(
-                    HTTP_X_TAXII_SERVICES),
-                in_response_to)
+                    HTTP_X_TAXII_SERVICES
+                ),
+                in_response_to,
+            )
 
         no_support_content_type_11 = (
-            taxii_content_type == VID_TAXII_XML_11 and not supports_taxii_11)
+            taxii_content_type == VID_TAXII_XML_11 and not supports_taxii_11
+        )
         no_support_content_type_10 = (
-            taxii_content_type == VID_TAXII_XML_10 and not supports_taxii_10)
+            taxii_content_type == VID_TAXII_XML_10 and not supports_taxii_10
+        )
 
         if no_support_content_type_11 or no_support_content_type_10:
             raise_failure(
                 'The specified value of X-TAXII-Content-Type is not supported',
-                in_response_to)
+                in_response_to,
+            )
 
         no_support_accept_11 = (
-            taxii_accept == VID_TAXII_XML_11 and not supports_taxii_11)
+            taxii_accept == VID_TAXII_XML_11 and not supports_taxii_11
+        )
         no_support_accept_10 = (
-            taxii_accept == VID_TAXII_XML_10 and not supports_taxii_10)
+            taxii_accept == VID_TAXII_XML_10 and not supports_taxii_10
+        )
 
         if taxii_accept and (no_support_accept_11 or no_support_accept_10):
             raise_failure(
-                "The specified value of X-TAXII-Accept is not supported",
-                in_response_to)
+                "The specified value of X-TAXII-Accept is not supported", in_response_to
+            )
 
         return True
 
@@ -78,7 +94,8 @@ class BaseMessageHandler:
         if taxii_message.__class__ not in cls.supported_request_messages:
             raise raise_failure(
                 "TAXII Message not supported by Message Handler",
-                taxii_message.message_id)
+                taxii_message.message_id,
+            )
 
     @classmethod
     def handle_message(cls, service, request):

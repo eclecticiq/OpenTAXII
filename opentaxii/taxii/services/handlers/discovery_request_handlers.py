@@ -1,9 +1,8 @@
-
-from .base_handlers import BaseMessageHandler
-from ...exceptions import raise_failure
-
-import libtaxii.messages_11 as tm11
 import libtaxii.messages_10 as tm10
+import libtaxii.messages_11 as tm11
+
+from ...exceptions import raise_failure
+from .base_handlers import BaseMessageHandler
 
 
 class DiscoveryRequest11Handler(BaseMessageHandler):
@@ -13,8 +12,7 @@ class DiscoveryRequest11Handler(BaseMessageHandler):
     @classmethod
     def handle_message(cls, service, request):
 
-        response = tm11.DiscoveryResponse(
-            cls.generate_id(), request.message_id)
+        response = tm11.DiscoveryResponse(cls.generate_id(), request.message_id)
         for service in service.advertised_services:
             service_instances = service.to_service_instances(version=11)
             response.service_instances.extend(service_instances)
@@ -29,8 +27,7 @@ class DiscoveryRequest10Handler(BaseMessageHandler):
     @classmethod
     def handle_message(cls, service, request):
 
-        response = tm10.DiscoveryResponse(
-            cls.generate_id(), request.message_id)
+        response = tm10.DiscoveryResponse(cls.generate_id(), request.message_id)
 
         for service in service.advertised_services:
             service_instances = service.to_service_instances(version=10)

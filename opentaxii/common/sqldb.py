@@ -20,7 +20,7 @@ class BaseSQLDatabaseAPI:
                 "autocommit": False,
                 "autoflush": True,
             },
-            **engine_parameters
+            **engine_parameters,
         )
         if create_tables:
             self.db.create_all_tables()

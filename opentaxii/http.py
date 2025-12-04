@@ -1,9 +1,7 @@
-
-from .middleware import create_app
 from .config import ServerConfig
+from .middleware import create_app
 from .server import TAXIIServer
 from .utils import configure_logging
-
 
 # This module is also used as a Gunicorn configuration module, i.e. passed
 # as ``--config python:opentaxii.http``. ``logconfig_dict`` module-level
@@ -15,12 +13,7 @@ logconfig_dict = {
     'version': 1,
     'disable_existing_loggers': False,
     'root': {},
-    'loggers': {
-        'gunicorn.error': {
-            'level': 'INFO',
-            'propagate': True
-        }
-    }
+    'loggers': {'gunicorn.error': {'level': 'INFO', 'propagate': True}},
 }
 
 config_obj = ServerConfig()

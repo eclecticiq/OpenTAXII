@@ -1,7 +1,7 @@
 from uuid import uuid4
 
-from libtaxii.constants import (CB_STIX_XML_111, VID_TAXII_HTTP_10,
-                                VID_TAXII_HTTPS_10)
+from libtaxii.constants import CB_STIX_XML_111, VID_TAXII_HTTP_10, VID_TAXII_HTTPS_10
+
 from opentaxii.entities import Account
 from opentaxii.taxii import entities
 
@@ -17,7 +17,7 @@ INBOX_A = dict(
     destination_collection_required=False,
     address='/relative/path/inbox-a',
     accept_all_content=True,
-    protocol_bindings=PROTOCOL_BINDINGS
+    protocol_bindings=PROTOCOL_BINDINGS,
 )
 
 INBOX_B = dict(
@@ -27,7 +27,7 @@ INBOX_B = dict(
     destination_collection_required='yes',
     address='/relative/path/inbox-b',
     supported_content=[CB_STIX_XML_111, CUSTOM_CONTENT_BINDING],
-    protocol_bindings=PROTOCOL_BINDINGS
+    protocol_bindings=PROTOCOL_BINDINGS,
 )
 
 DISCOVERY_A = dict(
@@ -36,9 +36,14 @@ DISCOVERY_A = dict(
     description='discovery-A description',
     address='/relative/path/discovery-a',
     advertised_services=[
-        'inbox-A', 'inbox-B', 'discovery-A', 'discovery-B',
-        'collection-management-A', 'poll-A'],
-    protocol_bindings=PROTOCOL_BINDINGS
+        'inbox-A',
+        'inbox-B',
+        'discovery-A',
+        'discovery-B',
+        'collection-management-A',
+        'poll-A',
+    ],
+    protocol_bindings=PROTOCOL_BINDINGS,
 )
 
 DISCOVERY_B = dict(
@@ -46,7 +51,7 @@ DISCOVERY_B = dict(
     type='discovery',
     description='External discovery-B service',
     address='http://something.com/absolute/path/discovery-b',
-    protocol_bindings=[VID_TAXII_HTTP_10]
+    protocol_bindings=[VID_TAXII_HTTP_10],
 )
 
 SUBSCRIPTION_MESSAGE = 'message about subscription'
@@ -57,7 +62,7 @@ COLLECTION_MANAGEMENT = dict(
     description='Collection management description',
     address='/relative/path/collection-management',
     protocol_bindings=PROTOCOL_BINDINGS,
-    subscription_message=SUBSCRIPTION_MESSAGE
+    subscription_message=SUBSCRIPTION_MESSAGE,
 )
 
 POLL_RESULT_SIZE = 20
@@ -70,13 +75,12 @@ POLL = dict(
     address='/relative/path/poll',
     protocol_bindings=PROTOCOL_BINDINGS,
     max_result_size=POLL_RESULT_SIZE,
-    max_result_count=POLL_MAX_COUNT
+    max_result_count=POLL_MAX_COUNT,
 )
 
 DOMAIN = 'www.some-example.local'
 
-INTERNAL_SERVICES = [
-    INBOX_A, INBOX_B, DISCOVERY_A, COLLECTION_MANAGEMENT, POLL]
+INTERNAL_SERVICES = [INBOX_A, INBOX_B, DISCOVERY_A, COLLECTION_MANAGEMENT, POLL]
 SERVICES = INTERNAL_SERVICES + [DISCOVERY_B]
 
 INSTANCES_CONFIGURED = sum(len(s['protocol_bindings']) for s in SERVICES)
@@ -85,8 +89,7 @@ MESSAGE_ID = '123'
 CONTENT = 'some-content'
 
 CONTENT_BINDINGS_ONLY_STIX = [CB_STIX_XML_111]
-CONTENT_BINDINGS_STIX_AND_CUSTOM = (
-    CONTENT_BINDINGS_ONLY_STIX + [CUSTOM_CONTENT_BINDING])
+CONTENT_BINDINGS_STIX_AND_CUSTOM = CONTENT_BINDINGS_ONLY_STIX + [CUSTOM_CONTENT_BINDING]
 CONTENT_BINDING_SUBTYPE = 'custom-subtype'
 
 MESSAGE = 'test-message'
@@ -99,35 +102,33 @@ COLLECTION_DISABLED = "collection_disabled"
 
 
 COLLECTIONS_A = [
-    entities.CollectionEntity(**x) for x in
-    [{
-        'name': COLLECTION_OPEN,
-        'available': True,
-        'accept_all_content': True
-    }]
+    entities.CollectionEntity(**x)
+    for x in [{'name': COLLECTION_OPEN, 'available': True, 'accept_all_content': True}]
 ]
 
 COLLECTIONS_B = [
-    entities.CollectionEntity(**x) for x in
-    [{
-        'name': COLLECTION_OPEN,
-        'available': True,
-        'accept_all_content': True,
-        'type': entities.CollectionEntity.TYPE_SET
-    }, {
-        'name': COLLECTION_ONLY_STIX,
-        'available': True,
-        'accept_all_content': False,
-        'supported_content': CONTENT_BINDINGS_ONLY_STIX
-    }, {
-        'name': COLLECTION_STIX_AND_CUSTOM,
-        'available': True,
-        'accept_all_content': False,
-        'supported_content': CONTENT_BINDINGS_STIX_AND_CUSTOM
-    }, {
-        'name': COLLECTION_DISABLED,
-        'available': False
-    }]
+    entities.CollectionEntity(**x)
+    for x in [
+        {
+            'name': COLLECTION_OPEN,
+            'available': True,
+            'accept_all_content': True,
+            'type': entities.CollectionEntity.TYPE_SET,
+        },
+        {
+            'name': COLLECTION_ONLY_STIX,
+            'available': True,
+            'accept_all_content': False,
+            'supported_content': CONTENT_BINDINGS_ONLY_STIX,
+        },
+        {
+            'name': COLLECTION_STIX_AND_CUSTOM,
+            'available': True,
+            'accept_all_content': False,
+            'supported_content': CONTENT_BINDINGS_STIX_AND_CUSTOM,
+        },
+        {'name': COLLECTION_DISABLED, 'available': False},
+    ]
 ]
 
 USERNAME = "some-username"

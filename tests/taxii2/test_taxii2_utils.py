@@ -1,6 +1,7 @@
 import datetime
 
 import pytest
+
 from opentaxii.taxii2.utils import taxii2_datetimeformat
 
 

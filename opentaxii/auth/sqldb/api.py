@@ -2,10 +2,11 @@ from datetime import datetime, timedelta
 
 import jwt
 import structlog
+from sqlalchemy.orm import exc
+
 from opentaxii.auth import OpenTAXIIAuthAPI
 from opentaxii.common.sqldb import BaseSQLDatabaseAPI
 from opentaxii.entities import Account as AccountEntity
-from sqlalchemy.orm import exc
 
 from .models import Account, Base
 
@@ -32,16 +33,19 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIAuthAPI):
     BASEMODEL = Base
 
     def __init__(
-            self,
-            db_connection,
-            create_tables=False,
-            secret=None,
-            token_ttl_secs=None,
-            **engine_parameters):
+        self,
+        db_connection,
+        create_tables=False,
+        secret=None,
+        token_ttl_secs=None,
+        **engine_parameters,
+    ):
         super().__init__(db_connection, create_tables, **engine_parameters)
         if not secret:
-            raise ValueError('Secret is not defined for %s.%s' % (
-                self.__module__, self.__class__.__name__))
+            raise ValueError(
+                'Secret is not defined for %s.%s'
+                % (self.__module__, self.__class__.__name__)
+            )
         self.secret = secret
         self.token_ttl_secs = token_ttl_secs or 60 * 60  # 60min
 
@@ -71,7 +75,9 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIAuthAPI):
         return account_to_account_entity(account)
 
     def delete_account(self, username):
-        account = self.db.session.query(Account).filter_by(username=username).one_or_none()
+        account = (
+            self.db.session.query(Account).filter_by(username=username).one_or_none()
+        )
         if account:
             self.db.session.delete(account)
             self.db.session.commit()
@@ -79,10 +85,15 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIAuthAPI):
     def get_accounts(self):
         return [
             account_to_account_entity(account)
-            for account in self.db.session.query(Account).all()]
+            for account in self.db.session.query(Account).all()
+        ]
 
     def update_account(self, obj, password=None):
-        account = self.db.session.query(Account).filter_by(username=obj.username).one_or_none()
+        account = (
+            self.db.session.query(Account)
+            .filter_by(username=obj.username)
+            .one_or_none()
+        )
         if not account:
             account = Account(username=obj.username)
             self.db.session.add(account)
@@ -120,4 +131,5 @@ def account_to_account_entity(account):
         id=account.id,
         username=account.username,
         is_admin=account.is_admin,
-        permissions=account.permissions)
+        permissions=account.permissions,
+    )

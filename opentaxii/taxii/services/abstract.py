@@ -1,13 +1,10 @@
 import structlog
-
 from libtaxii.common import generate_message_id
-from libtaxii.constants import (
-    VID_TAXII_XML_10, VID_TAXII_XML_11
-)
+from libtaxii.constants import VID_TAXII_XML_10, VID_TAXII_XML_11
 
-from ..exceptions import raise_failure
 from ..bindings import PROTOCOL_TO_SCHEME
 from ..converters import service_to_service_instances
+from ..exceptions import raise_failure
 
 
 class TAXIIService:
@@ -37,9 +34,17 @@ class TAXIIService:
     supported_message_bindings = [VID_TAXII_XML_10, VID_TAXII_XML_11]
     supported_protocol_bindings = ()
 
-    def __init__(self, id, server, address, description=None, path=None,
-                 protocol_bindings=None, available=True,
-                 authentication_required=False):
+    def __init__(
+        self,
+        id,
+        server,
+        address,
+        description=None,
+        path=None,
+        protocol_bindings=None,
+        available=True,
+        authentication_required=False,
+    ):
 
         self.id = id
         self.server = server
@@ -49,19 +54,21 @@ class TAXIIService:
 
         self.description = description
         self.supported_protocol_bindings = (
-            protocol_bindings or self.supported_protocol_bindings)
+            protocol_bindings or self.supported_protocol_bindings
+        )
 
         self.available = available
         self.authentication_required = authentication_required
 
         self.log = structlog.getLogger(
-            "{}.{}".format(self.__module__, self.__class__.__name__),
-            service_id=id)
+            "{}.{}".format(self.__module__, self.__class__.__name__), service_id=id
+        )
 
         if not self.supported_protocol_bindings:
             self.log.warning(
                 "No protocol bindings specified, service will be invisible",
-                service=self.id)
+                service=self.id,
+            )
 
     def generate_id(self):
         return generate_message_id()
@@ -72,7 +79,8 @@ class TAXIIService:
             "Processing message",
             message_id=message.message_id,
             message_type=message.message_type,
-            message_version=message.version)
+            message_version=message.version,
+        )
 
         handler = self.get_message_handler(message)
 
@@ -82,9 +90,9 @@ class TAXIIService:
         response_message = handler.handle_message(self, message)
         if not response_message:
             raise_failure(
-                "The message handler {} did not return a TAXII Message"
-                .format(handler),
-                in_response_to=message.message_id)
+                "The message handler {} did not return a TAXII Message".format(handler),
+                in_response_to=message.message_id,
+            )
 
         return response_message
 
@@ -96,10 +104,12 @@ class TAXIIService:
                 "Message not supported",
                 message_id=message.message_id,
                 message_type=message.message_type,
-                message_version=message.version)
+                message_version=message.version,
+            )
             raise_failure(
                 "Message not supported by this service",
-                in_response_to=message.message_id)
+                in_response_to=message.message_id,
+            )
 
     def to_service_instances(self, version):
         return service_to_service_instances(self, version)
@@ -112,12 +122,11 @@ class TAXIIService:
             if scheme and not address.lower().startswith(scheme):
                 address = scheme + address
         else:
-            self.log.warning("binding.not_recognized",
-                             binding=binding, address=address)
+            self.log.warning("binding.not_recognized", binding=binding, address=address)
 
         return address
 
     def __repr__(self):
-        return (
-            "{}(id={}, address={})"
-            .format(self.__class__.__name__, self.id, self.address))
+        return "{}(id={}, address={})".format(
+            self.__class__.__name__, self.id, self.address
+        )

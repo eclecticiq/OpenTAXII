@@ -11,20 +11,30 @@ from typing import Callable, ClassVar, NamedTuple, Optional, Tuple, Type
 
 import structlog
 from flask import Flask, Response, request
-from werkzeug.exceptions import (Forbidden, MethodNotAllowed, NotAcceptable,
-                                 NotFound, RequestEntityTooLarge, Unauthorized,
-                                 UnsupportedMediaType)
+from werkzeug.exceptions import (
+    Forbidden,
+    MethodNotAllowed,
+    NotAcceptable,
+    NotFound,
+    RequestEntityTooLarge,
+    Unauthorized,
+    UnsupportedMediaType,
+)
 
-from opentaxii.persistence.exceptions import (DoesNotExistError,
-                                              NoReadNoWritePermission,
-                                              NoReadPermission,
-                                              NoWritePermission)
+from opentaxii.persistence.exceptions import (
+    DoesNotExistError,
+    NoReadNoWritePermission,
+    NoReadPermission,
+    NoWritePermission,
+)
 from opentaxii.taxii2.utils import taxii2_datetimeformat
-from opentaxii.taxii2.validation import (validate_delete_filter_params,
-                                         validate_envelope,
-                                         validate_list_filter_params,
-                                         validate_object_filter_params,
-                                         validate_versions_filter_params)
+from opentaxii.taxii2.validation import (
+    validate_delete_filter_params,
+    validate_envelope,
+    validate_list_filter_params,
+    validate_object_filter_params,
+    validate_versions_filter_params,
+)
 from opentaxii.utils import register_handler
 
 from .auth import AuthManager
@@ -32,20 +42,30 @@ from .config import ServerConfig
 from .entities import Account
 from .exceptions import UnauthorizedException
 from .local import context
-from .persistence import (BasePersistenceManager, Taxii1PersistenceManager,
-                          Taxii2PersistenceManager)
+from .persistence import (
+    BasePersistenceManager,
+    Taxii1PersistenceManager,
+    Taxii2PersistenceManager,
+)
 from .taxii2.http import make_taxii2_response
-from .taxii.bindings import (ALL_PROTOCOL_BINDINGS, MESSAGE_BINDINGS,
-                             SERVICE_BINDINGS)
-from .taxii.exceptions import (FailureStatus, StatusMessageException,
-                               raise_failure)
-from .taxii.http import (HTTP_ALLOW, HTTP_X_TAXII_CONTENT_TYPES,
-                         get_content_type, get_http_headers,
-                         make_taxii_response, validate_request_headers,
-                         validate_request_headers_post_parse,
-                         validate_response_headers)
-from .taxii.services import (CollectionManagementService, DiscoveryService,
-                             InboxService, PollService)
+from .taxii.bindings import ALL_PROTOCOL_BINDINGS, MESSAGE_BINDINGS, SERVICE_BINDINGS
+from .taxii.exceptions import FailureStatus, StatusMessageException, raise_failure
+from .taxii.http import (
+    HTTP_ALLOW,
+    HTTP_X_TAXII_CONTENT_TYPES,
+    get_content_type,
+    get_http_headers,
+    make_taxii_response,
+    validate_request_headers,
+    validate_request_headers_post_parse,
+    validate_response_headers,
+)
+from .taxii.services import (
+    CollectionManagementService,
+    DiscoveryService,
+    InboxService,
+    PollService,
+)
 from .taxii.services.abstract import TAXIIService
 from .taxii.status import process_status_exception
 from .taxii.utils import configure_libtaxii_xml_parser, parse_message

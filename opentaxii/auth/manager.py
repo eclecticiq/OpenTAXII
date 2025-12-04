@@ -47,9 +47,7 @@ class AuthManager:
         for colname, permission in list(account.permissions.items()):
             collection = self.server.servers.taxii1.persistence.get_collection(colname)
             if not collection:
-                log.warning(
-                    "update_account.unknown_collection",
-                    collection=colname)
+                log.warning("update_account.unknown_collection", collection=colname)
                 account.permissions.pop(colname)
         account = self.api.update_account(account, password)
         return account
