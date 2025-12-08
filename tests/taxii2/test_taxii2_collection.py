@@ -348,6 +348,7 @@ def test_collection_can_read():
         is_public=False,
         is_public_write=False,
     )
+    str_collection_id = str(collection.id)
 
     # Without account
     assert collection.can_read(None) is False
@@ -359,7 +360,9 @@ def test_collection_can_read():
     )
     assert (
         collection.can_read(
-            Account("read_only", "read_only", {collection.id: "read"}, is_admin=False)
+            Account(
+                "read_only", "read_only", {str_collection_id: ["read"]}, is_admin=False
+            )
         )
         is True
     )
@@ -368,11 +371,11 @@ def test_collection_can_read():
             Account(
                 "write_access",
                 "write_access",
-                {collection.id: "modify"},
+                {str_collection_id: ["write"]},
                 is_admin=False,
             )
         )
-        is True
+        is False
     )
 
     # Public
@@ -392,6 +395,7 @@ def test_collection_can_write():
         is_public=False,
         is_public_write=False,
     )
+    str_collection_id = str(collection.id)
 
     # Without account
     assert collection.can_write(None) is False
@@ -405,7 +409,9 @@ def test_collection_can_write():
     )
     assert (
         collection.can_write(
-            Account("read_only", "read_only", {collection.id: "read"}, is_admin=False)
+            Account(
+                "read_only", "read_only", {str_collection_id: ["read"]}, is_admin=False
+            )
         )
         is False
     )
@@ -414,7 +420,7 @@ def test_collection_can_write():
             Account(
                 "write_access",
                 "write_access",
-                {collection.id: "modify"},
+                {str_collection_id: ["write"]},
                 is_admin=False,
             )
         )
