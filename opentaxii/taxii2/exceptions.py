@@ -1,5 +1,4 @@
-from marshmallow.exceptions import \
-    ValidationError as MarshmallowValidationError
+from marshmallow.exceptions import ValidationError as MarshmallowValidationError
 
 
 class ValidationError(MarshmallowValidationError):

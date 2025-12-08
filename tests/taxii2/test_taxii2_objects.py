@@ -5,11 +5,22 @@ from urllib.parse import urlencode
 from uuid import uuid4
 
 import pytest
+
 from opentaxii.taxii2.utils import taxii2_datetimeformat
-from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
-                                GET_COLLECTION_MOCK, GET_JOB_AND_DETAILS_MOCK,
-                                GET_NEXT_PARAM, GET_OBJECTS_MOCK, JOBS, NOW,
-                                STIX_OBJECTS, config_noop, config_override)
+from tests.taxii2.utils import (
+    ADD_OBJECTS_MOCK,
+    API_ROOTS,
+    COLLECTIONS,
+    GET_COLLECTION_MOCK,
+    GET_JOB_AND_DETAILS_MOCK,
+    GET_NEXT_PARAM,
+    GET_OBJECTS_MOCK,
+    JOBS,
+    NOW,
+    STIX_OBJECTS,
+    config_noop,
+    config_override,
+)
 from tests.utils import SKIP
 
 
@@ -1169,38 +1180,45 @@ def test_objects(
     expected_headers,
     expected_content,
 ):
-    with patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2,
-        "config",
-        config_override_func(
-            authenticated_client.application.taxii_server.servers.taxii2.config
+    with (
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2,
+            "config",
+            config_override_func(
+                authenticated_client.application.taxii_server.servers.taxii2.config
+            ),
         ),
-    ), patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_objects",
-        side_effect=GET_OBJECTS_MOCK,
-    ), patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_collection",
-        side_effect=GET_COLLECTION_MOCK,
-    ), patch.object(
-        authenticated_client.account,
-        "permissions",
-        {
-            COLLECTIONS[0].id: ["read"],
-            COLLECTIONS[1].id: ["write"],
-            COLLECTIONS[2].id: ["read", "write"],
-            COLLECTIONS[4].id: ["read", "write"],
-            COLLECTIONS[5].id: ["write", "read"],
-        },
-    ), patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "add_objects",
-        side_effect=ADD_OBJECTS_MOCK,
-    ) as add_objects_mock, patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_job_and_details",
-        side_effect=GET_JOB_AND_DETAILS_MOCK,
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_objects",
+            side_effect=GET_OBJECTS_MOCK,
+        ),
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_collection",
+            side_effect=GET_COLLECTION_MOCK,
+        ),
+        patch.object(
+            authenticated_client.account,
+            "permissions",
+            {
+                COLLECTIONS[0].id: ["read"],
+                COLLECTIONS[1].id: ["write"],
+                COLLECTIONS[2].id: ["read", "write"],
+                COLLECTIONS[4].id: ["read", "write"],
+                COLLECTIONS[5].id: ["write", "read"],
+            },
+        ),
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "add_objects",
+            side_effect=ADD_OBJECTS_MOCK,
+        ) as add_objects_mock,
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_job_and_details",
+            side_effect=GET_JOB_AND_DETAILS_MOCK,
+        ),
     ):
         func = getattr(authenticated_client, method)
         if filter_kwargs:
@@ -1271,19 +1289,23 @@ def test_objects_unauthenticated(
             expected_status_code = 401
         else:
             expected_status_code = 405
-    with patch.object(
-        client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_objects",
-        side_effect=GET_OBJECTS_MOCK,
-    ), patch.object(
-        client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_collection",
-        side_effect=GET_COLLECTION_MOCK,
-    ), patch.object(
-        client.application.taxii_server.servers.taxii2.persistence.api,
-        "add_objects",
-        side_effect=ADD_OBJECTS_MOCK,
-    ) as add_objects_mock:
+    with (
+        patch.object(
+            client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_objects",
+            side_effect=GET_OBJECTS_MOCK,
+        ),
+        patch.object(
+            client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_collection",
+            side_effect=GET_COLLECTION_MOCK,
+        ),
+        patch.object(
+            client.application.taxii_server.servers.taxii2.persistence.api,
+            "add_objects",
+            side_effect=ADD_OBJECTS_MOCK,
+        ) as add_objects_mock,
+    ):
         kwargs = {
             "headers": {
                 "Accept": "application/taxii+json;version=2.1",

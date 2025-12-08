@@ -1,4 +1,5 @@
 import json
+
 import pytz
 
 from opentaxii.taxii import entities
@@ -17,7 +18,7 @@ def to_collection_entity(model):
         supported_content=deserialize_content_bindings(model.bindings),
         # TODO: Explicit integer
         # pending: https://github.com/TAXIIProject/libtaxii/issues/191
-        volume=int(model.volume)
+        volume=int(model.volume),
     )
 
 
@@ -32,7 +33,8 @@ def to_block_entity(model):
         content=model.content,
         timestamp_label=enforce_timezone(model.timestamp_label),
         content_binding=entities.ContentBindingEntity(
-            model.binding_id, subtypes=subtypes),
+            model.binding_id, subtypes=subtypes
+        ),
         message=model.message,
         inbox_message_id=model.inbox_message_id,
     )
@@ -60,9 +62,12 @@ def to_inbox_message_entity(model):
         subscription_collection_name=model.subscription_collection_name,
         subscription_id=model.subscription_id,
         exclusive_begin_timestamp_label=enforce_timezone(
-            model.exclusive_begin_timestamp_label),
+            model.exclusive_begin_timestamp_label
+        ),
         inclusive_end_timestamp_label=enforce_timezone(
-            model.inclusive_end_timestamp_label))
+            model.inclusive_end_timestamp_label
+        ),
+    )
 
 
 def to_result_set_entity(model):
@@ -74,7 +79,9 @@ def to_result_set_entity(model):
         content_bindings=deserialize_content_bindings(model.bindings),
         timeframe=(
             enforce_timezone(model.begin_time),
-            enforce_timezone(model.end_time)))
+            enforce_timezone(model.end_time),
+        ),
+    )
 
 
 def to_subscription_entity(model):
@@ -85,7 +92,8 @@ def to_subscription_entity(model):
         parsed = dict(json.loads(model.params))
         if parsed['content_bindings']:
             parsed['content_bindings'] = deserialize_content_bindings(
-                parsed['content_bindings'])
+                parsed['content_bindings']
+            )
         params = entities.PollRequestParametersEntity(**parsed)
     else:
         params = None
@@ -95,7 +103,7 @@ def to_subscription_entity(model):
         subscription_id=model.id,
         collection_id=model.collection_id,
         poll_request_params=params,
-        status=model.status
+        status=model.status,
     )
 
 
@@ -103,9 +111,8 @@ def to_service_entity(model):
     if not model:
         return
     return entities.ServiceEntity(
-        id=model.id,
-        type=model.type,
-        properties=model.properties)
+        id=model.id, type=model.type, properties=model.properties
+    )
 
 
 def serialize_content_bindings(content_bindings):
@@ -116,7 +123,7 @@ def deserialize_content_bindings(content_bindings):
     raw_bindings = json.loads(content_bindings)
 
     bindings = []
-    for (binding, subtypes) in raw_bindings:
+    for binding, subtypes in raw_bindings:
         entity = entities.ContentBindingEntity(binding, subtypes=subtypes)
         bindings.append(entity)
 

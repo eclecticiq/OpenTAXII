@@ -5,8 +5,9 @@ import sys
 current_dir = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(os.path.join(current_dir, "..")))
 
-from opentaxii.persistence.sqldb.models import Base
 from sqla_graphs import TableGrapher
+
+from opentaxii.persistence.sqldb.models import Base
 
 grapher = TableGrapher(
     style={"node_table_header": {"bgcolor": "#000080"}},

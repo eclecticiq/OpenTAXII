@@ -1,13 +1,21 @@
 import pytest
-from fixtures import (COLLECTION_ONLY_STIX, COLLECTION_OPEN, COLLECTIONS_A,
-                      COLLECTIONS_B, CONTENT, CONTENT_BINDING_SUBTYPE,
-                      CUSTOM_CONTENT_BINDING, INVALID_CONTENT_BINDING,
-                      MESSAGE_ID)
+from fixtures import (
+    COLLECTION_ONLY_STIX,
+    COLLECTION_OPEN,
+    COLLECTIONS_A,
+    COLLECTIONS_B,
+    CONTENT,
+    CONTENT_BINDING_SUBTYPE,
+    CUSTOM_CONTENT_BINDING,
+    INVALID_CONTENT_BINDING,
+    MESSAGE_ID,
+)
 from libtaxii import messages_10 as tm10
 from libtaxii import messages_11 as tm11
 from libtaxii.constants import CB_STIX_XML_111, ST_SUCCESS
-from opentaxii.taxii import exceptions
 from utils import as_tm, prepare_headers
+
+from opentaxii.taxii import exceptions
 
 
 def make_content(

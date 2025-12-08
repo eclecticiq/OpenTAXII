@@ -54,8 +54,7 @@ class SQLAlchemyDB:
 
         options.setdefault('query_cls', self.Query)
 
-        return orm.scoped_session(
-            self.create_session(options), scopefunc=get_ident)
+        return orm.scoped_session(self.create_session(options), scopefunc=get_ident)
 
     def create_session(self, options):
         kwargs = {

@@ -1,4 +1,5 @@
 """Utility functions for taxii2."""
+
 import datetime
 
 DATETIMEFORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
