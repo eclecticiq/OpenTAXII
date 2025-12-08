@@ -11,7 +11,7 @@ from opentaxii.utils import sync_conf_dict_into_db
 
 log = structlog.getLogger(__name__)
 
-local_admin = Account(id=None, username="local-admin", permissions=None, is_admin=True)
+local_admin = Account(id=None, username="local-admin", permissions={}, is_admin=True)
 
 
 def sync_data_configuration():

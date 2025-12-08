@@ -16,7 +16,7 @@ class Account:
 
     def __init__(
         self,
-        id: str,
+        id,
         username: str,
         permissions: dict[str | uuid.UUID, Literal["read", "modify"]],
         is_admin: bool = False,
