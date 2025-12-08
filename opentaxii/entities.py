@@ -28,14 +28,5 @@ class Account:
         self.is_admin = is_admin
         self.details = details
 
-    def can_read(self, collection_identifier: str | uuid.UUID):
-        return self.is_admin or self.permissions.get(collection_identifier) in (
-            'read',
-            'modify',
-        )
-
-    def can_modify(self, collection_identifier: str | uuid.UUID):
-        return self.is_admin or self.permissions.get(collection_identifier) == 'modify'
-
     def __repr__(self):
         return 'Account(username={}, is_admin={})'.format(self.username, self.is_admin)

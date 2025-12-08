@@ -125,9 +125,9 @@ class Taxii1PersistenceManager:
         :return: list of service entities.
         :rtype: list of :py:class:`opentaxii.taxii.entities.ServiceEntity`
         """
-        if context.account.can_read(collection.name):
+        if collection.can_read(context.account):
             services = self.api.get_services(collection_id=collection.id)
-            if context.account.can_modify(collection.name):
+            if collection.can_modify(context.account):
                 return services
             else:
                 return list(filter(lambda s: s.type != "inbox", services))
@@ -144,7 +144,7 @@ class Taxii1PersistenceManager:
         collections = [
             collection
             for collection in self.api.get_collections(service_id=service_id)
-            if context.account.can_read(collection.name)
+            if collection.can_read(context.account)
         ]
         return collections
 
@@ -162,7 +162,7 @@ class Taxii1PersistenceManager:
         :rtype: :py:class:`opentaxii.taxii.entities.CollectionEntity`
         """
         collection = self.api.get_collection(name, service_id=service_id)
-        if collection and context.account.can_read(collection.name):
+        if collection and collection.account.can_read(context.account):
             return collection
 
     def update_collection(self, collection):
