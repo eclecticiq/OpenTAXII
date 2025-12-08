@@ -174,24 +174,28 @@ def test_collection(
     expected_headers,
     expected_content,
 ):
-    with patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_api_root",
-        side_effect=GET_API_ROOT_MOCK,
-    ), patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_collection",
-        side_effect=GET_COLLECTION_MOCK,
-    ), patch.object(
-        authenticated_client.account,
-        "permissions",
-        {
-            COLLECTIONS[0].id: ["read"],
-            COLLECTIONS[1].id: ["write"],
-            COLLECTIONS[2].id: ["read", "write"],
-            COLLECTIONS[4].id: ["read", "write"],
-            COLLECTIONS[5].id: ["write"],
-        },
+    with (
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_api_root",
+            side_effect=GET_API_ROOT_MOCK,
+        ),
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_collection",
+            side_effect=GET_COLLECTION_MOCK,
+        ),
+        patch.object(
+            authenticated_client.account,
+            "permissions",
+            {
+                COLLECTIONS[0].id: ["read"],
+                COLLECTIONS[1].id: ["write"],
+                COLLECTIONS[2].id: ["read", "write"],
+                COLLECTIONS[4].id: ["read", "write"],
+                COLLECTIONS[5].id: ["write"],
+            },
+        ),
     ):
         func = getattr(authenticated_client, method)
         response = func(
@@ -238,14 +242,17 @@ def test_collection_unauthenticated(
             expected_status_code = 401
         else:
             expected_status_code = 405
-    with patch.object(
-        client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_api_root",
-        side_effect=GET_API_ROOT_MOCK,
-    ), patch.object(
-        client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_collection",
-        side_effect=GET_COLLECTION_MOCK,
+    with (
+        patch.object(
+            client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_api_root",
+            side_effect=GET_API_ROOT_MOCK,
+        ),
+        patch.object(
+            client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_collection",
+            side_effect=GET_COLLECTION_MOCK,
+        ),
     ):
         func = getattr(client, method)
         response = func(

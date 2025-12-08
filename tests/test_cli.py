@@ -81,8 +81,9 @@ from tests.utils import assert_str_equal_no_formatting, conditional_raises
     ],
 )
 def test_sync_data_configuration(app, capsys, argv, raises, message, stdout, stderr):
-    with mock.patch("opentaxii.cli.persistence.app", app), mock.patch(
-        "sys.argv", [""] + argv
+    with (
+        mock.patch("opentaxii.cli.persistence.app", app),
+        mock.patch("sys.argv", [""] + argv),
     ):
         with conditional_raises(raises) as exception:
             sync_data_configuration()
@@ -135,8 +136,9 @@ def test_sync_data_configuration(app, capsys, argv, raises, message, stdout, std
 def test_delete_content_blocks(
     app, collections, capsys, argv, raises, message, stdout, stderr
 ):
-    with mock.patch("opentaxii.cli.persistence.app", app), mock.patch(
-        "sys.argv", [""] + argv
+    with (
+        mock.patch("opentaxii.cli.persistence.app", app),
+        mock.patch("sys.argv", [""] + argv),
     ):
         with conditional_raises(raises) as exception:
             delete_content_blocks()
@@ -377,11 +379,15 @@ def test_update_account(app, account, capsys, argv, raises, message, stdout, std
 def test_add_api_root(
     app, capsys, argv, raises, message, stdout, stderr, expected_call
 ):
-    with mock.patch("opentaxii.cli.persistence.app", app), mock.patch(
-        "sys.argv", [""] + argv
-    ), mock.patch.object(
-        app.taxii_server.servers.taxii2.persistence.api, "add_api_root", autospec=True
-    ) as mock_add_api_root:
+    with (
+        mock.patch("opentaxii.cli.persistence.app", app),
+        mock.patch("sys.argv", [""] + argv),
+        mock.patch.object(
+            app.taxii_server.servers.taxii2.persistence.api,
+            "add_api_root",
+            autospec=True,
+        ) as mock_add_api_root,
+    ):
         with conditional_raises(raises) as exception:
             add_api_root()
         if raises:
@@ -556,11 +562,13 @@ def test_add_collection(
         "ROOTIDS",
         ",".join([str(api_root.id) for api_root in db_api_roots]),
     )
-    with mock.patch("opentaxii.cli.persistence.app", app), mock.patch(
-        "sys.argv", [""] + argv
-    ), mock.patch.object(
-        app.taxii_server.servers.taxii2.persistence.api, "add_collection"
-    ) as mock_add_collection:
+    with (
+        mock.patch("opentaxii.cli.persistence.app", app),
+        mock.patch("sys.argv", [""] + argv),
+        mock.patch.object(
+            app.taxii_server.servers.taxii2.persistence.api, "add_collection"
+        ) as mock_add_collection,
+    ):
         with conditional_raises(raises) as exception:
             add_collection()
         if raises:
@@ -575,9 +583,14 @@ def test_add_collection(
 
 
 def test_job_cleanup(app, capsys):
-    with mock.patch("opentaxii.cli.persistence.app", app), mock.patch.object(
-        app.taxii_server.servers.taxii2.persistence.api, "job_cleanup", return_value=2
-    ) as mock_cleanup:
+    with (
+        mock.patch("opentaxii.cli.persistence.app", app),
+        mock.patch.object(
+            app.taxii_server.servers.taxii2.persistence.api,
+            "job_cleanup",
+            return_value=2,
+        ) as mock_cleanup,
+    ):
         job_cleanup()
         mock_cleanup.assert_called_once_with()
         captured = capsys.readouterr()

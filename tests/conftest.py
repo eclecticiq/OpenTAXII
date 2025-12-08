@@ -279,14 +279,17 @@ def authenticated_client(client):
     }
     client.headers = headers
     client.account = ACCOUNT
-    with patch.object(
-        client.application.taxii_server.auth.api,
-        "authenticate",
-        side_effect=MOCK_AUTHENTICATE,
-    ), patch.object(
-        client.application.taxii_server.auth.api,
-        "get_account",
-        side_effect=MOCK_GET_ACCOUNT,
+    with (
+        patch.object(
+            client.application.taxii_server.auth.api,
+            "authenticate",
+            side_effect=MOCK_AUTHENTICATE,
+        ),
+        patch.object(
+            client.application.taxii_server.auth.api,
+            "get_account",
+            side_effect=MOCK_GET_ACCOUNT,
+        ),
     ):
         yield client
 

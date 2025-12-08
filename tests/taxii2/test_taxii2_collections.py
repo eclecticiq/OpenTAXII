@@ -195,36 +195,42 @@ def test_collections(
     expected_headers,
     expected_content,
 ):
-    with patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2,
-        "config",
-        config_override_func(
-            authenticated_client.application.taxii_server.servers.taxii2.config
+    with (
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2,
+            "config",
+            config_override_func(
+                authenticated_client.application.taxii_server.servers.taxii2.config
+            ),
         ),
-    ), patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_api_root",
-        side_effect=GET_API_ROOT_MOCK,
-    ), patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_collections",
-        side_effect=GET_COLLECTIONS_MOCK,
-    ), patch.object(
-        authenticated_client.application.taxii_server,
-        "servers",
-        server_mapping_override_func(
-            authenticated_client.application.taxii_server.servers
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_api_root",
+            side_effect=GET_API_ROOT_MOCK,
         ),
-    ), patch.object(
-        authenticated_client.account,
-        "permissions",
-        {
-            COLLECTIONS[0].id: ["read"],
-            COLLECTIONS[1].id: ["write"],
-            COLLECTIONS[2].id: ["read", "write"],
-            COLLECTIONS[4].id: ["read", "write"],
-            COLLECTIONS[5].id: ["write"],
-        },
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_collections",
+            side_effect=GET_COLLECTIONS_MOCK,
+        ),
+        patch.object(
+            authenticated_client.application.taxii_server,
+            "servers",
+            server_mapping_override_func(
+                authenticated_client.application.taxii_server.servers
+            ),
+        ),
+        patch.object(
+            authenticated_client.account,
+            "permissions",
+            {
+                COLLECTIONS[0].id: ["read"],
+                COLLECTIONS[1].id: ["write"],
+                COLLECTIONS[2].id: ["read", "write"],
+                COLLECTIONS[4].id: ["read", "write"],
+                COLLECTIONS[5].id: ["write"],
+            },
+        ),
     ):
         func = getattr(authenticated_client, method)
         response = func(f"/taxii2/{api_root_id}/collections/", headers=headers)
@@ -261,14 +267,17 @@ def test_collections_unauthenticated(
             expected_status_code = 401
         else:
             expected_status_code = 405
-    with patch.object(
-        client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_api_root",
-        side_effect=GET_API_ROOT_MOCK,
-    ), patch.object(
-        client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_collections",
-        side_effect=GET_COLLECTIONS_MOCK,
+    with (
+        patch.object(
+            client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_api_root",
+            side_effect=GET_API_ROOT_MOCK,
+        ),
+        patch.object(
+            client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_collections",
+            side_effect=GET_COLLECTIONS_MOCK,
+        ),
     ):
         func = getattr(client, method)
         response = func(

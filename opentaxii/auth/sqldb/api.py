@@ -27,7 +27,7 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIAuthAPI):
         create_tables: bool = False,
         secret: Optional[str] = None,
         token_ttl_secs: Optional[int] = None,
-        **engine_parameters
+        **engine_parameters,
     ):
         """Naive SQL database implementation of OpenTAXII Auth API.
 
