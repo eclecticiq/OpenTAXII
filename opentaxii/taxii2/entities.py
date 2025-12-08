@@ -71,22 +71,14 @@ class Collection(Entity):
         self.is_public = is_public
         self.is_public_write = is_public_write
 
-    def can_read(self, account: Optional[Account]):
+    def can_read(self, account: Optional[Account]) -> bool:
         """Determine if `account` is allowed to read from this collection."""
-        return self.is_public or (
-            account
-            and (
-                account.is_admin or "read" in set(account.permissions.get(self.id, []))
-            )
-        )
+        return self.is_public or (account is not None and account.can_read(self.id))
 
-    def can_write(self, account: Optional[Account]):
+    def can_write(self, account: Optional[Account]) -> bool:
         """Determine if `account` is allowed to write to this collection."""
         return self.is_public_write or (
-            account
-            and (
-                account.is_admin or "write" in set(account.permissions.get(self.id, []))
-            )
+            account is not None and account.can_modify(self.id)
         )
 
 

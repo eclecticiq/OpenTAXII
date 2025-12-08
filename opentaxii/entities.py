@@ -1,28 +1,41 @@
+import uuid
+from typing import Literal
+
+
 class Account:
     '''Represents Account entity.
 
-    This class holds user-specific information and is used
-    for authorization.
+    This class holds user-specific information and is used for authorization.
 
-    :param str id: account id
-    :param dict details: additional details of an account
+    :param id: account id
+    :param permissions: A dictionary where the key is the collection identifier
+        and the value either "read" or "modify". The identifier for TAXII1
+        collection is a string name while it is a UUID for TAXII2
+    :param details: additional details of an account
     '''
 
-    def __init__(self, id, username, permissions, is_admin=False, **details):
+    def __init__(
+        self,
+        id: str,
+        username: str,
+        permissions: dict[str | uuid.UUID, Literal["read", "modify"]],
+        is_admin: bool = False,
+        **details,
+    ):
         self.id = id
         self.username = username
         self.permissions = permissions
         self.is_admin = is_admin
         self.details = details
 
-    def can_read(self, collection_name):
-        return self.is_admin or self.permissions.get(collection_name) in (
+    def can_read(self, collection_identifier: str | uuid.UUID):
+        return self.is_admin or self.permissions.get(collection_identifier) in (
             'read',
             'modify',
         )
 
-    def can_modify(self, collection_name):
-        return self.is_admin or self.permissions.get(collection_name) == 'modify'
+    def can_modify(self, collection_identifier: str | uuid.UUID):
+        return self.is_admin or self.permissions.get(collection_identifier) == 'modify'
 
     def __repr__(self):
         return 'Account(username={}, is_admin={})'.format(self.username, self.is_admin)

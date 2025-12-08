@@ -1,10 +1,13 @@
 import json
+import uuid
 from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
 
+from opentaxii.entities import Account
 from opentaxii.persistence.sqldb import taxii2models
+from opentaxii.taxii2.entities import Collection
 from tests.taxii2.utils import (
     API_ROOTS,
     COLLECTIONS,
@@ -333,3 +336,93 @@ def test_add_collection(
     assert db_collection.alias == alias
     assert db_collection.is_public == is_public
     assert db_collection.is_public_write == is_public_write
+
+
+def test_collection_can_read():
+    collection = Collection(
+        id=uuid.UUID("f74bf902-0b63-4c76-9bed-aecb120b084d"),
+        api_root_id=uuid.UUID("fe6489a0-26eb-4810-8efc-ad5a46d85a35"),
+        title="test",
+        description="test",
+        alias=None,
+        is_public=False,
+        is_public_write=False,
+    )
+
+    # Without account
+    assert collection.can_read(None) is False
+    # With account
+    assert collection.can_read(Account("admin", "admin", {}, is_admin=True)) is True
+    assert (
+        collection.can_read(Account("inaccessible", "inaccessible", {}, is_admin=False))
+        is False
+    )
+    assert (
+        collection.can_read(
+            Account("read_only", "read_only", {collection.id: "read"}, is_admin=False)
+        )
+        is True
+    )
+    assert (
+        collection.can_read(
+            Account(
+                "write_access",
+                "write_access",
+                {collection.id: "modify"},
+                is_admin=False,
+            )
+        )
+        is True
+    )
+
+    # Public
+    collection.is_public_write = True
+    assert collection.can_read(None) is False
+    collection.is_public = True
+    assert collection.can_read(None) is True
+
+
+def test_collection_can_write():
+    collection = Collection(
+        id=uuid.UUID("f74bf902-0b63-4c76-9bed-aecb120b084d"),
+        api_root_id=uuid.UUID("fe6489a0-26eb-4810-8efc-ad5a46d85a35"),
+        title="test",
+        description="test",
+        alias=None,
+        is_public=False,
+        is_public_write=False,
+    )
+
+    # Without account
+    assert collection.can_write(None) is False
+    # With account
+    assert collection.can_write(Account("admin", "admin", {}, is_admin=True)) is True
+    assert (
+        collection.can_write(
+            Account("inaccessible", "inaccessible", {}, is_admin=False)
+        )
+        is False
+    )
+    assert (
+        collection.can_write(
+            Account("read_only", "read_only", {collection.id: "read"}, is_admin=False)
+        )
+        is False
+    )
+    assert (
+        collection.can_write(
+            Account(
+                "write_access",
+                "write_access",
+                {collection.id: "modify"},
+                is_admin=False,
+            )
+        )
+        is True
+    )
+
+    # Public
+    collection.is_public = True
+    assert collection.can_write(None) is False
+    collection.is_public_write = True
+    assert collection.can_write(None) is True
