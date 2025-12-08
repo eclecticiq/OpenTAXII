@@ -405,13 +405,13 @@ def test_add_api_root(
     ["argv", "raises", "message", "stdout", "stderr", "expected_call"],
     [
         pytest.param(
-            ["-r", API_ROOTS[0].id, "-t", "my new collection"],  # argv
+            ["-r", str(API_ROOTS[0].id), "-t", "my new collection"],  # argv
             False,  # raises
             None,  # message
             "",  # stdout
             "",  # stderr
             {
-                "api_root_id": API_ROOTS[0].id,
+                "api_root_id": str(API_ROOTS[0].id),
                 "title": "my new collection",
                 "description": None,
                 "alias": None,
@@ -423,7 +423,7 @@ def test_add_api_root(
         pytest.param(
             [
                 "-r",
-                API_ROOTS[0].id,
+                str(API_ROOTS[0].id),
                 "-t",
                 "my new collection",
                 "-d",
@@ -434,7 +434,7 @@ def test_add_api_root(
             "",  # stdout
             "",  # stderr
             {
-                "api_root_id": API_ROOTS[0].id,
+                "api_root_id": str(API_ROOTS[0].id),
                 "title": "my new collection",
                 "description": "my description",
                 "alias": None,
@@ -446,7 +446,7 @@ def test_add_api_root(
         pytest.param(
             [
                 "-r",
-                API_ROOTS[0].id,
+                str(API_ROOTS[0].id),
                 "-t",
                 "my new collection",
                 "-d",
@@ -459,7 +459,7 @@ def test_add_api_root(
             "",  # stdout
             "",  # stderr
             {
-                "api_root_id": API_ROOTS[0].id,
+                "api_root_id": str(API_ROOTS[0].id),
                 "title": "my new collection",
                 "description": "my description",
                 "alias": "my-alias",
@@ -469,13 +469,13 @@ def test_add_api_root(
             id="rootid, title, description, alias",
         ),
         pytest.param(
-            ["-r", API_ROOTS[0].id, "-t", "my new collection", "--public"],  # argv
+            ["-r", str(API_ROOTS[0].id), "-t", "my new collection", "--public"],  # argv
             False,  # raises
             None,  # message
             "",  # stdout
             "",  # stderr
             {
-                "api_root_id": API_ROOTS[0].id,
+                "api_root_id": str(API_ROOTS[0].id),
                 "title": "my new collection",
                 "description": None,
                 "alias": None,
@@ -487,7 +487,7 @@ def test_add_api_root(
         pytest.param(
             [
                 "-r",
-                API_ROOTS[0].id,
+                str(API_ROOTS[0].id),
                 "-t",
                 "my new collection",
                 "--public-write",
@@ -497,7 +497,7 @@ def test_add_api_root(
             "",  # stdout
             "",  # stderr
             {
-                "api_root_id": API_ROOTS[0].id,
+                "api_root_id": str(API_ROOTS[0].id),
                 "title": "my new collection",
                 "description": None,
                 "alias": None,
@@ -560,7 +560,7 @@ def test_add_collection(
     )
     stderr = stderr.replace(
         "ROOTIDS",
-        ",".join([api_root.id for api_root in db_api_roots]),
+        ",".join([str(api_root.id) for api_root in db_api_roots]),
     )
     with (
         mock.patch("opentaxii.cli.persistence.app", app),

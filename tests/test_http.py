@@ -1,9 +1,10 @@
 import pytest
 from libtaxii.constants import ST_BAD_MESSAGE, ST_FAILURE
-from utils import as_tm, is_headers_valid, prepare_headers
 
 from opentaxii.taxii.converters import dict_to_service_entity
 from opentaxii.taxii.http import HTTP_X_TAXII_SERVICES
+
+from .utils import as_tm, is_headers_valid, prepare_headers
 
 INBOX = dict(
     id='inbox-A',
@@ -38,7 +39,7 @@ DISCOVERY_NOT_AVAILABLE = dict(
 )
 
 SERVICES = [INBOX, DISCOVERY, DISCOVERY_NOT_AVAILABLE]
-INSTANCES_CONFIGURED = sum(len(s['protocol_bindings']) for s in SERVICES)
+INSTANCES_CONFIGURED = sum(len(s['protocol_bindings']) for s in SERVICES)  # type: ignore
 MESSAGE_ID = '123'
 
 

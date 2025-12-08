@@ -25,7 +25,7 @@ def create_app(server):
     """
 
     app = Flask(__name__)
-    app.taxii_server = server
+    app.taxii_server = server  # type: ignore[attr-defined]
 
     server.init_app(app)
 

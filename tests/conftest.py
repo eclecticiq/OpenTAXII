@@ -232,8 +232,8 @@ def truncate_app(dbconn):
     app = create_app(context.server)
     app.config["TESTING"] = True
     yield app
-    taxiiserver.servers.taxii1.persistence.api.db.engine.dispose()
-    taxiiserver.servers.taxii2.persistence.api.db.engine.dispose()
+    taxiiserver.servers.taxii1.persistence.api.db.engine.dispose()  # type: ignore[union-attr]
+    taxiiserver.servers.taxii2.persistence.api.db.engine.dispose()  # type: ignore[union-attr]
 
 
 @pytest.fixture()

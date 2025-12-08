@@ -786,7 +786,7 @@ from tests.utils import SKIP
             202,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
-                "id": JOBS[0].id,
+                "id": str(JOBS[0].id),
                 "status": JOBS[0].status,
                 "request_timestamp": taxii2_datetimeformat(JOBS[0].request_timestamp),
                 "total_count": 4,
@@ -1306,7 +1306,7 @@ def test_objects_unauthenticated(
             side_effect=ADD_OBJECTS_MOCK,
         ) as add_objects_mock,
     ):
-        kwargs = {
+        kwargs: dict = {
             "headers": {
                 "Accept": "application/taxii+json;version=2.1",
                 "Content-Type": "application/taxii+json;version=2.1",

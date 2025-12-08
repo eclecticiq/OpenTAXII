@@ -40,7 +40,7 @@ from tests.taxii2.utils import (
             200,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
-                "id": JOBS[0].id,
+                "id": str(JOBS[0].id),
                 "status": JOBS[0].status,
                 "request_timestamp": taxii2_datetimeformat(JOBS[0].request_timestamp),
                 "total_count": 4,
@@ -83,7 +83,7 @@ from tests.taxii2.utils import (
             200,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
-                "id": JOBS[3].id,
+                "id": str(JOBS[3].id),
                 "status": JOBS[3].status,
                 "request_timestamp": taxii2_datetimeformat(JOBS[3].request_timestamp),
                 "total_count": 0,
@@ -103,7 +103,7 @@ from tests.taxii2.utils import (
             200,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
-                "id": JOBS[6].id,
+                "id": str(JOBS[6].id),
                 "status": JOBS[6].status,
                 "request_timestamp": taxii2_datetimeformat(JOBS[6].request_timestamp),
                 "total_count": 6,

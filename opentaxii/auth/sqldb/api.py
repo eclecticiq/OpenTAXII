@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Optional
 
 import jwt
 import structlog
@@ -10,40 +11,41 @@ from opentaxii.entities import Account as AccountEntity
 
 from .models import Account, Base
 
-__all__ = ['SQLDatabaseAPI']
+__all__ = ["SQLDatabaseAPI"]
 
 
 log = structlog.getLogger(__name__)
 
 
 class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIAuthAPI):
-    """Naive SQL database implementation of OpenTAXII Auth API.
-
-    Implementation will work with any DB supported by SQLAlchemy package.
-
-    :param str db_connection: a string that indicates database dialect and
-                          connection arguments that will be passed directly
-                          to :func:`~sqlalchemy.engine.create_engine` method.
-    :param bool create_tables=False: if True, tables will be created in the DB.
-    :param str secret: secret string used for token generation
-    :param int token_ttl_secs: TTL for JWT token, in seconds.
-    :param engine_parameters=None: if defined, these arguments would be passed to sqlalchemy.create_engine
-    """
 
     BASEMODEL = Base
 
     def __init__(
         self,
-        db_connection,
-        create_tables=False,
-        secret=None,
-        token_ttl_secs=None,
+        db_connection: str,
+        create_tables: bool = False,
+        secret: Optional[str] = None,
+        token_ttl_secs: Optional[int] = None,
         **engine_parameters,
     ):
+        """Naive SQL database implementation of OpenTAXII Auth API.
+
+        Implementation will work with any DB supported by SQLAlchemy package.
+
+        :param db_connection: a string that indicates database dialect and
+                            connection arguments that will be passed directly to
+                            :func:`~sqlalchemy.engine.create_engine` method.
+        :param create_tables=False: if True, tables will be created in the DB.
+        :param secret: secret string used for token generation
+        :param token_ttl_secs: TTL for JWT token, in seconds.
+        :param engine_parameters=None: if defined, these arguments would be passed
+            to sqlalchemy.create_engine
+        """
         super().__init__(db_connection, create_tables, **engine_parameters)
         if not secret:
             raise ValueError(
-                'Secret is not defined for %s.%s'
+                "Secret is not defined for %s.%s"
                 % (self.__module__, self.__class__.__name__)
             )
         self.secret = secret
@@ -59,7 +61,9 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIAuthAPI):
         return self._generate_token(account.id, ttl=self.token_ttl_secs)
 
     def create_account(self, username, password, is_admin=False):
-        account = Account(username=username, is_admin=is_admin, permissions={})
+        account = Account(  # type: ignore[misc]
+            username=username, is_admin=is_admin, permissions={}
+        )
         account.set_password(password)
         self.db.session.add(account)
         self.db.session.commit()

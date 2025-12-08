@@ -1,5 +1,11 @@
 import pytest
-from fixtures import (
+from libtaxii import messages_10 as tm10
+from libtaxii import messages_11 as tm11
+from libtaxii.constants import CB_STIX_XML_111, ST_SUCCESS
+
+from opentaxii.taxii import exceptions
+
+from ..fixtures import (
     COLLECTION_ONLY_STIX,
     COLLECTION_OPEN,
     COLLECTIONS_A,
@@ -10,12 +16,7 @@ from fixtures import (
     INVALID_CONTENT_BINDING,
     MESSAGE_ID,
 )
-from libtaxii import messages_10 as tm10
-from libtaxii import messages_11 as tm11
-from libtaxii.constants import CB_STIX_XML_111, ST_SUCCESS
-from utils import as_tm, prepare_headers
-
-from opentaxii.taxii import exceptions
+from ..utils import as_tm, prepare_headers
 
 
 def make_content(
@@ -70,7 +71,7 @@ def prepare_server(server, services):
                     .filter_by(name=coll.name)
                     .one()
                 )
-                service_ids = {s.id for s in coll.services} | {service}
+                service_ids = {s.id for s in coll.services} | {service}  # type:ignore
 
             server.servers.taxii1.persistence.set_collection_services(
                 coll.id, service_ids=service_ids

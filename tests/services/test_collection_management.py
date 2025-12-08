@@ -1,5 +1,8 @@
 import pytest
-from fixtures import (
+
+from opentaxii.taxii import entities
+
+from ..fixtures import (
     COLLECTION_DISABLED,
     COLLECTION_ONLY_STIX,
     COLLECTION_OPEN,
@@ -8,9 +11,7 @@ from fixtures import (
     MESSAGE_ID,
     SERVICES,
 )
-from utils import as_tm, persist_content, prepare_headers
-
-from opentaxii.taxii import entities
+from ..utils import as_tm, persist_content, prepare_headers
 
 ASSIGNED_SERVICES = ['collection-management-A', 'inbox-A', 'inbox-B', 'poll-A']
 

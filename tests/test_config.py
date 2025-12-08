@@ -1,5 +1,6 @@
 import os
 import tempfile
+from typing import Tuple
 
 import pytest
 
@@ -169,7 +170,7 @@ def test_custom_config_file(config_file_name_expected_value):
         deprecation_warning,
         taxii2_only_warning,
     ) = config_file_name_expected_value
-    warning_classes = (UserWarning,)
+    warning_classes: Tuple = (UserWarning,)
     if deprecation_warning or taxii2_only_warning:
         warning_classes += (DeprecationWarning,)
     expected_warnings = {"Ignoring invalid configuration item 'dummy'."}

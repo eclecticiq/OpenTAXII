@@ -1,7 +1,8 @@
 import datetime
 
 import pytest
-from fixtures import COLLECTION_OPEN, COLLECTIONS_A
+
+from .fixtures import COLLECTION_OPEN, COLLECTIONS_A
 
 
 @pytest.mark.parametrize("with_messages", [True, False])

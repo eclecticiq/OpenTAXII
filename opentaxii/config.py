@@ -112,7 +112,7 @@ class ServerConfig(dict):
 
     @classmethod
     def _load_configs(cls, *configs):
-        result = dict()
+        result: dict = dict()
         for config in configs:
             # read content from path-like object
             if not isinstance(config, dict):

@@ -1,4 +1,5 @@
 import datetime
+import uuid
 from typing import Dict, List, Optional, Tuple
 
 from opentaxii.taxii2.entities import (
@@ -32,6 +33,18 @@ class OpenTAXIIPersistenceAPI:
         :return: updated service entity, with ID field not None
         :rtype: :py:class:`opentaxii.taxii.entities.ServiceEntity`
         """
+        raise NotImplementedError()
+
+    def update_service(self, obj):
+        """Update service. To implement in subclass"""
+        raise NotImplementedError()
+
+    def delete_service(self, service_id):
+        """Delete service. To implement in subclass"""
+        raise NotImplementedError()
+
+    def set_collection_services(self, collection_id, service_ids):
+        """Set collection's services. To implement in subclass"""
         raise NotImplementedError()
 
     def create_collection(self, collection_entity):
@@ -273,8 +286,11 @@ class OpenTAXII2PersistenceAPI:
     Stub, pending implementation.
     """
 
+    def init_app(self, app):
+        pass
+
     @staticmethod
-    def get_next_param(self, kwargs: Dict) -> str:
+    def get_next_param(kwargs: Dict) -> str:
         """
         Get value for `next` based on :class:`Dict` instance.
 
@@ -298,23 +314,25 @@ class OpenTAXII2PersistenceAPI:
         """
         raise NotImplementedError
 
-    def get_api_root(self, api_root_id: str) -> Optional[ApiRoot]:
+    def get_api_root(self, api_root_id: uuid.UUID) -> Optional[ApiRoot]:
         raise NotImplementedError
 
-    def get_job_and_details(self, api_root_id: str, job_id: str) -> Optional[Job]:
+    def get_job_and_details(
+        self, api_root_id: uuid.UUID, job_id: uuid.UUID
+    ) -> Optional[Job]:
         raise NotImplementedError
 
-    def get_collections(self, api_root_id: str) -> List[Collection]:
+    def get_collections(self, api_root_id: uuid.UUID) -> List[Collection]:
         raise NotImplementedError
 
     def get_collection(
-        self, api_root_id: str, collection_id_or_alias: str
+        self, api_root_id: uuid.UUID, collection_id_or_alias: str
     ) -> Optional[Collection]:
         raise NotImplementedError
 
     def get_manifest(
         self,
-        collection_id: str,
+        collection_id: uuid.UUID,
         limit: Optional[int] = None,
         added_after: Optional[datetime.datetime] = None,
         next_kwargs: Optional[Dict] = None,
@@ -327,7 +345,7 @@ class OpenTAXII2PersistenceAPI:
 
     def get_objects(
         self,
-        collection_id: str,
+        collection_id: uuid.UUID,
         limit: Optional[int] = None,
         added_after: Optional[datetime.datetime] = None,
         next_kwargs: Optional[Dict] = None,
@@ -339,13 +357,13 @@ class OpenTAXII2PersistenceAPI:
         raise NotImplementedError
 
     def add_objects(
-        self, api_root_id: str, collection_id: str, objects: List[Dict]
+        self, api_root_id: uuid.UUID, collection_id: uuid.UUID, objects: List[Dict]
     ) -> Job:
         raise NotImplementedError
 
     def get_object(
         self,
-        collection_id: str,
+        collection_id: uuid.UUID,
         object_id: str,
         limit: Optional[int] = None,
         added_after: Optional[datetime.datetime] = None,
@@ -362,7 +380,7 @@ class OpenTAXII2PersistenceAPI:
 
     def delete_object(
         self,
-        collection_id: str,
+        collection_id: uuid.UUID,
         object_id: str,
         match_version: Optional[List[str]] = None,
         match_spec_version: Optional[List[str]] = None,
@@ -371,13 +389,13 @@ class OpenTAXII2PersistenceAPI:
 
     def get_versions(
         self,
-        collection_id: str,
+        collection_id: uuid.UUID,
         object_id: str,
         limit: Optional[int] = None,
         added_after: Optional[datetime.datetime] = None,
         next_kwargs: Optional[Dict] = None,
         match_spec_version: Optional[List[str]] = None,
-    ) -> Tuple[List[VersionRecord], bool]:
+    ) -> Tuple[Optional[List[VersionRecord]], bool]:
         """
         Get all versions of single object from database.
 

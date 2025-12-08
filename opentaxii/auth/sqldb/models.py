@@ -28,6 +28,7 @@ class Account(Base):
         self.password_hash = generate_password_hash(password)
 
     def is_password_valid(self, password):
+        assert self.password_hash is not None
         return check_password_hash(self.password_hash, password)
 
     @property

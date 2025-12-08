@@ -24,7 +24,7 @@ from tests.taxii2.utils import (
             200,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
-                "id": COLLECTIONS[0].id,
+                "id": str(COLLECTIONS[0].id),
                 "title": "0Read only",
                 "description": "Read only description",
                 "can_read": True,
@@ -41,7 +41,7 @@ from tests.taxii2.utils import (
             200,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
-                "id": COLLECTIONS[4].id,
+                "id": str(COLLECTIONS[4].id),
                 "title": "4No description",
                 "can_read": True,
                 "can_write": True,
@@ -57,7 +57,7 @@ from tests.taxii2.utils import (
             200,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
-                "id": COLLECTIONS[5].id,
+                "id": str(COLLECTIONS[5].id),
                 "title": "5With alias",
                 "description": "With alias description",
                 "alias": "this-is-an-alias",
@@ -75,7 +75,7 @@ from tests.taxii2.utils import (
             200,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
-                "id": COLLECTIONS[5].id,
+                "id": str(COLLECTIONS[5].id),
                 "title": "5With alias",
                 "description": "With alias description",
                 "alias": "this-is-an-alias",
@@ -314,7 +314,7 @@ def test_add_collection(
         is_public_write=is_public_write,
     )
     assert collection.id is not None
-    assert str(collection.api_root_id) == api_root_id
+    assert collection.api_root_id == api_root_id
     assert collection.title == title
     assert collection.description == description
     assert collection.alias == alias
@@ -327,7 +327,7 @@ def test_add_collection(
         .filter(taxii2models.Collection.id == collection.id)
         .one()
     )
-    assert str(db_collection.api_root_id) == api_root_id
+    assert db_collection.api_root_id == api_root_id
     assert db_collection.title == title
     assert db_collection.description == description
     assert db_collection.alias == alias
