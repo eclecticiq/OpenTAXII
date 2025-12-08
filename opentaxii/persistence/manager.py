@@ -162,7 +162,7 @@ class Taxii1PersistenceManager:
         :rtype: :py:class:`opentaxii.taxii.entities.CollectionEntity`
         """
         collection = self.api.get_collection(name, service_id=service_id)
-        if collection and collection.account.can_read(context.account):
+        if collection and collection.can_read(context.account):
             return collection
 
     def update_collection(self, collection):
