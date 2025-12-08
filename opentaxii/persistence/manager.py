@@ -220,7 +220,7 @@ class Taxii1PersistenceManager:
         collection_ids = [
             collection.id
             for collection in collections
-            if context.account.can_modify(collection.name)
+            if collection.can_modify(context.account)
         ]
 
         if collection_ids:
