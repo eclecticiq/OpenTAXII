@@ -9,8 +9,8 @@ __all__ = ['Base', 'Account']
 Base = declarative_base()
 
 MAX_STR_LEN = 256
-TAXII1_PERMISSIONS = ['read', 'modify']
-TAXII2_PERMISSIONS = set(['read', 'write'])
+TAXII1_PERMISSIONS = ('read', 'modify')
+TAXII2_PERMISSIONS = frozenset(['read', 'write'])
 
 
 class Account(Base):
