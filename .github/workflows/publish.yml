@@ -58,6 +58,10 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: eclecticiq/opentaxii
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=sha
       -
         name: Login to Docker Hub
         if: github.event_name != 'pull_request'
