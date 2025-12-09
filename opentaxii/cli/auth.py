@@ -21,6 +21,7 @@ def create_account(argv=None):
         account = app.taxii_server.auth.api.create_account(
             username=args.username,
             password=args.password,
+            is_admin=args.admin,
         )
         token = app.taxii_server.auth.authenticate(
             username=account.username,

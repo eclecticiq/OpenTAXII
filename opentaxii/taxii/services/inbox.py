@@ -99,7 +99,7 @@ class InboxService(TAXIIService):
         for name in name_list:
             if name in destinations_map:
                 collection = destinations_map[name]
-                if context.account.can_modify(name):
+                if collection.can_modify(context.account):
                     collections.append(collection)
                 else:
                     raise UnauthorizedException(

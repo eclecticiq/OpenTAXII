@@ -70,7 +70,12 @@ from .utils import get_path_and_address, initialize_api
 
 log = structlog.get_logger(__name__)
 
-anonymous_full_access = Account(id=None, username=None, permissions={}, is_admin=True)
+anonymous_full_access = Account(
+    id=None,
+    username="anonymous_full_access",
+    permissions={},
+    is_admin=True,
+)
 
 
 class EndpointFunc(Protocol):

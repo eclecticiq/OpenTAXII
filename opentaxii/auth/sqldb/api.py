@@ -51,16 +51,18 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIAuthAPI):
         self.secret = secret
         self.token_ttl_secs = token_ttl_secs or 60 * 60  # 60min
 
-    def authenticate(self, username, password):
+    def authenticate(self, username: str, password: str) -> str | None:
         try:
             account = self.db.session.query(Account).filter_by(username=username).one()
         except exc.NoResultFound:
-            return
+            return None
         if not account.is_password_valid(password):
-            return
+            return None
         return self._generate_token(account.id, ttl=self.token_ttl_secs)
 
-    def create_account(self, username, password, is_admin=False):
+    def create_account(
+        self, username: str, password: str, is_admin: bool = False
+    ) -> AccountEntity:
         account = Account(  # type: ignore[misc]
             username=username, is_admin=is_admin, permissions={}
         )
@@ -69,16 +71,16 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIAuthAPI):
         self.db.session.commit()
         return account_to_account_entity(account)
 
-    def get_account(self, token):
+    def get_account(self, token: str) -> AccountEntity | None:
         account_id = self._get_account_id(token)
         if not account_id:
-            return
+            return None
         account = self.db.session.query(Account).get(account_id)
         if not account:
-            return
+            return None
         return account_to_account_entity(account)
 
-    def delete_account(self, username):
+    def delete_account(self, username: str):
         account = (
             self.db.session.query(Account).filter_by(username=username).one_or_none()
         )
@@ -92,7 +94,9 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIAuthAPI):
             for account in self.db.session.query(Account).all()
         ]
 
-    def update_account(self, obj, password=None):
+    def update_account(
+        self, obj: AccountEntity, password: str | None = None
+    ) -> AccountEntity:
         account = (
             self.db.session.query(Account)
             .filter_by(username=obj.username)
@@ -130,7 +134,7 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIAuthAPI):
         return payload.get('account_id')
 
 
-def account_to_account_entity(account):
+def account_to_account_entity(account: Account) -> AccountEntity:
     return AccountEntity(
         id=account.id,
         username=account.username,

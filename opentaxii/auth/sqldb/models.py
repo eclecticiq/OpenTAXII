@@ -9,7 +9,8 @@ __all__ = ['Base', 'Account']
 Base = declarative_base()
 
 MAX_STR_LEN = 256
-ALL_PERMISSIONS = ['read', 'modify']
+TAXII1_PERMISSIONS = ('read', 'modify')
+TAXII2_PERMISSIONS = frozenset(['read', 'write'])
 
 
 class Account(Base):
@@ -38,9 +39,16 @@ class Account(Base):
     @permissions.setter
     def permissions(self, permissions):
         for collection_name, permission in permissions.items():
-            if permission not in ALL_PERMISSIONS:
+            if isinstance(permission, list):
+                if not set(permission).issubset(TAXII2_PERMISSIONS):
+                    raise ValueError(
+                        "Unknown TAXII2 permission '{}' specified for collection '{}'".format(
+                            permission, collection_name
+                        )
+                    )
+            elif permission not in TAXII1_PERMISSIONS:
                 raise ValueError(
-                    "Unknown permission '{}' specified for collection '{}'".format(
+                    "Unknown TAXII1 permission '{}' specified for collection '{}'".format(
                         permission, collection_name
                     )
                 )
