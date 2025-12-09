@@ -150,7 +150,7 @@ def test_delete_content_blocks(
 
 
 @pytest.mark.parametrize(
-    ["argv", "raises", "message", "stdout", "stderr"],
+    ["argv", "raises", "message", "stdout", "stderr", "expected_call"],
     [
         pytest.param(
             ["-u", "myuser", "-p", "mypass"],  # argv
@@ -158,7 +158,25 @@ def test_delete_content_blocks(
             None,  # message
             "token: JWT_TOKEN",  # stdout
             "",  # stderr
-            id="good",
+            {  # expected_call
+                "username": "myuser",
+                "password": "mypass",
+                "is_admin": False,
+            },
+            id="regular-user",
+        ),
+        pytest.param(
+            ["-u", "myuser", "-p", "mypass", "-a"],  # argv
+            False,  # raises
+            None,  # message
+            "token: JWT_TOKEN",  # stdout
+            "",  # stderr
+            {  # expected_call
+                "username": "myuser",
+                "password": "mypass",
+                "is_admin": True,
+            },
+            id="admin",
         ),
         pytest.param(
             [],  # argv
@@ -175,12 +193,23 @@ def test_delete_content_blocks(
                     ": error: the following arguments are required: -u/--username, -p/--password",
                 ]
             ),
+            None,  # expected_call
             id="no args",
         ),
     ],
 )
-def test_create_account(app, capsys, argv, raises, message, stdout, stderr):
-    with mock.patch("opentaxii.cli.auth.app", app), mock.patch("sys.argv", [""] + argv):
+def test_create_account(
+    app, capsys, argv, raises, message, stdout, stderr, expected_call
+):
+    with (
+        mock.patch("opentaxii.cli.auth.app", app),
+        mock.patch("sys.argv", [""] + argv),
+        mock.patch.object(
+            app.taxii_server.auth.api,
+            "create_account",
+            wraps=app.taxii_server.auth.api.create_account,
+        ) as mock_create_account,
+    ):
         with conditional_raises(raises) as exception:
             create_account()
         if raises:
@@ -188,6 +217,10 @@ def test_create_account(app, capsys, argv, raises, message, stdout, stderr):
         captured = capsys.readouterr()
         assert_str_equal_no_formatting(captured.out, stdout)
         assert_str_equal_no_formatting(captured.err, stderr)
+        if expected_call is None:
+            mock_create_account.assert_not_called()
+        else:
+            mock_create_account.assert_called_once_with(**expected_call)
 
 
 @pytest.mark.parametrize(
