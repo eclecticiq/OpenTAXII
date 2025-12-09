@@ -1,4 +1,4 @@
-name: Publish to PyPI/github
+name: Publish to PyPI/Docker
 
 on:
   push:
