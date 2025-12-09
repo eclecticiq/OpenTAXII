@@ -13,7 +13,7 @@ authdb:
     POSTGRES_DB: opentaxii1
 
 opentaxii:
-  image: eclecticiq/opentaxii
+  image: eclecticiq/opentaxii:${IMAGE_TAG-latest}
   environment:
     DOCKER_OPENTAXII_AUTH_SECRET: secret
     OPENTAXII_DOMAIN: 192.168.59.103:9000
@@ -34,7 +34,7 @@ opentaxii:
     - authdb:authdb
 
 opentaxii2:
-  image: eclecticiq/opentaxii
+  image: eclecticiq/opentaxii:${IMAGE_TAG-latest}
   environment:
     DOCKER_OPENTAXII_AUTH_SECRET: secrettwo
     OPENTAXII_DOMAIN: 192.168.59.103
