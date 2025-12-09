@@ -137,7 +137,7 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIAuthAPI):
 def account_to_account_entity(account: Account) -> AccountEntity:
     return AccountEntity(
         id=account.id,
-        username=account.username,
+        username=account.username,  # type: ignore[arg-type]
         is_admin=account.is_admin,
         permissions=account.permissions,
     )
