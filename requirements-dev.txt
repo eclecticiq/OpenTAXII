@@ -1,8 +1,13 @@
 -r requirements.txt
-pytest-cov
-pytest>=4.6
-pytest-pythonpath
+-r requirements-test.txt
 flake8
 ipdb
+mypy==1.19.0
+types-six==1.17.0.20251009
+sqlalchemy-stubs==0.4
+types-PyYAML==6.0.12.20250915
+types-pytz==2025.2.0.20251108
 factory-boy>=3.2.1
+black==25.11.0
+isort==7.0.0
 -r requirements-interrogate.txt

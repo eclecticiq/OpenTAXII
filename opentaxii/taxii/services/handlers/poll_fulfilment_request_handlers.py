@@ -1,10 +1,7 @@
 import libtaxii.messages_11 as tm11
-from libtaxii.constants import (
-    ST_NOT_FOUND, SD_ITEM
-)
+from libtaxii.constants import SD_ITEM, ST_NOT_FOUND
 
 from ...exceptions import StatusMessageException, raise_failure
-
 from .base_handlers import BaseMessageHandler
 from .poll_request_handlers import PollRequest11Handler, retrieve_collection
 
@@ -25,13 +22,15 @@ class PollFulfilmentRequest11Handler(BaseMessageHandler):
         result_set = service.get_result_set(result_id)
 
         collection = retrieve_collection(
-            11, service, collection_name, in_response_to=request.message_id)
+            11, service, collection_name, in_response_to=request.message_id
+        )
 
         if not result_set or result_set.collection_id != collection.id:
             raise StatusMessageException(
                 ST_NOT_FOUND,
                 in_response_to=request.message_id,
-                status_details={SD_ITEM: result_id})
+                status_details={SD_ITEM: result_id},
+            )
 
         response = PollRequest11Handler.prepare_poll_response(
             service=service,
@@ -42,7 +41,8 @@ class PollFulfilmentRequest11Handler(BaseMessageHandler):
             result_part=part_number,
             allow_async=True,
             return_content=True,
-            result_id=result_id)
+            result_id=result_id,
+        )
         return response
 
 
@@ -60,5 +60,6 @@ class PollFulfilmentRequestHandler(BaseMessageHandler):
                 service=service,
                 request=request,
             )
-        raise_failure("TAXII Message not supported by message handler",
-                      request.message_id)
+        raise_failure(
+            "TAXII Message not supported by message handler", request.message_id
+        )

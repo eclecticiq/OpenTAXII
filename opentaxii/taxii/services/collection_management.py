@@ -1,39 +1,34 @@
 from libtaxii.constants import (
-    SVC_COLLECTION_MANAGEMENT,
-    MSG_COLLECTION_INFORMATION_REQUEST, MSG_FEED_INFORMATION_REQUEST,
+    MSG_COLLECTION_INFORMATION_REQUEST,
+    MSG_FEED_INFORMATION_REQUEST,
     MSG_MANAGE_COLLECTION_SUBSCRIPTION_REQUEST,
     MSG_MANAGE_FEED_SUBSCRIPTION_REQUEST,
+    SVC_COLLECTION_MANAGEMENT,
 )
 
 from .abstract import TAXIIService
-from .handlers import (
-    CollectionInformationRequestHandler,
-    SubscriptionRequestHandler
-)
+from .handlers import CollectionInformationRequestHandler, SubscriptionRequestHandler
 
 
 class CollectionManagementService(TAXIIService):
 
     handlers = {
-        MSG_COLLECTION_INFORMATION_REQUEST:
-            CollectionInformationRequestHandler,
-        MSG_FEED_INFORMATION_REQUEST:
-            CollectionInformationRequestHandler,
+        MSG_COLLECTION_INFORMATION_REQUEST: CollectionInformationRequestHandler,
+        MSG_FEED_INFORMATION_REQUEST: CollectionInformationRequestHandler,
     }
 
     subscription_handlers = {
-        MSG_MANAGE_COLLECTION_SUBSCRIPTION_REQUEST:
-            SubscriptionRequestHandler,
-        MSG_MANAGE_FEED_SUBSCRIPTION_REQUEST:
-            SubscriptionRequestHandler
+        MSG_MANAGE_COLLECTION_SUBSCRIPTION_REQUEST: SubscriptionRequestHandler,
+        MSG_MANAGE_FEED_SUBSCRIPTION_REQUEST: SubscriptionRequestHandler,
     }
     service_type = SVC_COLLECTION_MANAGEMENT
 
     subscription_message = "Default subscription message"
     subscription_supported = True
 
-    def __init__(self, subscription_supported=True, subscription_message=None,
-                 **kwargs):
+    def __init__(
+        self, subscription_supported=True, subscription_message=None, **kwargs
+    ):
         super(CollectionManagementService, self).__init__(**kwargs)
 
         self.subscription_message = subscription_message
@@ -41,8 +36,7 @@ class CollectionManagementService(TAXIIService):
 
         if self.subscription_supported:
             self.handlers = dict(CollectionManagementService.handlers)
-            self.handlers.update(
-                CollectionManagementService.subscription_handlers)
+            self.handlers.update(CollectionManagementService.subscription_handlers)
 
     @property
     def advertised_collections(self):
@@ -61,7 +55,8 @@ class CollectionManagementService(TAXIIService):
     def get_subscription_services(self, collection):
         services = []
         all_services = self.server.get_services_for_collection(
-            collection, 'collection_management')
+            collection, 'collection_management'
+        )
         for s in all_services:
             if s.subscription_supported:
                 services.append(s)

@@ -1,4 +1,3 @@
-
 from opentaxii.cli import app
 
 

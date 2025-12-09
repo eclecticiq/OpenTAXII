@@ -2,11 +2,15 @@ import os
 from unittest import mock
 
 import pytest
-from opentaxii.cli.auth import create_account, update_account
-from opentaxii.cli.persistence import (add_api_root, add_collection,
-                                       delete_content_blocks, job_cleanup,
-                                       sync_data_configuration)
 
+from opentaxii.cli.auth import create_account, update_account
+from opentaxii.cli.persistence import (
+    add_api_root,
+    add_collection,
+    delete_content_blocks,
+    job_cleanup,
+    sync_data_configuration,
+)
 from tests.fixtures import ACCOUNT, COLLECTION_OPEN
 from tests.taxii2.utils import API_ROOTS
 from tests.utils import assert_str_equal_no_formatting, conditional_raises
@@ -77,8 +81,9 @@ from tests.utils import assert_str_equal_no_formatting, conditional_raises
     ],
 )
 def test_sync_data_configuration(app, capsys, argv, raises, message, stdout, stderr):
-    with mock.patch("opentaxii.cli.persistence.app", app), mock.patch(
-        "sys.argv", [""] + argv
+    with (
+        mock.patch("opentaxii.cli.persistence.app", app),
+        mock.patch("sys.argv", [""] + argv),
     ):
         with conditional_raises(raises) as exception:
             sync_data_configuration()
@@ -131,8 +136,9 @@ def test_sync_data_configuration(app, capsys, argv, raises, message, stdout, std
 def test_delete_content_blocks(
     app, collections, capsys, argv, raises, message, stdout, stderr
 ):
-    with mock.patch("opentaxii.cli.persistence.app", app), mock.patch(
-        "sys.argv", [""] + argv
+    with (
+        mock.patch("opentaxii.cli.persistence.app", app),
+        mock.patch("sys.argv", [""] + argv),
     ):
         with conditional_raises(raises) as exception:
             delete_content_blocks()
@@ -254,6 +260,8 @@ def test_update_account(app, account, capsys, argv, raises, message, stdout, std
                 "title": "my new api root",
                 "description": None,
                 "default": False,
+                "is_public": False,
+                "api_root_id": None,
             },  # expected_call
             id="title only",
         ),
@@ -267,6 +275,8 @@ def test_update_account(app, account, capsys, argv, raises, message, stdout, std
                 "title": "my new api root",
                 "description": "my description",
                 "default": False,
+                "is_public": False,
+                "api_root_id": None,
             },  # expected_call
             id="title, description",
         ),
@@ -280,6 +290,8 @@ def test_update_account(app, account, capsys, argv, raises, message, stdout, std
                 "title": "my new api root",
                 "description": None,
                 "default": True,
+                "is_public": False,
+                "api_root_id": None,
             },  # expected_call
             id="title, default",
         ),
@@ -293,8 +305,54 @@ def test_update_account(app, account, capsys, argv, raises, message, stdout, std
                 "title": "my new api root",
                 "description": "my description",
                 "default": True,
+                "is_public": False,
+                "api_root_id": None,
             },  # expected_call
             id="title, description, default",
+        ),
+        pytest.param(
+            ["-t", "my new api root", "--public"],  # argv
+            False,  # raises
+            None,  # message
+            "",  # stdout
+            "",  # stderr
+            {
+                "title": "my new api root",
+                "description": None,
+                "default": False,
+                "is_public": True,
+                "api_root_id": None,
+            },  # expected_call
+            id="title, public",
+        ),
+        pytest.param(
+            [
+                "-t",
+                "my new api root",
+                "--id",
+                "7468eafb-585d-402e-b6b9-49fe76492f9e",
+            ],  # argv
+            False,  # raises
+            None,  # message
+            "",  # stdout
+            "",  # stderr
+            {
+                "title": "my new api root",
+                "description": None,
+                "default": False,
+                "is_public": False,
+                "api_root_id": "7468eafb-585d-402e-b6b9-49fe76492f9e",
+            },  # expected_call
+            id="title, id",
+        ),
+        pytest.param(
+            ["-t", "my new api root", "--id", "7468eafb-585d-402e-b6b9"],  # argv
+            ValueError,  # raises
+            "badly formed hexadecimal UUID string",  # message
+            "",  # stdout
+            "",  # stderr
+            None,  # expected_call
+            id="title, id (bad)",
         ),
         pytest.param(
             [],  # argv
@@ -308,6 +366,8 @@ def test_update_account(app, account, capsys, argv, raises, message, stdout, std
                     "-t TITLE",
                     "[-d DESCRIPTION]",
                     "[--default]",
+                    "[--public]",
+                    "[-i ID]",
                     ": error: the following arguments are required: -t/--title",
                 ]
             ),
@@ -319,11 +379,15 @@ def test_update_account(app, account, capsys, argv, raises, message, stdout, std
 def test_add_api_root(
     app, capsys, argv, raises, message, stdout, stderr, expected_call
 ):
-    with mock.patch("opentaxii.cli.persistence.app", app), mock.patch(
-        "sys.argv", [""] + argv
-    ), mock.patch.object(
-        app.taxii_server.servers.taxii2.persistence.api, "add_api_root"
-    ) as mock_add_api_root:
+    with (
+        mock.patch("opentaxii.cli.persistence.app", app),
+        mock.patch("sys.argv", [""] + argv),
+        mock.patch.object(
+            app.taxii_server.servers.taxii2.persistence.api,
+            "add_api_root",
+            autospec=True,
+        ) as mock_add_api_root,
+    ):
         with conditional_raises(raises) as exception:
             add_api_root()
         if raises:
@@ -341,13 +405,13 @@ def test_add_api_root(
     ["argv", "raises", "message", "stdout", "stderr", "expected_call"],
     [
         pytest.param(
-            ["-r", API_ROOTS[0].id, "-t", "my new collection"],  # argv
+            ["-r", str(API_ROOTS[0].id), "-t", "my new collection"],  # argv
             False,  # raises
             None,  # message
             "",  # stdout
             "",  # stderr
             {
-                "api_root_id": API_ROOTS[0].id,
+                "api_root_id": str(API_ROOTS[0].id),
                 "title": "my new collection",
                 "description": None,
                 "alias": None,
@@ -359,7 +423,7 @@ def test_add_api_root(
         pytest.param(
             [
                 "-r",
-                API_ROOTS[0].id,
+                str(API_ROOTS[0].id),
                 "-t",
                 "my new collection",
                 "-d",
@@ -370,7 +434,7 @@ def test_add_api_root(
             "",  # stdout
             "",  # stderr
             {
-                "api_root_id": API_ROOTS[0].id,
+                "api_root_id": str(API_ROOTS[0].id),
                 "title": "my new collection",
                 "description": "my description",
                 "alias": None,
@@ -382,7 +446,7 @@ def test_add_api_root(
         pytest.param(
             [
                 "-r",
-                API_ROOTS[0].id,
+                str(API_ROOTS[0].id),
                 "-t",
                 "my new collection",
                 "-d",
@@ -395,7 +459,7 @@ def test_add_api_root(
             "",  # stdout
             "",  # stderr
             {
-                "api_root_id": API_ROOTS[0].id,
+                "api_root_id": str(API_ROOTS[0].id),
                 "title": "my new collection",
                 "description": "my description",
                 "alias": "my-alias",
@@ -405,13 +469,13 @@ def test_add_api_root(
             id="rootid, title, description, alias",
         ),
         pytest.param(
-            ["-r", API_ROOTS[0].id, "-t", "my new collection", "--public"],  # argv
+            ["-r", str(API_ROOTS[0].id), "-t", "my new collection", "--public"],  # argv
             False,  # raises
             None,  # message
             "",  # stdout
             "",  # stderr
             {
-                "api_root_id": API_ROOTS[0].id,
+                "api_root_id": str(API_ROOTS[0].id),
                 "title": "my new collection",
                 "description": None,
                 "alias": None,
@@ -421,13 +485,19 @@ def test_add_api_root(
             id="rootid, titlei, public",
         ),
         pytest.param(
-            ["-r", API_ROOTS[0].id, "-t", "my new collection", "--public-write"],  # argv
+            [
+                "-r",
+                str(API_ROOTS[0].id),
+                "-t",
+                "my new collection",
+                "--public-write",
+            ],  # argv
             False,  # raises
             None,  # message
             "",  # stdout
             "",  # stderr
             {
-                "api_root_id": API_ROOTS[0].id,
+                "api_root_id": str(API_ROOTS[0].id),
                 "title": "my new collection",
                 "description": None,
                 "alias": None,
@@ -490,13 +560,15 @@ def test_add_collection(
     )
     stderr = stderr.replace(
         "ROOTIDS",
-        ",".join([api_root.id for api_root in db_api_roots]),
+        ",".join([str(api_root.id) for api_root in db_api_roots]),
     )
-    with mock.patch("opentaxii.cli.persistence.app", app), mock.patch(
-        "sys.argv", [""] + argv
-    ), mock.patch.object(
-        app.taxii_server.servers.taxii2.persistence.api, "add_collection"
-    ) as mock_add_collection:
+    with (
+        mock.patch("opentaxii.cli.persistence.app", app),
+        mock.patch("sys.argv", [""] + argv),
+        mock.patch.object(
+            app.taxii_server.servers.taxii2.persistence.api, "add_collection"
+        ) as mock_add_collection,
+    ):
         with conditional_raises(raises) as exception:
             add_collection()
         if raises:
@@ -511,9 +583,14 @@ def test_add_collection(
 
 
 def test_job_cleanup(app, capsys):
-    with mock.patch("opentaxii.cli.persistence.app", app), mock.patch.object(
-            app.taxii_server.servers.taxii2.persistence.api, "job_cleanup", return_value=2
-    ) as mock_cleanup:
+    with (
+        mock.patch("opentaxii.cli.persistence.app", app),
+        mock.patch.object(
+            app.taxii_server.servers.taxii2.persistence.api,
+            "job_cleanup",
+            return_value=2,
+        ) as mock_cleanup,
+    ):
         job_cleanup()
         mock_cleanup.assert_called_once_with()
         captured = capsys.readouterr()

@@ -3,9 +3,11 @@ Changelog
 
 0.10.0 (unreleased)
 -------------------
-* Drop EOL Python 3.6 and 3.7 support
+* Drop EOL Python 3.6, 3.7, 3.8 and 3.9 support
 * Add Python 3.11 support
 * Remove mypy_extensions dependency
+* Fix returned "spec_version" was equal to the "type" #237 (@meetghodasara-crest)
+* Add --public and --id params to the CLI opentaxii-add-api-root #283
 
 0.9.3 (2022-10-11)
 ------------------

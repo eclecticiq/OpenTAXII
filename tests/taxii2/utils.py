@@ -1,37 +1,43 @@
 import base64
 import datetime
-from typing import Dict, List, Optional
-from uuid import uuid4
+from typing import Dict, List, Optional, Tuple
+from uuid import UUID, uuid4
 
 from opentaxii.server import ServerMapping
-from opentaxii.taxii2.entities import (ApiRoot, Collection, Job, JobDetail,
-                                       ManifestRecord, STIXObject,
-                                       VersionRecord)
+from opentaxii.taxii2.entities import (
+    ApiRoot,
+    Collection,
+    Job,
+    JobDetail,
+    ManifestRecord,
+    STIXObject,
+    VersionRecord,
+)
 from opentaxii.taxii2.utils import DATETIMEFORMAT, taxii2_datetimeformat
 
 API_ROOTS_WITH_DEFAULT = (
-    ApiRoot(str(uuid4()), True, "first title", "first description", False),
-    ApiRoot(str(uuid4()), False, "second title", "second description", True),
+    ApiRoot(uuid4(), True, "first title", "first description", False),
+    ApiRoot(uuid4(), False, "second title", "second description", True),
 )
 API_ROOTS_WITHOUT_DEFAULT = (
-    ApiRoot(str(uuid4()), False, "first title", "first description", False),
-    ApiRoot(str(uuid4()), False, "second title", "second description", True),
-    ApiRoot(str(uuid4()), False, "third title", None, False),
+    ApiRoot(uuid4(), False, "first title", "first description", False),
+    ApiRoot(uuid4(), False, "second title", "second description", True),
+    ApiRoot(uuid4(), False, "third title", None, False),
 )
 API_ROOTS = API_ROOTS_WITHOUT_DEFAULT
 NOW = datetime.datetime.now(datetime.timezone.utc)
-JOBS = tuple()
+JOBS: Tuple[Job, ...] = tuple()
 for api_root in API_ROOTS:
     JOBS = JOBS + (
         Job(
-            str(uuid4()),
+            uuid4(),
             api_root.id,
             "complete",
             NOW,
             NOW - datetime.timedelta(hours=24, minutes=1),
         ),
         Job(
-            str(uuid4()),
+            uuid4(),
             api_root.id,
             "pending",
             NOW,
@@ -40,7 +46,7 @@ for api_root in API_ROOTS:
     )
 JOBS = JOBS + (
     Job(
-        str(uuid4()),
+        uuid4(),
         API_ROOTS[0].id,
         "pending",
         NOW,
@@ -55,7 +61,7 @@ JOBS = JOBS + (
 JOBS[0].details.success.extend(
     [
         JobDetail(
-            id=str(uuid4()),
+            id=uuid4(),
             job_id=JOBS[0].id,
             stix_id="indicator--c410e480-e42b-47d1-9476-85307c12bcbf",
             version=datetime.datetime.strptime(
@@ -70,7 +76,7 @@ JOBS[0].success_count = 1
 JOBS[0].details.failure.extend(
     [
         JobDetail(
-            id=str(uuid4()),
+            id=uuid4(),
             job_id=JOBS[0].id,
             stix_id="malware--664fa29d-bf65-4f28-a667-bdb76f29ec98",
             version=datetime.datetime.strptime(
@@ -85,7 +91,7 @@ JOBS[0].failure_count = 1
 JOBS[0].details.pending.extend(
     [
         JobDetail(
-            id=str(uuid4()),
+            id=uuid4(),
             job_id=JOBS[0].id,
             stix_id="indicator--252c7c11-daf2-42bd-843b-be65edca9f61",
             version=datetime.datetime.strptime(
@@ -95,7 +101,7 @@ JOBS[0].details.pending.extend(
             status="pending",
         ),
         JobDetail(
-            id=str(uuid4()),
+            id=uuid4(),
             job_id=JOBS[0].id,
             stix_id="relationship--045585ad-a22f-4333-af33-bfd503a683b5",
             version=datetime.datetime.strptime(
@@ -111,7 +117,7 @@ JOBS[0].total_count = 4
 
 COLLECTIONS = (
     Collection(
-        str(uuid4()),
+        uuid4(),
         API_ROOTS[0].id,
         "0Read only",
         "Read only description",
@@ -120,7 +126,7 @@ COLLECTIONS = (
         False,
     ),
     Collection(
-        str(uuid4()),
+        uuid4(),
         API_ROOTS[0].id,
         "1Write only",
         "Write only description",
@@ -129,7 +135,7 @@ COLLECTIONS = (
         False,
     ),
     Collection(
-        str(uuid4()),
+        uuid4(),
         API_ROOTS[0].id,
         "2Read/Write",
         "Read/Write description",
@@ -138,7 +144,7 @@ COLLECTIONS = (
         False,
     ),
     Collection(
-        str(uuid4()),
+        uuid4(),
         API_ROOTS[0].id,
         "3No permissions",
         "No permissions description",
@@ -146,9 +152,9 @@ COLLECTIONS = (
         False,
         False,
     ),
-    Collection(str(uuid4()), API_ROOTS[0].id, "4No description", "", None, False, False),
+    Collection(uuid4(), API_ROOTS[0].id, "4No description", "", None, False, False),
     Collection(
-        str(uuid4()),
+        uuid4(),
         API_ROOTS[0].id,
         "5With alias",
         "With alias description",
@@ -157,7 +163,7 @@ COLLECTIONS = (
         False,
     ),
     Collection(
-        str(uuid4()),
+        uuid4(),
         API_ROOTS[0].id,
         "6Public",
         "public description",
@@ -166,7 +172,7 @@ COLLECTIONS = (
         False,
     ),
     Collection(
-        str(uuid4()),
+        uuid4(),
         API_ROOTS[0].id,
         "7Publicwrite",
         "public write description",
@@ -175,7 +181,7 @@ COLLECTIONS = (
         True,
     ),
 )
-STIX_OBJECTS = (
+STIX_OBJECTS: tuple[STIXObject, ...] = (
     STIXObject(
         f"indicator--{str(uuid4())}",
         COLLECTIONS[5].id,
@@ -280,7 +286,7 @@ STIX_OBJECTS = STIX_OBJECTS + (
 def process_match_version(match_version):
     if match_version is None:
         match_version = ["last"]
-    versions_per_id = {}
+    versions_per_id: dict = {}
     for stix_obj in STIX_OBJECTS:
         if stix_obj.id not in versions_per_id:
             versions_per_id[stix_obj.id] = []
@@ -303,14 +309,14 @@ def process_match_version(match_version):
     return id_version_combos
 
 
-def GET_API_ROOT_MOCK(api_root_id):
+def GET_API_ROOT_MOCK(api_root_id: UUID):
     for api_root in API_ROOTS:
         if api_root.id == api_root_id:
             return api_root
     return None
 
 
-def GET_JOB_AND_DETAILS_MOCK(api_root_id, job_id):
+def GET_JOB_AND_DETAILS_MOCK(api_root_id: UUID, job_id: UUID):
     job_response = None
     for job in JOBS:
         if job.api_root_id == api_root_id and job.id == job_id:
@@ -319,7 +325,7 @@ def GET_JOB_AND_DETAILS_MOCK(api_root_id, job_id):
     return job_response
 
 
-def GET_COLLECTIONS_MOCK(api_root_id):
+def GET_COLLECTIONS_MOCK(api_root_id: UUID):
     response = []
     for collection in COLLECTIONS:
         if collection.api_root_id == api_root_id:
@@ -327,10 +333,10 @@ def GET_COLLECTIONS_MOCK(api_root_id):
     return response
 
 
-def GET_COLLECTION_MOCK(api_root_id, collection_id_or_alias):
+def GET_COLLECTION_MOCK(api_root_id: UUID, collection_id_or_alias: str):
     for collection in COLLECTIONS:
         if collection.api_root_id == api_root_id and (
-            collection.id == collection_id_or_alias
+            str(collection.id) == collection_id_or_alias
             or collection.alias == collection_id_or_alias
         ):
             return collection
@@ -344,7 +350,7 @@ def STIX_OBJECT_FROM_MANIFEST(stix_id):
 
 
 def GET_MANIFEST_MOCK(
-    collection_id: str,
+    collection_id: UUID,
     limit: Optional[int] = None,
     added_after: Optional[datetime.datetime] = None,
     next_kwargs: Optional[Dict] = None,
@@ -377,7 +383,7 @@ def GET_NEXT_PARAM(kwargs: Dict) -> str:
 
 
 def GET_OBJECTS_MOCK(
-    collection_id: str,
+    collection_id: UUID,
     limit: Optional[int] = None,
     added_after: Optional[datetime.datetime] = None,
     next_kwargs: Optional[Dict] = None,
@@ -387,7 +393,7 @@ def GET_OBJECTS_MOCK(
     match_spec_version: Optional[List[str]] = None,
 ):
     id_version_combos = process_match_version(match_version)
-    response = []
+    response: List = []
     more = False
     for stix_object in STIX_OBJECTS:
         if (
@@ -426,7 +432,7 @@ def GET_OBJECTS_MOCK(
 
 
 def GET_OBJECT_MOCK(
-    collection_id: str,
+    collection_id: UUID,
     object_id: str,
     limit: Optional[int] = None,
     added_after: Optional[datetime.datetime] = None,
@@ -435,7 +441,7 @@ def GET_OBJECT_MOCK(
     match_spec_version: Optional[List[str]] = None,
 ):
     id_version_combos = process_match_version(match_version)
-    response = []
+    response: List = []
     more = False
     at_least_one = False
     for stix_object in STIX_OBJECTS:
@@ -471,16 +477,16 @@ def GET_OBJECT_MOCK(
     else:
         next_param = None
     if not at_least_one:
-        response = None
+        response = None  # type: ignore[assignment]
     return response, more, next_param
 
 
-def ADD_OBJECTS_MOCK(api_root_id: str, collection_id: str, objects: List[Dict]):
+def ADD_OBJECTS_MOCK(api_root_id: UUID, collection_id: str, objects: List[Dict]):
     return JOBS[0]
 
 
 def DELETE_OBJECT_MOCK(
-    collection_id: str,
+    collection_id: UUID,
     object_id: str,
     match_version: Optional[List[str]] = None,
     match_spec_version: Optional[List[str]] = None,
@@ -489,7 +495,7 @@ def DELETE_OBJECT_MOCK(
 
 
 def GET_VERSIONS_MOCK(
-    collection_id: str,
+    collection_id: UUID,
     object_id: str,
     limit: Optional[int] = None,
     added_after: Optional[datetime.datetime] = None,
@@ -506,9 +512,11 @@ def GET_VERSIONS_MOCK(
         match_version=["all"],
     )
     return (
-        [VersionRecord(obj.date_added, obj.version) for obj in versions]
-        if versions is not None
-        else None,
+        (
+            [VersionRecord(obj.date_added, obj.version) for obj in versions]
+            if versions is not None
+            else None
+        ),
         more,
     )
 

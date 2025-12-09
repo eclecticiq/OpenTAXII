@@ -2,6 +2,7 @@ import json
 import platform
 
 import pytest
+
 from opentaxii.taxii2.exceptions import ValidationError
 from opentaxii.taxii2.validation import validate_envelope
 from tests.utils import conditional

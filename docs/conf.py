@@ -13,8 +13,9 @@
 # serve to show the default.
 
 import datetime
-import sys
 import os
+import sys
+
 import sphinx_rtd_theme
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -35,7 +36,6 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.extlinks',
     'sphinx_rtd_theme',
-    'sphinx_search.extension',
     ]
 
 # Add any paths that contain templates here, relative to this directory.
