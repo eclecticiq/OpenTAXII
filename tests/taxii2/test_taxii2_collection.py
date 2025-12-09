@@ -192,11 +192,11 @@ def test_collection(
             authenticated_client.account,
             "permissions",
             {
-                COLLECTIONS[0].id: ["read"],
-                COLLECTIONS[1].id: ["write"],
-                COLLECTIONS[2].id: ["read", "write"],
-                COLLECTIONS[4].id: ["read", "write"],
-                COLLECTIONS[5].id: ["write"],
+                str(COLLECTIONS[0].id): ["read"],
+                str(COLLECTIONS[1].id): ["write"],
+                str(COLLECTIONS[2].id): ["read", "write"],
+                str(COLLECTIONS[4].id): ["read", "write"],
+                str(COLLECTIONS[5].id): ["write"],
             },
         ),
     ):
