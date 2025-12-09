@@ -10,6 +10,7 @@ from libtaxii.constants import (
 )
 
 from opentaxii.common.entities import Entity
+from opentaxii.entities import Account
 
 from .utils import is_content_supported
 
@@ -146,6 +147,15 @@ class CollectionEntity(Entity):
                 )
 
         return overlap
+
+    def can_read(self, account: Account):
+        return account.is_admin or account.permissions.get(self.name) in (
+            'read',
+            'modify',
+        )
+
+    def can_modify(self, account: Account):
+        return account.is_admin or account.permissions.get(self.name) == 'modify'
 
     def __repr__(self):
         return "CollectionEntity(name={}, type={}, supported_content={})".format(
