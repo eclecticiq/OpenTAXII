@@ -14,7 +14,7 @@ from opentaxii.common.sqldb import BaseSQLDatabaseAPI
 from opentaxii.persistence import OpenTAXII2PersistenceAPI, OpenTAXIIPersistenceAPI
 from opentaxii.persistence.sqldb import taxii2models
 from opentaxii.taxii2 import entities
-from opentaxii.taxii2.utils import DATETIMEFORMAT
+from opentaxii.taxii2.utils import get_object_version
 
 from . import converters as conv
 from .models import (
@@ -1005,9 +1005,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         self.db.session.commit()
         job_details = []
         for obj in objects:
-            version = datetime.datetime.strptime(
-                obj["modified"], DATETIMEFORMAT
-            ).replace(tzinfo=datetime.timezone.utc)
+            version = get_object_version(obj)
             if (
                 not self.db.session.query(literal(True))
                 .filter(

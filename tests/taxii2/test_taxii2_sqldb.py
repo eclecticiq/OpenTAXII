@@ -6,7 +6,7 @@ import pytest
 from opentaxii.persistence.sqldb.api import Taxii2SQLDatabaseAPI
 from opentaxii.persistence.sqldb.taxii2models import Job, JobDetail, STIXObject
 from opentaxii.taxii2 import entities
-from opentaxii.taxii2.utils import DATETIMEFORMAT
+from opentaxii.taxii2.utils import get_object_version
 from tests.taxii2.utils import (
     API_ROOTS,
     API_ROOTS_WITH_DEFAULT,
@@ -794,7 +794,37 @@ def test_get_objects(
                     "valid_from": "2016-01-01T00:00:00Z",
                 }
             ],  # objects
-            id="single object",
+            id="single-object-version-modified",
+        ),
+        pytest.param(
+            API_ROOTS[0].id,  # api_root_id
+            COLLECTIONS[5].id,  # collection_id
+            [
+                {
+                    "definition": {
+                        "statement": "Copyright 2015-2025, The MITRE Corporation. [...]"
+                    },
+                    "id": "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168",
+                    "type": "marking-definition",
+                    "created": "2017-06-01T00:00:00.000Z",
+                    "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+                    "definition_type": "statement",
+                    "spec_version": "2.1",
+                }
+            ],  # objects
+            id="single-object-version-created",
+        ),
+        pytest.param(
+            API_ROOTS[0].id,  # api_root_id
+            COLLECTIONS[5].id,  # collection_id
+            [
+                {
+                    "type": "x-no-version",
+                    "id": "x-no-version--5e113376-8a13-432d-b711-92f566ebbd92",
+                    "spec_version": "2.1",
+                }
+            ],  # objects
+            id="single-object-version-created",
         ),
         pytest.param(
             API_ROOTS[0].id,  # api_root_id
@@ -869,9 +899,7 @@ def test_add_objects(
                     id=job_detail.id,
                     job_id=job.id,
                     stix_id=obj["id"],
-                    version=datetime.datetime.strptime(
-                        obj["modified"], DATETIMEFORMAT
-                    ).replace(tzinfo=datetime.timezone.utc),
+                    version=get_object_version(obj),
                     message="",
                     status="success",
                 )
@@ -894,10 +922,7 @@ def test_add_objects(
             taxii2_sqldb_api.db.session.query(STIXObject)
             .filter(
                 STIXObject.id == obj["id"],
-                STIXObject.version
-                == datetime.datetime.strptime(obj["modified"], DATETIMEFORMAT).replace(
-                    tzinfo=datetime.timezone.utc
-                ),
+                STIXObject.version == get_object_version(obj),
             )
             .one()
         )
@@ -906,9 +931,7 @@ def test_add_objects(
         assert db_obj.type == obj["type"]
         assert db_obj.spec_version == obj["spec_version"]
         assert isinstance(db_obj.date_added, datetime.datetime)
-        assert db_obj.version == datetime.datetime.strptime(
-            obj["modified"], DATETIMEFORMAT
-        ).replace(tzinfo=datetime.timezone.utc)
+        assert db_obj.version == get_object_version(obj)
         assert db_obj.serialized_data == {
             key: value
             for (key, value) in obj.items()
@@ -921,9 +944,7 @@ def test_add_objects(
         )
         assert db_job_detail.job_id == db_job.id
         assert db_job_detail.stix_id == obj["id"]
-        assert db_job_detail.version == datetime.datetime.strptime(
-            obj["modified"], DATETIMEFORMAT
-        ).replace(tzinfo=datetime.timezone.utc)
+        assert db_job_detail.version == get_object_version(obj)
         assert db_job_detail.message == ""
         assert db_job_detail.status == "success"
 
