@@ -816,7 +816,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
                         VersionSTIXObject.collection_id == collection_id,
                         VersionSTIXObject.id == taxii2models.STIXObject.id,
                     )
-                    .group_by(VersionSTIXObject.id)
+                    .group_by(VersionSTIXObject.pk)
                     .correlate(taxii2models.STIXObject)  # type: ignore[arg-type]
                     .subquery('object_min_version')  # type: ignore[attr-defined]
                 )
@@ -841,7 +841,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
                         VersionSTIXObject.collection_id == collection_id,
                         VersionSTIXObject.id == taxii2models.STIXObject.id,
                     )
-                    .group_by(VersionSTIXObject.id)
+                    .group_by(VersionSTIXObject.pk)
                     .correlate(taxii2models.STIXObject)  # type: ignore[arg-type]
                     .subquery('object_max_version')  # type: ignore[attr-defined]
                 )
