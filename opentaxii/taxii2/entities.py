@@ -202,7 +202,7 @@ class JobDetail(Entity):
 
     def as_taxii2_dict(self):
         """Turn this object into a taxii2 dict."""
-        response = {"id": str(self.stix_id), "version": taxii2_datetimeformat(self.version)}
+        response = {"id": self.stix_id, "version": taxii2_datetimeformat(self.version)}
         if self.message:
             response["message"] = self.message
         return response
@@ -262,7 +262,7 @@ class Job(Entity):
     def as_taxii2_dict(self):
         """Turn this object into a taxii2 dict."""
         response = {
-            "id": str(self.id),
+            "id": self.id,
             "status": self.status,
             "request_timestamp": taxii2_datetimeformat(self.request_timestamp),
             "total_count": self.total_count,
