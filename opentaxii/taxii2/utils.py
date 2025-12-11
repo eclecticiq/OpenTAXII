@@ -18,6 +18,21 @@ def taxii2_datetimeformat(input_value: datetime.datetime) -> str:
 
 
 def get_object_version(obj: dict) -> datetime.datetime:
+    """
+    The TAXII version is inferred with this order:
+
+    1. modified field if present
+    2. created field if present
+    3. 1970-01-01T00:00:00+00:00
+
+        If a STIX object is not versioned (and therefore does not have a modified
+        timestamp) then this version parameter MUST use the created timestamp. If
+        an object does not have a created or modified timestamp or any other
+        version information that can be used, then the server should use a value for
+        the version that is consistent to the server.
+
+    -- TAXII 2.1 specification --
+    """
     if "modified" in obj:
         return datetime.datetime.strptime(obj["modified"], DATETIMEFORMAT).replace(
             tzinfo=datetime.timezone.utc
@@ -27,10 +42,4 @@ def get_object_version(obj: dict) -> datetime.datetime:
             tzinfo=datetime.timezone.utc
         )
     else:
-        # If a STIX object is not versioned (and therefore does not have a modified
-        # timestamp) then this version parameter MUST use the created timestamp. If
-        # an object does not have a created or modified timestamp or any other
-        # version information that can be used, then the server should use a value for
-        # the version that is consistent to the server.
-        # -- TAXII 2.1 specification --
         return datetime.datetime.fromtimestamp(0, tz=datetime.timezone.utc)
