@@ -1269,6 +1269,8 @@ def test_delete_object(
         match_version=match_version,
         match_spec_version=match_spec_version,
     )
+    # Verify the previous function committed
+    taxii2_sqldb_api.db.session.rollback()
     assert set(
         (db_obj.collection_id, db_obj.id, db_obj.version)
         for db_obj in taxii2_sqldb_api.db.session.query(STIXObject).all()

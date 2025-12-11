@@ -1131,6 +1131,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             ordered=False,
         )
         query.delete("fetch")
+        self.db.session.commit()
 
     def get_versions(
         self,
