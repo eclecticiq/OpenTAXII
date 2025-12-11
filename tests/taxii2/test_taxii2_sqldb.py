@@ -6,7 +6,7 @@ import pytest
 from opentaxii.persistence.sqldb.api import Taxii2SQLDatabaseAPI
 from opentaxii.persistence.sqldb.taxii2models import Job, JobDetail, STIXObject
 from opentaxii.taxii2 import entities
-from opentaxii.taxii2.utils import DATETIMEFORMAT
+from opentaxii.taxii2.utils import get_object_version
 from tests.taxii2.utils import (
     API_ROOTS,
     API_ROOTS_WITH_DEFAULT,
@@ -887,9 +887,7 @@ def test_add_objects(
                     id=job_detail.id,
                     job_id=job.id,
                     stix_id=obj["id"],
-                    version=datetime.datetime.strptime(
-                        obj["modified"], DATETIMEFORMAT
-                    ).replace(tzinfo=datetime.timezone.utc),
+                    version=get_object_version(obj),
                     message="",
                     status="success",
                 )
@@ -912,10 +910,7 @@ def test_add_objects(
             taxii2_sqldb_api.db.session.query(STIXObject)
             .filter(
                 STIXObject.id == obj["id"],
-                STIXObject.version
-                == datetime.datetime.strptime(obj["modified"], DATETIMEFORMAT).replace(
-                    tzinfo=datetime.timezone.utc
-                ),
+                STIXObject.version == get_object_version(obj),
             )
             .one()
         )
@@ -924,9 +919,7 @@ def test_add_objects(
         assert db_obj.type == obj["type"]
         assert db_obj.spec_version == obj["spec_version"]
         assert isinstance(db_obj.date_added, datetime.datetime)
-        assert db_obj.version == datetime.datetime.strptime(
-            obj["modified"], DATETIMEFORMAT
-        ).replace(tzinfo=datetime.timezone.utc)
+        assert db_obj.version == get_object_version(obj)
         assert db_obj.serialized_data == {
             key: value
             for (key, value) in obj.items()
