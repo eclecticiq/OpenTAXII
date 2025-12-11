@@ -801,6 +801,24 @@ def test_get_objects(
             COLLECTIONS[5].id,  # collection_id
             [
                 {
+                    "definition": {
+                        "statement": "Copyright 2015-2025, The MITRE Corporation. [...]"
+                    },
+                    "id": "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168",
+                    "type": "marking-definition",
+                    "created": "2017-06-01T00:00:00.000Z",
+                    "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+                    "definition_type": "statement",
+                    "spec_version": "2.1",
+                }
+            ],  # objects
+            id="single object without modified",
+        ),
+        pytest.param(
+            API_ROOTS[0].id,  # api_root_id
+            COLLECTIONS[5].id,  # collection_id
+            [
+                {
                     "type": "relationship",
                     "spec_version": "2.1",
                     "id": "relationship--44298a74-ba52-4f0c-87a3-1824e67d7fad",
@@ -921,11 +939,27 @@ def test_add_objects(
         )
         assert db_job_detail.job_id == db_job.id
         assert db_job_detail.stix_id == obj["id"]
-        assert db_job_detail.version == datetime.datetime.strptime(
-            obj["modified"], DATETIMEFORMAT
-        ).replace(tzinfo=datetime.timezone.utc)
+        assert db_job_detail.version == get_object_version(obj)
         assert db_job_detail.message == ""
         assert db_job_detail.status == "success"
+
+
+def test_add_objects_no_version(
+    taxii2_sqldb_api: Taxii2SQLDatabaseAPI, db_stix_objects
+):
+    api_root_id = API_ROOTS[0].id
+    collection_id = COLLECTIONS[5].id
+    objects = [{"type": "x-bad", "id": "x-bad--5e113376-8a13-432d-b711-92f566ebbd92"}]
+    with pytest.raises(
+        ValueError,
+        match=r"STIX object MUST have `modified` or `created`"
+        r" timestamp in order to create version",
+    ):
+        taxii2_sqldb_api.add_objects(
+            api_root_id=api_root_id,
+            collection_id=collection_id,
+            objects=objects,
+        )
 
 
 @pytest.mark.parametrize(
