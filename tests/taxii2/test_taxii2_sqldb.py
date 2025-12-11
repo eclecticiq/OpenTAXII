@@ -794,7 +794,7 @@ def test_get_objects(
                     "valid_from": "2016-01-01T00:00:00Z",
                 }
             ],  # objects
-            id="single object",
+            id="single-object-version-modified",
         ),
         pytest.param(
             API_ROOTS[0].id,  # api_root_id
@@ -812,7 +812,19 @@ def test_get_objects(
                     "spec_version": "2.1",
                 }
             ],  # objects
-            id="single object without modified",
+            id="single-object-version-created",
+        ),
+        pytest.param(
+            API_ROOTS[0].id,  # api_root_id
+            COLLECTIONS[5].id,  # collection_id
+            [
+                {
+                    "type": "x-no-version",
+                    "id": "x-no-version--5e113376-8a13-432d-b711-92f566ebbd92",
+                    "spec_version": "2.1",
+                }
+            ],  # objects
+            id="single-object-version-created",
         ),
         pytest.param(
             API_ROOTS[0].id,  # api_root_id
@@ -935,24 +947,6 @@ def test_add_objects(
         assert db_job_detail.version == get_object_version(obj)
         assert db_job_detail.message == ""
         assert db_job_detail.status == "success"
-
-
-def test_add_objects_no_version(
-    taxii2_sqldb_api: Taxii2SQLDatabaseAPI, db_stix_objects
-):
-    api_root_id = API_ROOTS[0].id
-    collection_id = COLLECTIONS[5].id
-    objects = [{"type": "x-bad", "id": "x-bad--5e113376-8a13-432d-b711-92f566ebbd92"}]
-    with pytest.raises(
-        ValueError,
-        match=r"STIX object MUST have `modified` or `created`"
-        r" timestamp in order to create version",
-    ):
-        taxii2_sqldb_api.add_objects(
-            api_root_id=api_root_id,
-            collection_id=collection_id,
-            objects=objects,
-        )
 
 
 @pytest.mark.parametrize(

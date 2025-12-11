@@ -33,7 +33,4 @@ def get_object_version(obj: dict) -> datetime.datetime:
         # version information that can be used, then the server should use a value for
         # the version that is consistent to the server.
         # -- TAXII 2.1 specification --
-        raise ValueError(
-            "STIX object MUST have `modified` or `created` timestamp "
-            "in order to create version"
-        )
+        return datetime.datetime.fromtimestamp(0, tz=datetime.timezone.utc)
