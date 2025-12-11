@@ -163,7 +163,9 @@ class STIXObject(Base):
 
     __table_args__ = (
         sqlalchemy.UniqueConstraint(collection_id, id, version),
-        sqlalchemy.Index("ix_opentaxii_stixobject_date_added_id", date_added, id),
+        sqlalchemy.Index(
+            "ix_opentaxii_stixobject_col_date_added_id", collection_id, date_added, id
+        ),
     )
 
     @classmethod
