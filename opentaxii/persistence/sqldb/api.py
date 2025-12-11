@@ -872,7 +872,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         self, query: Query, limit: Optional[int] = None
     ) -> Tuple[Query, bool]:
         if limit is not None:
-            more = limit < query.count()
+            more = limit < query.limit(limit + 1).count()
             query = query.limit(limit)
         else:
             more = False
