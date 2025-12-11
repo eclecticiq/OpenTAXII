@@ -605,7 +605,7 @@ class TAXII2Server(BaseTAXIIServer):
             response["collections"] = []
             for collection in collections:
                 data = {
-                    "id": str(collection.id),
+                    "id": collection.id,
                     "title": collection.title,
                     "can_read": collection.can_read(context.account),
                     "can_write": collection.can_write(context.account),
@@ -639,7 +639,7 @@ class TAXII2Server(BaseTAXIIServer):
         ):
             raise Unauthorized()
         response = {
-            "id": str(collection.id),
+            "id": collection.id,
             "title": collection.title,
             "can_read": collection.can_read(context.account),
             "can_write": collection.can_write(context.account),
