@@ -3,10 +3,16 @@ from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
-from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, GET_API_ROOT_MOCK,
-                                GET_COLLECTIONS_MOCK, config_noop,
-                                server_mapping_noop,
-                                server_mapping_remove_fields)
+
+from tests.taxii2.utils import (
+    API_ROOTS,
+    COLLECTIONS,
+    GET_API_ROOT_MOCK,
+    GET_COLLECTIONS_MOCK,
+    config_noop,
+    server_mapping_noop,
+    server_mapping_remove_fields,
+)
 
 
 @pytest.mark.parametrize(
@@ -32,7 +38,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, GET_API_ROOT_MOCK,
             {
                 "collections": [
                     {
-                        "id": COLLECTIONS[0].id,
+                        "id": str(COLLECTIONS[0].id),
                         "title": "0Read only",
                         "description": "Read only description",
                         "can_read": True,
@@ -40,7 +46,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, GET_API_ROOT_MOCK,
                         "media_types": ["application/stix+json;version=2.1"],
                     },
                     {
-                        "id": COLLECTIONS[1].id,
+                        "id": str(COLLECTIONS[1].id),
                         "title": "1Write only",
                         "description": "Write only description",
                         "can_read": False,
@@ -48,7 +54,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, GET_API_ROOT_MOCK,
                         "media_types": ["application/stix+json;version=2.1"],
                     },
                     {
-                        "id": COLLECTIONS[2].id,
+                        "id": str(COLLECTIONS[2].id),
                         "title": "2Read/Write",
                         "description": "Read/Write description",
                         "can_read": True,
@@ -56,7 +62,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, GET_API_ROOT_MOCK,
                         "media_types": ["application/stix+json;version=2.1"],
                     },
                     {
-                        "id": COLLECTIONS[3].id,
+                        "id": str(COLLECTIONS[3].id),
                         "title": "3No permissions",
                         "description": "No permissions description",
                         "can_read": False,
@@ -64,14 +70,14 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, GET_API_ROOT_MOCK,
                         "media_types": ["application/stix+json;version=2.1"],
                     },
                     {
-                        "id": COLLECTIONS[4].id,
+                        "id": str(COLLECTIONS[4].id),
                         "title": "4No description",
                         "can_read": True,
                         "can_write": True,
                         "media_types": ["application/stix+json;version=2.1"],
                     },
                     {
-                        "id": COLLECTIONS[5].id,
+                        "id": str(COLLECTIONS[5].id),
                         "title": "5With alias",
                         "description": "With alias description",
                         "alias": "this-is-an-alias",
@@ -80,11 +86,19 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, GET_API_ROOT_MOCK,
                         "media_types": ["application/stix+json;version=2.1"],
                     },
                     {
-                        "id": COLLECTIONS[6].id,
+                        "id": str(COLLECTIONS[6].id),
                         "title": "6Public",
                         "description": "public description",
                         "can_read": True,
                         "can_write": False,
+                        "media_types": ["application/stix+json;version=2.1"],
+                    },
+                    {
+                        "id": str(COLLECTIONS[7].id),
+                        "title": "7Publicwrite",
+                        "description": "public write description",
+                        "can_read": False,
+                        "can_write": True,
                         "media_types": ["application/stix+json;version=2.1"],
                     },
                 ]
@@ -181,36 +195,42 @@ def test_collections(
     expected_headers,
     expected_content,
 ):
-    with patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2,
-        "config",
-        config_override_func(
-            authenticated_client.application.taxii_server.servers.taxii2.config
+    with (
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2,
+            "config",
+            config_override_func(
+                authenticated_client.application.taxii_server.servers.taxii2.config
+            ),
         ),
-    ), patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_api_root",
-        side_effect=GET_API_ROOT_MOCK,
-    ), patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_collections",
-        side_effect=GET_COLLECTIONS_MOCK,
-    ), patch.object(
-        authenticated_client.application.taxii_server,
-        "servers",
-        server_mapping_override_func(
-            authenticated_client.application.taxii_server.servers
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_api_root",
+            side_effect=GET_API_ROOT_MOCK,
         ),
-    ), patch.object(
-        authenticated_client.account,
-        "permissions",
-        {
-            COLLECTIONS[0].id: ["read"],
-            COLLECTIONS[1].id: ["write"],
-            COLLECTIONS[2].id: ["read", "write"],
-            COLLECTIONS[4].id: ["read", "write"],
-            COLLECTIONS[5].id: ["write"],
-        },
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_collections",
+            side_effect=GET_COLLECTIONS_MOCK,
+        ),
+        patch.object(
+            authenticated_client.application.taxii_server,
+            "servers",
+            server_mapping_override_func(
+                authenticated_client.application.taxii_server.servers
+            ),
+        ),
+        patch.object(
+            authenticated_client.account,
+            "permissions",
+            {
+                str(COLLECTIONS[0].id): ["read"],
+                str(COLLECTIONS[1].id): ["write"],
+                str(COLLECTIONS[2].id): ["read", "write"],
+                str(COLLECTIONS[4].id): ["read", "write"],
+                str(COLLECTIONS[5].id): ["write"],
+            },
+        ),
     ):
         func = getattr(authenticated_client, method)
         response = func(f"/taxii2/{api_root_id}/collections/", headers=headers)
@@ -247,14 +267,17 @@ def test_collections_unauthenticated(
             expected_status_code = 401
         else:
             expected_status_code = 405
-    with patch.object(
-        client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_api_root",
-        side_effect=GET_API_ROOT_MOCK,
-    ), patch.object(
-        client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_collections",
-        side_effect=GET_COLLECTIONS_MOCK,
+    with (
+        patch.object(
+            client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_api_root",
+            side_effect=GET_API_ROOT_MOCK,
+        ),
+        patch.object(
+            client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_collections",
+            side_effect=GET_COLLECTIONS_MOCK,
+        ),
     ):
         func = getattr(client, method)
         response = func(

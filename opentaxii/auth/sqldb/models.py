@@ -2,17 +2,15 @@ import json
 
 from sqlalchemy import schema, types
 from sqlalchemy.ext.declarative import declarative_base
-
-from werkzeug.security import (
-    check_password_hash, generate_password_hash
-)
+from werkzeug.security import check_password_hash, generate_password_hash
 
 __all__ = ['Base', 'Account']
 
 Base = declarative_base()
 
 MAX_STR_LEN = 256
-ALL_PERMISSIONS = ['read', 'modify']
+TAXII1_PERMISSIONS = ('read', 'modify')
+TAXII2_PERMISSIONS = frozenset(['read', 'write'])
 
 
 class Account(Base):
@@ -31,6 +29,7 @@ class Account(Base):
         self.password_hash = generate_password_hash(password)
 
     def is_password_valid(self, password):
+        assert self.password_hash is not None
         return check_password_hash(self.password_hash, password)
 
     @property
@@ -40,8 +39,17 @@ class Account(Base):
     @permissions.setter
     def permissions(self, permissions):
         for collection_name, permission in permissions.items():
-            if permission not in ALL_PERMISSIONS:
+            if isinstance(permission, list):
+                if not set(permission).issubset(TAXII2_PERMISSIONS):
+                    raise ValueError(
+                        "Unknown TAXII2 permission '{}' specified for collection '{}'".format(
+                            permission, collection_name
+                        )
+                    )
+            elif permission not in TAXII1_PERMISSIONS:
                 raise ValueError(
-                    "Unknown permission '{}' specified for collection '{}'"
-                    .format(permission, collection_name))
+                    "Unknown TAXII1 permission '{}' specified for collection '{}'".format(
+                        permission, collection_name
+                    )
+                )
         self._permissions = json.dumps(permissions)

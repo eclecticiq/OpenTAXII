@@ -313,20 +313,21 @@ def sync_accounts(server, accounts):
 
 def register_handler(
     url_re: str,
-    valid_methods: Optional[Tuple[str]] = None,
-    valid_accept_mimetypes: Optional[Tuple[str]] = None,
-    valid_content_types: Optional[Tuple[str]] = None,
+    valid_methods: Optional[Tuple[str, ...]] = None,
+    valid_accept_mimetypes: Optional[Tuple[str, ...]] = None,
+    valid_content_types: Optional[Tuple[str, ...]] = None,
     handles_own_auth: bool = False,
 ):
     """
     Register decorated method as handler function for `url_re`.
 
-    :param str url_re: The regex to trigger the handler on
-    :param list valid_methods: The list of methods to accept for this handler, defaults to ("GET",)
-    :param list valid_accept_mimetypes:
+    :param url_re: The regex to trigger the handler on
+    :param valid_methods: The list of methods to accept for this handler,
+        defaults to ("GET",)
+    :param valid_accept_mimetypes:
         The list of accepted mimetypes to accept for this handler, defaults to
         ("application/taxii+json;version=2.1",)
-    :param list valid_content_types:
+    :param valid_content_types:
         The list of content types to accept for this handler, defaults to
         ("application/json",)
     """

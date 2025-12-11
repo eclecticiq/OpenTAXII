@@ -21,7 +21,7 @@ Layout
 
 OpenTAXII repository has the following layout:
 
-* ``docker/`` - Docker configuration files (:doc:`OpenTAXII Docker documentation <docker>`);
+* ``docker/`` - Docker configuration files (:doc:`OpenTAXII Docker documentation <../installation/docker>`);
 * ``docs/`` - used to build the `documentation <http://opentaxii.readthedocs.org>`_;
 * ``examples/`` - configuration and code examples;
 * ``opentaxii/`` - OpenTAXII source;
@@ -29,7 +29,7 @@ OpenTAXII repository has the following layout:
 
 Database schema
 ===============
-.. image:: db_schema_diagram.png
+.. image:: ../db_schema_diagram.png
   :width: 1000
 
 Compiling from source
@@ -55,6 +55,6 @@ using `Sphinx <http://sphinx-doc.org/>`_. To build HTML documentation, go to ``d
 
 .. rubric:: Next steps
 
-Continue to :doc:`License <license>`.
+Continue to :doc:`License <../license>`.
 
 .. vim: set spell spelllang=en:

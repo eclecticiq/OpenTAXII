@@ -1,26 +1,41 @@
 import datetime
-from typing import Dict, List, Optional, Tuple
+import uuid
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
 import structlog
+
 from opentaxii.local import context
-from opentaxii.persistence.exceptions import (DoesNotExistError,
-                                              NoReadNoWritePermission,
-                                              NoReadPermission,
-                                              NoWritePermission)
-from opentaxii.signals import (CONTENT_BLOCK_CREATED, INBOX_MESSAGE_CREATED,
-                               SUBSCRIPTION_CREATED)
-from opentaxii.taxii2.entities import (ApiRoot, Collection, Job,
-                                       ManifestRecord, STIXObject,
-                                       VersionRecord)
+from opentaxii.persistence.exceptions import (
+    DoesNotExistError,
+    NoReadNoWritePermission,
+    NoReadPermission,
+    NoWritePermission,
+)
+from opentaxii.signals import (
+    CONTENT_BLOCK_CREATED,
+    INBOX_MESSAGE_CREATED,
+    SUBSCRIPTION_CREATED,
+)
+from opentaxii.taxii2.entities import (
+    ApiRoot,
+    Collection,
+    Job,
+    ManifestRecord,
+    STIXObject,
+    VersionRecord,
+)
 
 log = structlog.getLogger(__name__)
 
+if TYPE_CHECKING:
+    from opentaxii.persistence.api import (
+        OpenTAXII2PersistenceAPI,
+        OpenTAXIIPersistenceAPI,
+    )
+    from opentaxii.server import TAXII1Server, TAXII2Server
 
-class BasePersistenceManager:
-    pass
 
-
-class Taxii1PersistenceManager(BasePersistenceManager):
+class Taxii1PersistenceManager:
     """Manager responsible for persisting and retrieving data.
 
     Manager uses API instance ``api`` for basic data CRUD operations and
@@ -30,7 +45,7 @@ class Taxii1PersistenceManager(BasePersistenceManager):
         instance of persistence API class
     """
 
-    def __init__(self, server, api):
+    def __init__(self, server: "TAXII1Server", api: "OpenTAXIIPersistenceAPI"):
         self.server = server
         self.api = api
 
@@ -110,9 +125,9 @@ class Taxii1PersistenceManager(BasePersistenceManager):
         :return: list of service entities.
         :rtype: list of :py:class:`opentaxii.taxii.entities.ServiceEntity`
         """
-        if context.account.can_read(collection.name):
+        if collection.can_read(context.account):
             services = self.api.get_services(collection_id=collection.id)
-            if context.account.can_modify(collection.name):
+            if collection.can_modify(context.account):
                 return services
             else:
                 return list(filter(lambda s: s.type != "inbox", services))
@@ -129,7 +144,7 @@ class Taxii1PersistenceManager(BasePersistenceManager):
         collections = [
             collection
             for collection in self.api.get_collections(service_id=service_id)
-            if context.account.can_read(collection.name)
+            if collection.can_read(context.account)
         ]
         return collections
 
@@ -147,7 +162,7 @@ class Taxii1PersistenceManager(BasePersistenceManager):
         :rtype: :py:class:`opentaxii.taxii.entities.CollectionEntity`
         """
         collection = self.api.get_collection(name, service_id=service_id)
-        if collection and context.account.can_read(collection.name):
+        if collection and collection.can_read(context.account):
             return collection
 
     def update_collection(self, collection):
@@ -205,7 +220,7 @@ class Taxii1PersistenceManager(BasePersistenceManager):
         collection_ids = [
             collection.id
             for collection in collections
-            if context.account.can_modify(collection.name)
+            if collection.can_modify(context.account)
         ]
 
         if collection_ids:
@@ -384,7 +399,7 @@ class Taxii1PersistenceManager(BasePersistenceManager):
         return count
 
 
-class Taxii2PersistenceManager(BasePersistenceManager):
+class Taxii2PersistenceManager:
     """Manager responsible for persisting and retrieving data.
 
     Manager uses API instance ``api`` for basic data CRUD operations and
@@ -394,7 +409,7 @@ class Taxii2PersistenceManager(BasePersistenceManager):
         instance of persistence API class
     """
 
-    def __init__(self, server, api):
+    def __init__(self, server: "TAXII2Server", api: "OpenTAXII2PersistenceAPI"):
         self.server = server
         self.api = api
 
@@ -414,23 +429,23 @@ class Taxii2PersistenceManager(BasePersistenceManager):
                 break
         return (default_api_root, api_roots)
 
-    def get_api_root(self, api_root_id: str) -> ApiRoot:
+    def get_api_root(self, api_root_id: uuid.UUID) -> ApiRoot:
         api_root = self.api.get_api_root(api_root_id=api_root_id)
         if api_root is None:
             raise DoesNotExistError()
         return api_root
 
-    def get_job_and_details(self, api_root_id: str, job_id: str) -> Job:
+    def get_job_and_details(self, api_root_id: uuid.UUID, job_id: uuid.UUID) -> Job:
         job = self.api.get_job_and_details(api_root_id=api_root_id, job_id=job_id)
         if job is None:
             raise DoesNotExistError()
         return job
 
-    def get_collections(self, api_root_id: str) -> List[Collection]:
+    def get_collections(self, api_root_id: uuid.UUID) -> List[Collection]:
         return self.api.get_collections(api_root_id=api_root_id)
 
     def get_collection(
-        self, api_root_id: str, collection_id_or_alias: str
+        self, api_root_id: uuid.UUID, collection_id_or_alias: str
     ) -> Collection:
         collection = self.api.get_collection(
             api_root_id=api_root_id, collection_id_or_alias=collection_id_or_alias
@@ -441,7 +456,7 @@ class Taxii2PersistenceManager(BasePersistenceManager):
 
     def get_manifest(
         self,
-        api_root_id: str,
+        api_root_id: uuid.UUID,
         collection_id_or_alias: str,
         limit: Optional[int] = None,
         added_after: Optional[datetime.datetime] = None,
@@ -469,7 +484,7 @@ class Taxii2PersistenceManager(BasePersistenceManager):
 
     def get_objects(
         self,
-        api_root_id: str,
+        api_root_id: uuid.UUID,
         collection_id_or_alias: str,
         limit: Optional[int] = None,
         added_after: Optional[datetime.datetime] = None,
@@ -497,7 +512,7 @@ class Taxii2PersistenceManager(BasePersistenceManager):
 
     def add_objects(
         self,
-        api_root_id: str,
+        api_root_id: uuid.UUID,
         collection_id_or_alias: str,
         data: Dict,
     ) -> Job:
@@ -515,7 +530,7 @@ class Taxii2PersistenceManager(BasePersistenceManager):
 
     def get_object(
         self,
-        api_root_id: str,
+        api_root_id: uuid.UUID,
         collection_id_or_alias: str,
         object_id: str,
         limit: Optional[int] = None,
@@ -544,7 +559,7 @@ class Taxii2PersistenceManager(BasePersistenceManager):
 
     def delete_object(
         self,
-        api_root_id: str,
+        api_root_id: uuid.UUID,
         collection_id_or_alias: str,
         object_id: str,
         match_version: Optional[List[str]] = None,
@@ -572,7 +587,7 @@ class Taxii2PersistenceManager(BasePersistenceManager):
 
     def get_versions(
         self,
-        api_root_id: str,
+        api_root_id: uuid.UUID,
         collection_id_or_alias: str,
         object_id: str,
         limit: Optional[int] = None,

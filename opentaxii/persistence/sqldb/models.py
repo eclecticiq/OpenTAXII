@@ -1,14 +1,21 @@
 import json
-import pytz
 from datetime import datetime
 
+import pytz
 from sqlalchemy import schema, types
-from sqlalchemy.orm import relationship, validates
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects import mysql
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, validates
 
-__all__ = ['Base', 'ContentBlock', 'DataCollection', 'Service',
-           'InboxMessage', 'ResultSet', 'Subscription']
+__all__ = [
+    'Base',
+    'ContentBlock',
+    'DataCollection',
+    'Service',
+    'InboxMessage',
+    'ResultSet',
+    'Subscription',
+]
 
 Base = declarative_base(name='Model')
 
@@ -22,8 +29,7 @@ def get_utc_now():
 class AbstractModel(Base):
     __abstract__ = True
 
-    date_created = schema.Column(
-        types.DateTime(timezone=True), default=get_utc_now)
+    date_created = schema.Column(types.DateTime(timezone=True), default=get_utc_now)
 
 
 collection_to_content_block = schema.Table(
@@ -32,13 +38,15 @@ collection_to_content_block = schema.Table(
     schema.Column(
         'collection_id',
         types.Integer,
-        schema.ForeignKey('data_collections.id', ondelete='CASCADE')),
+        schema.ForeignKey('data_collections.id', ondelete='CASCADE'),
+    ),
     schema.Column(
         'content_block_id',
         types.Integer,
         schema.ForeignKey('content_blocks.id', ondelete='CASCADE'),
-        index=True),
-    schema.PrimaryKeyConstraint('collection_id', 'content_block_id')
+        index=True,
+    ),
+    schema.PrimaryKeyConstraint('collection_id', 'content_block_id'),
 )
 
 
@@ -50,14 +58,14 @@ class ContentBlock(AbstractModel):
     message = schema.Column(types.Text, nullable=True)
 
     timestamp_label = schema.Column(
-        types.DateTime(timezone=True),
-        default=get_utc_now, index=True)
+        types.DateTime(timezone=True), default=get_utc_now, index=True
+    )
 
     inbox_message_id = schema.Column(
         types.Integer,
-        schema.ForeignKey(
-            'inbox_messages.id', onupdate='CASCADE', ondelete='CASCADE'),
-        nullable=True)
+        schema.ForeignKey('inbox_messages.id', onupdate='CASCADE', ondelete='CASCADE'),
+        nullable=True,
+    )
 
     content_type = types.LargeBinary().with_variant(MYSQL_LARGE_BINARY, 'mysql')
     content = schema.Column(content_type, nullable=False)
@@ -69,7 +77,8 @@ class ContentBlock(AbstractModel):
         'DataCollection',
         secondary=collection_to_content_block,
         backref='content_blocks',
-        lazy='dynamic')
+        lazy='dynamic',
+    )
 
     @validates('collections', include_removes=True, include_backrefs=True)
     def _update_volume(self, key, collection, is_remove):
@@ -80,9 +89,11 @@ class ContentBlock(AbstractModel):
         return collection
 
     def __repr__(self):
-        return ('ContentBlock(id={obj.id}, '
-                'inbox_message={obj.inbox_message_id}, '
-                'binding={obj.binding_subtype})').format(obj=self)
+        return (
+            'ContentBlock(id={obj.id}, '
+            'inbox_message={obj.inbox_message_id}, '
+            'binding={obj.binding_subtype})'
+        ).format(obj=self)
 
 
 service_to_collection = schema.Table(
@@ -91,12 +102,14 @@ service_to_collection = schema.Table(
     schema.Column(
         'service_id',
         types.String(150),
-        schema.ForeignKey('services.id', ondelete='CASCADE')),
+        schema.ForeignKey('services.id', ondelete='CASCADE'),
+    ),
     schema.Column(
         'collection_id',
         types.Integer,
-        schema.ForeignKey('data_collections.id', ondelete='CASCADE')),
-    schema.PrimaryKeyConstraint('service_id', 'collection_id')
+        schema.ForeignKey('data_collections.id', ondelete='CASCADE'),
+    ),
+    schema.PrimaryKeyConstraint('service_id', 'collection_id'),
 )
 
 
@@ -110,12 +123,10 @@ class Service(AbstractModel):
     _properties = schema.Column(types.Text, nullable=False)
 
     collections = relationship(
-        'DataCollection',
-        secondary=service_to_collection,
-        backref='services')
+        'DataCollection', secondary=service_to_collection, backref='services'
+    )
 
-    date_updated = schema.Column(
-        types.DateTime(timezone=True), default=get_utc_now)
+    date_updated = schema.Column(types.DateTime(timezone=True), default=get_utc_now)
 
     @property
     def properties(self):
@@ -142,8 +153,7 @@ class DataCollection(AbstractModel):
     volume = schema.Column(types.Integer, default=0)
 
     def __repr__(self):
-        return ('DataCollection(name={obj.name}, type={obj.type})'
-                .format(obj=self))
+        return 'DataCollection(name={obj.name}, type={obj.type})'.format(obj=self)
 
 
 class InboxMessage(AbstractModel):
@@ -162,11 +172,15 @@ class InboxMessage(AbstractModel):
     subscription_id = schema.Column(types.Text, nullable=True)
 
     exclusive_begin_timestamp_label = schema.Column(
-        types.DateTime(timezone=True), nullable=True)
+        types.DateTime(timezone=True), nullable=True
+    )
     inclusive_end_timestamp_label = schema.Column(
-        types.DateTime(timezone=True), nullable=True)
+        types.DateTime(timezone=True), nullable=True
+    )
 
-    original_message_type = types.LargeBinary().with_variant(MYSQL_LARGE_BINARY, 'mysql')
+    original_message_type = types.LargeBinary().with_variant(
+        MYSQL_LARGE_BINARY, 'mysql'
+    )
     original_message = schema.Column(original_message_type, nullable=False)
 
     content_block_count = schema.Column(types.Integer)
@@ -176,14 +190,15 @@ class InboxMessage(AbstractModel):
 
     service_id = schema.Column(
         types.String(150),
-        schema.ForeignKey(
-            'services.id', onupdate="CASCADE", ondelete="CASCADE"))
+        schema.ForeignKey('services.id', onupdate="CASCADE", ondelete="CASCADE"),
+    )
 
     service = relationship('Service', backref='inbox_messages')
 
     def __repr__(self):
-        return ('InboxMessage(id={obj.message_id}, created={obj.date_created})'
-                .format(obj=self))
+        return 'InboxMessage(id={obj.message_id}, created={obj.date_created})'.format(
+            obj=self
+        )
 
 
 class ResultSet(AbstractModel):
@@ -195,7 +210,9 @@ class ResultSet(AbstractModel):
     collection_id = schema.Column(
         types.Integer,
         schema.ForeignKey(
-            'data_collections.id', onupdate='CASCADE', ondelete='CASCADE'))
+            'data_collections.id', onupdate='CASCADE', ondelete='CASCADE'
+        ),
+    )
 
     collection = relationship('DataCollection', backref='result_sets')
 
@@ -214,7 +231,9 @@ class Subscription(AbstractModel):
     collection_id = schema.Column(
         types.Integer,
         schema.ForeignKey(
-            'data_collections.id', onupdate='CASCADE', ondelete='CASCADE'))
+            'data_collections.id', onupdate='CASCADE', ondelete='CASCADE'
+        ),
+    )
     collection = relationship('DataCollection', backref='subscriptions')
 
     params = schema.Column(types.Text, nullable=True)
@@ -224,6 +243,6 @@ class Subscription(AbstractModel):
 
     service_id = schema.Column(
         types.String(150),
-        schema.ForeignKey(
-            'services.id', onupdate="CASCADE", ondelete="CASCADE"))
+        schema.ForeignKey('services.id', onupdate="CASCADE", ondelete="CASCADE"),
+    )
     service = relationship('Service', backref='subscriptions')

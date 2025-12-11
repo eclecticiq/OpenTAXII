@@ -1,13 +1,15 @@
 """Database models for taxii2 entities."""
+
 import datetime
 import uuid
 
 import sqlalchemy
-from opentaxii.persistence.sqldb.common import GUID, UTCDateTime
-from opentaxii.taxii2 import entities
 from sqlalchemy import literal
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+
+from opentaxii.persistence.sqldb.common import GUID, UTCDateTime
+from opentaxii.taxii2 import entities
 
 Base = declarative_base()
 
@@ -126,6 +128,7 @@ class Collection(Base):
     description = sqlalchemy.Column(sqlalchemy.Text)
     alias = sqlalchemy.Column(sqlalchemy.String(100), nullable=True)
     is_public = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
+    is_public_write = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
 
     api_root = relationship("ApiRoot", back_populates="collections")
     objects = relationship("STIXObject", back_populates="collection")

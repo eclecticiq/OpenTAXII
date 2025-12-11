@@ -72,7 +72,7 @@ does that by encoding account ID inside the token.
 
 .. rubric:: Next steps
 
-Continue to :doc:`Public code-level APIs <public-apis>` page for the details about OpenTAXII APIs.
+Continue to :doc:`Public code-level APIs <../references/public_apis>` page for the details about OpenTAXII APIs.
 
 .. vim: set spell spelllang=en:
 

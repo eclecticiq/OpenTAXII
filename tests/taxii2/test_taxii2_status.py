@@ -3,11 +3,18 @@ from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
+
 from opentaxii.persistence.sqldb import taxii2models
 from opentaxii.taxii2.utils import taxii2_datetimeformat
-from tests.taxii2.utils import (API_ROOTS, GET_JOB_AND_DETAILS_MOCK, JOBS,
-                                config_noop, server_mapping_noop,
-                                server_mapping_remove_fields)
+from tests.taxii2.utils import (
+    API_ROOTS,
+    GET_API_ROOT_MOCK,
+    GET_JOB_AND_DETAILS_MOCK,
+    JOBS,
+    config_noop,
+    server_mapping_noop,
+    server_mapping_remove_fields,
+)
 
 
 @pytest.mark.parametrize(
@@ -33,7 +40,7 @@ from tests.taxii2.utils import (API_ROOTS, GET_JOB_AND_DETAILS_MOCK, JOBS,
             200,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
-                "id": JOBS[0].id,
+                "id": str(JOBS[0].id),
                 "status": JOBS[0].status,
                 "request_timestamp": taxii2_datetimeformat(JOBS[0].request_timestamp),
                 "total_count": 4,
@@ -76,7 +83,7 @@ from tests.taxii2.utils import (API_ROOTS, GET_JOB_AND_DETAILS_MOCK, JOBS,
             200,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
-                "id": JOBS[3].id,
+                "id": str(JOBS[3].id),
                 "status": JOBS[3].status,
                 "request_timestamp": taxii2_datetimeformat(JOBS[3].request_timestamp),
                 "total_count": 0,
@@ -96,7 +103,7 @@ from tests.taxii2.utils import (API_ROOTS, GET_JOB_AND_DETAILS_MOCK, JOBS,
             200,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
-                "id": JOBS[6].id,
+                "id": str(JOBS[6].id),
                 "status": JOBS[6].status,
                 "request_timestamp": taxii2_datetimeformat(JOBS[6].request_timestamp),
                 "total_count": 6,
@@ -241,25 +248,35 @@ def test_status(
     expected_headers,
     expected_content,
 ):
-    with patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2,
-        "config",
-        config_override_func(
-            authenticated_client.application.taxii_server.servers.taxii2.config
+    with (
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2,
+            "config",
+            config_override_func(
+                authenticated_client.application.taxii_server.servers.taxii2.config
+            ),
         ),
-    ), patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_api_roots",
-        return_value=API_ROOTS,
-    ), patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_job_and_details",
-        side_effect=GET_JOB_AND_DETAILS_MOCK,
-    ), patch.object(
-        authenticated_client.application.taxii_server,
-        "servers",
-        server_mapping_override_func(
-            authenticated_client.application.taxii_server.servers
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_api_roots",
+            return_value=API_ROOTS,
+        ),
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_api_root",
+            side_effect=GET_API_ROOT_MOCK,
+        ),
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_job_and_details",
+            side_effect=GET_JOB_AND_DETAILS_MOCK,
+        ),
+        patch.object(
+            authenticated_client.application.taxii_server,
+            "servers",
+            server_mapping_override_func(
+                authenticated_client.application.taxii_server.servers
+            ),
         ),
     ):
         func = getattr(authenticated_client, method)
@@ -278,14 +295,45 @@ def test_status(
     assert content == expected_content
 
 
+@pytest.mark.parametrize("is_public", [True, False])
 @pytest.mark.parametrize("method", ["get", "post", "delete"])
 def test_status_unauthenticated(
     client,
     method,
+    is_public,
 ):
-    func = getattr(client, method)
-    response = func(f"/taxii2/{API_ROOTS[0].id}/status/{JOBS[0].id}/")
-    assert response.status_code == 401
+    if is_public:
+        api_root_id = API_ROOTS[1].id
+        job_id = JOBS[2].id
+        if method == "get":
+            expected_status_code = 200
+        else:
+            expected_status_code = 405
+    else:
+        api_root_id = API_ROOTS[0].id
+        job_id = JOBS[0].id
+        if method == "get":
+            expected_status_code = 401
+        else:
+            expected_status_code = 405
+    with (
+        patch.object(
+            client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_api_root",
+            side_effect=GET_API_ROOT_MOCK,
+        ),
+        patch.object(
+            client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_job_and_details",
+            side_effect=GET_JOB_AND_DETAILS_MOCK,
+        ),
+    ):
+        func = getattr(client, method)
+        response = func(
+            f"/taxii2/{api_root_id}/status/{job_id}/",
+            headers={"Accept": "application/taxii+json;version=2.1"},
+        )
+    assert response.status_code == expected_status_code
 
 
 def test_job_cleanup(app, db_jobs):

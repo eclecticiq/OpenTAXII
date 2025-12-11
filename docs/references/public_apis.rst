@@ -50,7 +50,7 @@ Persistence API
 
 Persistence API takes care of all CRUD operations with entities and wraps backend storage layer.
 
-See :doc:`Configuration <configuration>` page for the details about how to attach
+See :doc:`Configuration <../installation/configuration>` page for the details about how to attach
 custom implementation of Persistence API.
 
 .. automodule:: opentaxii.persistence.api
@@ -71,7 +71,7 @@ Authentication API
 
 Authentication API represents an authority for authentication-related queries.
 
-See :doc:`Configuration <configuration>` page for the details about how to attach
+See :doc:`Configuration <../installation/configuration>` page for the details about how to attach
 custom implementation of Authentication API.
 
 .. automodule:: opentaxii.auth.api

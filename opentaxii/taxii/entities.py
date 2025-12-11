@@ -1,7 +1,16 @@
 import six
-from libtaxii.constants import (CT_DATA_FEED, CT_DATA_SET, RT_COUNT_ONLY,
-                                RT_FULL, SS_ACTIVE, SS_PAUSED, SS_UNSUBSCRIBED)
+from libtaxii.constants import (
+    CT_DATA_FEED,
+    CT_DATA_SET,
+    RT_COUNT_ONLY,
+    RT_FULL,
+    SS_ACTIVE,
+    SS_PAUSED,
+    SS_UNSUBSCRIBED,
+)
+
 from opentaxii.common.entities import Entity
+from opentaxii.entities import Account
 
 from .utils import is_content_supported
 
@@ -37,7 +46,7 @@ class ContentBindingEntity(Entity):
 
 def deserialize_content_bindings(supported_content):
     bindings = []
-    for content in (supported_content or []):
+    for content in supported_content or []:
         if not content:
             continue
         if isinstance(content, six.string_types):
@@ -70,9 +79,17 @@ class CollectionEntity(Entity):
     TYPE_FEED = CT_DATA_FEED
     TYPE_SET = CT_DATA_SET
 
-    def __init__(self, name, id=None, description=None, type=TYPE_FEED,
-                 volume=None, accept_all_content=False,
-                 supported_content=None, available=True):
+    def __init__(
+        self,
+        name,
+        id=None,
+        description=None,
+        type=TYPE_FEED,
+        volume=None,
+        accept_all_content=False,
+        supported_content=None,
+        available=True,
+    ):
 
         self.id = id
         self.name = name
@@ -83,8 +100,7 @@ class CollectionEntity(Entity):
         if type not in [self.TYPE_FEED, self.TYPE_SET]:
             raise ValueError('Unknown collection type "%s"' % type)
         self.type = type
-        self.supported_content = (
-            deserialize_content_bindings(supported_content))
+        self.supported_content = deserialize_content_bindings(supported_content)
 
     def is_content_supported(self, content_binding):
         if self.accept_all_content:
@@ -120,20 +136,31 @@ class CollectionEntity(Entity):
                     overlap.append(supported)
                     continue
 
-                subtypes_overlap = (
-                    set(supported.subtypes).intersection(requested.subtypes))
+                subtypes_overlap = set(supported.subtypes).intersection(
+                    requested.subtypes
+                )
 
-                overlap.append(ContentBindingEntity(
-                    binding=requested.binding,
-                    subtypes=subtypes_overlap
-                ))
+                overlap.append(
+                    ContentBindingEntity(
+                        binding=requested.binding, subtypes=subtypes_overlap
+                    )
+                )
 
         return overlap
 
+    def can_read(self, account: Account):
+        return account.is_admin or account.permissions.get(self.name) in (
+            'read',
+            'modify',
+        )
+
+    def can_modify(self, account: Account):
+        return account.is_admin or account.permissions.get(self.name) == 'modify'
+
     def __repr__(self):
-        return (
-            "CollectionEntity(name={}, type={}, supported_content={})"
-            .format(self.name, self.type, self.supported_content))
+        return "CollectionEntity(name={}, type={}, supported_content={})".format(
+            self.name, self.type, self.supported_content
+        )
 
 
 class ContentBlockEntity(Entity):
@@ -147,8 +174,15 @@ class ContentBlockEntity(Entity):
     :param str inbox_message_id: internal ID of the inbox message entity
     '''
 
-    def __init__(self, content, timestamp_label, content_binding=None, id=None,
-                 message=None, inbox_message_id=None):
+    def __init__(
+        self,
+        content,
+        timestamp_label,
+        content_binding=None,
+        id=None,
+        message=None,
+        inbox_message_id=None,
+    ):
 
         self.content = content
 
@@ -188,12 +222,22 @@ class InboxMessageEntity(Entity):
         subscription's inclusive begin timestamp label
     '''
 
-    def __init__(self, message_id, original_message, content_block_count,
-                 service_id, id=None, result_id=None,
-                 destination_collections=None, record_count=None,
-                 partial_count=False, subscription_collection_name=None,
-                 subscription_id=None, exclusive_begin_timestamp_label=None,
-                 inclusive_end_timestamp_label=None):
+    def __init__(
+        self,
+        message_id,
+        original_message,
+        content_block_count,
+        service_id,
+        id=None,
+        result_id=None,
+        destination_collections=None,
+        record_count=None,
+        partial_count=False,
+        subscription_collection_name=None,
+        subscription_id=None,
+        exclusive_begin_timestamp_label=None,
+        inclusive_end_timestamp_label=None,
+    ):
 
         self.id = id
 
@@ -227,8 +271,7 @@ class ResultSetEntity(Entity):
         a timeframe of the Result Set in a form of ``(begin, end)``
     '''
 
-    def __init__(self, id, collection_id, content_bindings=None,
-                 timeframe=None):
+    def __init__(self, id, collection_id, content_bindings=None, timeframe=None):
 
         self.id = id
 
@@ -268,11 +311,13 @@ class PollRequestParametersEntity(SubscriptionParameters):
         list of :class:`ContentBindingEntity` instances
     '''
 
-    def __init__(self, response_type=SubscriptionParameters.FULL,
-                 content_bindings=None):
+    def __init__(
+        self, response_type=SubscriptionParameters.FULL, content_bindings=None
+    ):
 
         super(PollRequestParametersEntity, self).__init__(
-            response_type=response_type, content_bindings=content_bindings)
+            response_type=response_type, content_bindings=content_bindings
+        )
 
 
 class SubscriptionEntity(Entity):
@@ -291,8 +336,14 @@ class SubscriptionEntity(Entity):
     PAUSED = SS_PAUSED
     UNSUBSCRIBED = SS_UNSUBSCRIBED
 
-    def __init__(self, service_id, collection_id, subscription_id=None,
-                 status=ACTIVE, poll_request_params=None):
+    def __init__(
+        self,
+        service_id,
+        collection_id,
+        subscription_id=None,
+        status=ACTIVE,
+        poll_request_params=None,
+    ):
 
         self.service_id = service_id
         self.collection_id = collection_id

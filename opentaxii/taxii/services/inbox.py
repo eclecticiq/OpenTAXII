@@ -1,21 +1,22 @@
-
 from libtaxii.constants import (
-    SVC_INBOX, MSG_INBOX_MESSAGE, SD_ACCEPTABLE_DESTINATION,
-    ST_DESTINATION_COLLECTION_ERROR, ST_NOT_FOUND, SD_ITEM
+    MSG_INBOX_MESSAGE,
+    SD_ACCEPTABLE_DESTINATION,
+    SD_ITEM,
+    ST_DESTINATION_COLLECTION_ERROR,
+    ST_NOT_FOUND,
+    SVC_INBOX,
 )
 
-from opentaxii.local import context
 from opentaxii.exceptions import UnauthorizedException
-
-from ..utils import is_content_supported
-from ..entities import ContentBindingEntity
-from ..exceptions import StatusMessageException
+from opentaxii.local import context
 
 from ..converters import (
     content_binding_entities_to_content_bindings,
-    service_to_service_instances
+    service_to_service_instances,
 )
-
+from ..entities import ContentBindingEntity
+from ..exceptions import StatusMessageException
+from ..utils import is_content_supported
 from .abstract import TAXIIService
 from .handlers import InboxMessageHandler
 
@@ -24,25 +25,26 @@ class InboxService(TAXIIService):
 
     service_type = SVC_INBOX
 
-    handlers = {
-        MSG_INBOX_MESSAGE: InboxMessageHandler
-    }
+    handlers = {MSG_INBOX_MESSAGE: InboxMessageHandler}
 
     destination_collection_required = False
     accept_all_content = False
     supported_content = []
 
-    def __init__(self, accept_all_content=False,
-                 destination_collection_required=False,
-                 supported_content=None, **kwargs):
+    def __init__(
+        self,
+        accept_all_content=False,
+        destination_collection_required=False,
+        supported_content=None,
+        **kwargs,
+    ):
 
         super(InboxService, self).__init__(**kwargs)
 
         self.accept_all_content = accept_all_content
 
         supported_content = supported_content or []
-        self.supported_content = [
-            ContentBindingEntity(c) for c in supported_content]
+        self.supported_content = [ContentBindingEntity(c) for c in supported_content]
 
         self.destination_collection_required = destination_collection_required
 
@@ -50,7 +52,8 @@ class InboxService(TAXIIService):
         if self.accept_all_content:
             return True
         return is_content_supported(
-            self.supported_content, content_binding, version=version)
+            self.supported_content, content_binding, version=version
+        )
 
     def get_destination_collections(self):
         return self.server.persistence.get_collections(self.id)
@@ -59,24 +62,31 @@ class InboxService(TAXIIService):
 
         name_list = name_list or []
 
-        if ((self.destination_collection_required and not name_list)
-                or (not self.destination_collection_required and name_list)):
+        if (self.destination_collection_required and not name_list) or (
+            not self.destination_collection_required and name_list
+        ):
             if not name_list:
-                message = ('A Destination_Collection_Name is required '
-                           'and none were specified')
+                message = (
+                    'A Destination_Collection_Name is required '
+                    'and none were specified'
+                )
             else:
-                message = ('Destination_Collection_Names are prohibited '
-                           'for this Inbox Service')
+                message = (
+                    'Destination_Collection_Names are prohibited '
+                    'for this Inbox Service'
+                )
             details = {
                 SD_ACCEPTABLE_DESTINATION: [
-                    c.name for c in self.get_destination_collections()
-                    if c.available]}
+                    c.name for c in self.get_destination_collections() if c.available
+                ]
+            }
 
             raise StatusMessageException(
                 ST_DESTINATION_COLLECTION_ERROR,
                 message=message,
                 in_response_to=in_response_to,
-                status_details=details)
+                status_details=details,
+            )
 
         # If we reach this point and name_list is empty,
         # self.destination_collection_required must be False
@@ -84,24 +94,24 @@ class InboxService(TAXIIService):
             name_list = [c.name for c in self.get_destination_collections()]
 
         collections = []
-        destinations_map = {
-            c.name: c for c in self.get_destination_collections()}
+        destinations_map = {c.name: c for c in self.get_destination_collections()}
 
         for name in name_list:
             if name in destinations_map:
                 collection = destinations_map[name]
-                if context.account.can_modify(name):
+                if collection.can_modify(context.account):
                     collections.append(collection)
                 else:
                     raise UnauthorizedException(
-                        message=('User can not write to collection {}'
-                                 .format(name)))
+                        message=('User can not write to collection {}'.format(name))
+                    )
             else:
                 raise StatusMessageException(
                     ST_NOT_FOUND,
                     message='Collection {} was not found'.format(name),
                     in_response_to=in_response_to,
-                    extended_headers={SD_ITEM: name})
+                    extended_headers={SD_ITEM: name},
+                )
 
         return collections
 
@@ -113,8 +123,9 @@ class InboxService(TAXIIService):
             return service_instances
 
         for instance in service_instances:
-            instance.inbox_service_accepted_content = (
-                self.get_supported_content(version))
+            instance.inbox_service_accepted_content = self.get_supported_content(
+                version
+            )
 
         return service_instances
 
@@ -124,4 +135,5 @@ class InboxService(TAXIIService):
             return []
 
         return content_binding_entities_to_content_bindings(
-            self.supported_content, version)
+            self.supported_content, version
+        )

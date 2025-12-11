@@ -1,7 +1,9 @@
 import argparse
+import uuid
 
 import structlog
 import yaml
+
 from opentaxii.cli import app
 from opentaxii.entities import Account
 from opentaxii.local import context
@@ -9,7 +11,7 @@ from opentaxii.utils import sync_conf_dict_into_db
 
 log = structlog.getLogger(__name__)
 
-local_admin = Account(id=None, username="local-admin", permissions=None, is_admin=True)
+local_admin = Account(id=None, username="local-admin", permissions={}, is_admin=True)
 
 
 def sync_data_configuration():
@@ -104,11 +106,26 @@ def add_api_root():
     parser.add_argument(
         "--default", action="store_true", help="Set as default api root"
     )
+    parser.add_argument("--public", action="store_true", help="Set as default api root")
+    parser.add_argument(
+        "-i",
+        "--id",
+        required=False,
+        help="The UUID to assign else a UUID4 is generated",
+    )
 
     args = parser.parse_args()
+
+    if args.id is not None:
+        uuid.UUID(args.id)
+
     with app.app_context():
         app.taxii_server.servers.taxii2.persistence.api.add_api_root(
-            title=args.title, description=args.description, default=args.default
+            title=args.title,
+            description=args.description,
+            default=args.default,
+            is_public=args.public,
+            api_root_id=args.id,
         )
 
 
@@ -137,6 +154,9 @@ def add_collection():
     parser.add_argument(
         "--public", action="store_true", help="allow public read access"
     )
+    parser.add_argument(
+        "--public-write", action="store_true", help="allow public write access"
+    )
     parser.set_defaults(public=False)
 
     args = parser.parse_args()
@@ -147,6 +167,7 @@ def add_collection():
             description=args.description,
             alias=args.alias,
             is_public=args.public,
+            is_public_write=args.public_write,
         )
 
 

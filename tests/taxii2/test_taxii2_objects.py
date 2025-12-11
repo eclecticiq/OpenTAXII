@@ -5,11 +5,22 @@ from urllib.parse import urlencode
 from uuid import uuid4
 
 import pytest
+
 from opentaxii.taxii2.utils import taxii2_datetimeformat
-from tests.taxii2.utils import (ADD_OBJECTS_MOCK, API_ROOTS, COLLECTIONS,
-                                GET_COLLECTION_MOCK, GET_JOB_AND_DETAILS_MOCK,
-                                GET_NEXT_PARAM, GET_OBJECTS_MOCK, JOBS, NOW,
-                                STIX_OBJECTS, config_noop, config_override)
+from tests.taxii2.utils import (
+    ADD_OBJECTS_MOCK,
+    API_ROOTS,
+    COLLECTIONS,
+    GET_COLLECTION_MOCK,
+    GET_JOB_AND_DETAILS_MOCK,
+    GET_NEXT_PARAM,
+    GET_OBJECTS_MOCK,
+    JOBS,
+    NOW,
+    STIX_OBJECTS,
+    config_noop,
+    config_override,
+)
 from tests.utils import SKIP
 
 
@@ -775,7 +786,7 @@ from tests.utils import SKIP
             202,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
-                "id": JOBS[0].id,
+                "id": str(JOBS[0].id),
                 "status": JOBS[0].status,
                 "request_timestamp": taxii2_datetimeformat(JOBS[0].request_timestamp),
                 "total_count": 4,
@@ -1169,38 +1180,45 @@ def test_objects(
     expected_headers,
     expected_content,
 ):
-    with patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2,
-        "config",
-        config_override_func(
-            authenticated_client.application.taxii_server.servers.taxii2.config
+    with (
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2,
+            "config",
+            config_override_func(
+                authenticated_client.application.taxii_server.servers.taxii2.config
+            ),
         ),
-    ), patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_objects",
-        side_effect=GET_OBJECTS_MOCK,
-    ), patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_collection",
-        side_effect=GET_COLLECTION_MOCK,
-    ), patch.object(
-        authenticated_client.account,
-        "permissions",
-        {
-            COLLECTIONS[0].id: ["read"],
-            COLLECTIONS[1].id: ["write"],
-            COLLECTIONS[2].id: ["read", "write"],
-            COLLECTIONS[4].id: ["read", "write"],
-            COLLECTIONS[5].id: ["write", "read"],
-        },
-    ), patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "add_objects",
-        side_effect=ADD_OBJECTS_MOCK,
-    ) as add_objects_mock, patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_job_and_details",
-        side_effect=GET_JOB_AND_DETAILS_MOCK,
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_objects",
+            side_effect=GET_OBJECTS_MOCK,
+        ),
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_collection",
+            side_effect=GET_COLLECTION_MOCK,
+        ),
+        patch.object(
+            authenticated_client.account,
+            "permissions",
+            {
+                str(COLLECTIONS[0].id): ["read"],
+                str(COLLECTIONS[1].id): ["write"],
+                str(COLLECTIONS[2].id): ["read", "write"],
+                str(COLLECTIONS[4].id): ["read", "write"],
+                str(COLLECTIONS[5].id): ["write", "read"],
+            },
+        ),
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "add_objects",
+            side_effect=ADD_OBJECTS_MOCK,
+        ) as add_objects_mock,
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_job_and_details",
+            side_effect=GET_JOB_AND_DETAILS_MOCK,
+        ),
     ):
         func = getattr(authenticated_client, method)
         if filter_kwargs:
@@ -1239,11 +1257,13 @@ def test_objects(
 
 
 @pytest.mark.parametrize("is_public", [True, False])
+@pytest.mark.parametrize("is_public_write", [True, False])
 @pytest.mark.parametrize("method", ["get", "post", "delete"])
 def test_objects_unauthenticated(
     client,
     method,
     is_public,
+    is_public_write,
 ):
     if is_public:
         collection_id = COLLECTIONS[6].id
@@ -1251,6 +1271,14 @@ def test_objects_unauthenticated(
             expected_status_code = 200
         elif method == "post":
             expected_status_code = 401
+        else:
+            expected_status_code = 405
+    elif is_public_write:
+        collection_id = COLLECTIONS[7].id
+        if method == "get":
+            expected_status_code = 401
+        elif method == "post":
+            expected_status_code = 202
         else:
             expected_status_code = 405
     else:
@@ -1261,16 +1289,24 @@ def test_objects_unauthenticated(
             expected_status_code = 401
         else:
             expected_status_code = 405
-    with patch.object(
-        client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_objects",
-        side_effect=GET_OBJECTS_MOCK,
-    ), patch.object(
-        client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_collection",
-        side_effect=GET_COLLECTION_MOCK,
+    with (
+        patch.object(
+            client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_objects",
+            side_effect=GET_OBJECTS_MOCK,
+        ),
+        patch.object(
+            client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_collection",
+            side_effect=GET_COLLECTION_MOCK,
+        ),
+        patch.object(
+            client.application.taxii_server.servers.taxii2.persistence.api,
+            "add_objects",
+            side_effect=ADD_OBJECTS_MOCK,
+        ) as add_objects_mock,
     ):
-        kwargs = {
+        kwargs: dict = {
             "headers": {
                 "Accept": "application/taxii+json;version=2.1",
                 "Content-Type": "application/taxii+json;version=2.1",
@@ -1302,3 +1338,11 @@ def test_objects_unauthenticated(
             **kwargs,
         )
     assert response.status_code == expected_status_code
+    if method == "post" and expected_status_code == 202:
+        add_objects_mock.assert_called_once_with(
+            api_root_id=API_ROOTS[0].id,
+            collection_id=COLLECTIONS[7].id,
+            objects=kwargs["json"]["objects"],
+        )
+    else:
+        add_objects_mock.assert_not_called()

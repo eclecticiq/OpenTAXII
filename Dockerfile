@@ -1,4 +1,4 @@
-FROM python:3.9 AS build
+FROM python:3.10 AS build
 LABEL maintainer="EclecticIQ <opentaxii@eclecticiq.com>"
 
 RUN apt-get update \
@@ -13,7 +13,7 @@ COPY . /opentaxii
 RUN /venv/bin/pip install /opentaxii
 
 
-FROM python:3.9-slim AS prod
+FROM python:3.10-slim AS prod
 LABEL maintainer="EclecticIQ <opentaxii@eclecticiq.com>"
 COPY --from=build /venv /venv
 
@@ -29,8 +29,8 @@ COPY ./docker/entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
 EXPOSE 9000
-ENV PATH "/venv/bin:${PATH}"
-ENV PYTHONDONTWRITEBYTECODE "1"
+ENV PATH="/venv/bin:${PATH}"
+ENV PYTHONDONTWRITEBYTECODE="1"
 CMD ["/venv/bin/gunicorn", "opentaxii.http:app", "--workers=2", \
      "--log-level=info", "--log-file=-", "--timeout=300", \
      "--config=python:opentaxii.http", "--bind=0.0.0.0:9000"]

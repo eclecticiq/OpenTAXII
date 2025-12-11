@@ -26,6 +26,14 @@ taxii1:
       create_tables: yes
 
 taxii2:
+  persistence_api:
+    class: opentaxii.persistence.sqldb.Taxii2SQLDatabaseAPI
+    parameters:
+      db_connection: sqlite:////tmp/data.db
+      create_tables: yes
+  title: "TAXII2 Server"
+  public_discovery: true
+  max_content_length: 209715200
 
 logging:
   opentaxii: info

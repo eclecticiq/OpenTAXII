@@ -5,18 +5,30 @@ from unittest.mock import patch
 
 import pytest
 from flask.testing import FlaskClient
+
 from opentaxii.config import ServerConfig
 from opentaxii.local import context, release_context
 from opentaxii.middleware import create_app
-from opentaxii.persistence.sqldb.taxii2models import (ApiRoot, Collection, Job,
-                                                      JobDetail, STIXObject)
+from opentaxii.persistence.sqldb.taxii2models import (
+    ApiRoot,
+    Collection,
+    Job,
+    JobDetail,
+    STIXObject,
+)
 from opentaxii.server import TAXIIServer
 from opentaxii.taxii.converters import dict_to_service_entity
 from opentaxii.taxii.http import HTTP_AUTHORIZATION
 from opentaxii.utils import configure_logging
-
-from tests.fixtures import (ACCOUNT, COLLECTIONS_B, DOMAIN, PASSWORD, SERVICES,
-                            USERNAME, VALID_TOKEN)
+from tests.fixtures import (
+    ACCOUNT,
+    COLLECTIONS_B,
+    DOMAIN,
+    PASSWORD,
+    SERVICES,
+    USERNAME,
+    VALID_TOKEN,
+)
 from tests.taxii2.utils import API_ROOTS, COLLECTIONS, JOBS, STIX_OBJECTS
 
 
@@ -48,7 +60,6 @@ if DBTYPE == "sqlite":
             except FileNotFoundError:
                 pass
 
-
 elif DBTYPE in ("mysql", "mariadb"):
     import MySQLdb
 
@@ -60,7 +71,6 @@ elif DBTYPE in ("mysql", "mariadb"):
         elif DBTYPE == "mariadb":
             port = 3307
         yield f"mysql+mysqldb://root:@127.0.0.1:{port}/test?charset=utf8"
-
 
 elif DBTYPE == "postgres":
     import platform
@@ -74,7 +84,6 @@ elif DBTYPE == "postgres":
     @pytest.fixture(scope="session")
     def dbconn():
         yield "postgresql+psycopg2://test:test@127.0.0.1:5432/test"
-
 
 else:
     raise NotImplementedError(f"dbtype {DBTYPE} not supported")
@@ -135,7 +144,7 @@ def anonymous_user():
 def clean_db(dbconn):
     # drop and recreate db to provide clean state at beginning
     if DBTYPE == "sqlite":
-        filename = dbconn[len("sqlite:///"):]
+        filename = dbconn[len("sqlite:///") :]
         os.remove(filename)
     elif DBTYPE == "postgres":
         with psycopg2.connect(
@@ -207,7 +216,7 @@ def transaction_app(dbconn, taxiiserver):
         connections.append(connection)
         sessions.append(manager.api.db.session)
     yield app
-    for (transaction, connection, session, manager) in zip(
+    for transaction, connection, session, manager in zip(
         transactions, connections, sessions, managers
     ):
         transaction.rollback()
@@ -223,6 +232,8 @@ def truncate_app(dbconn):
     app = create_app(context.server)
     app.config["TESTING"] = True
     yield app
+    taxiiserver.servers.taxii1.persistence.api.db.engine.dispose()  # type: ignore[union-attr]
+    taxiiserver.servers.taxii2.persistence.api.db.engine.dispose()  # type: ignore[union-attr]
 
 
 @pytest.fixture()
@@ -268,14 +279,17 @@ def authenticated_client(client):
     }
     client.headers = headers
     client.account = ACCOUNT
-    with patch.object(
-        client.application.taxii_server.auth.api,
-        "authenticate",
-        side_effect=MOCK_AUTHENTICATE,
-    ), patch.object(
-        client.application.taxii_server.auth.api,
-        "get_account",
-        side_effect=MOCK_GET_ACCOUNT,
+    with (
+        patch.object(
+            client.application.taxii_server.auth.api,
+            "authenticate",
+            side_effect=MOCK_AUTHENTICATE,
+        ),
+        patch.object(
+            client.application.taxii_server.auth.api,
+            "get_account",
+            side_effect=MOCK_GET_ACCOUNT,
+        ),
     ):
         yield client
 

@@ -16,7 +16,7 @@ function wait_for_port() {
 
 # Default OpenTAXII Configuration
 : ${OPENTAXII_DOMAIN:=localhost:9000}
-: ${OPENTAXII_AUTH_SECRET:=notVerySecret}
+: ${DOCKER_OPENTAXII_AUTH_SECRET:=notVerySecret}
 : ${OPENTAXII_CONFIG:=/opentaxii.yml}
 # make sure this env var is available to the main process and subprocesses!
 export OPENTAXII_CONFIG
@@ -67,18 +67,29 @@ cat > "$tmpConfig" <<-EOCONFIG
 
 domain: "${OPENTAXII_DOMAIN}"
 
-persistence_api:
-  class: opentaxii.persistence.sqldb.SQLDatabaseAPI
-  parameters:
-    db_connection: ${P_URL}
-    create_tables: yes
+taxii1:
+  persistence_api:
+    class: opentaxii.persistence.sqldb.SQLDatabaseAPI
+    parameters:
+      db_connection: ${P_URL}
+      create_tables: yes
+
+taxii2:
+  persistence_api:
+    class: opentaxii.persistence.sqldb.Taxii2SQLDatabaseAPI
+    parameters:
+      db_connection: ${P_URL}
+      create_tables: yes
+  title: "TAXII2 Server"
+  public_discovery: true
+  max_content_length: 209715200
 
 auth_api:
   class: opentaxii.auth.sqldb.SQLDatabaseAPI
   parameters:
     db_connection: ${A_URL}
     create_tables: yes
-    secret: ${OPENTAXII_AUTH_SECRET}
+    secret: ${DOCKER_OPENTAXII_AUTH_SECRET}
 
 logging:
   opentaxii: info
@@ -96,6 +107,6 @@ cp -f $tmpConfig /opentaxii.yml
 [ "$AUTH_DATABASE_HOST" ] && wait_for_port $AUTH_DATABASE_HOST ${AUTH_DATABASE_PORT-5432}
 
 # Sync data configuration if it is present
-[ -f /input/data-configuration.yml ] && opentaxii-sync-data -f /input/data-configuration.yml 2>/dev/null
+[ -f /input/data-configuration.yml ] && opentaxii-sync-data -f /input/data-configuration.yml
 
 exec "$@"

@@ -1,7 +1,9 @@
 import os
 import tempfile
+from typing import Tuple
 
 import pytest
+
 from opentaxii.config import ServerConfig
 
 BACKWARDS_COMPAT_CONFIG = """
@@ -83,6 +85,18 @@ DEFAULT_TAXII1_VALUES = {
     "hooks": None,
     "count_blocks_in_poll_responses": False,
 }
+DEFAULT_TAXII2_VALUES = {
+    "persistence_api": {
+        "class": "opentaxii.persistence.sqldb.Taxii2SQLDatabaseAPI",
+        "parameters": {
+            "create_tables": True,
+            "db_connection": "sqlite:////tmp/data.db",
+        },
+    },
+    "title": "TAXII2 Server",
+    "public_discovery": True,
+    "max_content_length": 209715200,
+}
 TAXII1_VALUES = {
     "persistence_api": {
         "class": "some.test.PersistenceClass",
@@ -100,6 +114,8 @@ TAXII2_VALUES = {
         "parameters": {
             "a": 1,
             "b": 2,
+            "create_tables": True,
+            "db_connection": "sqlite:////tmp/data.db",
         },
     },
     "max_content_length": 1024,
@@ -113,7 +129,7 @@ EXPECTED_VALUES = {
             **DEFAULT_TAXII1_VALUES,
             **TAXII1_VALUES,
         },
-        "taxii2": None,
+        "taxii2": {**DEFAULT_TAXII2_VALUES},
     },
     COMBINED_CONFIG: {
         **DEFAULT_BASE_VALUES,
@@ -122,6 +138,7 @@ EXPECTED_VALUES = {
             **TAXII1_VALUES,
         },
         "taxii2": {
+            **DEFAULT_TAXII2_VALUES,
             **TAXII2_VALUES,
         },
     },
@@ -129,6 +146,7 @@ EXPECTED_VALUES = {
         **DEFAULT_BASE_VALUES,
         "taxii1": None,
         "taxii2": {
+            **DEFAULT_TAXII2_VALUES,
             **TAXII2_VALUES,
         },
     },
@@ -168,7 +186,7 @@ def test_custom_config_file(config_file_name_expected_value):
         deprecation_warning,
         taxii2_only_warning,
     ) = config_file_name_expected_value
-    warning_classes = (UserWarning,)
+    warning_classes: Tuple = (UserWarning,)
     if deprecation_warning or taxii2_only_warning:
         warning_classes += (DeprecationWarning,)
     expected_warnings = {"Ignoring invalid configuration item 'dummy'."}

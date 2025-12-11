@@ -7,7 +7,7 @@ from opentaxii.cli import app
 def create_account(argv=None):
     parser = argparse.ArgumentParser(
         description="Create Account via OpenTAXII Auth API",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("-u", "--username", required=True)
     parser.add_argument("-p", "--password", required=True)
@@ -21,6 +21,7 @@ def create_account(argv=None):
         account = app.taxii_server.auth.api.create_account(
             username=args.username,
             password=args.password,
+            is_admin=args.admin,
         )
         token = app.taxii_server.auth.authenticate(
             username=account.username,
@@ -38,7 +39,7 @@ def is_truely(text):
 def update_account(argv=None):
     parser = argparse.ArgumentParser(
         description="Update Account via OpenTAXII Auth API",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     fields = ("password", "admin")
     parser.add_argument("-u", "--username", required=True)

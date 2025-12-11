@@ -1,11 +1,19 @@
 import json
+import uuid
 from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
+
+from opentaxii.entities import Account
 from opentaxii.persistence.sqldb import taxii2models
-from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, GET_API_ROOT_MOCK,
-                                GET_COLLECTION_MOCK)
+from opentaxii.taxii2.entities import Collection
+from tests.taxii2.utils import (
+    API_ROOTS,
+    COLLECTIONS,
+    GET_API_ROOT_MOCK,
+    GET_COLLECTION_MOCK,
+)
 
 
 @pytest.mark.parametrize(
@@ -19,7 +27,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, GET_API_ROOT_MOCK,
             200,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
-                "id": COLLECTIONS[0].id,
+                "id": str(COLLECTIONS[0].id),
                 "title": "0Read only",
                 "description": "Read only description",
                 "can_read": True,
@@ -36,7 +44,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, GET_API_ROOT_MOCK,
             200,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
-                "id": COLLECTIONS[4].id,
+                "id": str(COLLECTIONS[4].id),
                 "title": "4No description",
                 "can_read": True,
                 "can_write": True,
@@ -52,7 +60,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, GET_API_ROOT_MOCK,
             200,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
-                "id": COLLECTIONS[5].id,
+                "id": str(COLLECTIONS[5].id),
                 "title": "5With alias",
                 "description": "With alias description",
                 "alias": "this-is-an-alias",
@@ -70,7 +78,7 @@ from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, GET_API_ROOT_MOCK,
             200,
             {"Content-Type": "application/taxii+json;version=2.1"},
             {
-                "id": COLLECTIONS[5].id,
+                "id": str(COLLECTIONS[5].id),
                 "title": "5With alias",
                 "description": "With alias description",
                 "alias": "this-is-an-alias",
@@ -169,27 +177,33 @@ def test_collection(
     expected_headers,
     expected_content,
 ):
-    with patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_api_root",
-        side_effect=GET_API_ROOT_MOCK,
-    ), patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_collection",
-        side_effect=GET_COLLECTION_MOCK,
-    ), patch.object(
-        authenticated_client.account,
-        "permissions",
-        {
-            COLLECTIONS[0].id: ["read"],
-            COLLECTIONS[1].id: ["write"],
-            COLLECTIONS[2].id: ["read", "write"],
-            COLLECTIONS[4].id: ["read", "write"],
-            COLLECTIONS[5].id: ["write"],
-        },
+    with (
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_api_root",
+            side_effect=GET_API_ROOT_MOCK,
+        ),
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_collection",
+            side_effect=GET_COLLECTION_MOCK,
+        ),
+        patch.object(
+            authenticated_client.account,
+            "permissions",
+            {
+                str(COLLECTIONS[0].id): ["read"],
+                str(COLLECTIONS[1].id): ["write"],
+                str(COLLECTIONS[2].id): ["read", "write"],
+                str(COLLECTIONS[4].id): ["read", "write"],
+                str(COLLECTIONS[5].id): ["write"],
+            },
+        ),
     ):
         func = getattr(authenticated_client, method)
-        response = func(f"/taxii2/{api_root_id}/collections/{collection_id}/", headers=headers)
+        response = func(
+            f"/taxii2/{api_root_id}/collections/{collection_id}/", headers=headers
+        )
     assert response.status_code == expected_status
     assert {
         key: response.headers.get(key) for key in expected_headers
@@ -205,14 +219,22 @@ def test_collection(
 
 
 @pytest.mark.parametrize("is_public", [True, False])
+@pytest.mark.parametrize("is_public_write", [True, False])
 @pytest.mark.parametrize("method", ["get", "post", "delete"])
 def test_collection_unauthenticated(
     client,
     method,
     is_public,
+    is_public_write,
 ):
     if is_public:
         collection_id = COLLECTIONS[6].id
+        if method == "get":
+            expected_status_code = 200
+        else:
+            expected_status_code = 405
+    elif is_public_write:
+        collection_id = COLLECTIONS[7].id
         if method == "get":
             expected_status_code = 200
         else:
@@ -223,14 +245,17 @@ def test_collection_unauthenticated(
             expected_status_code = 401
         else:
             expected_status_code = 405
-    with patch.object(
-        client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_api_root",
-        side_effect=GET_API_ROOT_MOCK,
-    ), patch.object(
-        client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_collection",
-        side_effect=GET_COLLECTION_MOCK,
+    with (
+        patch.object(
+            client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_api_root",
+            side_effect=GET_API_ROOT_MOCK,
+        ),
+        patch.object(
+            client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_collection",
+            side_effect=GET_COLLECTION_MOCK,
+        ),
     ):
         func = getattr(client, method)
         response = func(
@@ -241,7 +266,7 @@ def test_collection_unauthenticated(
 
 
 @pytest.mark.parametrize(
-    ["api_root_id", "title", "description", "alias", "is_public"],
+    ["api_root_id", "title", "description", "alias", "is_public", "is_public_write"],
     [
         pytest.param(
             API_ROOTS[0].id,  # api_root_id
@@ -249,6 +274,7 @@ def test_collection_unauthenticated(
             None,  # description
             None,  # alias
             False,  # is_public
+            False,  # is_public_write
             id="api_root_id, title",
         ),
         pytest.param(
@@ -257,6 +283,7 @@ def test_collection_unauthenticated(
             "my description",  # description
             None,  # alias
             True,  # is_public
+            False,  # is_public_write
             id="api_root_id, title, description",
         ),
         pytest.param(
@@ -265,12 +292,21 @@ def test_collection_unauthenticated(
             "my description",  # description
             "my-alias",  # alias
             False,  # is_public
+            True,  # is_public_write
             id="api_root_id, title, description, alias",
         ),
     ],
 )
 def test_add_collection(
-    app, api_root_id, title, description, alias, is_public, db_api_roots, db_collections
+    app,
+    api_root_id,
+    title,
+    description,
+    alias,
+    is_public,
+    is_public_write,
+    db_api_roots,
+    db_collections,
 ):
     collection = app.taxii_server.servers.taxii2.persistence.api.add_collection(
         api_root_id=api_root_id,
@@ -278,13 +314,15 @@ def test_add_collection(
         description=description,
         alias=alias,
         is_public=is_public,
+        is_public_write=is_public_write,
     )
     assert collection.id is not None
-    assert str(collection.api_root_id) == api_root_id
+    assert collection.api_root_id == api_root_id
     assert collection.title == title
     assert collection.description == description
     assert collection.alias == alias
     assert collection.is_public == is_public
+    assert collection.is_public_write == is_public_write
     db_collection = (
         app.taxii_server.servers.taxii2.persistence.api.db.session.query(
             taxii2models.Collection
@@ -292,8 +330,105 @@ def test_add_collection(
         .filter(taxii2models.Collection.id == collection.id)
         .one()
     )
-    assert str(db_collection.api_root_id) == api_root_id
+    assert db_collection.api_root_id == api_root_id
     assert db_collection.title == title
     assert db_collection.description == description
     assert db_collection.alias == alias
     assert db_collection.is_public == is_public
+    assert db_collection.is_public_write == is_public_write
+
+
+def test_collection_can_read():
+    collection = Collection(
+        id=uuid.UUID("f74bf902-0b63-4c76-9bed-aecb120b084d"),
+        api_root_id=uuid.UUID("fe6489a0-26eb-4810-8efc-ad5a46d85a35"),
+        title="test",
+        description="test",
+        alias=None,
+        is_public=False,
+        is_public_write=False,
+    )
+    str_collection_id = str(collection.id)
+
+    # Without account
+    assert collection.can_read(None) is False
+    # With account
+    assert collection.can_read(Account("admin", "admin", {}, is_admin=True)) is True
+    assert (
+        collection.can_read(Account("inaccessible", "inaccessible", {}, is_admin=False))
+        is False
+    )
+    assert (
+        collection.can_read(
+            Account(
+                "read_only", "read_only", {str_collection_id: ["read"]}, is_admin=False
+            )
+        )
+        is True
+    )
+    assert (
+        collection.can_read(
+            Account(
+                "write_access",
+                "write_access",
+                {str_collection_id: ["write"]},
+                is_admin=False,
+            )
+        )
+        is False
+    )
+
+    # Public
+    collection.is_public_write = True
+    assert collection.can_read(None) is False
+    collection.is_public = True
+    assert collection.can_read(None) is True
+
+
+def test_collection_can_write():
+    collection = Collection(
+        id=uuid.UUID("f74bf902-0b63-4c76-9bed-aecb120b084d"),
+        api_root_id=uuid.UUID("fe6489a0-26eb-4810-8efc-ad5a46d85a35"),
+        title="test",
+        description="test",
+        alias=None,
+        is_public=False,
+        is_public_write=False,
+    )
+    str_collection_id = str(collection.id)
+
+    # Without account
+    assert collection.can_write(None) is False
+    # With account
+    assert collection.can_write(Account("admin", "admin", {}, is_admin=True)) is True
+    assert (
+        collection.can_write(
+            Account("inaccessible", "inaccessible", {}, is_admin=False)
+        )
+        is False
+    )
+    assert (
+        collection.can_write(
+            Account(
+                "read_only", "read_only", {str_collection_id: ["read"]}, is_admin=False
+            )
+        )
+        is False
+    )
+    assert (
+        collection.can_write(
+            Account(
+                "write_access",
+                "write_access",
+                {str_collection_id: ["write"]},
+                is_admin=False,
+            )
+        )
+        is True
+    )
+
+    # Public
+    collection.is_public = True
+    assert collection.can_write(None) is False
+    collection.is_public_write = True
+    assert collection.can_write(None) is True

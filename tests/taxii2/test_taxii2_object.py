@@ -5,10 +5,18 @@ from urllib.parse import urlencode
 from uuid import uuid4
 
 import pytest
+
 from opentaxii.taxii2.utils import DATETIMEFORMAT, taxii2_datetimeformat
-from tests.taxii2.utils import (API_ROOTS, COLLECTIONS, DELETE_OBJECT_MOCK,
-                                GET_COLLECTION_MOCK, GET_NEXT_PARAM,
-                                GET_OBJECT_MOCK, NOW, STIX_OBJECTS)
+from tests.taxii2.utils import (
+    API_ROOTS,
+    COLLECTIONS,
+    DELETE_OBJECT_MOCK,
+    GET_COLLECTION_MOCK,
+    GET_NEXT_PARAM,
+    GET_OBJECT_MOCK,
+    NOW,
+    STIX_OBJECTS,
+)
 
 
 @pytest.mark.parametrize(
@@ -796,29 +804,34 @@ def test_object(
     expected_headers,
     expected_content,
 ):
-    with patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_object",
-        side_effect=GET_OBJECT_MOCK,
-    ), patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_collection",
-        side_effect=GET_COLLECTION_MOCK,
-    ), patch.object(
-        authenticated_client.account,
-        "permissions",
-        {
-            COLLECTIONS[0].id: ["read"],
-            COLLECTIONS[1].id: ["write"],
-            COLLECTIONS[2].id: ["read", "write"],
-            COLLECTIONS[4].id: ["read", "write"],
-            COLLECTIONS[5].id: ["write", "read"],
-        },
-    ), patch.object(
-        authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
-        "delete_object",
-        side_effect=DELETE_OBJECT_MOCK,
-    ) as delete_object_mock:
+    with (
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_object",
+            side_effect=GET_OBJECT_MOCK,
+        ),
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_collection",
+            side_effect=GET_COLLECTION_MOCK,
+        ),
+        patch.object(
+            authenticated_client.account,
+            "permissions",
+            {
+                str(COLLECTIONS[0].id): ["read"],
+                str(COLLECTIONS[1].id): ["write"],
+                str(COLLECTIONS[2].id): ["read", "write"],
+                str(COLLECTIONS[4].id): ["read", "write"],
+                str(COLLECTIONS[5].id): ["write", "read"],
+            },
+        ),
+        patch.object(
+            authenticated_client.application.taxii_server.servers.taxii2.persistence.api,
+            "delete_object",
+            side_effect=DELETE_OBJECT_MOCK,
+        ) as delete_object_mock,
+    ):
         func = getattr(authenticated_client, method)
         if filter_kwargs:
             querystring = f"?{urlencode(filter_kwargs)}"
@@ -832,16 +845,20 @@ def test_object(
     assert response.status_code == expected_status
     if method == "delete" and expected_status == 200:
         expected_kwargs = {
-            "match_version": [
-                datetime.datetime.strptime(
-                    filter_kwargs["match[version]"], DATETIMEFORMAT
-                ).replace(tzinfo=datetime.timezone.utc)
-            ]
-            if "match[version]" in filter_kwargs
-            else None,
-            "match_spec_version": [filter_kwargs["match[spec_version]"]]
-            if "match[spec_version]" in filter_kwargs
-            else None,
+            "match_version": (
+                [
+                    datetime.datetime.strptime(
+                        filter_kwargs["match[version]"], DATETIMEFORMAT
+                    ).replace(tzinfo=datetime.timezone.utc)
+                ]
+                if "match[version]" in filter_kwargs
+                else None
+            ),
+            "match_spec_version": (
+                [filter_kwargs["match[spec_version]"]]
+                if "match[spec_version]" in filter_kwargs
+                else None
+            ),
         }
         delete_object_mock.assert_called_once_with(
             collection_id=COLLECTIONS[5].id, object_id=object_id, **expected_kwargs
@@ -886,14 +903,17 @@ def test_object_unauthenticated(
             expected_status_code = 401
         else:
             expected_status_code = 405
-    with patch.object(
-        client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_object",
-        side_effect=GET_OBJECT_MOCK,
-    ), patch.object(
-        client.application.taxii_server.servers.taxii2.persistence.api,
-        "get_collection",
-        side_effect=GET_COLLECTION_MOCK,
+    with (
+        patch.object(
+            client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_object",
+            side_effect=GET_OBJECT_MOCK,
+        ),
+        patch.object(
+            client.application.taxii_server.servers.taxii2.persistence.api,
+            "get_collection",
+            side_effect=GET_COLLECTION_MOCK,
+        ),
     ):
         func = getattr(client, method)
         response = func(
