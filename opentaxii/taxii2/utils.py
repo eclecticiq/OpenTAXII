@@ -24,8 +24,8 @@ def get_object_version(obj: dict) -> datetime.datetime:
     1. ``modified`` field, if present
     2. ``created`` field, if present
     3. 1970-01-01T00:00:00+00:00 otherwise
-    
-    This is guided by 3.4.1 Supported Fields for Match [#]_: 
+
+    This is guided by 3.4.1 Supported Fields for Match [#]_:
 
         If a STIX object is not versioned (and therefore does not have a modified
         timestamp) then this version parameter MUST use the created timestamp. If
