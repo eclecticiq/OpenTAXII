@@ -816,11 +816,11 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
                         VersionSTIXObject.id == taxii2models.STIXObject.id,
                     )
                     .group_by(VersionSTIXObject.id)
-                    .correlate(taxii2models.STIXObject)  # type: ignore[arg-type]
-                    .subquery('object_min_version')  # type: ignore[attr-defined]
+                    .scalar_subquery()  # type: ignore[attr-defined]
+                    .correlate(taxii2models.STIXObject)
                 )
                 version_filters.append(
-                    min_versions_subq.c.min_version == taxii2models.STIXObject.version
+                    min_versions_subq == taxii2models.STIXObject.version
                 )
             elif value == "last":
                 VersionSTIXObject = aliased(taxii2models.STIXObject, name="oso_max")
@@ -834,11 +834,11 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
                         VersionSTIXObject.id == taxii2models.STIXObject.id,
                     )
                     .group_by(VersionSTIXObject.id)
-                    .correlate(taxii2models.STIXObject)  # type: ignore[arg-type]
-                    .subquery('object_max_version')  # type: ignore[attr-defined]
+                    .scalar_subquery()  # type: ignore[attr-defined]
+                    .correlate(taxii2models.STIXObject)
                 )
                 version_filters.append(
-                    max_versions_subq.c.max_version == taxii2models.STIXObject.version
+                    max_versions_subq == taxii2models.STIXObject.version
                 )
             else:
                 version_filters.append(taxii2models.STIXObject.version == value)
