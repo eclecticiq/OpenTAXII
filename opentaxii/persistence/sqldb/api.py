@@ -802,7 +802,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         if "all" in match_version:
             return query
         version_filters = []
-        taxii2models
+
         for value in match_version:
             if value == "first":
                 VersionSTIXObject = aliased(taxii2models.STIXObject, name="oso_min")
