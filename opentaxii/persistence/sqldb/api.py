@@ -809,51 +809,37 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
 
                 min_versions_subq = (
                     sqlalchemy.select(
-                        VersionSTIXObject.pk,
                         func.min(VersionSTIXObject.version).label("min_version"),
                     )
                     .where(  # type: ignore[call-arg]
                         VersionSTIXObject.collection_id == collection_id,
                         VersionSTIXObject.id == taxii2models.STIXObject.id,
                     )
-                    .group_by(VersionSTIXObject.pk)
+                    .group_by(VersionSTIXObject.id)
                     .correlate(taxii2models.STIXObject)  # type: ignore[arg-type]
                     .subquery('object_min_version')  # type: ignore[attr-defined]
                 )
-                min_version_pks = (
-                    sqlalchemy.select(min_versions_subq.c.pk)
-                    .select_from(min_versions_subq)
-                    .where(
-                        min_versions_subq.c.min_version
-                        == taxii2models.STIXObject.version
-                    )
+                version_filters.append(
+                    min_versions_subq.c.min_version == taxii2models.STIXObject.version
                 )
-                version_filters.append(taxii2models.STIXObject.pk.in_(min_version_pks))
             elif value == "last":
                 VersionSTIXObject = aliased(taxii2models.STIXObject, name="oso_max")
 
                 max_versions_subq = (
                     sqlalchemy.select(
-                        VersionSTIXObject.pk,
-                        func.max(VersionSTIXObject.version).label("max_version"),
+                        func.max(VersionSTIXObject.version).label("max_version")
                     )
                     .where(  # type: ignore[call-arg]
                         VersionSTIXObject.collection_id == collection_id,
                         VersionSTIXObject.id == taxii2models.STIXObject.id,
                     )
-                    .group_by(VersionSTIXObject.pk)
+                    .group_by(VersionSTIXObject.id)
                     .correlate(taxii2models.STIXObject)  # type: ignore[arg-type]
                     .subquery('object_max_version')  # type: ignore[attr-defined]
                 )
-                max_version_pks = (
-                    sqlalchemy.select(max_versions_subq.c.pk)
-                    .select_from(max_versions_subq)
-                    .where(
-                        max_versions_subq.c.max_version
-                        == taxii2models.STIXObject.version
-                    )
+                version_filters.append(
+                    max_versions_subq.c.max_version == taxii2models.STIXObject.version
                 )
-                version_filters.append(taxii2models.STIXObject.pk.in_(max_version_pks))
             else:
                 version_filters.append(taxii2models.STIXObject.version == value)
         query = query.filter(reduce(or_, version_filters))
