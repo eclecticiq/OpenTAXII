@@ -28,7 +28,7 @@ opentaxii:
   volumes:
     - ./data-configuration.yml:/input/data-configuration.yml:ro
   ports:
-    - 9000:9000
+    - 1234:9000
   links:
     - db:db
     - authdb:authdb

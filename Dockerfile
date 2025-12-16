@@ -26,7 +26,9 @@ RUN apt-get update \
 VOLUME ["/data", "/input"]
 
 COPY ./docker/entrypoint.sh /entrypoint.sh
+COPY  examples/data-configuration.yml /input/data-configuration.yml	
 ENTRYPOINT ["/entrypoint.sh"]
+
 
 EXPOSE 9000
 ENV PATH="/venv/bin:${PATH}"

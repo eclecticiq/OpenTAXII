@@ -7,7 +7,7 @@ services:
     description: Custom Inbox Service Description A
     destination_collection_required: yes
     accept_all_content: yes
-    authentication_required: no
+    authentication_required: yes
     protocol_bindings:
       - urn:taxii.mitre.org:protocol:http:1.0
 
