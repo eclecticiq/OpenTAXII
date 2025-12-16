@@ -109,4 +109,37 @@ cp -f $tmpConfig /opentaxii.yml
 # Sync data configuration if it is present
 [ -f /input/data-configuration.yml ] && opentaxii-sync-data -f /input/data-configuration.yml
 
+# TAXII 2.x Setup - Create API Root and Collection with fixed IDs
+: ${TAXII2_API_ROOT_ID:=00000000-0000-0000-0000-000000000001}
+: ${TAXII2_COLLECTION_ID:=00000000-0000-0000-0000-000000000002}
+
+echo "Setting up TAXII 2.x API Root and Collection..."
+
+# Create API Root (ignore error if already exists)
+opentaxii-add-api-root \
+    --title "Default API Root" \
+    --description "Default TAXII 2.x API Root" \
+    --default \
+    --public \
+    --id "$TAXII2_API_ROOT_ID" 2>/dev/null || echo "API Root already exists"
+
+# Create Collection (ignore error if already exists)
+opentaxii-add-collection \
+    --rootid "$TAXII2_API_ROOT_ID" \
+    --title "threat-intel" \
+    --description "Threat Intelligence Collection" \
+    --alias "threat-intel" \
+    --public \
+    --public-write 2>/dev/null || echo "Collection already exists"
+
+echo "============================================"
+echo "TAXII 2.x Endpoints Ready!"
+echo "============================================"
+echo "Discovery URL: https://${OPENTAXII_DOMAIN}/taxii2/"
+echo "API Root URL:  https://${OPENTAXII_DOMAIN}/taxii2/${TAXII2_API_ROOT_ID}/"
+echo "Collection ID: ${TAXII2_COLLECTION_ID}"
+echo "Objects URL:   https://${OPENTAXII_DOMAIN}/taxii2/${TAXII2_API_ROOT_ID}/collections/threat-intel/objects/"
+echo "Auth:          admin / admin"
+echo "============================================"
+
 exec "$@"
