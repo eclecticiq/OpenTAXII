@@ -157,9 +157,19 @@ def add_collection():
     parser.add_argument(
         "--public-write", action="store_true", help="allow public write access"
     )
+    parser.add_argument(
+        "-i",
+        "--id",
+        required=False,
+        help="The UUID to assign else a UUID4 is generated",
+    )
     parser.set_defaults(public=False)
 
     args = parser.parse_args()
+
+    if args.id is not None:
+        uuid.UUID(args.id)
+
     with app.app_context():
         app.taxii_server.servers.taxii2.persistence.api.add_collection(
             api_root_id=args.rootid,
@@ -168,6 +178,7 @@ def add_collection():
             alias=args.alias,
             is_public=args.public,
             is_public_write=args.public_write,
+            collection_id=args.id,
         )
 
 

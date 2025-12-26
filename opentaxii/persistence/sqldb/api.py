@@ -711,6 +711,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
         alias: Optional[str] = None,
         is_public: bool = False,
         is_public_write: bool = False,
+        collection_id: Optional[str] = None,
     ) -> entities.Collection:
         """
         Add a new collection.
@@ -723,10 +724,11 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             readable
         :param is_public_write: [Optional] Whether collection should be
             publicly writable
+        :param collection_id: [Optional] UUID to assign to the collection
 
         :return: The added Collection entity.
         """
-        collection = taxii2models.Collection(
+        collection_kwargs = dict(
             api_root_id=api_root_id,
             title=title,
             description=description,
@@ -734,6 +736,9 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             is_public=is_public,
             is_public_write=is_public_write,
         )
+        if collection_id:
+            collection_kwargs["id"] = collection_id
+        collection = taxii2models.Collection(**collection_kwargs)
         self.db.session.add(collection)
         self.db.session.commit()
 

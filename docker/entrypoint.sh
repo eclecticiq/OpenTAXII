@@ -130,7 +130,8 @@ opentaxii-add-collection \
     --description "Threat Intelligence Collection" \
     --alias "threat-intel" \
     --public \
-    --public-write 2>/dev/null || echo "Collection already exists"
+    --public-write \
+    --id "$TAXII2_COLLECTION_ID" 2>/dev/null || echo "Collection already exists"
 
 echo "============================================"
 echo "TAXII 2.x Endpoints Ready!"
@@ -138,7 +139,7 @@ echo "============================================"
 echo "Discovery URL: https://${OPENTAXII_DOMAIN}/taxii2/"
 echo "API Root URL:  https://${OPENTAXII_DOMAIN}/taxii2/${TAXII2_API_ROOT_ID}/"
 echo "Collection ID: ${TAXII2_COLLECTION_ID}"
-echo "Objects URL:   https://${OPENTAXII_DOMAIN}/taxii2/${TAXII2_API_ROOT_ID}/collections/threat-intel/objects/"
+echo "Objects URL:   https://${OPENTAXII_DOMAIN}/taxii2/${TAXII2_API_ROOT_ID}/collections/${TAXII2_COLLECTION_ID}/objects/"
 echo "Auth:          admin / admin"
 echo "============================================"
 
