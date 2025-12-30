@@ -5,6 +5,15 @@ domain: "localhost:9000"
 support_basic_auth: yes
 return_server_error_details: no
 
+# Bearer token header authentication (token without "Bearer " prefix)
+# Set to header name like "X-TAXII-Token" to enable
+bearer_token_header: "wz4bvsdKsbrETiwy"
+
+# API key authentication
+# Set both header and key to enable
+api_key_header: "x-api-token"
+api_key: "pYVzaQodzRD6cE25"
+
 auth_api:
   class: opentaxii.auth.sqldb.SQLDatabaseAPI
   parameters:

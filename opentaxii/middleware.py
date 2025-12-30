@@ -5,6 +5,7 @@ from flask import Flask, request
 from marshmallow.exceptions import ValidationError as MarshmallowValidationError
 from werkzeug.exceptions import HTTPException
 
+from .entities import Account
 from .exceptions import InvalidAuthHeader
 from .local import context, release_context
 from .management import management
@@ -59,8 +60,37 @@ def cleanup_context(response):
     return response
 
 
-def _authenticate(server, headers):
+api_key_account = Account(
+    id="api_key",
+    username="api_key_user",
+    permissions={},
+    is_admin=True,
+)
 
+
+def _authenticate(server, headers):
+    # Check for bearer token header (token without "Bearer " prefix)
+    bearer_token_header = server.config.get("bearer_token_header")
+    if bearer_token_header:
+        token = headers.get(bearer_token_header)
+        if token:
+            account = server.auth.get_account(token)
+            if account:
+                return account
+            log.warning("auth.bearer_token_header.invalid_token", header=bearer_token_header)
+
+    # Check for API key authentication
+    api_key_header = server.config.get("api_key_header")
+    api_key = server.config.get("api_key")
+    if api_key_header and api_key:
+        provided_key = headers.get(api_key_header)
+        if provided_key:
+            if provided_key == api_key:
+                return api_key_account
+            log.warning("auth.api_key.invalid", header=api_key_header)
+            server.raise_unauthorized()
+
+    # Fall back to standard Authorization header (Basic/Bearer)
     auth_header = headers.get(HTTP_AUTHORIZATION)
     if not auth_header:
         return None
