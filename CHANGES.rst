@@ -3,11 +3,52 @@ Changelog
 
 0.10.0 (unreleased)
 -------------------
+
+Features:
+
+* Add --public and --id params to the CLI opentaxii-add-api-root `#283
+  <https://github.com/eclecticiq/OpenTAXII/pull/283>`_
+* Enable TAXII 2.1 in the default configuration `#293
+  <https://github.com/eclecticiq/OpenTAXII/pull/293>`_
+* Improve get objects performance `#297
+  <https://github.com/eclecticiq/OpenTAXII/pull/297>`_
+
+Bug fixes:
+
+* Fix UUID json serialization `#289
+  <https://github.com/eclecticiq/OpenTAXII/pull/289>`_
+* Returned ``spec_version`` was equal to the ``type`` `#237
+  <https://github.com/eclecticiq/OpenTAXII/pull/237>`_ (@meetghodasara-crest)
+  and `#284 <https://github.com/eclecticiq/OpenTAXII/pull/284>`_
+* Consider ``--admin`` flag when creating an account from the CLI with
+  ``opentaxii-create-account`` `#237
+  <https://github.com/eclecticiq/OpenTAXII/pull/237>`_
+* TAXII 2.1 version supports now objects without a ``modified`` property.
+  ``created`` is used as a fallback and if missing ``01/01/1970`` date is used
+  instead. `#240 <https://github.com/eclecticiq/OpenTAXII/pull/240>`_
+  (@MagsenAbbeThales)
+* Deleted objects were not persisted in the database `#275
+  <https://github.com/eclecticiq/OpenTAXII/pull/275>`_ (@meetghodasara-crest)
+* ``can_read`` or ``can_write`` could be returned with the ``null`` value on a
+  TAXII2 collection `#292 <https://github.com/eclecticiq/OpenTAXII/pull/292>`_
+
+Dependencies:
+
+* Add Python 3.11 and 3.12 support
 * Drop EOL Python 3.6, 3.7, 3.8 and 3.9 support
-* Add Python 3.11 support
+* Drop sqlalchemy 1.3 support
+* Require gunicorn ``>=22`` for security reasons `#269
+  <https://github.com/eclecticiq/OpenTAXII/pull/269>`_
 * Remove mypy_extensions dependency
-* Fix returned "spec_version" was equal to the "type" #237 (@meetghodasara-crest)
-* Add --public and --id params to the CLI opentaxii-add-api-root #283
+
+Development:
+
+* Add Docker build & push action in the CI `#296
+  <https://github.com/eclecticiq/OpenTAXII/pull/296>`_
+* Add and enforce mypy type checker `#289
+  <https://github.com/eclecticiq/OpenTAXII/pull/289>`_
+* Add and enforce black and isort formatter `#290
+  <https://github.com/eclecticiq/OpenTAXII/pull/290>`_
 
 0.9.3 (2022-10-11)
 ------------------
