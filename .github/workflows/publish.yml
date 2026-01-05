@@ -60,7 +60,7 @@ jobs:
           images: eclecticiq/opentaxii
           tags: |
             type=ref,event=branch
-            type=semver,pattern={{version}}
+            type=pep440,pattern={{version}}
       -
         name: Login to Docker Hub
         if: github.event_name != 'pull_request'
