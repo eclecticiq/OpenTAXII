@@ -168,6 +168,10 @@ class STIXObject(Base):
         ),
     )
 
+    __mapper_args__ = {
+        "order_by": date_added
+    }
+
     @classmethod
     def from_entity(cls, entity: entities.STIXObject):
         """Generate database model from input entity."""
