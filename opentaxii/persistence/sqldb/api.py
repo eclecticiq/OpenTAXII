@@ -8,6 +8,7 @@ from typing import Dict, List, Optional, Tuple, no_type_check
 import six
 import sqlalchemy
 import structlog
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy import and_, func, literal, or_
 from sqlalchemy.orm import Query, aliased, load_only
 
@@ -28,11 +29,12 @@ from .models import (
     Subscription,
 )
 
-__all__ = ["SQLDatabaseAPI"]
+__all__ = ["SQLDatabaseAPI", "Taxii2SQLDatabaseAPI"]
 
 log = structlog.getLogger(__name__)
 
 YIELD_PER_SIZE = 100
+DEFAULT_UPSERT_BATCH_SIZE = 1000
 
 
 class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
@@ -76,7 +78,7 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
                 id=obj.id, type=obj.type, properties=obj.properties
             )
         self.db.session.add(service)
-        self.db.session.commit()
+        self._commit_with_retry()
         return conv.to_service_entity(service)
 
     def create_service(self, entity):
@@ -119,7 +121,7 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
         collection.available = entity.available
         collection.accept_all_content = entity.accept_all_content
         collection.bindings = _bindings
-        self.db.session.commit()
+        self._commit_with_retry()
         return conv.to_collection_entity(collection)
 
     def delete_collection(self, collection_name):
@@ -129,12 +131,12 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
             .one()
         )
         self.db.session.delete(collection)
-        self.db.session.commit()
+        self._commit_with_retry()
 
     def delete_service(self, service_id):
         service = self.db.session.query(Service).get(service_id)
         self.db.session.delete(service)
-        self.db.session.commit()
+        self._commit_with_retry()
 
     def _get_content_query(
         self,
@@ -231,7 +233,7 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
         )
 
         self.db.session.add(collection)
-        self.db.session.commit()
+        self._commit_with_retry()
 
         return conv.to_collection_entity(collection)
 
@@ -253,7 +255,7 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
             )
         collection.services = services
         self.db.session.add(collection)
-        self.db.session.commit()
+        self._commit_with_retry()
         log.debug(
             "collection.services_set",
             id=collection.id,
@@ -293,7 +295,7 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
         )
 
         self.db.session.add(message)
-        self.db.session.commit()
+        self._commit_with_retry()
 
         return conv.to_inbox_message_entity(message)
 
@@ -325,7 +327,7 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
         )
 
         self.db.session.add(content)
-        self.db.session.commit()
+        self._commit_with_retry()
 
         if collection_ids:
             self._attach_content_to_collections(content, collection_ids)
@@ -350,7 +352,7 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
             collections=new_collections.count(),
         )
 
-        self.db.session.commit()
+        self._commit_with_retry()
 
     def create_result_set(self, entity):
 
@@ -365,7 +367,7 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
         )
 
         self.db.session.add(result_set)
-        self.db.session.commit()
+        self._commit_with_retry()
 
         return conv.to_result_set_entity(result_set)
 
@@ -414,7 +416,7 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
             )
 
         self.db.session.add(subscription)
-        self.db.session.commit()
+        self._commit_with_retry()
 
         log.debug(
             "subscription.updated",
@@ -488,13 +490,23 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIPersistenceAPI):
             .filter(DataCollection.id == collection.id)
         ).scalar()
 
-        self.db.session.commit()
+        self._commit_with_retry()
 
         return counter
 
 
 class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
     BASEMODEL = taxii2models.Base
+
+    def __init__(
+        self,
+        db_connection,
+        create_tables=False,
+        upsert_batch_size=DEFAULT_UPSERT_BATCH_SIZE,
+        **engine_parameters,
+    ):
+        super().__init__(db_connection, create_tables, **engine_parameters)
+        self.upsert_batch_size = max(1, int(upsert_batch_size))
 
     @staticmethod
     def get_next_param(kwargs: Dict) -> str:
@@ -581,7 +593,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             is_public=is_public,
         )
         self.db.session.add(api_root)
-        self.db.session.commit()
+        self._commit_with_retry()
         if default:
             api_root.set_default(self.db.session)
         return entities.ApiRoot(
@@ -735,7 +747,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             is_public_write=is_public_write,
         )
         self.db.session.add(collection)
-        self.db.session.commit()
+        self._commit_with_retry()
 
         return entities.Collection(
             id=collection.id,
@@ -976,64 +988,88 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
     def add_objects(
         self, api_root_id: uuid.UUID, collection_id: uuid.UUID, objects: List[Dict]
     ) -> entities.Job:
-        job = taxii2models.Job(
-            api_root_id=api_root_id,
-            status="pending",
-            request_timestamp=datetime.datetime.now(datetime.timezone.utc),
-            total_count=0,
-            success_count=0,
-            failure_count=0,
-            pending_count=0,
-        )
-        self.db.session.add(job)
-        self.db.session.commit()
-        job_details = []
-        for obj in objects:
-            version = get_object_version(obj)
-            if (
-                not self.db.session.query(literal(True))
-                .filter(
-                    self.db.session.query(taxii2models.STIXObject)
-                    .filter(
-                        taxii2models.STIXObject.id == obj["id"],
-                        taxii2models.STIXObject.collection_id == collection_id,
-                        taxii2models.STIXObject.version == version,
-                    )
-                    .exists()
-                )
-                .scalar()
-            ):
-                self.db.session.add(
-                    taxii2models.STIXObject(
-                        id=obj["id"],
-                        collection_id=collection_id,
-                        type=obj["id"].split("--")[0],
-                        spec_version=obj["spec_version"],
-                        date_added=datetime.datetime.now(datetime.timezone.utc),
-                        version=version,
-                        serialized_data={
+        def _work():
+            now = datetime.datetime.now(datetime.timezone.utc)
+            job = taxii2models.Job(
+                api_root_id=api_root_id,
+                status="pending",
+                request_timestamp=now,
+                completed_timestamp=None,
+                total_count=0,
+                success_count=0,
+                failure_count=0,
+                pending_count=0,
+            )
+            self.db.session.add(job)
+            self.db.session.flush()
+            total_count = 0
+            success_count = 0
+            job_details = []
+            stix_rows = []
+            stix_exclude_keys = ("id", "type", "spec_version")
+            for obj in objects:
+                version = get_object_version(obj)
+                stix_rows.append(
+                    {
+                        "id": obj["id"],
+                        "collection_id": collection_id,
+                        "type": obj["id"].split("--")[0],
+                        "spec_version": obj["spec_version"],
+                        "date_added": now,
+                        "version": version,
+                        "serialized_data": {
                             key: value
                             for (key, value) in obj.items()
-                            if key not in ["id", "type", "spec_version"]
+                            if key not in stix_exclude_keys
                         },
-                    )
+                    }
                 )
-            job_detail = taxii2models.JobDetail(
-                job_id=job.id,
-                stix_id=obj["id"],
-                version=version,
-                message="",
-                status="success",
+                job_detail = taxii2models.JobDetail(
+                    job_id=job.id,
+                    stix_id=obj["id"],
+                    version=version,
+                    message="",
+                    status="success",
+                )
+                job_details.append(job_detail)
+                self.db.session.add(job_detail)
+                total_count += 1
+                success_count += 1
+
+            if stix_rows:
+                for start in range(0, len(stix_rows), self.upsert_batch_size):
+                    batch = stix_rows[start : start + self.upsert_batch_size]
+                    insert_stmt = pg_insert(taxii2models.STIXObject).values(batch)
+                    insert_stmt = insert_stmt.on_conflict_do_nothing(
+                        index_elements=["id", "collection_id", "version"]
+                    )
+                    self.db.session.execute(insert_stmt)
+
+            completed_timestamp = now
+            self.db.session.query(taxii2models.Job).filter(
+                taxii2models.Job.id == job.id
+            ).update(
+                {
+                    taxii2models.Job.status: "complete",
+                    taxii2models.Job.completed_timestamp: completed_timestamp,
+                    taxii2models.Job.total_count: total_count,
+                    taxii2models.Job.success_count: success_count,
+                    taxii2models.Job.failure_count: 0,
+                    taxii2models.Job.pending_count: 0,
+                },
+                synchronize_session=False,
             )
-            job_details.append(job_detail)
-            self.db.session.add(job_detail)
-            job.total_count += 1  # type: ignore[operator]
-            job.success_count += 1  # type: ignore[operator]
-        job.status = "complete"
-        job.completed_timestamp = datetime.datetime.now(datetime.timezone.utc)
-        self.db.session.commit()
-        job_entity = self._job_and_details_to_entity(job, job_details)
-        return job_entity
+
+            job.status = "complete"
+            job.completed_timestamp = completed_timestamp
+            job.total_count = total_count
+            job.success_count = success_count
+            job.failure_count = 0
+            job.pending_count = 0
+            self.db.session.flush()
+            return self._job_and_details_to_entity(job, job_details)
+
+        return self._run_with_retry(_work)
 
     def get_object(
         self,
@@ -1113,7 +1149,7 @@ class Taxii2SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXII2PersistenceAPI):
             ordered=False,
         )
         query.delete("fetch")
-        self.db.session.commit()
+        self._commit_with_retry()
 
     def get_versions(
         self,

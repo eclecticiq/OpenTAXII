@@ -1,7 +1,30 @@
+from contextvars import ContextVar
 from threading import get_ident
 
 from sqlalchemy import engine, orm
 from sqlalchemy.orm.exc import UnmappedClassError
+
+
+_session_scope_id: ContextVar[object | None] = ContextVar(
+    "opentaxii_session_scope_id", default=None
+)
+
+
+def get_session_scope_id():
+    scope_id = _session_scope_id.get()
+    if scope_id is not None:
+        return scope_id
+    return get_ident()
+
+
+def bind_session_scope(scope_id=None):
+    if scope_id is None:
+        scope_id = object()
+    return _session_scope_id.set(scope_id)
+
+
+def unbind_session_scope(token):
+    _session_scope_id.reset(token)
 
 
 class _QueryProperty:
@@ -54,7 +77,9 @@ class SQLAlchemyDB:
 
         options.setdefault('query_cls', self.Query)
 
-        return orm.scoped_session(self.create_session(options), scopefunc=get_ident)
+        return orm.scoped_session(
+            self.create_session(options), scopefunc=get_session_scope_id
+        )
 
     def create_session(self, options):
         kwargs = {

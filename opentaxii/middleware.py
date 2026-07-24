@@ -8,6 +8,7 @@ from werkzeug.exceptions import HTTPException
 from .exceptions import InvalidAuthHeader
 from .local import context, release_context
 from .management import management
+from .sqldb_helper import bind_session_scope, unbind_session_scope
 from .taxii.exceptions import StatusMessageException
 from .taxii.http import HTTP_AUTHORIZATION
 from .utils import parse_basic_auth_token
@@ -45,61 +46,73 @@ def create_app(server):
         MarshmallowValidationError, server.handle_validation_exception
     )
     app.before_request(functools.partial(create_context_before_request, server))
-    app.after_request(cleanup_context)
+    app.teardown_request(cleanup_context)
     return app
 
 
 def create_context_before_request(server):
+    context.db_session_scope_token = bind_session_scope()
     context.account = _authenticate(server, request.headers)
     context.server = server
 
 
-def cleanup_context(response):
+def cleanup_context(exc):
+    _cleanup_db_and_context()
+    return None
+
+
+def _cleanup_db_and_context():
+    if getattr(context, "db_cleanup_done", False):
+        return
+    context.db_cleanup_done = True
+    if hasattr(context, "db_session_scope_token"):
+        unbind_session_scope(context.db_session_scope_token)
     release_context()
-    return response
 
 
 def _authenticate(server, headers):
-
-    auth_header = headers.get(HTTP_AUTHORIZATION)
-    if not auth_header:
-        return None
-
-    parts = auth_header.split(" ", 1)
-
-    if len(parts) != 2:
-        log.warning("auth.header_invalid", value=auth_header)
-        return None
-
-    auth_type, raw_token = parts
-    auth_type = auth_type.lower()
-
-    if auth_type == "basic":
-
-        if not server.is_basic_auth_supported():
-            server.raise_unauthorized()
-
-        try:
-            username, password = parse_basic_auth_token(raw_token)
-        except InvalidAuthHeader:
-            log.error(
-                "auth.basic_auth.header_invalid", raw_token=raw_token, exc_info=True
-            )
+    try:
+        auth_header = headers.get(HTTP_AUTHORIZATION)
+        if not auth_header:
             return None
 
-        token = server.auth.authenticate(username, password)
+        parts = auth_header.split(" ", 1)
 
-    elif auth_type == "bearer":
-        token = raw_token
-    else:
-        server.raise_unauthorized()
+        if len(parts) != 2:
+            log.warning("auth.header_invalid", value=auth_header)
+            return None
 
-    if not token:
-        server.raise_unauthorized()
+        auth_type, raw_token = parts
+        auth_type = auth_type.lower()
 
-    account = server.auth.get_account(token)
+        if auth_type == "basic":
 
-    if not account:
-        server.raise_unauthorized()
+            if not server.is_basic_auth_supported():
+                server.raise_unauthorized()
 
-    return account
+            try:
+                username, password = parse_basic_auth_token(raw_token)
+            except InvalidAuthHeader:
+                log.error(
+                    "auth.basic_auth.header_invalid", raw_token=raw_token, exc_info=True
+                )
+                return None
+
+            token = server.auth.authenticate(username, password)
+
+        elif auth_type == "bearer":
+            token = raw_token
+        else:
+            server.raise_unauthorized()
+
+        if not token:
+            server.raise_unauthorized()
+
+        account = server.auth.get_account(token)
+
+        if not account:
+            server.raise_unauthorized()
+
+        return account
+    finally:
+        server.auth.api.db.session.remove()
