@@ -42,10 +42,13 @@ class BaseSQLDatabaseAPI:
                 attempts += 1
                 pgcode = str(getattr(error.orig, "pgcode", "") or "")
                 if pgcode not in ("40001", "40P01") or attempts >= max_attempts:
-                    self.db.session.remove()
                     raise
-                self.db.session.remove()
                 time.sleep(base_delay * attempts)
+            except Exception:
+                self.db.session.rollback()
+                raise
+            finally:
+                self.db.session.remove()
 
     def _run_with_retry(self, callback, max_attempts=3, base_delay=0.05):
         attempts = 0
@@ -59,10 +62,10 @@ class BaseSQLDatabaseAPI:
                 attempts += 1
                 pgcode = str(getattr(error.orig, "pgcode", "") or "")
                 if pgcode not in ("40001", "40P01") or attempts >= max_attempts:
-                    self.db.session.remove()
                     raise
                 time.sleep(base_delay * attempts)
             except Exception:
                 self.db.session.rollback()
-                self.db.session.remove()
                 raise
+            finally:
+                self.db.session.remove()
