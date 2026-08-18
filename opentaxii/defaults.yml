@@ -31,6 +31,7 @@ taxii2:
     parameters:
       db_connection: sqlite:////tmp/data.db
       create_tables: yes
+      upsert_batch_size: 1000
   title: "TAXII2 Server"
   public_discovery: true
   max_content_length: 209715200

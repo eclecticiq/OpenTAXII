@@ -68,7 +68,7 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIAuthAPI):
         )
         account.set_password(password)
         self.db.session.add(account)
-        self.db.session.commit()
+        self._commit_with_retry()
         return account_to_account_entity(account)
 
     def get_account(self, token: str) -> AccountEntity | None:
@@ -86,7 +86,7 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIAuthAPI):
         )
         if account:
             self.db.session.delete(account)
-            self.db.session.commit()
+            self._commit_with_retry()
 
     def get_accounts(self):
         return [
@@ -109,7 +109,7 @@ class SQLDatabaseAPI(BaseSQLDatabaseAPI, OpenTAXIIAuthAPI):
             account.set_password(password)
         account.permissions = obj.permissions
         account.is_admin = obj.is_admin
-        self.db.session.commit()
+        self._commit_with_retry()
         return account_to_account_entity(account)
 
     def _generate_token(self, account_id, ttl=None):
